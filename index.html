@@ -2242,28 +2242,36 @@ window.FIREBASE_CONFIG = {
   }
 })();
 
-/* ───────── 브금: 유튜브 플레이어 (버튼을 눌러야 재생, 재생 중에는 작은 창으로 보임) ───────── */
+/* ───────── 브금: 백그라운드 재생 (bgm1.mp3 → bgm2.mp3 → 처음부터 반복) ───────── */
 (function(){
-  const VID="abzNqOg59iU";
+  const LIST=[{src:"bgm1.mp3",title:"Ancient Bamboo Harmony"},{src:"bgm2.mp3",title:"Soft Pads & Bamboo Flute"}];
   const st=document.createElement("style");st.textContent=`
   .bgm-btn{position:fixed;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:35;display:flex;align-items:center;gap:8px;
     border:1px solid var(--line);background:var(--paper);color:var(--ink-2);padding:8px 14px;border-radius:30px;font:inherit;font-size:13px;cursor:pointer}
   .bgm-btn i{display:inline-flex;gap:2px;height:12px;align-items:flex-end}.bgm-btn i b{width:2px;height:3px;background:var(--ink-2);border-radius:1px}
   .bgm-btn.on i b{animation:bgmw 1.4s ease-in-out infinite}.bgm-btn.on i b:nth-child(2){animation-delay:.25s}.bgm-btn.on i b:nth-child(3){animation-delay:.5s}
   @keyframes bgmw{50%{height:12px}}
-  .bgm-dock{position:fixed;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(128px + env(safe-area-inset-bottom,0px));z-index:35;width:240px;height:200px;border:1px solid var(--line);background:#000;box-shadow:0 6px 24px rgba(0,0,0,.25)}
-  .bgm-dock[hidden]{display:none}.bgm-dock iframe{width:100%;height:100%;border:0;display:block}
   @media (prefers-reduced-motion:reduce){.bgm-btn.on i b{animation:none}}`;document.head.appendChild(st);
   const btn=document.createElement("button");btn.type="button";btn.className="bgm-btn";btn.setAttribute("aria-pressed","false");
-  btn.innerHTML=`<i aria-hidden="true"><b></b><b></b><b></b></i><span>브금 켜기</span>`;
-  const dock=document.createElement("div");dock.className="bgm-dock";dock.hidden=true;
-  document.body.append(dock,btn);
-  btn.addEventListener("click",()=>{
-    const on=dock.hidden;
-    if(on){dock.innerHTML=`<iframe title="무림행 브금" src="https://www.youtube.com/embed/${VID}?autoplay=1&loop=1&playlist=${VID}&rel=0&playsinline=1" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;dock.hidden=false}
-    else{dock.hidden=true;dock.innerHTML=""}
-    btn.classList.toggle("on",on);btn.setAttribute("aria-pressed",on);btn.querySelector("span").textContent=on?"브금 끄기":"브금 켜기";
+  btn.innerHTML=`<i aria-hidden="true"><b></b><b></b><b></b></i><span>브금 켜기</span>`;document.body.appendChild(btn);
+  const au=new Audio();au.preload="none";au.volume=.55;let idx=0,on=false;
+  const load=i=>{idx=(i+LIST.length)%LIST.length;au.src=LIST[idx].src;
+    if("mediaSession" in navigator){navigator.mediaSession.metadata=new MediaMetadata({title:LIST[idx].title,artist:"무림행 브금",album:"무림행"})}};
+  const label=()=>{btn.classList.toggle("on",on);btn.setAttribute("aria-pressed",on);btn.querySelector("span").textContent=on?"브금 끄기":"브금 켜기"};
+  au.addEventListener("ended",()=>{load(idx+1);au.play().catch(()=>{})});
+  au.addEventListener("error",()=>{if(on){on=false;label()}});
+  btn.addEventListener("click",async()=>{
+    if(on){au.pause();on=false;label();return}
+    if(!au.src)load(0);
+    try{await au.play();on=true}catch(e){on=false;btn.querySelector("span").textContent="재생 실패 · 다시 누르기";return}
+    label();
   });
+  if("mediaSession" in navigator){
+    navigator.mediaSession.setActionHandler("play",()=>{au.play();on=true;label()});
+    navigator.mediaSession.setActionHandler("pause",()=>{au.pause();on=false;label()});
+    navigator.mediaSession.setActionHandler("nexttrack",()=>{load(idx+1);au.play().catch(()=>{})});
+    navigator.mediaSession.setActionHandler("previoustrack",()=>{load(idx-1);au.play().catch(()=>{})});
+  }
 })();
 
 /* ───────── 대화: 서버 · 지역 · 1:1 ─────────
