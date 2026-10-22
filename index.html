@@ -1,0 +1,2211 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>무림행</title>
+<meta name="theme-color" content="#E2DED3">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
+</head><body>
+
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Song+Myung&display=swap">
+<style>
+/* 수묵화: 한지 위 먹 번짐, 위쪽에 먹산 한 폭, 낙관(붉은 도장)만 유일한 색. 한 줄 세로 흐름. */
+:root{
+  --paper:#E2DED3; --paper-2:#D6D1C4; --ink:#1D1E1B; --ink-2:#4A4A43; --ink-3:#85827A; --stain:rgba(140,118,80,.13);
+  --line:rgba(29,30,27,.16); --seal:#B0382A; --seal-soft:rgba(176,56,42,.10);
+  --grain:.35; --mist:rgba(236,235,228,0);
+  --c-sorim:#B0700F; --c-hwasan:#B5375C; --c-ami:#6A54A6; --c-mudang:#2B5C8C; --c-dang:#367348;
+  --f-brush:"Song Myung","Gowun Batang",serif;
+  --f-body:"Gowun Batang","Noto Serif KR","Apple SD Gothic Neo",serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#141519; --paper-2:#1C1D22; --ink:#E5E2D6; --ink-2:#B0ADA2; --ink-3:#72706A;
+  --line:rgba(229,226,214,.14); --seal:#CF5A43; --seal-soft:rgba(207,90,67,.14); --grain:.18; --stain:rgba(0,0,0,.18); --c-sorim:#E2A64B; --c-hwasan:#E5789A; --c-ami:#A893DE; --c-mudang:#72A3D3; --c-dang:#7BBB8C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#141519; --paper-2:#1C1D22; --ink:#E5E2D6; --ink-2:#B0ADA2; --ink-3:#72706A;
+  --line:rgba(229,226,214,.14); --seal:#CF5A43; --seal-soft:rgba(207,90,67,.14); --grain:.18; --stain:rgba(0,0,0,.18); --c-sorim:#E2A64B; --c-hwasan:#E5789A; --c-ami:#A893DE; --c-mudang:#72A3D3; --c-dang:#7BBB8C; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:radial-gradient(ellipse 60% 40% at 8% 30%,var(--stain),transparent 70%),radial-gradient(ellipse 45% 35% at 92% 70%,var(--stain),transparent 70%),radial-gradient(ellipse 120% 90% at 50% 50%,transparent 55%,var(--stain)),var(--paper);background-attachment:fixed;color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.65;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 96px}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:var(--grain);z-index:0;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .45  0 0 0 0 .44  0 0 0 0 .40  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");mix-blend-mode:multiply}
+:root[data-theme="dark"] body::after{mix-blend-mode:screen}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body::after{mix-blend-mode:screen}}
+.wrap{position:relative;z-index:1;max-width:720px;margin:0 auto}
+h1,h2,h3{font-weight:400;margin:0;text-wrap:balance}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid var(--seal);outline-offset:3px}
+
+/* 머리: 먹산 */
+.head{position:relative;margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)))}
+#mount{display:block;width:100%;height:190px}
+.title{position:absolute;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));top:22px;
+  max-width:720px;margin:0 auto;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.title h1{font-family:var(--f-brush);font-size:clamp(34px,8.5vw,50px);line-height:1.05;letter-spacing:.08em}
+.title small{display:block;font-size:13px;color:var(--ink-2);letter-spacing:.14em;margin-top:6px}
+.seal{display:inline-grid;place-items:center;border:2px solid var(--seal);color:var(--seal);font-family:var(--f-brush);
+  border-radius:4px;transform:rotate(-4deg);background:var(--seal-soft);line-height:1}
+.seal.big{width:58px;height:58px;font-size:20px;writing-mode:vertical-rl}
+.seal.sm{width:34px;height:34px;font-size:12px;writing-mode:vertical-rl;flex:none}
+
+.status{font-size:13px;color:var(--ink-3);margin:6px 0 18px;letter-spacing:.04em}
+section{margin-top:30px}
+.label{font-size:12px;letter-spacing:.22em;color:var(--ink-3);margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.label::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+
+/* 인물 */
+.who{display:flex;gap:16px;align-items:center}
+.who .name{font-size:22px;font-weight:700}
+.who .sect{color:var(--ink-2);font-size:14px}
+.realm{display:flex;align-items:baseline;gap:14px;margin-top:14px;flex-wrap:wrap}
+.realm b{font-family:var(--f-brush);font-weight:400;font-size:46px;line-height:1;letter-spacing:.06em}
+.realm span{font-size:18px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.bar{position:relative;height:10px;margin-top:12px;background:var(--line);border-radius:6px;overflow:hidden}
+.bar i{position:absolute;inset:0 auto 0 0;background:var(--ink);border-radius:6px;transition:width .6s ease;
+  -webkit-mask:linear-gradient(90deg,#000 80%,rgba(0,0,0,.55));mask:linear-gradient(90deg,#000 80%,rgba(0,0,0,.55))}
+.bar.seal-c i{background:var(--seal)}
+.barnote{display:flex;justify-content:space-between;font-size:13px;color:var(--ink-3);margin-top:6px;font-variant-numeric:tabular-nums;gap:8px;flex-wrap:wrap}
+
+.btn{border:1.5px solid var(--ink);background:transparent;padding:10px 18px;border-radius:2px;font-size:15px;letter-spacing:.06em;transition:background .2s,color .2s}
+.btn:hover{background:var(--ink);color:var(--paper)}
+.btn.solid{background:var(--ink);color:var(--paper)}
+.btn.solid:hover{background:var(--ink-2)}
+.btn.sealb{border-color:var(--seal);color:var(--seal)}
+.btn.sealb:hover{background:var(--seal);color:var(--paper)}
+.btn.ghost{border-color:var(--line);color:var(--ink-2)}
+.btn:disabled{opacity:.4;cursor:not-allowed;background:transparent;color:var(--ink)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+.wall{margin-top:16px;padding:14px 16px;border-left:3px solid var(--seal);background:var(--seal-soft)}
+.wall p{margin:0 0 10px}
+
+/* 선택칩 */
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;pointer-events:none}
+.chip span{display:block;padding:8px 14px;border:1px solid var(--line);border-radius:2px;color:var(--ink-2);transition:all .2s;text-align:center}
+.chip span em{display:block;font-style:normal;font-size:12px;color:var(--ink-3)}
+.chip input:checked+span{border-color:var(--ink);color:var(--ink);box-shadow:inset 0 -3px 0 var(--ink)}
+.kinds .chip span{min-width:120px}
+
+.preview{margin:14px 0;font-size:14px;color:var(--ink-2)}
+.preview b{color:var(--ink);font-variant-numeric:tabular-nums}
+
+.train-now{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center}
+.ring{width:104px;height:104px}
+.ring circle{fill:none;stroke-width:6}
+.ring .bg{stroke:var(--line)}
+.ring .fg{stroke:var(--ink);stroke-linecap:round;transition:stroke-dashoffset 1s linear}
+.ring text{fill:var(--ink);font-family:var(--f-body);font-size:15px;text-anchor:middle;dominant-baseline:middle}
+.train-now h3{font-family:var(--f-brush);font-size:26px;line-height:1.1}
+.train-now p{margin:4px 0;color:var(--ink-2);font-size:14px;font-variant-numeric:tabular-nums}
+
+/* 능력치 */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+@media (max-width:620px){.grid2{grid-template-columns:1fr}}
+.stats{display:grid;gap:10px}
+.stat{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.stat:last-child{border-bottom:0}
+.stat .k em{display:block;font-family:var(--f-body);font-style:normal;font-size:12px;color:var(--ink-3);line-height:1.5;margin-top:5px}
+.stat .k em b{color:var(--seal);font-weight:400}
+.stat .k{font-family:var(--f-brush);font-size:19px;line-height:1}
+.stat .v{font-size:20px;font-variant-numeric:tabular-nums}
+.stat .v small{font-size:13px;color:var(--seal);margin-left:4px}
+.pm{display:flex;gap:4px}
+.pm button{width:30px;height:30px;border:1px solid var(--line);background:transparent;border-radius:2px}
+.pm button:disabled{opacity:.3;cursor:not-allowed}
+.points{font-size:14px;color:var(--ink-2);margin:4px 0 10px}
+.points b{color:var(--seal);font-size:18px}
+dl.derived{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;margin:0;font-size:14px}
+dl.derived dt{color:var(--ink-3)}
+dl.derived dd{margin:0;font-variant-numeric:tabular-nums;text-align:right}
+
+.skills{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.skills li{display:flex;gap:10px;align-items:baseline;font-size:14px}
+.skills b{font-weight:700;white-space:nowrap}
+.skills .tag{font-size:11px;letter-spacing:.1em;border:1px solid var(--line);padding:0 6px;color:var(--ink-3);white-space:nowrap}
+.skills span:last-child{color:var(--ink-2)}
+
+/* 동료 */
+.mate{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line)}
+.mate:last-child{border-bottom:0}
+.mate .n{font-weight:700}
+.mate .d{font-size:13px;color:var(--ink-2)}
+.empty{font-size:14px;color:var(--ink-3);line-height:1.7}
+
+.log{list-style:none;margin:0;padding:0;font-size:13px;color:var(--ink-2);display:grid;gap:6px}
+.log time{color:var(--ink-3);font-variant-numeric:tabular-nums;margin-right:8px}
+
+/* 입문 */
+.intro p{color:var(--ink-2);max-width:56ch}
+.field{display:grid;gap:6px;margin:18px 0}
+.field input{font:inherit;font-size:18px;padding:10px 4px;border:0;border-bottom:1.5px solid var(--ink);background:transparent;color:var(--ink);max-width:320px}
+.sects{display:grid;grid-template-columns:1fr;gap:10px}
+.sectc{position:relative;display:block;cursor:pointer}
+.sectc input{position:absolute;opacity:0;pointer-events:none}
+.sectc .box{position:relative;display:grid;grid-template-columns:auto 1fr;gap:4px 16px;padding:16px 18px;border:1px solid var(--line);transition:all .2s;align-items:start}
+.sectc .box .seal{grid-row:1/span 3;width:46px;height:46px;font-size:15px;margin-top:2px}
+.sectc .box h3{font-family:var(--f-brush);font-size:24px;line-height:1.15}
+.sectc .box .role{font-size:12px;color:var(--ink-3);letter-spacing:.08em}
+.sectc .box p{margin:6px 0 0;font-size:14px;color:var(--ink-2)}
+.sectc .box .sk{font-size:12px;color:var(--ink-3)}
+.sectc:hover .box{border-color:var(--ink-3)}
+.sectc input:checked+.box::after{content:"선택함";position:absolute;right:16px;top:16px;font-size:12px;color:var(--seal);letter-spacing:.1em}
+.sectc input:checked+.box{border-color:var(--ink);background:var(--paper-2)}
+
+details.tools{margin-top:40px;font-size:13px;color:var(--ink-3)}
+details.tools summary{cursor:pointer}
+details.tools .row{margin-top:10px}
+
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);
+  background:var(--ink);color:var(--paper);padding:10px 18px;font-size:14px;opacity:0;transition:all .35s;z-index:20;max-width:calc(100% - 32px)}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.fade{animation:fade .6s ease both}
+@keyframes fade{from{opacity:.0;filter:blur(3px)}to{opacity:1;filter:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* 2단계: 탭, 지도, 임무 */
+.banner{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:18px;padding:10px 14px;border:1px solid var(--line);background:var(--paper-2);font-size:14px}
+.banner b{font-weight:700}
+.banner .t{color:var(--ink-2);font-variant-numeric:tabular-nums}
+.banner.done{border-color:var(--seal)}
+.banner .btn{padding:6px 12px;font-size:13px}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-top:26px;overflow-x:auto;scrollbar-width:none}
+.tab{background:none;border:0;padding:10px 14px;font-family:var(--f-brush);font-size:18px;color:var(--ink-3);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;letter-spacing:.06em}
+.tab[aria-selected="true"]{color:var(--ink);border-color:var(--ink)}
+.tab .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--seal);margin-left:6px;vertical-align:middle}
+.mapbox{overflow-x:auto;margin-inline:-4px}
+.map{display:block;width:100%;min-width:340px;height:auto}
+.map .river{fill:none;stroke:var(--ink-3);stroke-width:1.2;opacity:.45}
+.map .rname{fill:var(--ink-3);font-size:10px;font-family:var(--f-body);letter-spacing:.2em;opacity:.8}
+.map .road{stroke:var(--ink-3);stroke-width:1.3;stroke-dasharray:1 5;stroke-linecap:round;opacity:.7}
+.map .road.near{stroke:var(--ink);stroke-dasharray:none;opacity:.55}
+.map .road.go{stroke:var(--seal);stroke-dasharray:none;opacity:.9;stroke-width:2}
+.map .hrs{fill:var(--ink-2);font-size:10px;font-family:var(--f-body);paint-order:stroke;stroke:var(--paper);stroke-width:3px;text-anchor:middle}
+.map .node{cursor:pointer}
+.map .node:focus{outline:none}
+.map .node .pt{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}
+.map .node .hit{fill:transparent}
+.map .node.sel .ring2{fill:none;stroke:var(--seal);stroke-width:1.5;stroke-dasharray:3 3}
+.map .node:focus-visible .pt{stroke:var(--seal);stroke-width:3}
+.map .node.lock .pt{stroke-dasharray:2 2}
+.map .name{fill:var(--ink);font-family:var(--f-brush);font-size:15px;text-anchor:middle;paint-order:stroke;stroke:var(--paper);stroke-width:4px}
+.map .here{fill:var(--seal-soft);stroke:var(--seal);stroke-width:1.5}
+.map .heret{fill:var(--seal);font-family:var(--f-brush);font-size:9px;text-anchor:middle}
+.map .mate{fill:var(--ink-2)}
+.map .matet{fill:var(--ink-2);font-size:9px;font-family:var(--f-body);paint-order:stroke;stroke:var(--paper);stroke-width:3px}
+.region{margin-top:12px;display:grid;gap:6px}
+.region h3{font-family:var(--f-brush);font-size:26px;line-height:1.1}
+.region .place{color:var(--ink-3);font-size:13px;letter-spacing:.06em}
+.region p{margin:0;color:var(--ink-2);font-size:14px}
+.case{margin-top:8px;border:1px solid var(--line);background:var(--paper-2);padding:16px 18px}
+.case .kicker{font-size:12px;letter-spacing:.2em;color:var(--seal)}
+.case h3{font-family:var(--f-brush);font-size:24px;line-height:1.2;margin:4px 0 8px}
+.case p{margin:0 0 10px;color:var(--ink-2);font-size:14px;max-width:60ch}
+.case .q{color:var(--ink);font-size:15px;margin:14px 0 10px}
+.opts{display:grid;gap:8px}
+.opt{display:flex;gap:12px;align-items:baseline;text-align:left;border:1px solid var(--line);background:var(--paper);padding:10px 14px;border-radius:2px;transition:border-color .2s}
+.opt:hover{border-color:var(--ink)}
+.opt b{font-family:var(--f-brush);font-weight:400;font-size:16px;white-space:nowrap}
+.opt span{color:var(--ink-2);font-size:14px}
+.opt small{margin-left:auto;color:var(--ink-3);font-size:12px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.rolls{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px}
+.rolls li{display:flex;gap:10px;align-items:center;font-size:13px;color:var(--ink-2)}
+.die{flex:none;display:inline-grid;place-items:center;width:30px;height:30px;border:1.5px solid var(--ink);font-variant-numeric:tabular-nums;font-size:14px;color:var(--ink);transform:rotate(-3deg)}
+.die.fail{border-color:var(--seal);color:var(--seal)}
+.verdict{font-weight:700;color:var(--ink)}
+.verdict.fail{color:var(--seal)}
+.fight{list-style:none;margin:10px 0;padding:0;font-size:13px;display:grid;gap:4px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.fight li b{color:var(--ink)}
+.reward{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.reward span{border:1px solid var(--line);padding:4px 10px;font-size:13px;background:var(--paper)}
+.bag{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.bag div{border:1px solid var(--line);padding:10px 12px}
+.bag b{display:block;font-size:20px;font-variant-numeric:tabular-nums}
+.bag span{font-size:13px;color:var(--ink-3)}
+.note{font-size:13px;color:var(--ink-3);margin:8px 0 0}
+.feed{list-style:none;margin:12px 0 14px;padding:14px 16px;background:var(--paper);border:1px solid var(--line);display:grid;gap:9px;font-size:14px;line-height:1.75}
+.feed li{color:var(--ink);display:grid;grid-template-columns:3.6em 1fr;gap:0 8px}
+.feed .tm{color:var(--ink-3);font-size:12px;font-variant-numeric:tabular-nums;padding-top:2px}
+.feed .body{min-width:0}
+.feed .ev .body::before{content:"▸ ";color:var(--ink-2)}
+.feed .amb .body{color:var(--ink-3);font-style:italic}
+.feed .comp .body{color:var(--ink-2);padding-left:1em;text-indent:-1em}
+.feed .comp .body::before{content:"┗ ";color:var(--ink-3)}
+.feed .comp b{color:var(--seal);font-weight:400}
+.feed .res{display:block;color:var(--ink-2)}
+.feed .tag{margin-left:4px;font-size:13px;white-space:nowrap;color:var(--ink);font-weight:700}
+.feed .tag.fail{color:var(--seal)}
+.feed .wait .body{color:var(--ink-3)}
+.feed .wait .body::after{content:"▌";animation:blink 1s steps(2) infinite;margin-left:2px}
+@keyframes blink{50%{opacity:0}}
+.mate-pill{display:inline-flex;gap:6px;align-items:center;font-size:13px;color:var(--ink-2);margin-left:8px;letter-spacing:0}
+.mate-pill b{color:var(--seal);font-weight:400}
+.gslots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media (max-width:520px){.gslots{grid-template-columns:1fr}}
+.gslot{text-align:left;border:1px solid var(--line);background:var(--paper);padding:12px 14px;display:grid;gap:2px;border-radius:2px;align-content:start}
+.gslot.on{border-color:var(--ink);box-shadow:inset 0 -3px 0 var(--ink)}
+.gslot .sl{font-size:11px;letter-spacing:.2em;color:var(--ink-3)}
+.gslot b,.itemrow b{font-family:var(--f-brush);font-weight:400;font-size:19px;line-height:1.3}
+.gslot b em,.itemrow b em,.fbig em{font-style:normal;color:var(--seal)}
+.gslot b.none{color:var(--ink-3)}
+.gs{font-size:12px;color:var(--ink-3)}
+.gst{font-size:13px;color:var(--ink-2)}
+.forge{margin-top:12px;border:1px solid var(--line);background:var(--paper-2);padding:16px 18px;display:grid;gap:12px}
+.fbig{font-family:var(--f-brush);font-size:34px;line-height:1.1}
+.forge dl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:0;font-size:14px}
+.forge dt{color:var(--ink-3)}
+.forge dd{margin:0;font-variant-numeric:tabular-nums}
+.fres{font-size:14px;padding:10px 12px;background:var(--paper);border-left:3px solid var(--ink);animation:fade .6s ease both}
+.fres.fail{border-color:var(--seal)}
+.fres.fail b{color:var(--seal)}
+.items{display:grid}
+.itemrow{display:grid;grid-template-columns:1fr auto;gap:6px 12px;align-items:center;border-bottom:1px solid var(--line);padding:10px 0}
+.itemrow .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+@media (max-width:520px){.itemrow{grid-template-columns:1fr}.itemrow .acts{justify-content:flex-start}}
+.btn.sm{padding:5px 10px;font-size:12px}
+.up{color:var(--ink);font-weight:700}
+.down{color:var(--seal)}
+.emb{display:block;flex:none}
+.emb.big{width:64px;height:64px}
+.emb.md{width:50px;height:50px}
+.emb.sm{width:36px;height:36px}
+.sectc .box .emb{grid-row:1/span 3;margin-top:2px}
+.sectc input:checked+.box .emb{filter:drop-shadow(0 0 0 transparent)}
+.feedwrap{position:relative;margin:12px -18px 14px}
+.feedwrap .feed{margin:0;border-left:0;border-right:0;max-height:360px;overflow-y:auto;overscroll-behavior:contain;scroll-behavior:smooth}
+.feedtools{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;padding:0 18px}
+.feed .sec .body{color:var(--seal);letter-spacing:.3em;font-size:12px;padding-top:6px}
+.feed .endl .body{color:var(--ink);font-weight:700}
+.feed.big{font-size:15.5px;line-height:1.95;border:0;background:transparent;padding:4px 0 40px;gap:12px}
+.feed.big li{grid-template-columns:4em 1fr}
+.reader{position:fixed;inset:0;z-index:30;background:var(--paper);display:flex;flex-direction:column;
+  padding:calc(14px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(16px,env(safe-area-inset-left,0px))}
+.reader[hidden]{display:none}
+.reader>*{width:100%;max-width:760px;margin-inline:auto}
+.rhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.rhead h2{font-family:var(--f-brush);font-size:28px;line-height:1.2;margin:2px 0}
+.jlist{display:flex;gap:6px;overflow-x:auto;padding:10px 0;scrollbar-width:thin;flex:none}
+.jl{flex:none;border:1px solid var(--line);background:transparent;padding:5px 10px;font-size:12px;color:var(--ink-2);border-radius:2px;white-space:nowrap}
+.jl span{color:var(--ink-3);margin-left:4px}
+.jl.on{border-color:var(--ink);color:var(--ink)}
+.rbody{flex:1;overflow-y:auto;overscroll-behavior:contain;padding-top:6px}
+.jrows{display:grid}
+.jrow{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:baseline;text-align:left;background:transparent;border:0;border-bottom:1px solid var(--line);padding:10px 2px;font-size:14px}
+.jrow:hover{background:var(--paper-2)}
+.jrow .tm{font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.jrow em{font-style:normal;color:var(--ink-3);font-size:13px}
+.jrow b{font-weight:400;font-size:13px;color:var(--ink-2)}
+.party{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media (max-width:480px){.party{grid-template-columns:1fr}}
+.pm2{display:flex;gap:10px;align-items:center;border:1px solid var(--line);background:var(--paper);padding:8px 10px}
+.pm2 b{display:block;font-weight:700;font-size:14px}
+.pm2 span{font-size:12px;color:var(--ink-3)}
+.feed .omen .body,.feed .b-omen .body{color:var(--ink);font-weight:700}
+.feed .b-omen .body::before{content:"◆ ";color:var(--seal)}
+.feed .b-hit .body{color:var(--seal)}
+.feed .b-hit .body::before{content:"✕ ";color:var(--seal)}
+.feed .b-act .body::before{content:"▸ ";color:var(--ink-2)}
+.feed .b-act b,.feed .b-hit b,.feed .b-omen b{color:var(--seal);font-weight:700}
+#battleFeed li{grid-template-columns:0 1fr;gap:0}
+.contrib{display:grid;gap:6px}
+.cr{display:grid;grid-template-columns:1.6em minmax(0,8em) 1fr auto;gap:10px;align-items:center;font-size:14px}
+.cr .rk{color:var(--ink-3);font-variant-numeric:tabular-nums}
+.cr b{font-weight:400;font-variant-numeric:tabular-nums}
+.cbar{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.cbar i{display:block;height:100%;background:var(--seal)}
+.lparty{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media (max-width:480px){.lparty{grid-template-columns:1fr}}
+.lp{display:flex;gap:10px;align-items:center;border:1px solid var(--line);background:var(--paper);padding:8px 10px}
+.lp>div{flex:1;min-width:0}
+.lp b{display:block;font-size:14px}
+.lp span{font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.lp.dead{opacity:.45}
+.hpb{height:5px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:4px}
+.hpb i{display:block;height:100%;background:var(--ink);transition:width .5s}
+.mods{display:flex;gap:6px;flex-wrap:wrap}
+.mods span{font-size:12px;padding:3px 8px;border:1px solid var(--ink)}
+.mods .bad{border-color:var(--seal);color:var(--seal)}
+.omen{border-left:3px solid var(--seal);background:var(--paper);padding:10px 14px;font-weight:700}
+.omen b{color:var(--seal)}
+.seg{display:inline-flex;border:1px solid var(--line)}
+.seg button{border:0;background:transparent;padding:6px 12px;font-size:13px;color:var(--ink-3)}
+.seg button.on{background:var(--ink);color:var(--paper)}
+.acts3{display:grid;gap:8px}
+.opt:disabled{opacity:.45;cursor:not-allowed}
+#lairFeed{max-height:300px}
+#lairFeed li{grid-template-columns:0 1fr;gap:0}
+.opt b .sv{font-style:normal;font-family:var(--f-body);font-size:13px;color:var(--ink-2);margin-left:2px;font-variant-numeric:tabular-nums}
+.opt small{text-align:right;line-height:1.4}
+.opt .pc{font-size:13px;color:var(--ink);font-weight:700}
+.opt .pc.best{color:var(--seal)}
+.gates{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
+.gt{border:1px solid var(--line);background:var(--paper);padding:10px 12px;display:grid;gap:2px}
+.gt b{font-family:var(--f-brush);font-weight:400;font-size:18px}
+.gt span:last-child{font-size:12px;color:var(--ink-3)}
+.gt.done{opacity:.55}
+.acts8{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;margin:12px 0}
+.acts8 span{text-align:center;font-size:12px;padding:4px 0;border-top:3px solid var(--line);color:var(--ink-3);font-variant-numeric:tabular-nums}
+.acts8 span em{display:block;font-style:normal;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acts8 span.past{border-color:var(--ink-2);color:var(--ink-2)}
+.acts8 span.now{border-color:var(--seal);color:var(--seal);font-weight:700}
+.opt.chosen{border-color:var(--seal);box-shadow:inset 3px 0 0 var(--seal)}
+.opt.chosen small{color:var(--seal)}
+#gateFeed{max-height:320px}
+#gateFeed li{grid-template-columns:0 1fr;gap:0}
+.bond{border:1px solid var(--line);background:var(--paper);padding:12px 14px;margin-bottom:10px}
+.bh{display:flex;gap:10px;align-items:center}
+.bh>div{flex:1;min-width:0}
+.bh b{display:block;font-size:15px}
+.bh span{font-size:12px;color:var(--ink-3)}
+.relb{flex:none;font-family:var(--f-brush);font-size:15px;padding:2px 10px;border:1px solid var(--line);color:var(--ink-3)}
+.relb.on{border-color:var(--seal);color:var(--seal)}
+.bbar{margin-top:8px;font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.bbar .hpb i,.fav .hpb i{background:var(--seal)}
+select{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:2px;max-width:100%}
+.favs{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media (max-width:520px){.favs{grid-template-columns:1fr}}
+.fav{display:flex;gap:10px;align-items:center;border:1px solid var(--line);background:var(--paper);padding:8px 10px}
+.fav>div{flex:1;min-width:0}
+.fav b{display:block;font-size:14px}
+.fav span{font-size:12px;color:var(--ink-3)}
+.log li.newg{color:var(--seal)}
+</style>
+
+<div class="wrap">
+  <header class="head">
+    <canvas id="mount" aria-hidden="true"></canvas>
+    <div class="title">
+      <div><h1>무림행</h1><small>武林行 · 방치 성장 무협</small></div>
+      <div class="seal big" aria-hidden="true">武林</div>
+    </div>
+  </header>
+  <p class="status" id="status">강호의 소식을 불러오는 중…</p>
+  <main id="app"></main>
+</div>
+<div class="reader" id="reader" hidden role="dialog" aria-modal="true" aria-label="일지"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ───────── 설계서 숫자 ───────── */
+const REALMS=[
+  {n:"삼류",gate:false},{n:"이류",gate:false},{n:"일류",gate:false},
+  {n:"절정",gate:true,boss:"혈안산군"},{n:"초절정",gate:true,boss:"흑사련주 진무악"},
+  {n:"화경",gate:true,boss:"혈영마군 사도현"},{n:"현경",gate:true,boss:"천마 혁련천"}];
+const SECTS={
+  sorim:{n:"소림사",s:"少林",role:"탱커",main:["wai"],desc:"금강불괴의 몸으로 동료 앞을 막아선다.",
+    sk:[["나한권","액티브","기본 타격, 보스 시선 소폭 끌기"],["동근골","패시브","받는 피해 10% 감소"]]},
+  hwasan:{n:"화산파",s:"華山",role:"딜러",main:["shen"],desc:"매화가 흩날리듯 검을 연달아 몰아친다.",
+    sk:[["매화검법","액티브","2연타"],["매화향","패시브","공격할 때마다 피해 5% 누적 (최대 5중첩)"]]},
+  ami:{n:"아미파",s:"峨嵋",role:"힐러 · 순수 회복",main:["nei"],desc:"자비로운 손길로 쓰러진 동료를 일으킨다.",
+    sk:[["회춘수","액티브","아군 1명 회복"],["자비심","패시브","회복량 10% 증가"]]},
+  mudang:{n:"무당파",s:"武當",role:"탱커/힐러 · 보호막·반격",main:["nei","shen"],desc:"태극의 흐름으로 공격을 받아 흘리고, 동료에게 보호막을 두른다.",
+    sk:[["태극권","액티브","타격 + 자신에게 보호막 소량"],["유능제강","패시브","받은 피해 일부가 다음 공격 위력으로"]]},
+  dang:{n:"사천당가",s:"唐門",role:"힐러/딜러 · 독·해독",main:["shen","nei"],desc:"독과 암기로 적을 몰아붙이고, 동료의 독은 풀어준다.",
+    sk:[["비도술","액티브","약한 2연타 + 1턴간 보스 공격력 소폭 감소"],["독공체질","패시브","내가 건 독의 지속 턴 +1"]]}};
+const STATS={nei:{n:"내공",train:"운기조식",d:"1당 기력 +5 · 기공·회복·독 무공이 강해짐"},wai:{n:"외공",train:"근골 단련",d:"1당 체력 +10, 방어력 +1 · 권각·검 무공이 강해짐"},shen:{n:"신법",train:"경공 수련",d:"1당 회피 +0.3%, 치명타 +0.1% · 먼저 움직이고 연타가 늘어남"}};
+const HOURS=[1,3,5,8], MULT={1:1.0,3:1.1,5:1.2,8:1.3};
+const need=l=>l<=30?l*40:l*80;
+const cap=r=>(r+1)*10;
+const expPerHour=l=>l*10+50;
+
+/* 지도: 지역과 길 (이동 시간은 시간 단위) */
+const REGIONS={
+  xiyu:{n:"서역",place:"천산 · 사막",x:52,y:78,minRealm:3,note:"마교의 본거지. 절정 이상만 발을 들일 수 있다."},
+  shaanxi:{n:"섬서",place:"화산 · 장안",x:150,y:108,note:"화산파의 땅. 검에 얽힌 소문과 비급 단서가 돈다."},
+  henan:{n:"하남",place:"숭산 소림사 · 낙양",x:240,y:118,note:"강호의 한가운데. 소림이 가까워 초보 임무가 많다."},
+  shandong:{n:"산동",place:"태산 · 항구",x:338,y:92,note:"상인과 배가 오가는 곳. 장비 재료가 흔하다."},
+  sichuan:{n:"사천",place:"아미산 · 성도 당가타",x:118,y:206,note:"아미파와 당가의 땅. 독과 약초가 많다."},
+  hubei:{n:"호북",place:"무당산 · 깊은 산림",x:228,y:196,note:"무당파의 땅. 산속 짐승 소문이 끊이지 않는다."},
+  jiangnan:{n:"강남",place:"항주 · 장강 수로",x:334,y:214,note:"물길을 따라 사파 세력이 움직인다."}};
+const ROADS=[["henan","shaanxi",2],["henan","hubei",2],["henan","shandong",2],["henan","jiangnan",3],["shaanxi","sichuan",3],
+  ["shaanxi","xiyu",5],["hubei","sichuan",3],["hubei","jiangnan",2],["sichuan","xiyu",6],["shandong","jiangnan",3]];
+const roadHours=(a,b)=>{const r=ROADS.find(r=>(r[0]===a&&r[1]===b)||(r[0]===b&&r[1]===a));return r?r[2]:0};
+function route(a,b){ // 가장 빠른 길 (다익스트라)
+  const dist={},prev={},q=new Set(Object.keys(REGIONS));for(const k of q)dist[k]=Infinity;dist[a]=0;
+  while(q.size){let u=null;for(const k of q)if(u===null||dist[k]<dist[u])u=k;q.delete(u);if(u===b)break;
+    for(const r of ROADS){const v=r[0]===u?r[1]:r[1]===u?r[0]:null;if(v&&q.has(v)&&dist[u]+r[2]<dist[v]){dist[v]=dist[u]+r[2];prev[v]=u}}}
+  const path=[b];while(path[0]!==a&&prev[path[0]])path.unshift(prev[path[0]]);return {path,hours:dist[b]};
+}
+
+/* 임무: 지역마다 사건 두 개, 3일마다 바뀜 */
+const INC={
+ henan:[
+  {t:"낙양 객잔의 복면 도적",i:"낙양의 오래된 객잔에 밤마다 복면 도적이 든다. 주인은 벌써 세 번째 털렸다며 울상이다.",
+   s:[{q:"부서진 뒷문과 겁에 질린 점소이가 있다.",o:[["nei","숨을 고르고 점소이의 말 속 떨림을 가려 듣는다"],["wai","부서진 문짝을 살펴 도적의 완력을 가늠한다"],["shen","지붕으로 뛰어올라 기와에 남은 발자국을 찾는다"]]},
+      {q:"흔적이 성 밖 폐사찰로 이어진다.",o:[["nei","기척을 죽이고 안의 숨소리를 센다"],["wai","정문을 박차고 정면으로 들어간다"],["shen","담을 넘어 뒤편으로 돌아 들어간다"]]}],
+   f:"복면 도적 두목",e:["두목을 사로잡고 훔친 물건을 모두 되찾았다. 두목의 품에서 검은 뱀이 새겨진 패가 나왔다.","도적떼를 흩어 놓았다. 객잔에 다시 등불이 켜졌다.","도적들은 달아났다. 그래도 한동안은 객잔을 넘보지 못할 것이다."]},
+  {t:"숭산 기슭의 부상자",i:"소림사로 오르는 길목에 피투성이 행인이 쓰러져 있다. 숨은 붙어 있지만 상처가 심상치 않다.",
+   s:[{q:"행인의 상처에 검푸른 기운이 맴돈다.",o:[["nei","상처에 남은 기운을 읽어 내력을 짐작한다"],["wai","상처 깊이로 흉기의 종류를 가늠한다"],["shen","주변 숲을 재빨리 한 바퀴 훑는다"]]},
+      {q:"바위 뒤에서 누군가 이쪽을 지켜보고 있다.",o:[["nei","모른 척 기를 모으며 상대가 먼저 움직이길 기다린다"],["wai","돌을 집어 바위째 날려버린다"],["shen","바람처럼 돌아 들어가 퇴로를 막는다"]]}],
+   f:"숲 속의 습격자",e:["습격자를 제압하고 행인을 소림사로 옮겼다. 마중 나온 혜원이 연신 합장한다.","습격자를 쫓아내고 행인을 무사히 산문까지 데려갔다.","습격자는 놓쳤지만 행인의 목숨은 건졌다."]}],
+ shaanxi:[
+  {t:"화산 산길의 검귀",i:"달 없는 밤마다 화산 오르는 길에 검을 든 그림자가 나타나 행인을 벤다는 소문이 돈다.",
+   s:[{q:"베인 나뭇가지들이 길을 따라 늘어서 있다.",o:[["nei","베인 자리에 남은 검기의 결을 읽는다"],["wai","잘린 단면으로 검의 무게를 가늠한다"],["shen","가지가 떨어진 순서를 따라 산길을 거슬러 오른다"]]},
+      {q:"절벽 위 소나무 아래에 그림자가 서 있다.",o:[["nei","마음을 비우고 상대의 살기를 마주한다"],["wai","소나무 둥치를 걷어차 상대를 흔든다"],["shen","절벽을 타고 올라 등 뒤를 잡는다"]]}],
+   f:"검귀",e:["검귀의 정체는 화산에서 파문당한 검수였다. 그가 떨어뜨린 낡은 검보 한 장을 주웠다.","검귀를 물리쳤다. 매소운이 '사형도 못 한 걸!' 하며 호들갑을 떤다.","검귀는 안개 속으로 사라졌다. 산길에 순찰을 세우기로 했다."]},
+  {t:"장안 시장의 가짜 보약",i:"장안 시장에서 먹으면 사흘을 앓는 보약이 팔린다. 약방 주인들이 서로를 의심하며 다툰다.",
+   s:[{q:"쓰러진 손님 곁에 약 봉지가 떨어져 있다.",o:[["nei","약 냄새를 맡아 섞인 독을 가려낸다"],["wai","약재를 손으로 부숴 속을 확인한다"],["shen","시장을 돌며 같은 봉지를 든 사람을 찾는다"]]},
+      {q:"약장수가 호위들을 데리고 골목으로 빠져나간다.",o:[["nei","기척을 숨기고 그들의 대화를 엿듣는다"],["wai","골목 입구를 막아선다"],["shen","지붕 위로 앞질러 간다"]]}],
+   f:"약장수의 호위",e:["약장수를 잡아 관아에 넘겼다. 가짜 약의 재료가 서역에서 왔다는 장부가 나왔다.","가짜 약 장사를 멈추게 했다. 시장이 조용해졌다.","약장수는 도망쳤지만 가짜 약은 모두 거둬들였다."]}],
+ hubei:[
+  {t:"무당산 기슭의 사라진 나무꾼",i:"무당산 아랫마을에서 나무꾼 셋이 연달아 돌아오지 않았다. 아이들은 산에 큰 고양이가 산다고 수군댄다.",
+   s:[{q:"숲 어귀에 부러진 도끼 자루가 떨어져 있다.",o:[["nei","숲에 감도는 기운이 이상한지 살핀다"],["wai","쓰러진 나무들을 밀어 길을 낸다"],["shen","나무 위로 올라 멀리까지 내려다본다"]]},
+      {q:"사람 머리만 한 짐승 발자국이 동굴로 이어진다.",o:[["nei","동굴 앞에서 숨을 고르고 안의 기척을 읽는다"],["wai","횃불을 들고 정면으로 들어간다"],["shen","발소리를 죽이고 벽을 타며 들어간다"]]}],
+   f:"굶주린 산짐승",e:["나무꾼들을 구해냈다. 동굴 안쪽에 보통 호랑이의 것보다 훨씬 큰 발톱 자국이 남아 있었다.","짐승을 쫓아내고 나무꾼 둘을 구했다.","짐승은 숲 깊이 달아났다. 마을에 경계를 서기로 했다."]},
+  {t:"울리지 않는 산사의 종",i:"무당산 중턱 작은 산사의 저녁 종이 사흘째 울리지 않는다. 송하가 '스님이 늦잠 주무시나?' 하며 고개를 갸웃한다.",
+   s:[{q:"산사 문이 반쯤 열려 있고 안은 고요하다.",o:[["nei","향 냄새에 섞인 낯선 기운을 맡는다"],["wai","무너진 담장을 들춰 흔적을 찾는다"],["shen","재빨리 법당과 요사채를 돌아본다"]]},
+      {q:"종루 위에서 낯선 웃음소리가 들린다.",o:[["nei","종을 향해 내공을 실어 크게 울린다"],["wai","종루 기둥을 흔들어 놈들을 떨어뜨린다"],["shen","처마를 밟고 종루로 뛰어오른다"]]}],
+   f:"산적 무리",e:["산적을 몰아내고 묶여 있던 스님들을 풀어주었다. 다시 저녁 종이 울린다.","산적을 쫓아내고 산사를 되찾았다.","산적은 흩어졌지만 종은 금이 가 버렸다."]}],
+ sichuan:[
+  {t:"독충이 퍼진 마을",i:"성도 외곽 마을에 독충이 들끓어 사람들이 앓아눕는다. 당소미가 '우리 집 독충 아니거든요!' 하고 발끈한다.",
+   s:[{q:"앓는 사람들의 팔에 붉은 반점이 번져 있다.",o:[["nei","맥을 짚어 독의 성질을 가린다"],["wai","독충 하나를 잡아 직접 살펴본다"],["shen","독충이 모여드는 쪽으로 재빨리 따라간다"]]},
+      {q:"마을 우물가에 독충이 새까맣게 모여 있다.",o:[["nei","기를 퍼뜨려 독충을 한곳으로 몬다"],["wai","우물 덮개를 들어 올려 안을 확인한다"],["shen","불씨를 들고 주위를 돌며 퇴로를 끊는다"]]}],
+   f:"독충 떼",e:["독충은 누군가 일부러 풀어놓은 것이었다. 우물 속에서 당가의 것이 아닌 낯선 독낭을 건졌다.","독충을 모두 태워 없앴다. 마을 사람들이 기운을 되찾는다.","독충은 대부분 쫓아냈지만 앓는 사람이 아직 많다."]},
+  {t:"아미산 약초꾼의 부탁",i:"아미산 약초꾼이 귀한 설련화를 캐러 갔다가 도적에게 길을 막혔다며 도움을 청한다.",
+   s:[{q:"약초꾼이 그려 준 지도가 엉망이다.",o:[["nei","산의 기운 흐름을 읽어 길을 짚는다"],["wai","지도 대신 산을 직접 오르며 길을 낸다"],["shen","지름길을 찾아 앞서 달려간다"]]},
+      {q:"설련화 군락 앞에 도적들이 진을 쳤다.",o:[["nei","눈을 감고 도적들의 기척을 하나하나 헤아린다"],["wai","바위를 굴려 진을 흩뜨린다"],["shen","도적들 사이를 스치듯 지나 설련화부터 챙긴다"]]}],
+   f:"약초 도적",e:["도적을 물리치고 설련화를 넉넉히 캤다. 약초꾼이 한 포기를 선물로 내민다.","도적을 쫓고 약초꾼과 함께 무사히 내려왔다.","설련화 몇 포기만 겨우 건졌다."]}],
+ shandong:[
+  {t:"항구의 밀수선",i:"밤마다 불을 끈 배가 항구에 닿는다. 상인들은 무기가 오간다고 쑥덕인다.",
+   s:[{q:"부두에 젖은 발자국과 끌린 자국이 있다.",o:[["nei","바다 냄새 사이로 쇠 냄새를 가려낸다"],["wai","끌린 자국으로 짐의 무게를 가늠한다"],["shen","발자국을 따라 창고 사이를 누빈다"]]},
+      {q:"창고 안에서 상자를 옮기는 소리가 난다.",o:[["nei","문틈으로 숨소리를 세어 인원을 파악한다"],["wai","창고 문 빗장을 부수고 들어간다"],["shen","들보 위로 숨어들어 위에서 살핀다"]]}],
+   f:"밀수꾼 무사",e:["밀수꾼을 모두 붙잡았다. 상자 안 무기마다 검은 뱀 낙인이 찍혀 있었다.","밀수를 막아냈다. 항구 상인들이 연신 고개를 숙인다.","밀수선은 놓쳤지만 창고의 무기는 압수했다."]},
+  {t:"태산 참배길의 소매치기",i:"태산에 오르는 참배객들의 전대가 자꾸 사라진다. 범인은 아이처럼 작고 날쌔다고 한다.",
+   s:[{q:"인파가 가장 붐비는 돌계단이 보인다.",o:[["nei","사람들 사이 이질적인 기척 하나를 찾는다"],["wai","일부러 전대를 크게 드러내고 걷는다"],["shen","사람들 머리 위 바위를 건너뛰며 내려다본다"]]},
+      {q:"작은 그림자가 숲길로 빠진다.",o:[["nei","부드럽게 불러 세워 사정을 묻는다"],["wai","길목의 나무를 흔들어 앞을 막는다"],["shen","단숨에 거리를 좁혀 뒷덜미를 잡는다"]]}],
+   f:"소매치기 패거리",e:["패거리를 잡고 보니 굶주린 아이들을 부리던 어른들이 있었다. 아이들은 산 아래 절에 맡겼다.","패거리를 쫓아내고 전대를 대부분 돌려주었다.","패거리는 흩어졌지만 전대 몇 개는 찾지 못했다."]}],
+ jiangnan:[
+  {t:"장강의 물귀신",i:"장강 물길에서 배들이 연달아 뒤집힌다. 뱃사공들은 물귀신 짓이라며 배를 띄우지 않는다.",
+   s:[{q:"뒤집힌 배의 바닥에 구멍이 나 있다.",o:[["nei","물살에 실린 기운을 읽어 수상한 곳을 짚는다"],["wai","구멍 가장자리를 만져 무엇에 뚫렸는지 가늠한다"],["shen","강가를 따라 달리며 수상한 배를 찾는다"]]},
+      {q:"갈대숲 사이로 낮은 배 한 척이 숨어 있다.",o:[["nei","숨을 길게 참고 물속으로 다가간다"],["wai","배를 밀어 갈대숲 밖으로 끌어낸다"],["shen","갈대 끝을 밟고 배 위로 날아든다"]]}],
+   f:"수적 무리",e:["수적을 소탕했다. 배 밑창에 숨겨진 흑사련의 깃발을 찾았다.","수적을 몰아냈다. 뱃사공들이 다시 노를 젓는다.","수적은 달아났지만 한동안 물길은 잠잠할 것이다."]},
+  {t:"항주 찻집의 실종 사건",i:"서호 가의 이름난 찻집에서 일하던 사람들이 하나둘 사라진다. 주인은 입을 꾹 다물고 있다.",
+   s:[{q:"찻집 주인이 무언가를 숨기는 눈치다.",o:[["nei","차를 한 잔 청하며 주인의 기색을 살핀다"],["wai","탁자를 내리쳐 주인을 겁준다"],["shen","손님인 척 뒤뜰로 슬쩍 들어간다"]]},
+      {q:"뒤뜰 창고 밑에 지하로 내려가는 계단이 있다.",o:[["nei","등불 없이 기척만으로 내려간다"],["wai","잠긴 철문을 힘으로 비튼다"],["shen","소리 없이 계단을 미끄러져 내려간다"]]}],
+   f:"찻집의 경호무사",e:["갇혀 있던 사람들을 모두 구했다. 그들은 흑사련에 팔려 갈 참이었다.","사람들을 구해 내고 찻집 문을 닫게 했다.","몇 사람은 구했지만 경호무사들은 달아났다."]}],
+ xiyu:[
+  {t:"모래바람 속의 대상",i:"천산 아래 사막에서 대상 행렬이 통째로 사라졌다. 살아 돌아온 낙타 한 마리만 피 묻은 깃발을 달고 있다.",
+   s:[{q:"모래 언덕에 반쯤 묻힌 수레가 보인다.",o:[["nei","모래 아래 남은 기운을 더듬는다"],["wai","수레를 파내 짐을 뒤진다"],["shen","언덕 꼭대기로 올라 사방을 살핀다"]]},
+      {q:"바위 그늘에 붉은 옷의 무리가 쉬고 있다.",o:[["nei","기운을 감추고 그들의 말을 엿듣는다"],["wai","바위를 무너뜨려 길을 막는다"],["shen","모래바람에 몸을 숨겨 다가간다"]]}],
+   f:"마교 순찰대",e:["순찰대를 물리치고 붙잡힌 대상들을 구했다. 놈들이 '천마께서 곧 중원으로 내려가신다'고 떠드는 걸 들었다.","순찰대를 쫓아내고 대상 몇을 구했다.","순찰대와 겨루다 물러났다. 대상들의 행방은 아직 모른다."]},
+  {t:"천산 설봉의 수행자",i:"천산 눈 덮인 봉우리에서 누군가 밤새 무공을 수련하며 산을 울린다. 그 기운에 눈사태가 잦아졌다.",
+   s:[{q:"눈 위에 맨발 자국이 곧게 이어진다.",o:[["nei","발자국에 스민 차가운 내력을 읽는다"],["wai","눈을 헤치고 발자국을 그대로 따라간다"],["shen","눈 위를 스치듯 달려 발자국을 앞지른다"]]},
+      {q:"얼음 동굴 안에서 붉은 빛이 새어 나온다.",o:[["nei","한기를 내공으로 버티며 천천히 들어간다"],["wai","얼음벽을 깨부수고 들어간다"],["shen","고드름 사이를 빠르게 지나친다"]]}],
+   f:"눈보라 속의 마인",e:["마인을 쓰러뜨렸다. 그가 수련하던 동굴 벽에 '천마혈강'이라는 글자가 새겨져 있었다.","마인을 물리치자 산이 조용해졌다.","마인은 눈보라 속으로 사라졌다."]}]};
+const PERIOD=3*86400e3, KST=9*3600e3;
+const periodNow=()=>Math.floor((Date.now()+KST)/PERIOD);
+const periodEnds=p=>(p+1)*PERIOD-KST;
+function incidentIdx(region,p){let h=7;for(const c of region+p)h=(h*31+c.charCodeAt(0))>>>0;return h%INC[region].length}
+const missionHours=r=>[1,1,1.5,2,2,2,2][r];
+const dcFor=r=>10+2*r;
+const TIER=["대성공","성공","미흡"];
+const ITEMS={stone:["강화석","장비 강화 재료"],herb:["약초","선물 · 회복"],wine:["화주","선물"],trinket:["장신구","선물"],clue:["비급 단서","모으면 비급"]};
+const GIFTS=["herb","wine","trinket"];
+
+/* ───────── 상태 ───────── */
+let me=null, others=[], uid=null, db=null, mode="local", isOwner=false, ready=false;
+let alloc={nei:0,wai:0,shen:0}, pick={stat:"nei",hours:8}, confirmCancel=false, confirmWipe=false, confirmAbort=false, dest=null;
+let tab=(()=>{try{return localStorage.getItem("murim-tab")||"train"}catch(e){return "train"}})();
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pickOne=a=>a[Math.floor(Math.random()*a.length)];
+function toast(t){const el=$("#toast");el.textContent=t;el.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("on"),3000)}
+function fmtLeft(ms){ms=Math.max(0,ms);const h=Math.floor(ms/3600e3),m=Math.floor(ms%3600e3/60e3),s=Math.floor(ms%60e3/1e3);
+  return h?`${h}시간 ${m}분`:m?`${m}분 ${s}초`:`${s}초`}
+function fmtDays(ms){const h=Math.ceil(ms/3600e3);return h>=24?`${Math.floor(h/24)}일 ${h%24}시간`:`${h}시간`}
+function hhmm(t){const d=new Date(t);return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`}
+const hrs=x=>x%1?`${Math.floor(x)}시간 ${Math.round(x%1*60)}분`:`${x}시간`;
+
+function normalize(h){
+  if(!h) return h;
+  h.loc=h.loc||"henan"; h.items=Object.assign({stone:0,herb:0,wine:0,trinket:0,clue:0},h.items||{});
+  h.bag=h.bag||[]; if(!h.gear){const sp=SECT_SPEC[h.sect]||"dps";h.gear={weapon:makeItem("weapon",0,sp),armor:makeItem("armor",0,sp),acc:null}}
+  h.bonds=h.bonds||{}; h.favor=h.favor||{}; h.done=h.done||{}; h.training=h.training||null; h.travel=h.travel||null; h.mission=h.mission||null; h.log=h.log||[];
+  return h;
+}
+
+/* ───────── 저장 ───────── */
+let writing=Promise.resolve();
+function save(h){
+  me=h; render();
+  if(mode==="db"){
+    const body=JSON.parse(JSON.stringify(h));
+    writing=writing.then(()=>db.doc("heroes/"+uid).set(body)).catch(e=>{
+      toast(e?.code==="invalid_argument"?"기록할 권한이 없어요. 다시 로그인해 주세요.":"기록이 잠시 실패했어요. 다시 시도해 주세요.");});
+  }else{try{localStorage.setItem("gangho-hero",JSON.stringify(h))}catch(e){}}
+}
+function addLog(h,text){h.log=[{t:Date.now(),text},...(h.log||[])].slice(0,10)}
+
+/* ───────── 계산 ───────── */
+function derived(h){
+  const g=gearSum(h), s=effStats(h), main=SECTS[h.sect].main, mainVal=main.reduce((a,k)=>a+s[k],0)/main.length;
+  return {hp:100+s.wai*10, qi:50+s.nei*5, atk:Math.round(mainVal*2)+g.atk, def:s.wai+g.def,
+    eva:Math.min(40,s.shen*.3), crit:5+s.shen*.1};
+}
+function applyExp(h,exp){
+  h.exp+=exp; const c=cap(h.realm); let ups=0;
+  while(h.level<c && h.exp>=need(h.level)){h.exp-=need(h.level);h.level++;h.points+=3;ups++}
+  if(h.level>=c) h.exp=Math.min(h.exp,need(h.level));
+  return ups;
+}
+const atWall=h=>h.level>=cap(h.realm)&&h.exp>=need(h.level);
+function trainGain(t,f){const m=MULT[t.hours];return {exp:Math.round(expPerHour(t.lvl)*t.hours*m*f),stat:t.hours/2*m*f}}
+function applyStat(h,k,g){h.frac[k]=(h.frac[k]||0)+g;const w=Math.floor(h.frac[k]+1e-9);h.stats[k]+=w;h.frac[k]-=w;return w}
+const activity=h=>h?.training?"train":h?.travel?"travel":h?.mission?"mission":h?.lair&&h.lair.phase!=="done"?"lair":null;
+const busyText={train:"수련 중에는",travel:"이동 중에는",mission:"임무 중에는",lair:"소굴 안에서는"};
+
+/* ───────── 문파 문양 (직접 그린 SVG) ───────── */
+function emblem(k,cls=""){
+  const P=(()=>{const c=32,cy=32;switch(k){
+  case "sorim": { // 법륜: 여덟 살의 수레바퀴
+    let sp="",kn="";for(let i=0;i<8;i++){const a=i*Math.PI/4,x1=c+Math.cos(a)*5,y1=cy+Math.sin(a)*5,x2=c+Math.cos(a)*14,y2=cy+Math.sin(a)*14,x3=c+Math.cos(a+Math.PI/8)*19,y3=cy+Math.sin(a+Math.PI/8)*19;
+      sp+=`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`;kn+=`<circle cx="${x3.toFixed(1)}" cy="${y3.toFixed(1)}" r="1.9" fill="currentColor" stroke="none"/>`}
+    return `<g stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round"><circle cx="32" cy="32" r="14.5"/>${sp}<circle cx="32" cy="32" r="4" fill="currentColor"/></g>${kn}`;}
+  case "hwasan": { // 매화 다섯 잎
+    let pe="",st="";for(let i=0;i<5;i++){const a=-Math.PI/2+i*2*Math.PI/5,x=c+Math.cos(a)*8.5,y=cy+Math.sin(a)*8.5;pe+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="7.6"/>`;
+      const b=a+Math.PI/5,sx=c+Math.cos(b)*6,sy=cy+Math.sin(b)*6;st+=`<line x1="32" y1="32" x2="${sx.toFixed(1)}" y2="${sy.toFixed(1)}"/><circle cx="${sx.toFixed(1)}" cy="${sy.toFixed(1)}" r="1.1" fill="var(--ink)" stroke="none"/>`}
+    return `<g fill="currentColor">${pe}</g><circle cx="32" cy="32" r="4.2" fill="var(--paper)"/><g stroke="var(--ink)" stroke-width=".8">${st}</g><circle cx="32" cy="32" r="1.6" fill="currentColor"/>`;}
+  case "ami": { // 연꽃과 눈썹달
+    const pet=`M32 46 C24.5 38 25 28 32 21 C39 28 39.5 38 32 46Z`;
+    return `<g fill="currentColor"><path d="${pet}" transform="rotate(-42 32 46)" opacity=".55"/><path d="${pet}" transform="rotate(42 32 46)" opacity=".55"/><path d="${pet}" transform="rotate(-20 32 46)" opacity=".8"/><path d="${pet}" transform="rotate(20 32 46)" opacity=".8"/><path d="${pet}"/></g>
+      <path d="M22 48 Q32 52 42 48" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M27.5 14.5 A6 6 0 1 0 38 11 A4.6 4.6 0 1 1 27.5 14.5Z" fill="currentColor"/>`;}
+  case "mudang": { // 태극과 팔괘
+    let bars="";for(let i=0;i<8;i++){const a=i*45;bars+=`<g transform="rotate(${a} 32 32)"><line x1="27.5" y1="13" x2="36.5" y2="13"/>${i%2?`<line x1="27.5" y1="10" x2="30.8" y2="10"/><line x1="33.2" y1="10" x2="36.5" y2="10"/>`:`<line x1="27.5" y1="10" x2="36.5" y2="10"/>`}</g>`}
+    return `<g stroke="currentColor" stroke-width="1.7" stroke-linecap="round">${bars}</g><circle cx="32" cy="32" r="12" fill="var(--paper)" stroke="currentColor" stroke-width="1.6"/>
+      <path d="M32 20 A12 12 0 0 1 32 44 A6 6 0 0 1 32 32 A6 6 0 0 0 32 20Z" fill="currentColor"/><circle cx="32" cy="26" r="1.9" fill="currentColor"/><circle cx="32" cy="38" r="1.9" fill="var(--paper)"/>`;}
+  case "dang": { // 세 갈래 비도와 독방울
+    const dag=`<path d="M32 9 L34.6 22 L29.4 22Z" fill="currentColor"/><rect x="27.6" y="22" width="8.8" height="2.2" rx="1" fill="currentColor"/><rect x="31" y="24.2" width="2" height="4.6" fill="var(--ink)"/>`;
+    return `<g>${[0,120,240].map(a=>`<g transform="rotate(${a} 32 32)">${dag}</g>`).join("")}</g><path d="M32 29 C34.8 32.6 35.6 34.4 35.6 36 A3.6 3.6 0 0 1 28.4 36 C28.4 34.4 29.2 32.6 32 29Z" fill="currentColor"/>`;}
+  }})();
+  return `<svg class="emb ${cls}" viewBox="0 0 64 64" style="color:var(--c-${k})" role="img" aria-label="${SECTS[k]?.n||""} 문양">
+    <circle cx="32" cy="32" r="30" fill="currentColor" fill-opacity=".1" stroke="currentColor" stroke-width="1.8"/><circle cx="32" cy="32" r="26.5" fill="none" stroke="currentColor" stroke-width=".7" stroke-opacity=".6"/>${P}</svg>`;
+}
+
+/* ───────── 일지: 지금 탐문과 지난 사건을 넓게 읽기 ───────── */
+let readerOpen=null; // null | "live" | 지난 일지 번호
+function tagText(e){
+  if(e.kind==="find") return `【획득 · ${ITEMS[e.item][0]}】`;
+  if(e.kind==="fight") return `【전투 발생】【${e.ok?"승리":"패배"}${e.stone?" · 강화석":""}】`;
+  return `【${STATS[e.stat].n} 판정 ${e.ok?"성공":"실패"}】`;
+}
+const toLine=e=>e.kind==="amb"||e.kind==="comp"?{t:e.t,k:e.kind,x:e.text}:{t:e.t,k:"ev",x:e.text,g:tagText(e),f:!e.ok,r:e.res};
+function missionLines(h,m,upto){
+  const inc=INC[m.region][m.idx],out=feedFor(h,m,companionFor(m)).filter(e=>e.t<=Math.min(upto,m.end)).map(toLine);
+  if(m.phase==="scene"){
+    out.push({t:m.end,k:"sec",x:"현장"});
+    m.rolls.forEach(r=>out.push({t:r.t||m.end,k:"ev",x:`${inc.s[r.step].q} ${STATS[r.stat].n}의 길을 택했다. ${r.txt}.`,g:`【${STATS[r.stat].n} 판정 ${r.ok?"성공":"실패"} · ${r.roll}+${r.bonus}/${r.dc}】`,f:!r.ok,r:r.ok?"단서를 찾았다.":"허탕을 쳤다."}));
+    if(m.fight){const f=m.fight;out.push({t:f.t||m.end,k:"ev",x:`${inc.f}와 마주쳤다.`,g:"【전투 발생】",r:""});
+      f.log.forEach(l=>out.push({t:f.t||m.end,k:"amb",x:l.replace(/<[^>]+>/g,"")}));
+      out.push({t:f.t||m.end,k:"ev",x:f.res==="win"?`${inc.f}를 쓰러뜨렸다.`:f.res==="lose"?"쓰러졌다. 겨우 몸을 피했다.":`${inc.f}가 달아났다.`,g:f.res==="win"?"【승리】":f.res==="lose"?"【패배】":"【놓침】",f:f.res!=="win",r:""})}
+  }
+  return out;
+}
+function lineHTML(l,isNew){
+  const tm=new Date(l.t),stamp=`${String(tm.getHours()).padStart(2,"0")}:${String(tm.getMinutes()).padStart(2,"0")}`;
+  const body=esc(l.x).replace(/\u0001(.*?)\u0002/g,"<b>$1</b>");
+  if(l.k==="sec") return `<li class="sec"><span class="tm"></span><span class="body">— ${body} —</span></li>`;
+  if(l.k==="end") return `<li class="endl"><span class="tm">${stamp}</span><span class="body">${body}</span></li>`;
+  if(l.k==="ev2") return `<li class="ev b-${l.sub}"><span class="tm"></span><span class="body">${body}</span></li>`;
+  if(l.k==="amb"||l.k==="comp") return `<li class="${l.k}${isNew?" new":""}"><span class="tm">${stamp}</span><span class="body">${body}</span></li>`;
+  return `<li class="ev${isNew?" new":""}"><span class="tm">${stamp}</span><span class="body"><span class="txt">${body}</span> <span class="tag ${l.f?"fail":""}">${l.g||""}</span>${l.r?`<span class="res">${esc(l.r)}</span>`:""}</span></li>`;
+}
+function saveJournal(h,m,inc,tier,rewardText){
+  const lines=missionLines(h,m,m.end).map(l=>({...l}));
+  lines.push({t:Date.now(),k:"sec",x:`결말 · ${TIER[tier]}`},{t:Date.now(),k:"end",x:inc.e[tier]},{t:Date.now(),k:"amb",x:rewardText});
+  h.journal=[{title:inc.t,region:m.region,start:m.start,tier,comp:companionFor(m)?.name||null,lines},...(h.journal||[])].slice(0,10);
+}
+function readerHTML(){
+  const h=me;if(!h||readerOpen===null)return "";
+  let title,sub,lines,live=false,ready=false;
+  if(readerOpen==="live"){const m=h.mission;if(!m){readerOpen=null;return ""}
+    const inc=INC[m.region][m.idx];live=true;ready=Date.now()>=m.end;title=inc.t;sub=`${REGIONS[m.region].n} · ${hhmm(m.start)} 시작${companionFor(m)?` · 동행 ${esc(companionFor(m).name)}`:""}`;
+    lines=missionLines(h,m,Date.now())}
+  else{const j=h.journal?.[readerOpen];if(!j){readerOpen=null;return ""}
+    title=j.title;sub=`${REGIONS[j.region].n} · ${hhmm(j.start)} · ${j.label||TIER[j.tier]}${j.comp?` · 동행 ${esc(j.comp)}`:""}`;lines=j.lines}
+  const list=(h.journal||[]).map((j,i)=>`<button type="button" class="jl ${readerOpen===i?"on":""}" data-read="${i}">${hhmm(j.start)} · ${esc(j.title)} <span>${j.label||TIER[j.tier]}</span></button>`).join("");
+  return `<div class="rhead"><div><div class="kicker">${live?"탐문 일지 · 진행 중":"지난 일지"}</div><h2>${esc(title)}</h2><div class="note" style="margin:0">${sub}</div></div>
+      <button class="btn ghost" type="button" id="readerClose">닫기</button></div>
+    ${list||h.mission?`<div class="jlist">${h.mission?`<button type="button" class="jl ${live?"on":""}" data-read="live">지금 사건 <span>진행 중</span></button>`:""}${list}</div>`:""}
+    <div class="rbody" id="rbody"><ul class="feed big" data-key="r${readerOpen}-${lines.length}">${lines.map((l,i)=>lineHTML(l,live&&i===lines.length-1)).join("")}
+      ${live&&!ready?`<li class="wait"><span class="tm"></span><span class="body">계속 탐문하는 중… <span data-until="${h.mission.end}"></span> 남음</span></li>`:""}</ul></div>`;
+}
+function renderReader(){
+  const el=$("#reader"),body=$("#rbody"),atB=!body||body.scrollHeight-body.scrollTop-body.clientHeight<40,st=body?.scrollTop||0,was=!el.hidden;
+  const html=readerHTML();
+  if(!html){el.hidden=true;el.innerHTML="";document.body.style.overflow="";return}
+  el.innerHTML=html;el.hidden=false;document.body.style.overflow="hidden";
+  const nb=$("#rbody");if(nb)nb.scrollTop=(!was||atB)?nb.scrollHeight:st;
+  $("#readerClose").addEventListener("click",()=>{readerOpen=null;renderReader();$("#readerBtn")?.focus()});
+  el.querySelectorAll("[data-read]").forEach(b=>b.addEventListener("click",()=>{readerOpen=b.dataset.read==="live"?"live":+b.dataset.read;$("#reader").hidden=true;renderReader()}));
+  if(!was)$("#readerClose").focus();
+}
+addEventListener("keydown",e=>{if(e.key==="Escape"&&readerOpen!==null){readerOpen=null;renderReader()}});
+function journalList(){
+  const j=me.journal||[];if(!j.length)return "";
+  return `<div class="label" style="margin-top:22px">지난 일지</div><div class="jrows">${j.map((x,i)=>`<button type="button" class="jrow" data-read="${i}"><span class="tm">${hhmm(x.start)}</span><span>${esc(x.title)}<em> · ${REGIONS[x.region].n}</em></span><b>${x.label||TIER[x.tier]}</b></button>`).join("")}</div>`;
+}
+
+/* ───────── 일반 보스 토벌 ─────────
+   보스는 3일마다 바뀌고 한 지역에 머문다. 각자 하루 3번 도전, 준 피해는 각자 기록에 쌓이고 합산된다.
+   보스 체력 = 참여한 사람마다 (첫 도전 때 정해진) 몫의 합. 한 사람 몫은 평균 도전 피해의 7.5배. */
+const BOSSES=[
+  {n:"외눈 맹호",title:"흑풍채 채주",region:"henan",sp:"rage",lore:"낙양 북쪽 산채에서 내려온 산적 두목. 한쪽 눈을 잃은 뒤로 더 사나워졌다.",
+   start:"\"감히 흑풍채 앞길을 막아?\"",low:"\"크윽… 이 외눈이 아직 감기지 않았다!\"",aoe:"외눈 맹호가 도끼를 크게 휘두를 자세를 잡는다.",smash:"외눈 맹호의 하나 남은 눈이 {t|을} 노려본다.",spx:"외눈 맹호가 술병을 들이켜고 포효한다. 다음 합이 위험하다."},
+  {n:"물뱀 장추",title:"장강 수적왕",region:"jiangnan",sp:"blind",lore:"장강 물길을 주름잡는 수적들의 우두머리. 물속에서 반 시진을 버틴다는 소문이 있다.",
+   start:"\"물 위에선 내가 왕이다.\"",low:"\"배를 대라! …아니, 아직이다!\"",aoe:"장추가 쇠갈고리를 빙글빙글 돌린다.",smash:"장추가 물살을 타고 {t|에}게 미끄러지듯 다가간다.",spx:"장추가 물보라를 일으킨다. 앞이 보이지 않는다!"},
+  {n:"독각망",title:"아미산 골짜기의 거대 독사",region:"sichuan",sp:"poison",lore:"머리에 뿔이 돋은 거대한 독사. 당가에서도 함부로 다가가지 않는다.",
+   start:"쉬이이— 뿔 달린 머리가 안개 속에서 솟아오른다.",low:"독각망이 몸을 비틀며 미친 듯이 날뛴다.",aoe:"독각망이 꼬리로 땅을 크게 쓸어낸다.",smash:"독각망의 붉은 눈이 {t|을} 향한다.",spx:"독각망이 독무를 뿜어낸다!"},
+  {n:"철두",title:"철갑 산적",region:"shandong",sp:"shield",lore:"온몸에 철판을 두르고 다니는 산적. 칼이 튕겨 나간다는 말이 있다.",
+   start:"\"내 몸에 흠집이라도 내 보시지.\"",low:"\"갑옷이… 갑옷이 갈라졌다고?\"",aoe:"철두가 철퇴를 머리 위로 들어 올린다.",smash:"철두가 어깨를 낮추고 {t|에}게 돌진할 기세다.",spx:"철두가 몸을 웅크리고 철갑을 단단히 조인다."},
+  {n:"혈랑",title:"혈랑단 단주",region:"hubei",sp:"rage",lore:"늑대 떼를 부리는 사파 무인. 무당산 기슭 마을들을 노린다.",
+   start:"아우우— 늑대 울음이 숲을 메운다.",low:"\"늑대는 상처 입었을 때 가장 사납다.\"",aoe:"혈랑이 휘파람을 불자 늑대들이 사방에서 덤벼든다.",smash:"혈랑이 혀로 입술을 핥으며 {t|을} 노린다.",spx:"혈랑의 눈이 붉게 물든다. 피 냄새에 취했다."},
+  {n:"귀검 사마정",title:"사파의 쾌검",region:"shaanxi",sp:"shield",lore:"화산을 노리고 섬서에 나타난 사파 검객. 검을 뽑는 모습을 본 사람이 없다.",
+   start:"\"화산의 매화가 얼마나 질긴지 보러 왔지.\"",low:"\"…재미있군. 오랜만에 피가 끓는다.\"",aoe:"사마정의 검집이 낮게 울린다.",smash:"사마정의 시선이 {t|에}게 멈춘다.",spx:"사마정이 검막을 둘러친다. 빈틈이 사라졌다."}];
+const NPCS={sorim:["혜원","혜광","원각대사","공진방장"],hwasan:["매소운","진검향","백운학","운암진인"],ami:["소청","정월","묘음사태","자운신니"],mudang:["송하","유청명","현운진인","태청진인"],dang:["당소미","당무영","당백초","당천혁"]};
+const NPC_SAY={혜원:["\"으아, 저 덩치 좀 보세요!\"","\"제, 제가 막을게요!\""],혜광:["\"…물러서지 마라.\""],원각대사:["\"아미타불. 살생은 피하되 물러서진 않는다.\""],공진방장:["\"허허, 젊은이들 기세가 좋구먼.\""],
+  매소운:["\"이 몸의 매화검을 보아라!\"","\"사형도 못 한 걸 내가 한다!\""],진검향:["\"…베겠다.\"","\"늦다.\""],백운학:["\"한 잔 하고 싸웠으면 좋았을걸.\""],운암진인:["\"매화는 추위 속에 핀다.\""],
+  소청:["\"다치면 바로 말해요! 바로!\"","\"제가 있으니까 걱정 마요!\""],정월:["\"조금만 버텨요. 곧 낫게 해 줄게요.\""],묘음사태:["\"정신을 놓지 마라.\""],자운신니:["\"자비는 칼보다 강하다.\""],
+  송하:["\"하암… 벌써 시작이에요?\""],유청명:["\"태극의 흐름을 따르겠습니다.\""],현운진인:["\"바둑처럼, 한 수 앞을 봐라.\""],태청진인:["\"흘려보내라. 맞서지 말고.\""],
+  당소미:["\"우리 집 독 맛 좀 볼래?\"","\"헤헤, 맞았다!\""],당무영:["\"…\""],당백초:["\"오오, 저 독은 표본으로 가져가야겠군!\""],당천혁:["\"계산대로다.\""]};
+const ROLE_N={tank:"탱커",dps:"딜러",heal:"힐러"};
+const SECT_ROLES={sorim:["tank"],hwasan:["dps"],ami:["heal"],mudang:["tank","heal"],dang:["heal","dps"]};
+const NPC_SECT={tank:["sorim","mudang"],dps:["hwasan","dang"],heal:["ami"]};
+const npcTier=r=>r<=1?0:r===2?1:r<=4?2:3;
+const TIER_N=["제자","일대제자","장로","장문인"];
+const dayKey=()=>Math.floor((Date.now()+KST)/86400e3);
+let raidRole=null;
+const bossFor=p=>{let x=11;for(const c of "boss"+p)x=(x*31+c.charCodeAt(0))>>>0;return BOSSES[x%BOSSES.length]};
+function partyFor(h,role){
+  const need=["tank","dps","dps","heal"],mine=role||SECT_ROLES[h.sect][0];need.splice(need.indexOf(mine),1);
+  const d=derived(h),tier=npcTier(h.realm),mul=[.8,.9,1,1.1][tier],used={};
+  const me={id:"me",name:h.name,role:mine,sect:h.sect,hp:d.hp,max:d.hp,atk:d.atk,def:d.def,eva:d.eva,crit:d.crit,isMe:true};
+  const npcs=need.map(r=>{const opts=NPC_SECT[r],k=used[r]?opts[(opts.indexOf(used[r])+1)%opts.length]:opts[0];used[r]=k;
+    const fm=mul*(1+favorStage(favorOf(h,k))[2]);
+    return {id:k+r,name:NPCS[k][tier],role:r,sect:k,hp:Math.round(d.hp*fm),max:Math.round(d.hp*fm),atk:Math.round(d.atk*fm),def:Math.round(d.def*fm),eva:5,crit:5}});
+  return [me,...npcs].sort((a,b)=>["tank","dps","heal"].indexOf(a.role)-["tank","dps","heal"].indexOf(b.role));
+}
+function simulate(h,role,B,quiet,rnd=Math.random){
+  const L=h.level,boss={atk:20+L*8,def:L},party=partyFor(h,role),log=[],P=a=>a[Math.floor(rnd()*a.length)];
+  const nm=x=>x.isMe?`\u0001${x.name}\u0002`:x.name, nmj=(x,p)=>x.isMe?`\u0001${josa(x.name,p)}\u0002`:josa(x.name,p);
+  const healName=a=>!a.isMe||h.sect==="ami"?"회춘수":h.sect==="mudang"?"태극의 기운":"해독 처방";
+  let dmgTotal=0,rage=false;const poison={};
+  const hit=(base,blind)=>blind&&rnd()<.3?0:Math.max(1,Math.round(base*100/(100+boss.def)*(.9+rnd()*.2)));
+  const skill={sorim:["나한권",1,1],hwasan:["매화검법",2,.65],ami:["회춘수",0,0],mudang:["태극권",1,.9],dang:["비도술",2,.55]};
+  if(!quiet) log.push({k:"sec",x:`${B.title} ${B.n}`},{k:"amb",x:B.start});
+  for(let t=1;t<=6;t++){
+    const alive=party.filter(x=>x.hp>0);if(!alive.length)break;
+    const r=rnd(),type=r<.4?"aoe":r<.8?"smash":"sp";
+    let target=null,blind=false,shield=false;
+    if(type==="smash"){const tank=alive.find(x=>x.role==="tank");target=tank&&rnd()<.75?tank:P(alive)}
+    if(type==="sp"&&B.sp==="blind")blind=true;
+    if(type==="sp"&&B.sp==="shield")shield=true;
+    if(!quiet){log.push({k:"sec",x:`${t}합`});
+      log.push({k:"omen",x:type==="aoe"?B.aoe:type==="smash"?fill(B.smash,{t:target.isMe?"\u0001"+target.name+"\u0002":target.name}):B.spx})}
+    if(!quiet&&rnd()<.35){const n=P(alive.filter(x=>!x.isMe)||[]);if(n&&NPC_SAY[n.name])log.push({k:"say",x:`${n.name}: ${P(NPC_SAY[n.name])}`})}
+    for(const a of party){ if(a.hp<=0)continue;
+      if(a.role==="heal"){
+        const low=party.filter(x=>x.hp>0).sort((x,y)=>x.hp/x.max-y.hp/y.max)[0];
+        if(low&&low.hp/low.max<.7){const amt=Math.round(Math.max(a.atk*1.3,20+L*5));low.hp=Math.min(low.max,low.hp+amt);
+          if(!quiet)log.push({k:"act",x:`${nm(a)}의 ${healName(a)} — ${nm(low)} 체력 +${amt}`});continue}
+      }
+      let mult=a.role==="tank"?.8:a.role==="dps"?1.2:.6,hits=1,name=null;
+      if(a.isMe&&t%2===1){const s=skill[h.sect];if(s[1]){name=s[0];hits=s[1];mult=mult*s[2]*(hits>1?1:1.25)}}
+      let sum=0;for(let i=0;i<hits;i++){let d=hit(a.atk*mult,blind);if(d&&rnd()*100<a.crit)d=Math.round(d*1.5);sum+=d}
+      if(shield)sum=Math.round(sum*.5);dmgTotal+=sum;
+      if(!quiet)log.push({k:"act",x:`${name?`${nm(a)}의 ${name}!${hits>1?` ${hits}연타`:""}`:a.role==="tank"?`${nmj(a,"이")} 앞을 막아서며 친다`:`${nm(a)}의 일격`} · ${sum?`${sum} 피해`:"빗나갔다"}`});
+    }
+    const bAtk=boss.atk*(rage?1.5:1);rage=false;
+    if(type==="aoe"){const parts=[];for(const a of party.filter(x=>x.hp>0)){if(a.isMe&&rnd()*100<a.eva){parts.push(`${nm(a)} 회피`);continue}
+        const d=Math.max(1,Math.round(bAtk*.6*100/(100+a.def)));a.hp=Math.max(0,a.hp-d);parts.push(`${nm(a)} ${d}`)}
+      if(!quiet)log.push({k:"hit",x:`광역 공격! ${parts.join(" · ")}`})}
+    else if(type==="smash"){if(target.hp>0){if(target.isMe&&rnd()*100<target.eva){if(!quiet)log.push({k:"hit",x:`${nmj(target,"이")} 몸을 틀어 강타를 흘려냈다!`})}
+      else{const d=Math.max(1,Math.round(bAtk*1.6*100/(100+target.def)));target.hp=Math.max(0,target.hp-d);if(!quiet)log.push({k:"hit",x:`강타! ${nm(target)} ${d} 피해${target.hp<=0?" — 쓰러졌다!":""}`})}}}
+    else{ if(B.sp==="rage"){rage=true;if(!quiet)log.push({k:"hit",x:"다음 합의 공격이 1.5배로 거세진다."})}
+      if(B.sp==="poison"){const v=party.filter(x=>x.hp>0).sort(()=>rnd()-.5).slice(0,2);v.forEach(x=>poison[x.id]=2);if(!quiet)log.push({k:"hit",x:`${v.map(nm).join(", ")}에게 독이 퍼졌다.`})}
+      if(B.sp==="blind"&&!quiet)log.push({k:"hit",x:"이번 합은 공격이 자주 빗나갔다."});
+      if(B.sp==="shield"&&!quiet)log.push({k:"hit",x:"이번 합은 피해가 절반만 들어갔다."})}
+    for(const id in poison){const a=party.find(x=>x.id===id);if(a&&a.hp>0&&poison[id]>0){const d=Math.round(boss.atk*.3);a.hp=Math.max(0,a.hp-d);poison[id]--;if(!quiet)log.push({k:"hit",x:`${nm(a)} 독 피해 ${d}${a.hp<=0?" — 쓰러졌다!":""}`})}}
+  }
+  const standing=party.filter(x=>x.hp>0).length;
+  if(!quiet)log.push({k:"sec",x:"결과"},{k:"end",x:standing?`여섯 합을 버텼다. ${B.n}에게 총 ${dmgTotal.toLocaleString()} 피해를 입혔다.`:`파티가 모두 쓰러졌다. 그래도 ${dmgTotal.toLocaleString()} 피해를 남겼다.`});
+  return {dmg:dmgTotal,log,standing};
+}
+function hpShareFor(h,role,B){let s=0;const R=seeded(h.level*7919+3);for(let i=0;i<20;i++)s+=simulate(h,role,B,true,R).dmg;return Math.round(s/20*7.5)}
+function raidState(p){
+  const ppl=[me,...others].filter(x=>x?.raid?.period===p);
+  const hp=ppl.reduce((a,x)=>a+(x.raid.share||0),0),dmg=ppl.reduce((a,x)=>a+(x.raid.dmg||0),0);
+  return {ppl:ppl.sort((a,b)=>b.raid.dmg-a.raid.dmg),hp,dmg,down:hp>0&&dmg>=hp};
+}
+function battleLine(l){
+  const body=esc(l.x).replace(/\u0001(.*?)\u0002/g,"<b>$1</b>");
+  if(l.k==="sec") return `<li class="sec"><span class="tm"></span><span class="body">— ${body} —</span></li>`;
+  if(l.k==="end") return `<li class="endl"><span class="tm"></span><span class="body">${body}</span></li>`;
+  if(l.k==="comp") return `<li class="comp"><span class="tm"></span><span class="body">${body}</span></li>`;
+  if(l.k==="amb") return `<li class="amb"><span class="tm"></span><span class="body">${body}</span></li>`;
+  return `<li class="ev b-${l.sub}"><span class="tm"></span><span class="body">${body}</span></li>`;
+}
+function claimRaid(){
+  const p=periodNow(),h=structuredClone(me),st=raidState(p);if(!st.down||h.raid?.period!==p||h.raid.claimed)return;
+  const B=bossFor(p),top=st.ppl[0]===me,exp=expPerHour(h.level)*4,lv0=h.level,ups=applyExp(h,exp),got=[`경험치 +${exp}`];
+  const stones=5+(top?2:0);h.items.stone+=stones;got.push(`강화석 +${stones}${top?" (최다 피해 +2)":""}`);
+  if(Math.random()<.5){const it=Math.random()<.2?makeItem("weapon",h.realm,null,{sect:h.sect}):makeItem(pickOne(["weapon","armor","acc"]),h.realm,pickOne(["tank","dps","heal"]));got.push(`장비 「${gainItem(h,it)}」`)}
+  if(Math.random()<.25){h.items.clue++;got.push("비급 단서 +1")}
+  if(Math.random()<.5){const g=pickOne(GIFTS);h.items[g]++;got.push(`${ITEMS[g][0]} +1`)}
+  st.ppl.filter(x=>x!==me&&x._id).forEach(x=>{const v=addBond(h,x._id,20);got.push(`${josa(x.name,"와")} 인연 +${v}`)});
+  h.raid.claimed=true;addLog(h,`${B.n} 토벌 보상: ${got.join(", ")}${ups?`, Lv.${lv0}→${h.level}`:""}`);save(h);toast(`토벌 보상을 받았습니다. ${got.slice(0,2).join(", ")}`);
+}
+/* ───────── 소굴: 갈림길 → 방 → 보스방 ─────────
+   방에서 한 선택이 보스 상태(공격력, 방어, 특수기, 기습)를 바꾼다. 파티 체력은 방에서 방으로 이어진다. */
+const ROOMS={
+  minion:{name:"졸개들의 방",hint:["웃음소리와 술 냄새가 새어 나온다.","여럿의 발소리가 바쁘게 오간다.","누군가 칼 가는 소리가 들린다."],
+    text:"졸개 여럿이 술판을 벌이고 있다. 아직 이쪽을 못 봤다.",opts:[["fight",null,"정면으로 쓸어버린다"],["sneak","shen","그림자를 타고 몰래 지나간다"]]},
+  captain:{name:"부두목의 방",hint:["유난히 큰 그림자가 횃불 아래 어른거린다.","\"부두목님, 술 더 올릴까요?\" 하는 소리가 들린다."],
+    text:"부두목이 커다란 언월도를 어깨에 걸치고 느릿느릿 일어선다.",opts:[["fight",null,"맞서 싸운다"],["talk","nei","말로 구슬려 등을 돌리게 한다"]]},
+  armory:{name:"무기고",hint:["쇠 부딪는 소리와 기름 냄새가 난다.","무언가 잔뜩 쌓인 그림자가 벽을 덮고 있다."],
+    text:"창과 칼이 빼곡하다. 벽 가운데 보스의 애병이 걸려 있다.",opts:[["wreck","wai","무기들을 모조리 부순다"],["steal","shen","보스의 애병만 슬쩍 빼돌린다"]]},
+  trap:{name:"좁은 통로",hint:["바닥이 유난히 깨끗하다.","바람 한 점 없다. 너무 고요하다."],
+    text:"발밑에서 딸깍, 소리가 났다.",opts:[["dodge","shen","몸을 날려 피한다"],["brace","nei","기를 끌어올려 버틴다"]]},
+  treasure:{name:"창고",hint:["어둠 속에서 희미하게 금빛이 반짝인다.","자물쇠 걸린 궤짝이 언뜻 보인다."],
+    text:"묵직한 궤짝이다. 자물쇠가 단단히 걸려 있다.",opts:[["smash","wai","자물쇠를 부순다"],["pick","nei","자물쇠의 결을 읽어 연다"]]},
+  rest:{name:"샘터",hint:["물소리와 함께 서늘한 바람이 분다.","이끼 낀 바위 사이로 샘이 있는 것 같다."],
+    text:"맑은 샘물이 솟는다. 잠시 숨을 돌릴 수 있겠다.",opts:[["rest",null,"쉬어 간다 (파티 체력 회복)"],["search","nei","샘 주변을 뒤져 약초를 찾는다"]]},
+  captive:{name:"감옥",hint:["누군가 흐느끼는 소리가 들린다.","쇠사슬 끌리는 소리가 난다."],
+    text:"쇠사슬에 묶인 상인이 있다. 보스에게 끌려왔다고 한다.",opts:[["free","wai","사슬을 끊어 풀어준다"],["listen","nei","달래며 아는 것을 묻는다"]]},
+  den:{name:"보스의 거처",hint:["짙은 향 냄새, 그리고 무거운 정적.","가장 안쪽, 비단 휘장이 드리워져 있다."],
+    text:"보스의 거처다. 술상과 비단 이불, 머리맡에 작은 약병이 놓여 있다.",opts:[["trap","shen","잠자리에 함정을 파 둔다"],["poison","nei","향로에 마비 독을 섞는다"]]}};
+const MODS={atkDown:{t:"보스 공격력 -15%",good:true},atkUp:{t:"경보가 울렸다 · 보스 공격력 +10%",good:false},spSeal:{t:"보스 특수기 봉인",good:true},
+  defDown:{t:"약점을 알아냈다 · 보스가 받는 피해 +30%",good:true},ambush:{t:"기습 · 보스가 첫 합에 움직이지 못한다",good:true}};
+const FORK_LABEL=["왼쪽 굴","가운데 계단","오른쪽 문","아래로 난 비탈","위로 뚫린 틈"];
+const SKILL_ACT={sorim:"나한권 · 강타 + 보스 시선 끌기",hwasan:"매화검법 · 2연타",ami:"회춘수 · 파티 전원 회복",mudang:"태극권 · 타격 + 파티 보호막",dang:"비도술 · 2연타 + 보스 공격 약화"};
+const SKILL_NAME={sorim:"나한권",hwasan:"매화검법",ami:"회춘수",mudang:"태극권",dang:"비도술"};
+const roleMul=r=>r==="tank"?.8:r==="dps"?1.2:.6;
+const hasMod=(run,k)=>run.mods.some(m=>m.k===k);
+let retreatConfirm=false;
+function lairParty(h,run){const p=partyFor(h,run.role);p.forEach(x=>{if(run.hp[x.id]!==undefined)x.hp=run.hp[x.id]});return p}
+function storeHp(run,party){party.forEach(x=>run.hp[x.id]=x.hp)}
+const nmx=x=>x.isMe?`\u0001${x.name}\u0002`:x.name, nmjx=(x,p)=>x.isMe?`\u0001${josa(x.name,p)}\u0002`:josa(x.name,p);
+function forksFor(run){
+  const R=seeded((run.seed+run.step*101)%2147483647),pool=["minion","minion","captain","armory","trap","treasure","rest","captive","den"];
+  const n=R()<.5?2:3,out=[],labels=[...FORK_LABEL].sort(()=>R()-.5);
+  if(run.step===4&&!run.path.includes("den"))out.push("den");
+  while(out.length<n){const t=pool[Math.floor(R()*pool.length)];if(!out.includes(t)&&!(t==="den"&&run.path.includes("den")))out.push(t)}
+  return out.sort(()=>R()-.5).map((t,i)=>({t,label:labels[i],hint:ROOMS[t].hint[Math.floor(R()*ROOMS[t].hint.length)]}));
+}
+function checkRoll(h,stat){const roll=1+Math.floor(Math.random()*20),bonus=Math.floor(h.stats[stat]/10),dc=dcFor(h.realm);return {roll,bonus,dc,ok:roll===20||(roll!==1&&roll+bonus>=dc)}}
+function rollLine(stat,r){return {k:"ev2",sub:r.ok?"act":"hit",x:`${STATS[stat].n} 판정 — 주사위 ${r.roll}+${r.bonus}=${r.roll+r.bonus} / 목표 ${r.dc} · ${r.ok?"성공":"실패"}`}}
+function hurtParty(run,party,frac,log,why){const parts=[];party.filter(x=>x.hp>0).forEach(x=>{const d=Math.round(x.max*frac*(.8+Math.random()*.4));x.hp=Math.max(0,x.hp-d);parts.push(`${x.isMe?"\u0001"+x.name+"\u0002":x.name} ${d}`)});
+  log.push({k:"ev2",sub:"hit",x:`${why} ${parts.join(" · ")}`});storeHp(run,party)}
+function miniFight(h,run,power,ambush,log,foe){
+  const party=lairParty(h,run),L=h.level,est=party.reduce((a,x)=>a+x.atk*roleMul(x.role),0)*100/(100+L);
+  let ehp=Math.round(est*2.2*power);const eatk=(20+L*8)*.45*power;
+  if(ambush)hurtParty(run,party,.12,log,`${foe}의 기습!`);
+  for(let t=1;t<=3&&ehp>0&&party.some(x=>x.hp>0);t++){
+    let sum=0;party.filter(x=>x.hp>0).forEach(x=>{if(x.role==="heal"){const low=party.filter(y=>y.hp>0).sort((a,b)=>a.hp/a.max-b.hp/b.max)[0];if(low.hp/low.max<.6){low.hp=Math.min(low.max,low.hp+Math.round(x.atk*1.2));return}}
+      sum+=Math.max(1,Math.round(x.atk*roleMul(x.role)*100/(100+L)*(.85+Math.random()*.3)))});
+    ehp-=sum;log.push({k:"ev2",sub:"act",x:`${t}합 · 파티가 ${foe}에게 ${sum} 피해${ehp<=0?" — 모두 쓰러뜨렸다!":""}`});
+    if(ehp>0){const v=party.filter(x=>x.hp>0).sort(()=>Math.random()-.5).slice(0,2),parts=[];
+      v.forEach(x=>{if(x.isMe&&Math.random()*100<x.eva){parts.push(`${nmx(x)} 회피`);return}const d=Math.max(1,Math.round(eatk*100/(100+x.def)*(.85+Math.random()*.3)));x.hp=Math.max(0,x.hp-d);parts.push(`${nmx(x)} ${d}${x.hp<=0?"(쓰러짐)":""}`)});
+      log.push({k:"ev2",sub:"hit",x:`${foe}의 반격 · ${parts.join(" · ")}`})}
+  }
+  storeHp(run,party);return ehp<=0;
+}
+function addMod(run,k,log){run.mods.push({k});log.push({k:"end",x:`보스 상태 변화: ${MODS[k].t}`})}
+function enterLair(){
+  const p=periodNow(),B=bossFor(p),h=structuredClone(me),st=raidState(p);
+  if(activity(h)){toast(`${busyText[activity(h)]} 소굴에 들어갈 수 없습니다.`);return}
+  if(h.loc!==B.region){toast(`${REGIONS[B.region].n}에 있어야 합니다.`);return}
+  if(st.down){toast("이미 토벌된 보스입니다.");return}
+  const role=raidRole&&SECT_ROLES[h.sect].includes(raidRole)?raidRole:SECT_ROLES[h.sect][0];
+  if(!h.raid||h.raid.period!==p) h.raid={period:p,dmg:0,share:hpShareFor(h,role,B),tries:{day:dayKey(),n:0},claimed:false};
+  if(h.raid.tries.day!==dayKey()) h.raid.tries={day:dayKey(),n:0};
+  if(h.raid.tries.n>=3){toast("오늘은 더 들어갈 수 없습니다.");return}
+  h.raid.tries.n++;
+  h.lair={period:p,seed:Date.now()%2147483647,start:Date.now(),step:1,phase:"fork",role,hp:{},mods:[],path:[],loot:{exp:0,stone:0,herb:0,items:[]},room:null,boss:null,
+    log:[{k:"sec",x:`${B.n}의 소굴`},{k:"amb",x:`${B.title} ${B.n}의 소굴 어귀에 섰다. 안쪽 어딘가에서 ${B.n}의 기척이 느껴진다.`}]};
+  retreatConfirm=false;addLog(h,`${B.n}의 소굴에 들어섰다.`);save(h);
+}
+function pickFork(i){
+  const h=structuredClone(me),run=h.lair;if(!run||run.phase!=="fork")return;
+  const f=forksFor(run)[i];if(!f)return;const R=ROOMS[f.t];
+  run.path.push(f.t);run.room={t:f.t};run.phase="room";
+  run.log.push({k:"sec",x:`갈림길 ${run.step} · ${f.label}`},{k:"amb",x:`${R.name}. ${R.text}`});retreatConfirm=false;save(h);
+}
+function roomAct(opt){
+  const h=structuredClone(me),run=h.lair;if(!run||run.phase!=="room")return;
+  const t=run.room.t,R=ROOMS[t],o=R.opts.find(x=>x[0]===opt);if(!o)return;
+  const log=run.log,L=h.level,ep=expPerHour(L),r=o[1]?checkRoll(h,o[1]):null;
+  log.push({k:"ev2",sub:"act",x:`${o[2]}.`});if(r)log.push(rollLine(o[1],r));
+  const party=()=>lairParty(h,run);
+  if(t==="minion"){
+    if(opt==="sneak"&&r.ok){log.push({k:"amb",x:"숨소리 하나 내지 않고 졸개들 뒤를 지나쳤다."})}
+    else{const win=miniFight(h,run,.6,opt==="sneak",log,"졸개들");if(opt==="sneak")addMod(run,"atkUp",log);
+      if(win){run.loot.exp+=Math.round(ep*.25);if(Math.random()<.5)run.loot.stone++;log.push({k:"amb",x:"졸개들이 바닥에 널브러졌다."})}}
+  }else if(t==="captain"){
+    if(opt==="talk"&&r.ok){addMod(run,"spSeal",log);log.push({k:"amb",x:"\"…두목 밑에서 개처럼 구르는 것도 지겨웠소.\" 부두목이 언월도를 내려놓고 뒷문으로 사라진다."})}
+    else{const win=miniFight(h,run,1,opt==="talk",log,"부두목");
+      if(win){addMod(run,"spSeal",log);run.loot.exp+=Math.round(ep*.5);run.loot.stone+=2}else{addMod(run,"atkUp",log);log.push({k:"amb",x:"부두목이 피를 흘리며 보스 쪽으로 달아났다."})}}
+  }else if(t==="armory"){
+    if(r.ok){addMod(run,"atkDown",log);if(opt==="steal"){run.loot.stone+=2;log.push({k:"amb",x:"애병에 박힌 강화석도 빼냈다."})}}
+    else{addMod(run,"atkUp",log);hurtParty(run,party(),.08,log,"무너진 무기 더미에 깔렸다!")}
+  }else if(t==="trap"){
+    if(r.ok)log.push({k:"amb",x:opt==="dodge"?"쏟아지는 화살을 아슬아슬하게 피했다.":"단단히 버텨 낸 몸에 화살이 튕겨 나갔다."});
+    else hurtParty(run,party(),.2,log,"벽에서 화살이 쏟아졌다!");
+  }else if(t==="treasure"){
+    if(r.ok){const n=2+Math.floor(Math.random()*2);run.loot.stone+=n;let msg=`궤짝 안에서 강화석 ${n}개`;
+      if(Math.random()<.4){const it=makeItem(pickOne(["weapon","armor","acc"]),h.realm,pickOne(["tank","dps","heal"]));run.loot.items.push(it);msg+=`와 ${josa(it.name,"을")}`}else msg+="를";
+      log.push({k:"end",x:msg+" 찾았다."})}
+    else{run.loot.stone++;log.push({k:"amb",x:"궤짝이 부서지며 안의 것들도 대부분 깨졌다. 강화석 하나만 건졌다."})}
+  }else if(t==="rest"){
+    if(opt==="rest"){const p=party();p.filter(x=>x.hp>0).forEach(x=>x.hp=Math.min(x.max,x.hp+Math.round(x.max*.4)));storeHp(run,p);log.push({k:"end",x:"샘물을 마시고 숨을 골랐다. 파티 체력이 회복됐다."})}
+    else if(r.ok){run.loot.herb+=2;log.push({k:"end",x:"바위틈에서 약초 두 뿌리를 캤다."})}else log.push({k:"amb",x:"아무것도 찾지 못했다."});
+  }else if(t==="captive"){
+    if(r.ok){addMod(run,"defDown",log);log.push({k:"amb",x:"\"그놈은 왼쪽 옆구리를 늘 감싸고 다니오. 옛 상처가 있소.\""})}
+    else if(opt==="free"){addMod(run,"atkUp",log);log.push({k:"amb",x:"사슬 끊는 소리가 소굴 안에 크게 울렸다."})}
+    else log.push({k:"amb",x:"상인은 겁에 질려 말을 잇지 못한다."});
+  }else if(t==="den"){
+    if(r.ok){addMod(run,"ambush",log);log.push({k:"amb",x:opt==="trap"?"보스가 돌아오면 발이 걸려 넘어질 것이다.":"향 연기가 방 안에 은은하게 퍼진다."})}
+    else{addMod(run,"atkUp",log);log.push({k:"amb",x:"향로가 뒤집히며 요란한 소리가 났다!"})}
+  }
+  run.room=null;
+  const alive=lairParty(h,run).filter(x=>x.hp>0).length;
+  if(!lairParty(h,run).find(x=>x.isMe).hp||!alive){endRun(h,"wipe");return}
+  run.step++;
+  if(run.step>4)startBoss(h);else run.phase="fork";
+  save(h);
+}
+function useHerb(){const h=structuredClone(me),run=h.lair;if(!run||h.items.herb<1)return;const p=lairParty(h,run);
+  p.filter(x=>x.hp>0).forEach(x=>x.hp=Math.min(x.max,x.hp+Math.round(x.max*.3)));storeHp(run,p);h.items.herb--;run.log.push({k:"end",x:"약초를 씹어 나눠 먹었다. 파티 체력이 회복됐다. (약초 -1)"});save(h)}
+function genOmen(h,run,party,B){
+  let r=Math.random(),type=r<.4?"aoe":r<.8?"smash":"sp";if(type==="sp"&&hasMod(run,"spSeal"))type="aoe";
+  const alive=party.filter(x=>x.hp>0),tank=alive.find(x=>x.role==="tank");
+  const target=type==="smash"?(tank&&Math.random()<.55?tank:pickOne(alive)).id:null;
+  return {type,target};
+}
+function omenText(B,om,party){const t=party.find(x=>x.id===om.target);return om.type==="aoe"?B.aoe:om.type==="smash"?fill(B.smash,{t:t?(t.isMe?"\u0001"+t.name+"\u0002":t.name):"누군가"}):B.spx}
+function startBoss(h){
+  const run=h.lair,B=bossFor(run.period),party=lairParty(h,run),d=derived(h);
+  run.phase="boss";run.boss={t:1,qi:d.qi,qmax:d.qi,cd:0,dealt:0,rage:false,poison:{},mode:"manual",omen:genOmen(h,run,party,B)};
+  run.log.push({k:"sec",x:`보스방 · ${B.n}`},{k:"comp",x:`${B.n}: ${B.start}`});
+  if(run.mods.length)run.log.push({k:"amb",x:`소굴에서 한 일: ${run.mods.map(m=>MODS[m.k].t).join(" / ")}`});
+}
+function autoAction(){
+  const run=me.lair,b=run.boss,party=lairParty(me,run),mm=party.find(x=>x.isMe),hurt=party.some(x=>x.hp>0&&x.hp/x.max<.6);
+  if(b.omen.type==="smash"&&b.omen.target==="me")return "def";
+  if(mm.hp/mm.max<.35)return "def";
+  if(!b.cd&&b.qi>=25&&(me.sect!=="ami"||hurt))return "skill";
+  return "atk";
+}
+function bossTurn(action){
+  const h=structuredClone(me),run=h.lair;if(!run||run.phase!=="boss")return;
+  const b=run.boss,B=bossFor(run.period),party=lairParty(h,run),L=h.level,om=b.omen,log=run.log,mm=party.find(x=>x.isMe);
+  let bAtk=(20+L*8)*(hasMod(run,"atkDown")?.85:1)*Math.pow(1.1,run.mods.filter(m=>m.k==="atkUp").length);
+  const bDef=hasMod(run,"defDown")?Math.round(L*.5):L,mulIn=hasMod(run,"defDown")?1.3:1;
+  const blind=om.type==="sp"&&B.sp==="blind",shieldB=om.type==="sp"&&B.sp==="shield";
+  const deal=(atk,mult,hits=1,crit=5)=>{let s=0;for(let i=0;i<hits;i++){let d=blind&&Math.random()<.3?0:Math.max(1,Math.round(atk*mult*100/(100+bDef)*(.9+Math.random()*.2)*mulIn));if(d&&Math.random()*100<crit)d=Math.round(d*1.5);s+=d}return shieldB?Math.round(s*.5):s};
+  log.push({k:"sec",x:`${b.t}합`},{k:"ev2",sub:"omen",x:omenText(B,om,party)});
+  let guard=false,taunt=null,pshield=1,weak=1,turn=0;
+  if(b.cd>0)b.cd--;
+  if(mm.hp>0){
+    if(action==="def"){guard=true;if(run.role==="tank")taunt=mm;const d=deal(mm.atk,.3,1,mm.crit);turn+=d;log.push({k:"ev2",sub:"act",x:`${nmjx(mm,"이")} 자세를 낮추고 막아선다${run.role==="tank"?" · 보스의 시선을 끈다":""} · 반격 ${d}`})}
+    else if(action==="skill"&&!b.cd&&b.qi>=25){b.qi-=25;b.cd=2;const s=h.sect,nmS=SKILL_NAME[s];
+      if(s==="ami"){const parts=[];party.filter(x=>x.hp>0).forEach(x=>{const a=Math.round(Math.max(mm.atk*1.1,20+L*5));x.hp=Math.min(x.max,x.hp+a);parts.push(`${nmx(x)} +${a}`)});log.push({k:"ev2",sub:"act",x:`${nmx(mm)}의 회춘수! ${parts.join(" · ")}`})}
+      else{const spec={sorim:[1.25,1],hwasan:[.9,2],mudang:[.9,1],dang:[.6,2]}[s],d=deal(mm.atk,spec[0],spec[1],mm.crit);turn+=d;
+        if(s==="sorim")taunt=mm;if(s==="mudang")pshield=.75;if(s==="dang")weak=.8;
+        log.push({k:"ev2",sub:"act",x:`${nmx(mm)}의 ${nmS}!${spec[1]>1?` ${spec[1]}연타`:""} · ${d} 피해${s==="sorim"?" · 보스의 시선이 쏠린다":s==="mudang"?" · 파티에 태극의 막이 둘러진다":s==="dang"?" · 보스의 손끝이 저린다":""}`})}}
+    else{const d=deal(mm.atk,roleMul(run.role),1,mm.crit);turn+=d;log.push({k:"ev2",sub:"act",x:`${nmx(mm)}의 공격 · ${d?`${d} 피해`:"빗나갔다"}`})}
+  }else log.push({k:"amb",x:`${nmjx(mm,"은")} 쓰러져 있다.`});
+  if(Math.random()<.3){const n=pickOne(party.filter(x=>!x.isMe&&x.hp>0)||[null]);if(n&&NPC_SAY[n.name])log.push({k:"comp",x:`${n.name}: ${pickOne(NPC_SAY[n.name])}`})}
+  for(const a of party){if(a.isMe||a.hp<=0)continue;
+    if(a.role==="heal"){const low=party.filter(x=>x.hp>0).sort((x,y)=>x.hp/x.max-y.hp/y.max)[0];if(low&&low.hp/low.max<.65){const amt=Math.round(Math.max(a.atk*1.3,20+L*5));low.hp=Math.min(low.max,low.hp+amt);log.push({k:"ev2",sub:"act",x:`${a.name}의 회춘수 · ${nmx(low)} +${amt}`});continue}}
+    const d=deal(a.atk,roleMul(a.role),1,a.crit);turn+=d;if(a.role==="tank"&&!taunt&&Math.random()<.6)taunt=a;
+    log.push({k:"ev2",sub:"act",x:`${a.role==="tank"?`${josa(a.name,"이")} 앞을 막아서며 친다`:`${a.name}의 일격`} · ${d?`${d} 피해`:"빗나갔다"}`})}
+  const bp=bAtk*(b.rage?1.5:1)*weak;b.rage=false;
+  const take=(x,base)=>{if(x.isMe&&Math.random()*100<x.eva)return -1;let d=Math.max(1,Math.round(base*100/(100+x.def)*(.9+Math.random()*.2)*pshield));if(x.isMe&&guard)d=Math.round(d*.4);x.hp=Math.max(0,x.hp-d);return d};
+  if(b.t===1&&hasMod(run,"ambush"))log.push({k:"ev2",sub:"hit",x:`${josa(B.n,"이")} 함정에 걸려 비틀거린다. 이번 합은 공격하지 못했다.`});
+  else if(om.type==="aoe"){const parts=party.filter(x=>x.hp>0).map(x=>{const d=take(x,bp*.6);return `${nmx(x)} ${d<0?"회피":d}${x.hp<=0?"(쓰러짐)":""}`});log.push({k:"ev2",sub:"hit",x:`광역 공격! ${parts.join(" · ")}`})}
+  else if(om.type==="smash"){let tg=party.find(x=>x.id===om.target);if(taunt&&taunt.hp>0&&taunt!==tg){log.push({k:"ev2",sub:"act",x:`${nmjx(taunt,"이")} 강타를 대신 받아낸다!`});tg=taunt}
+    if(tg&&tg.hp>0){const d=take(tg,bp*1.6);log.push({k:"ev2",sub:"hit",x:d<0?`${nmjx(tg,"이")} 몸을 틀어 강타를 흘려냈다!`:`강타! ${nmx(tg)} ${d} 피해${tg.hp<=0?" — 쓰러졌다!":""}`})}}
+  else{if(B.sp==="rage"){b.rage=true;log.push({k:"ev2",sub:"hit",x:"다음 합의 공격이 1.5배로 거세진다."})}
+    if(B.sp==="poison"){const v=party.filter(x=>x.hp>0).sort(()=>Math.random()-.5).slice(0,2);v.forEach(x=>b.poison[x.id]=2);log.push({k:"ev2",sub:"hit",x:`${v.map(nmx).join(", ")}에게 독이 퍼졌다.`})}
+    if(B.sp==="blind")log.push({k:"ev2",sub:"hit",x:"물보라 탓에 이번 합은 공격이 자주 빗나갔다."});
+    if(B.sp==="shield")log.push({k:"ev2",sub:"hit",x:"이번 합은 피해가 절반만 들어갔다."})}
+  for(const id in b.poison){const a=party.find(x=>x.id===id);if(a&&a.hp>0&&b.poison[id]>0){const d=Math.round(bAtk*.3);a.hp=Math.max(0,a.hp-d);b.poison[id]--;log.push({k:"ev2",sub:"hit",x:`${nmx(a)} 독 피해 ${d}${a.hp<=0?" — 쓰러졌다!":""}`})}}
+  b.dealt+=turn;b.qi=Math.min(b.qmax,b.qi+10);log.push({k:"amb",x:`이번 합 피해 ${turn} · 누적 ${b.dealt.toLocaleString()}`});
+  storeHp(run,party);b.t++;
+  if(b.t>6||!party.some(x=>x.hp>0)){endRun(h,"boss");return}
+  b.omen=genOmen(h,run,party,B);save(h);
+}
+function endRun(h,why){
+  const run=h.lair,B=bossFor(run.period),loot=run.loot,half=why==="wipe";
+  let dealt=0;if(why==="boss"){dealt=run.boss.dealt;[...new Set(partyFor(h,run.role).filter(x=>!x.isMe).map(x=>x.sect))].forEach(k=>addFavor(h,k,15));loot.exp+=expPerHour(h.level);if(h.raid?.period===run.period)h.raid.dmg+=dealt}
+  const exp=Math.round(loot.exp*(half?.5:1)),stone=Math.floor(loot.stone*(half?.5:1)),herb=Math.floor(loot.herb*(half?.5:1));
+  const lv0=h.level,ups=applyExp(h,exp);h.items.stone+=stone;h.items.herb+=herb;const got=[];
+  if(exp)got.push(`경험치 +${exp}`);if(stone)got.push(`강화석 +${stone}`);if(herb)got.push(`약초 +${herb}`);
+  (half?loot.items.slice(0,Math.floor(loot.items.length/2)):loot.items).forEach(it=>got.push(`장비 「${gainItem(h,it)}」`));
+  const head=why==="boss"?`여섯 합이 끝났다. ${B.n}에게 ${dealt.toLocaleString()} 피해를 입혔다.`:why==="retreat"?"더 들어가지 않고 소굴을 빠져나왔다.":"파티가 모두 쓰러졌다. 겨우 몸만 빠져나왔다. 챙긴 것의 절반을 잃었다.";
+  run.log.push({k:"sec",x:"소굴을 나서며"},{k:"end",x:head},{k:"amb",x:got.length?`얻은 것: ${got.join(", ")}`:"얻은 것이 없다."});
+  if(ups)run.log.push({k:"end",x:`레벨이 올랐다! Lv.${lv0} → Lv.${h.level}`});
+  run.phase="done";run.summary={why,dealt,got};
+  h.journal=[{title:`소굴 · ${B.n}`,region:B.region,start:run.start,tier:1,label:why==="boss"?`피해 ${dealt.toLocaleString()}`:why==="retreat"?"돌아섬":"쓰러짐",
+    lines:run.log.map((l,i)=>({...l,t:run.start+i,k:l.k}))},...(h.journal||[])].slice(0,10);
+  addLog(h,`${B.n}의 소굴: ${head}${got.length?" "+got.join(", "):""}`);save(h);
+}
+function retreat(){const h=structuredClone(me);if(!h.lair||h.lair.phase!=="fork")return;retreatConfirm=false;endRun(h,"retreat")}
+function leaveLair(){const h=structuredClone(me);h.lair=null;save(h)}
+function setMode(m){const h=structuredClone(me);if(!h.lair?.boss)return;h.lair.boss.mode=m;save(h)}
+function autoLoop(){
+  clearTimeout(autoLoop.t);
+  if(me?.lair?.phase==="boss"&&me.lair.boss.mode==="auto")autoLoop.t=setTimeout(()=>{if(me?.lair?.phase==="boss"&&me.lair.boss.mode==="auto")bossTurn(autoAction())},1300);
+}
+function lairView(){
+  const h=me,run=h.lair,B=bossFor(run.period),party=lairParty(h,run);
+  const bars=`<div class="lparty">${party.map(x=>`<div class="lp ${x.hp<=0?"dead":""}">${emblem(x.sect,"sm")}<div><b>${esc(x.name)}${x.isMe?" (나)":""}</b><span>${ROLE_N[x.role]} · ${x.hp}/${x.max}</span><div class="hpb"><i style="width:${x.hp/x.max*100}%"></i></div></div></div>`).join("")}</div>`;
+  const mods=run.mods.length?`<div class="mods">${run.mods.map(m=>`<span class="${MODS[m.k].good?"good":"bad"}">${MODS[m.k].t}</span>`).join("")}</div>`:`<p class="note" style="margin:0">아직 보스 상태에 변화가 없다. 무기고, 부두목, 감옥, 보스의 거처에서 한 일이 보스를 바꾼다.</p>`;
+  const lt=run.loot,lootTxt=[lt.exp?`경험치 ${lt.exp}`:"",lt.stone?`강화석 ${lt.stone}`:"",lt.herb?`약초 ${lt.herb}`:"",...lt.items.map(i=>i.name)].filter(Boolean).join(" · ")||"아직 없음";
+  const feed=`<div class="feedwrap" style="margin:14px -18px 0"><ul class="feed" id="lairFeed">${run.log.map(battleLine).join("")}</ul></div>`;
+  let ctl="";
+  if(run.phase==="fork"){const fk=forksFor(run);
+    ctl=`<p class="q">갈림길 ${run.step}/4. 어느 쪽으로 갈까?</p><div class="opts">${fk.map((f,i)=>`<button class="opt" type="button" data-fork="${i}"><b>${f.label}</b><span>${f.hint}</span></button>`).join("")}</div>
+      <div class="row" style="margin-top:12px"><button class="btn sm" type="button" id="herbBtn" ${h.items.herb<1?"disabled":""}>약초 쓰기 · ${h.items.herb}개 (파티 +30%)</button>
+      ${retreatConfirm?`<button class="btn sm sealb" type="button" id="retYes">정말 돌아간다</button><button class="btn sm ghost" type="button" id="retNo">계속 간다</button>`:`<button class="btn sm ghost" type="button" id="retBtn">여기서 돌아가기</button>`}</div>`}
+  else if(run.phase==="room"){const R=ROOMS[run.room.t];
+    ctl=`<p class="q">${R.name}. ${R.text}</p><div class="opts">${(()=>{const dc=dcFor(h.realm),bm=bestOf(R.opts.map(o=>o[1]),0,dc),multi=R.opts.filter(o=>o[1]).length>1;return R.opts.map(([k,st,txt])=>{if(!st)return `<button class="opt" type="button" data-ro="${k}"><b>행동</b><span>${txt}</span><small>판정 없음</small></button>`;
+  const c=optCheck(st,0,dc,false),best=multi&&c.c===bm,c2=optCheck(st,0,dc,best);return `<button class="opt" type="button" data-ro="${k}">${c2.b}<span>${txt}</span>${c2.s}</button>`}).join("")})()}</div>`}
+  else if(run.phase==="boss"){const b=run.boss,auto=b.mode==="auto";
+    ctl=`<div class="omen">◆ ${b.t}합 · ${esc(omenText(B,b.omen,party)).replace(/\u0001(.*?)\u0002/g,"<b>$1</b>")}</div>
+      <div class="row" style="justify-content:space-between;margin:10px 0"><span class="note" style="margin:0">기력 ${b.qi}/${b.qmax} · 이번 판 피해 ${b.dealt.toLocaleString()}</span>
+        <span class="seg"><button type="button" class="${auto?"":"on"}" data-mode="manual">직접 고르기</button><button type="button" class="${auto?"on":""}" data-mode="auto">자동</button></span></div>
+      ${auto?`<p class="note">자동으로 싸우는 중… 언제든 '직접 고르기'로 바꿀 수 있다. (화면을 떠나면 자동 전투도 잠시 멈춘다)</p>`
+        :`<div class="acts3"><button class="opt" type="button" data-act="atk"><b>공격</b><span>${ROLE_N[run.role]}의 기본 공격</span></button>
+          <button class="opt" type="button" data-act="def"><b>방어</b><span>받는 피해 60% 감소${run.role==="tank"?" · 강타를 대신 받음":""}</span></button>
+          <button class="opt" type="button" data-act="skill" ${b.cd||b.qi<25?"disabled":""}><b>무공</b><span>${SKILL_ACT[h.sect]} · 기력 25${b.cd?` · ${b.cd}합 뒤 가능`:""}</span></button></div>`}`}
+  else{const s=run.summary||{};ctl=`<div class="wall"><p>${s.why==="boss"?`${B.n}에게 <b>${(s.dealt||0).toLocaleString()}</b> 피해를 입히고 나왔다.`:s.why==="retreat"?"무사히 돌아 나왔다.":"쓰러져 실려 나왔다."}</p><button class="btn" type="button" id="leaveBtn">소굴에서 나온다</button></div>`}
+  return `<div class="label" style="margin-top:18px">${B.n}의 소굴 · ${run.phase==="boss"?"보스방":run.phase==="done"?"탐험 끝":`갈림길 ${run.step}/4`}</div>${bars}
+    <div class="label" style="margin-top:14px">보스 상태</div>${mods}<p class="note">챙긴 것: ${lootTxt}</p>${feed}<div style="margin-top:14px">${ctl}</div>`;
+}
+function raidTab(){
+  const h=me,p=periodNow(),B=bossFor(p),st=raidState(p),now=Date.now(),mine=h.raid?.period===p?h.raid:null,run=h.lair&&h.lair.period===p?h.lair:null;
+  const triesUsed=mine&&mine.tries.day===dayKey()?mine.tries.n:0,roles=SECT_ROLES[h.sect],role=raidRole&&roles.includes(raidRole)?raidRole:roles[0];
+  const hpShown=st.hp||hpShareFor(h,role,B),pct=st.hp?Math.max(0,100-st.dmg/st.hp*100):100,here=h.loc===B.region,a=activity(h);
+  let body;
+  if(run) body=lairView();
+  else if(st.down) body=mine&&!mine.claimed?`<div class="wall"><p><b>${B.n}</b>을(를) 토벌했다! 함께 싸운 사람 모두 보상을 받을 수 있다.</p><button class="btn sealb" id="claimBtn" type="button">토벌 보상 받기</button></div>`
+      :`<div class="wall"><p><b>${B.n}</b> 토벌 완료. ${mine?"보상을 받았다.":"이번 토벌에는 함께하지 못했다."} 다음 보스는 ${fmtDays(periodEnds(p)-now)} 뒤에 나타난다.</p></div>`;
+  else if(!here) body=`<p class="note">${REGIONS[B.region].n}에 있어야 소굴에 들어갈 수 있다. 지금 위치는 ${h.travel?"길 위":REGIONS[h.loc].n}.</p><button class="btn" type="button" id="toBossBtn">지도에서 ${REGIONS[B.region].n} 보기</button>`;
+  else{const party=partyFor(h,role);
+    body=`<div class="label" style="margin-top:18px">함께 들어갈 파티 · 내 경지에 맞춰 ${TIER_N[npcTier(h.realm)]}들이 돕는다</div>
+    <div class="party">${party.map(x=>`<div class="pm2">${emblem(x.sect,"sm")}<div><b>${esc(x.name)}${x.isMe?" (나)":""}</b><span>${ROLE_N[x.role]} · 체력 ${x.max} · 공격 ${x.atk}</span></div></div>`).join("")}</div>
+    <p class="note">소굴에는 갈림길 네 번과 보스방이 있다. 방에서 한 선택이 보스를 약하게도, 강하게도 만든다. 체력은 방에서 방으로 이어지고, 갈림길에서 약초를 쓰거나 돌아 나올 수 있다.</p>
+    ${roles.length>1?`<div class="chips" style="margin:10px 0">${roles.map(r=>`<label class="chip"><input type="radio" name="rrole" value="${r}" id="rr-${r}" ${role===r?"checked":""}><span>${ROLE_N[r]}로 서기</span></label>`).join("")}</div>`:""}
+    <div class="row" style="margin-top:10px"><button class="btn solid" id="chalBtn" type="button" ${a||triesUsed>=3?"disabled":""}>소굴에 들어간다 · 오늘 ${3-triesUsed}/3</button>
+    ${a?`<span class="note" style="margin:0">${busyText[a]} 들어갈 수 없다.</span>`:triesUsed>=3?`<span class="note" style="margin:0">오늘은 다 들어갔다. 자정에 다시 채워진다.</span>`:""}</div>`}
+  return `<section><div class="case">
+    <div class="kicker">토벌 · ${REGIONS[B.region].n} · ${fmtDays(periodEnds(p)-now)} 뒤 떠남</div>
+    <h3>${B.title} ${B.n}</h3><p>${B.lore}</p>
+    <div class="bar seal-c"><i style="width:${pct}%"></i></div>
+    <div class="barnote"><span>${st.hp?`남은 체력 ${Math.max(0,st.hp-st.dmg).toLocaleString()} / ${st.hp.toLocaleString()}`:`예상 체력 ${hpShown.toLocaleString()} (첫 진입 때 정해짐)`}</span><span>참여 ${st.ppl.length}명</span></div>
+    ${body}</div></section>
+    <section><div class="label">기여</div>${st.ppl.length?`<div class="contrib">${st.ppl.map((x,i)=>`<div class="cr"><span class="rk">${i+1}</span><span>${esc(x.name)}${x===me?" (나)":""}</span><span class="cbar"><i style="width:${st.dmg?x.raid.dmg/st.dmg*100:0}%"></i></span><b>${x.raid.dmg.toLocaleString()}</b></div>`).join("")}</div>`
+      :`<p class="empty">아직 아무도 들어가지 않았다. 첫 도전자가 되어 보자.</p>`}
+    <p class="note">보스는 3일 동안 한 지역의 소굴에 머문다. 한 사람이 하루 3번 들어갈 수 있고, 모두가 보스방에서 준 피해를 합쳐 체력을 깎는다. 참여하는 사람이 많을수록 체력도 늘어난다.</p></section>`;
+}
+
+function chanceOf(bonus,dc){let n=0;for(let r=1;r<=20;r++)if(r===20||(r!==1&&r+bonus>=dc))n++;return n*5}
+function optCheck(stat,extra,dc,best){const v=me.stats[stat],b=Math.floor(v/10)+(extra||0),c=chanceOf(b,dc);
+  return {b:`<b>${STATS[stat].n} <em class="sv">${v}</em></b>`,s:`<small title="주사위 D20+${b}, 목표 ${dc} 이상"><span class="pc ${best?"best":""}">성공 ${c}%</span>${best?" · 유리":""}<br>D20+${b} ≥ ${dc}</small>`,c}}
+function bestOf(stats,extra,dc){let m=-1;stats.forEach(st=>{if(st){const c=chanceOf(Math.floor(me.stats[st]/10)+(extra||0),dc);if(c>m)m=c}});return m}
+/* ───────── 관문 레이드 ─────────
+   방(gates/<id>)은 막을 처리한 사람만 쓴다. 각자의 선택은 자기 문서(gateacts/<내 id>)에만 쓴다.
+   모두 고르거나 90초가 지나면, 누구든 먼저 잠금을 얻은 사람이 그 막을 처리한다. */
+const GATES={
+  3:{boss:"혈안산군",title:"절정의 관문",region:"hubei",hp:3000,def:100,aoe:100,smash:320,ready:true,
+     lore:"무당산 깊은 숲, 사람 손에 길러진 거대한 호랑이 요괴. 붉은 눈이 밤마다 마을을 내려다본다."},
+  4:{boss:"흑사련주 진무악",title:"초절정의 관문",region:"jiangnan",ready:false,lore:"요괴를 키운 배후. 마교의 돈을 받고 일하는 사파 연합의 우두머리."},
+  5:{boss:"혈영마군 사도현",title:"화경의 관문",region:"shaanxi",ready:false,lore:"사파를 부리던 마교 간부. 정파 문파에 첩자를 심어두었다."},
+  6:{boss:"천마 혁련천",title:"현경의 관문",region:"xiyu",ready:false,lore:"모든 사건의 끝. 강호 전체를 노린다."}};
+const GACT=[null,
+  {n:"노려보기",omen:"혈안산군의 붉은 눈이 {t|을} 노려본다. 다음 일격은 저 사람에게 떨어진다.",say:"크르르르…"},
+  {n:"할퀴기",omen:"혈안산군이 앞발을 높이 치켜든다. 모두를 쓸어버릴 기세다.",say:"쿠아앙!"},
+  {n:"산사태",omen:"혈안산군이 바위를 걷어찬다. 산이 울리며 비탈이 무너지려 한다! 왼쪽과 오른쪽, 어느 쪽으로 피할까?",say:"우르르르—"},
+  {n:"포효",omen:"혈안산군이 숨을 깊이 들이마신다. 이번 막에 합쳐서 350 피해를 주지 못하면 포효가 모두를 덮친다.",say:"…"},
+  {n:"광폭화",omen:"혈안산군의 털이 곤두선다. 체력이 절반 아래라면 이제부터 더 사나워진다.",say:"크아아아!"},
+  {n:"새끼 요괴",omen:"덤불 속에서 새끼 요괴 둘이 튀어나온다! 공격의 절반이 새끼들에게 막히고, 살아 있는 동안 매 막 물어뜯는다.",say:"끼잉, 끼잉!"},
+  {n:"독기",omen:"혈안산군의 입에서 검푸른 김이 흘러나온다. 누군가 이 짐승에게 약을 먹여 키운 흔적이다.",say:"쿨럭…"},
+  {n:"도주",omen:"혈안산군이 숲 쪽을 힐끔거린다. 이번 막에 쓰러뜨리지 못하면 달아난다!",say:"…"}];
+const GREL={guard:{지인:["{a|이} 외친다. \"{b}, 피해요!\""],친우:["{a|이} 소리친다. \"{b}! 내 뒤로 와!\""],사형제:["{a|이} 외친다. \"물러서라, 내가 받는다!\""],연인:["{a|이} 망설임 없이 {b|의} 앞을 가로막는다."]},
+  down:{지인:["{a|이} 쓰러진 {b|을} 돌아본다."],친우:["\"{b}!\" {a|의} 목소리가 떨린다."],사형제:["{a|이} 이를 악문다. \"사문의 이름으로, 이 빚은 갚는다.\""],연인:["{a|이} {b|의} 이름을 부르며 달려간다."]},
+  skill:{지인:["{a|와} {b|이} 눈빛을 주고받는다."],친우:["\"지금이다!\" {a|와} {b|의} 호흡이 딱 맞는다."],사형제:["\"사형, 지금입니다!\" 같은 사문의 초식이 겹친다."],연인:["{a|와} {b|이} 등을 맞댄다. 말이 필요 없다."]}};
+const GATE_WAIT=90e3;
+let gateRooms={}, gateActs={}, gateResolving=false, gateLeaveConfirm=false;
+const myId=()=>uid||"local-me";
+const heroById=id=>id===myId()?me:others.find(o=>o._id===id);
+const relBetween=(a,b)=>relMutual(a,b);
+const GS={
+  async setRoom(id,data){data.updated=Date.now();
+    if(mode==="db"){gateRooms[id]=structuredClone(data);try{await db.doc("gates/"+id).set(JSON.parse(JSON.stringify(data)))}catch(e){toast("관문 기록에 실패했어요. 다시 시도해 주세요.")}}
+    else{gateRooms[id]=structuredClone(data);try{localStorage.setItem("murim-gates",JSON.stringify(gateRooms))}catch(e){}setTimeout(()=>{render();maybeResolve()},0)}},
+  async getRoom(id){if(mode==="db"){const s=await db.doc("gates/"+id).get();return s.exists?structuredClone(s.data()):null}return structuredClone(gateRooms[id]||null)},
+  async setAct(data){data.t=Date.now();gateActs[myId()]=structuredClone(data);
+    if(mode==="db"){render();try{await db.doc("gateacts/"+uid).set(JSON.parse(JSON.stringify(data)))}catch(e){toast("선택을 기록하지 못했어요.")}}
+    else{try{localStorage.setItem("murim-gateact",JSON.stringify(data))}catch(e){}setTimeout(()=>{render();maybeResolve()},0)}},
+  async lease(id){if(mode!=="db")return true;try{return (await db.doc("gates/"+id).acquire({holder:uid,ttlMs:6000})).acquired}catch(e){return false}}};
+const myAct=()=>gateActs[myId()]||{};
+function myRoom(){const a=myAct();return a.room?gateRooms[a.room]||null:null}
+function roomMembers(room){const ids=[room.owner,...Object.entries(gateActs).filter(([k,v])=>v.room===room.id&&v.joined&&k!==room.owner).sort((x,y)=>x[1].t-y[1].t).map(([k])=>k)];return ids.slice(0,4)}
+function memberFromHero(hero,id,role){const d=derived(hero);return {id,name:hero.name,sect:hero.sect,role,hp:d.hp,max:d.hp,atk:d.atk,def:d.def,eva:d.eva,crit:d.crit,qi:d.qi,qmax:d.qi,cd:0,player:true,realm:hero.realm}}
+function buildGateParty(room){
+  const ids=roomMembers(room),players=ids.map(id=>{const h=heroById(id);if(!h)return null;const a=id===myId()?myAct():gateActs[id]||{},roles=SECT_ROLES[h.sect];
+    return memberFromHero(h,id,a.role&&roles.includes(a.role)?a.role:roles[0])}).filter(Boolean);
+  players.forEach(p=>{if(p.id!==room.owner&&relMutual(p.id,room.owner)==="사형제"){p.atk=Math.round(p.atk*1.15);p.def=Math.round(p.def*1.15);p.sahyung=true}});
+  const need=["tank","dps","dps","heal"];players.forEach(p=>{const i=need.indexOf(p.role);if(i>=0)need.splice(i,1);else need.pop()});
+  const top=players.reduce((a,p)=>Math.max(a,p.realm),0),tier=npcTier(top),mul=[.8,.9,1,1.1][tier],ref=players.reduce((a,p)=>p.atk>a.atk?p:a,players[0]),used={};
+  const npcs=need.slice(0,4-players.length).map(r=>{const opts=NPC_SECT[r],k=used[r]?opts[(opts.indexOf(used[r])+1)%opts.length]:opts[0];used[r]=k;
+    const fm=mul*(1+favorStage(favorOf(heroById(room.owner),k))[2]);
+    return {id:"npc-"+k+r,name:NPCS[k][tier],sect:k,role:r,hp:Math.round(ref.max*fm),max:Math.round(ref.max*fm),atk:Math.round(ref.atk*fm),def:Math.round(ref.def*fm),eva:5,crit:5,qi:100,qmax:100,cd:0,player:false}});
+  return [...players,...npcs].sort((a,b)=>["tank","dps","heal"].indexOf(a.role)-["tank","dps","heal"].indexOf(b.role));
+}
+const gnm=m=>m.player?`\u0001${m.name}\u0002`:m.name;
+function gateOmen(room){
+  const a=room.act,alive=room.party.filter(x=>x.hp>0);let target=null;
+  if(a===1){const pl=alive.filter(x=>x.player);target=(pl.length&&Math.random()<.7?pickOne(pl):pickOne(alive)).id}
+  const t=room.party.find(x=>x.id===target);
+  return {target,text:fill(GACT[a].omen,{t:t?gnm(t):""})};
+}
+function openGate(){
+  const h=me,nr=h.realm+1,G=GATES[nr];
+  if(!atWall(h)||!REALMS[nr]?.gate||!G?.ready){toast("지금은 열 수 있는 관문이 없습니다.");return}
+  if(activity(h)){toast(`${busyText[activity(h)]} 관문을 열 수 없습니다.`);return}
+  if(h.loc!==G.region){toast(`${REGIONS[G.region].n}에 있어야 관문을 열 수 있습니다.`);return}
+  const id=myId().replace(/[^A-Za-z0-9_-]/g,"")+"-"+Date.now().toString(36);
+  GS.setRoom(id,{id,realm:nr,owner:myId(),ownerName:h.name,status:"lobby",created:Date.now()});
+  GS.setAct({room:id,joined:true,role:SECT_ROLES[h.sect][0],mode:"manual",act:0,action:null});
+}
+function joinGate(id){const r=gateRooms[id],G=r&&GATES[r.realm];if(!r||r.status!=="lobby")return;
+  if(me.loc!==G.region){toast(`${REGIONS[G.region].n}에 있어야 합류할 수 있습니다.`);return}
+  if(activity(me)){toast(`${busyText[activity(me)]} 합류할 수 없습니다.`);return}
+  if(roomMembers(r).length>=4){toast("자리가 다 찼습니다.");return}
+  GS.setAct({room:id,joined:true,role:SECT_ROLES[me.sect][0],mode:"manual",act:0,action:null})}
+function leaveGate(){const r=myRoom();gateLeaveConfirm=false;
+  if(r&&r.owner===myId()&&r.status==="lobby"){const n=structuredClone(r);n.status="closed";GS.setRoom(r.id,n)}
+  GS.setAct({room:null,joined:false,mode:"manual"})}
+function startGate(){
+  const r=myRoom();if(!r||r.owner!==myId()||r.status!=="lobby")return;const G=GATES[r.realm],n=structuredClone(r);
+  n.party=buildGateParty(r);n.status="fight";n.act=1;n.bossHp=G.hp;n.bossMax=G.hp;n.rage=false;n.minions=0;n.poison={};
+  n.log=[{k:"sec",x:`${G.title} · ${G.boss}`},{k:"amb",x:G.lore},{k:"comp",x:`혈안산군: ${GACT[1].say}`}];
+  n.omen=gateOmen(n);n.deadline=Date.now()+GATE_WAIT;GS.setRoom(r.id,n);
+  GS.setAct({...myAct(),act:1,action:null});
+}
+function chooseGate(action){const r=myRoom();if(!r||r.status!=="fight")return;GS.setAct({...myAct(),act:r.act,action})}
+function setGateMode(m){GS.setAct({...myAct(),mode:m})}
+function playerReady(room,m){const a=m.id===myId()?myAct():gateActs[m.id]||{};return a.room===room.id&&(a.mode==="auto"||(a.act===room.act&&a.action))}
+function maybeResolve(){
+  const r=myRoom();if(!r||r.status!=="fight"||gateResolving)return;
+  const ps=r.party.filter(x=>x.player&&x.hp>0),allIn=ps.every(m=>playerReady(r,m));
+  if(!allIn&&Date.now()<r.deadline)return;
+  gateResolving=true;
+  (async()=>{try{if(!(await GS.lease(r.id)))return;const fresh=await GS.getRoom(r.id);
+      if(!fresh||fresh.status!=="fight"||fresh.act!==r.act)return;await GS.setRoom(r.id,resolveGate(fresh))}
+    finally{setTimeout(()=>{gateResolving=false},400)}})();
+}
+function gateAuto(room,m){
+  if(room.act===3)return Math.random()<.5?"left":"right";
+  const hurt=room.party.some(x=>x.hp>0&&x.hp/x.max<.6);
+  if(room.act===1&&room.omen.target===m.id)return "def";
+  if(m.hp/m.max<.35)return "def";
+  if(!m.cd&&m.qi>=25&&(m.sect!=="ami"||hurt))return "skill";
+  return "atk";
+}
+function relLine(room,kind,a,b,log){if(!a||!b||a.id===b.id)return;const pool=GREL[kind][relBetween(a.id,b.id)]||GREL[kind].지인;log.push({k:"comp",x:fill(pickOne(pool),{a:gnm(a),b:gnm(b)})})}
+function resolveGate(room){
+  const n=structuredClone(room),G=GATES[n.realm],a=n.act,log=n.log,P=n.party,alive=()=>P.filter(x=>x.hp>0);
+  const acts={};for(const m of P)if(m.hp>0){const ad=m.player?(m.id===myId()?myAct():gateActs[m.id]||{}):{};
+    acts[m.id]=m.player&&ad.room===n.id&&ad.mode!=="auto"&&ad.act===a&&ad.action?ad.action:gateAuto(n,m)}
+  log.push({k:"sec",x:`${a}막 · ${GACT[a].n}`},{k:"ev2",sub:"omen",x:n.omen.text});
+  if(a===6){n.minions=600;log.push({k:"ev2",sub:"hit",x:"새끼 요괴 둘이 앞을 가로막았다. (새끼 체력 600)"})}
+  let actDmg=0,taunt=null;const guard={},pshield={v:1};let weak=1;
+  const deal=(atk,mult,hits,crit)=>{let s=0;for(let i=0;i<hits;i++){let d=Math.max(1,Math.round(atk*mult*100/(100+G.def)*(.9+Math.random()*.2)));if(Math.random()*100<crit)d=Math.round(d*1.5);s+=d}return s};
+  const hitBoss=d=>{if(n.minions>0){const half=Math.round(d/2);n.minions=Math.max(0,n.minions-half);d-=half;if(n.minions===0)log.push({k:"ev2",sub:"act",x:"새끼 요괴들이 모두 쓰러졌다!"})}n.bossHp=Math.max(0,n.bossHp-d);actDmg+=d;return d};
+  if(Math.random()<.35){const np=alive().filter(x=>!x.player);const s=np.length?pickOne(np):null;if(s&&NPC_SAY[s.name])log.push({k:"comp",x:`${s.name}: ${pickOne(NPC_SAY[s.name])}`})}
+  const sides={},skillers=[];
+  for(const m of P){if(m.hp<=0)continue;const act=acts[m.id];if(m.cd>0)m.cd--;
+    if(a===3){sides[m.id]=act==="left"||act==="right"?act:(Math.random()<.5?"left":"right");continue}
+    if(m.role==="heal"&&!m.player){const low=alive().sort((x,y)=>x.hp/x.max-y.hp/y.max)[0];if(low.hp/low.max<.65){const amt=Math.round(Math.max(m.atk*1.3,60));low.hp=Math.min(low.max,low.hp+amt);log.push({k:"ev2",sub:"act",x:`${m.name}의 회춘수 · ${gnm(low)} +${amt}`});continue}}
+    if(act==="def"){guard[m.id]=true;if(m.role==="tank")taunt=m;const d=hitBoss(deal(m.atk,.3,1,m.crit));log.push({k:"ev2",sub:"act",x:`${josa(gnm(m),"이")} 자세를 낮추고 막아선다 · 반격 ${d}`})}
+    else if(act==="skill"&&!m.cd&&m.qi>=25){m.qi-=25;m.cd=2;
+      if(m.sect==="ami"){const parts=alive().map(x=>{const amt=Math.round(Math.max(m.atk*1.1,60)*(m.player&&x.player&&x.id!==m.id&&relMutual(m.id,x.id)==="연인"?1.25:1));x.hp=Math.min(x.max,x.hp+amt);return `${gnm(x)} +${amt}`});log.push({k:"ev2",sub:"act",x:`${gnm(m)}의 회춘수! ${parts.join(" · ")}`});skillers.push({m,d:0})}
+      else{const sp={sorim:[1.25,1],hwasan:[.9,2],mudang:[.9,1],dang:[.6,2]}[m.sect],d=hitBoss(deal(m.atk,sp[0],sp[1],m.crit));if(m.sect==="sorim")taunt=m;if(m.sect==="mudang")pshield.v=.75;if(m.sect==="dang")weak=.8;
+        log.push({k:"ev2",sub:"act",x:`${gnm(m)}의 ${SKILL_NAME[m.sect]}!${sp[1]>1?` ${sp[1]}연타`:""} · ${d} 피해`});skillers.push({m,d})}
+      const mate=alive().find(x=>x.player&&x.id!==m.id);if(m.player&&mate&&Math.random()<.5)relLine(n,"skill",m,mate,log)}
+    else{const d=hitBoss(deal(m.atk,roleMul(m.role),1,m.crit));if(m.role==="tank"&&!taunt&&!m.player&&Math.random()<.6)taunt=m;log.push({k:"ev2",sub:"act",x:`${m.role==="tank"&&!m.player?`${josa(m.name,"이")} 앞을 막아서며 친다`:`${gnm(m)}의 공격`} · ${d} 피해`})}
+  }
+  for(let i=0;i<skillers.length;i++)for(let j=i+1;j<skillers.length;j++){const A=skillers[i],B=skillers[j];if(!A.m.player||!B.m.player)continue;const rel=relMutual(A.m.id,B.m.id);
+    if(rel!=="지인"&&bondTotal(A.m.id,B.m.id)>=600){const d=hitBoss(Math.round((A.d+B.d)*.5+(A.m.atk+B.m.atk)*.5));log.push({k:"ev2",sub:"act",x:`합격기 「${COMBO[rel]}」! ${josa(gnm(A.m),"와")} ${gnm(B.m)}의 초식이 하나로 겹친다 · ${d} 피해`})}}
+  const bMul=(n.rage?1.3:1)*weak;
+  const take=(m,base,noGuard)=>{if(m.player&&Math.random()*100<m.eva)return -1;let d=Math.max(1,Math.round(base*bMul*100/(100+m.def)*(.9+Math.random()*.2)*pshield.v));if(guard[m.id]&&!noGuard)d=Math.round(d*.4);m.hp=Math.max(0,m.hp-d);return d};
+  const downs=[];const mark=m=>{if(m.hp<=0)downs.push(m)};
+  if(n.bossHp>0){
+    if(a===1){const t=P.find(x=>x.id===n.omen.target);if(t&&t.hp>0){const d=take(t,G.smash);mark(t);log.push({k:"ev2",sub:"hit",x:d<0?`${josa(gnm(t),"이")} 몸을 틀어 일격을 흘려냈다!`:`일격! ${gnm(t)} ${d} 피해${t.hp<=0?" — 쓰러졌다!":""}`});
+      const g=alive().find(x=>x.player&&x.id!==t.id);if(t.player&&g)relLine(n,"guard",g,t,log)}}
+    else if(a===3){const fall=Math.random()<.5?"left":"right",hitL=[];for(const m of alive()){if(sides[m.id]===fall){const d=take(m,G.smash*1.1,true);mark(m);hitL.push(`${gnm(m)} ${d<0?"회피":d}`)}}
+      log.push({k:"ev2",sub:"act",x:`왼쪽: ${P.filter(x=>sides[x.id]==="left").map(gnm).join(", ")||"없음"} / 오른쪽: ${P.filter(x=>sides[x.id]==="right").map(gnm).join(", ")||"없음"}`});
+      log.push({k:"ev2",sub:"hit",x:`${fall==="left"?"왼쪽":"오른쪽"} 비탈이 무너졌다! ${hitL.length?hitL.join(" · "):"아무도 휘말리지 않았다."}`})}
+    else if(a===4){if(actDmg<350){const al=alive(),each=Math.round(900*bMul/al.length);al.forEach(m=>{m.hp=Math.max(0,m.hp-each);mark(m)});log.push({k:"ev2",sub:"hit",x:`피해 ${actDmg}로 모자랐다. 포효가 모두를 덮친다! 각자 ${each} 피해 (900을 ${al.length}명이 나눠 받음)`})}
+      else log.push({k:"ev2",sub:"act",x:`${actDmg} 피해! 기세에 눌린 혈안산군의 포효가 흩어졌다.`})}
+    else{
+      if(a===5&&n.bossHp<=n.bossMax/2&&!n.rage){n.rage=true;log.push({k:"ev2",sub:"hit",x:"혈안산군이 광폭해졌다! 이제부터 공격이 1.3배로 거세진다."})}
+      if(a===7){const v=alive().sort(()=>Math.random()-.5).slice(0,2);v.forEach(x=>n.poison[x.id]=3);log.push({k:"ev2",sub:"hit",x:`${v.map(gnm).join(", ")}에게 독기가 스며들었다. (3막 동안)`})}
+      const parts=alive().map(m=>{const d=take(m,G.aoe);mark(m);return `${gnm(m)} ${d<0?"회피":d}${m.hp<=0?"(쓰러짐)":""}`});
+      log.push({k:"ev2",sub:"hit",x:`${a===2?"할퀴기":"앞발 휘두르기"}! ${parts.join(" · ")}`})}
+    if(n.minions>0){const bites=[];for(let i=0;i<2;i++){const al=alive();if(!al.length)break;const t=pickOne(al),d=Math.max(1,Math.round(40*100/(100+t.def)));t.hp=Math.max(0,t.hp-d);mark(t);bites.push(`${gnm(t)} ${d}`)}if(bites.length)log.push({k:"ev2",sub:"hit",x:`새끼 요괴가 물어뜯었다 · ${bites.join(" · ")}`})}
+    for(const id in n.poison){const m=P.find(x=>x.id===id);if(m&&m.hp>0&&n.poison[id]>0){const d=40;m.hp=Math.max(0,m.hp-d);n.poison[id]--;mark(m);log.push({k:"ev2",sub:"hit",x:`${gnm(m)} 독 피해 ${d}${m.hp<=0?" — 쓰러졌다!":""}`})}}
+  }
+  downs.filter(d=>d.player).forEach(d=>{const g=alive().find(x=>x.player);if(g)relLine(n,"down",g,d,log)});
+  P.forEach(m=>{m.qi=Math.min(m.qmax,m.qi+10)});
+  log.push({k:"amb",x:`이번 막 피해 ${actDmg} · 혈안산군 남은 체력 ${n.bossHp.toLocaleString()}/${n.bossMax.toLocaleString()}`});
+  if(n.bossHp<=0){n.status="win";log.push({k:"sec",x:"관문 돌파"},{k:"end",x:"혈안산군이 마지막 숨을 몰아쉬며 쓰러졌다. 목에 감긴 낡은 가죽 끈에는 검은 뱀이 새겨져 있었다."})}
+  else if(!P.some(x=>x.player&&x.hp>0)){n.status="fail";log.push({k:"sec",x:"패배"},{k:"end",x:"모두 쓰러졌다. 혈안산군은 유유히 숲으로 사라졌다."})}
+  else if(a>=8){n.status="fail";log.push({k:"sec",x:"놓침"},{k:"end",x:"혈안산군이 상처 입은 몸을 끌고 숲 깊이 달아났다. 다음엔 놓치지 않는다."})}
+  else{n.act=a+1;n.omen=gateOmen(n);n.deadline=Date.now()+GATE_WAIT;if(GACT[n.act].say&&Math.random()<.6)log.push({k:"comp",x:`혈안산군: ${GACT[n.act].say}`})}
+  n.log=log.slice(-160);return n;
+}
+function claimGate(){
+  const r=myRoom();if(!r||(r.status!=="win"&&r.status!=="fail"))return;const h=structuredClone(me);h.gateDone=h.gateDone||{};if(h.gateDone[r.id])return;
+  const G=GATES[r.realm],got=[];
+  if(r.status==="win"){
+    if(r.owner===myId()&&h.realm===r.realm-1&&atWall(h)){h.realm=r.realm;h.points+=5;applyExp(h,0);got.push(`${REALMS[r.realm].n}의 경지에 올랐다! (포인트 +5)`)}
+    else{const exp=expPerHour(h.level)*3;applyExp(h,exp);got.push(`도우미 보상 · 경험치 +${exp}`)}
+    h.items.stone+=5;got.push("강화석 +5");
+    if(Math.random()<.5){const it=makeItem(pickOne(["weapon","armor","acc"]),Math.min(6,r.realm),pickOne(["tank","dps","heal"]));got.push(`장비 「${gainItem(h,it)}」`)}
+    if(Math.random()<.3){h.items.clue++;got.push("비급 단서 +1")}
+  }else{const exp=Math.round(expPerHour(h.level));applyExp(h,exp);got.push(`경험치 +${exp} (다시 도전할 수 있다)`)}
+  r.party.filter(x=>x.player&&x.id!==myId()).forEach(x=>{const v=addBond(h,x.id,30);got.push(`${josa(x.name,"와")} 인연 +${v}`)});
+  if(r.status==="win")[...new Set(r.party.filter(x=>!x.player).map(x=>x.sect))].forEach(k=>{addFavor(h,k,15);got.push(`${SECTS[k].n} 우호도 +15`)});
+  h.gateDone[r.id]=true;
+  h.journal=[{title:`관문 · ${G.boss}`,region:G.region,start:r.created,tier:1,label:r.status==="win"?"돌파":"실패",lines:r.log.map((l,i)=>({...l,t:r.created+i}))},...(h.journal||[])].slice(0,10);
+  addLog(h,`${G.title} ${r.status==="win"?"돌파":"실패"}. ${got.join(", ")}`);save(h);toast(got[0]);
+}
+function gateTab(){
+  const r=myRoom();if(r&&r.status!=="closed")return gateRoomView(r);
+  const h=me,nr=h.realm+1,G=GATES[nr],canOpen=atWall(h)&&REALMS[nr]?.gate&&G?.ready,now=Date.now();
+  const open=Object.values(gateRooms).filter(x=>(x.status==="lobby"||x.status==="fight")&&now-(x.updated||0)<6*3600e3);
+  const table=`<div class="gates">${[3,4,5,6].map(k=>{const g=GATES[k],done=h.realm>=k;return `<div class="gt ${done?"done":""}"><span class="kicker">${g.title}</span><b>${g.boss}</b><span>${REGIONS[g.region].n} · ${done?"돌파함":g.ready?"도전 가능":"준비 중"}</span></div>`}).join("")}</div>`;
+  let mine;
+  if(canOpen) mine=`<div class="wall"><p><b>${G.title}</b>이 열렸다. ${REGIONS[G.region].n}에서 <b>${G.boss}</b>를 쓰러뜨리면 ${REALMS[nr].n}에 오른다. 혼자 열어도 NPC 셋이 함께하고, 다른 사람이 도우미로 합류할 수 있다.</p>
+    ${h.loc===G.region?`<button class="btn sealb" id="openGateBtn" type="button" ${activity(h)?"disabled":""}>관문을 연다</button>`:`<p class="note" style="margin:0">${REGIONS[G.region].n}에 있어야 열 수 있다.</p><button class="btn" type="button" id="toGateBtn" data-region="${G.region}">지도에서 ${REGIONS[G.region].n} 보기</button>`}</div>`;
+  else if(atWall(h)&&REALMS[nr]?.gate) mine=`<p class="note">${G.title}은 아직 준비 중이다.</p>`;
+  else mine=`<p class="note">관문은 일류 Lv.30에서 경지의 벽에 닿으면 열 수 있다. 지금은 다른 사람의 관문에 도우미로 합류할 수 있다. 도우미는 승급 대신 보상을 받는다.</p>`;
+  const list=open.length?open.map(x=>{const g=GATES[x.realm],cnt=roomMembers(x).length;return `<div class="itemrow"><div><b>${g.boss}</b><div class="gs">${esc(x.ownerName)}의 ${g.title} · ${REGIONS[g.region].n} · ${x.status==="lobby"?`모집 중 ${cnt}/4`:`${x.act}막 싸우는 중`}</div></div>
+    <div class="acts">${x.status==="lobby"&&cnt<4?`<button class="btn sm" type="button" data-join="${x.id}">도우미로 합류</button>`:""}</div></div>`}).join(""):`<p class="empty">지금 열린 관문이 없다.</p>`;
+  return `<section><div class="label">경지의 관문</div>${table}${mine}</section><section><div class="label">열린 관문</div><div class="items">${list}</div></section>`;
+}
+function gateRoomView(r){
+  const G=GATES[r.realm],mineA=myAct(),isOwner2=r.owner===myId();
+  if(r.status==="lobby"){const ids=roomMembers(r),party=buildGateParty(r);const roles=SECT_ROLES[me.sect];
+    return `<section><div class="case"><div class="kicker">${G.title} · ${REGIONS[G.region].n} · 모집 중</div><h3>${G.boss}</h3><p>${G.lore}</p>
+      <div class="label" style="margin-top:14px">파티 (사람 ${ids.length}/4 · 빈자리는 NPC)</div>
+      <div class="party">${party.map(x=>`<div class="pm2">${emblem(x.sect,"sm")}<div><b>${esc(x.name)}${x.id===myId()?" (나)":x.player?"":" · NPC"}</b><span>${ROLE_N[x.role]} · 체력 ${x.max} · 공격 ${x.atk}</span></div></div>`).join("")}</div>
+      ${roles.length>1?`<div class="chips" style="margin-top:10px">${roles.map(rr=>`<label class="chip"><input type="radio" name="grole" value="${rr}" id="gr-${rr}" ${(mineA.role||roles[0])===rr?"checked":""}><span>${ROLE_N[rr]}로 서기</span></label>`).join("")}</div>`:""}
+      <p class="note">8막 동안 싸운다. 매 막 전조를 보고 각자 행동을 고른다. 모두 고르면 바로 진행되고, 90초가 지나면 안 고른 사람은 자동으로 움직인다.</p>
+      <div class="row" style="margin-top:10px">${isOwner2?`<button class="btn sealb" id="startGateBtn" type="button">싸움을 시작한다</button>`:`<span class="note" style="margin:0">${josa(esc(r.ownerName),"이")} 시작하기를 기다리는 중…</span>`}
+      <button class="btn ghost" id="leaveGateBtn" type="button">${isOwner2?"관문 닫기":"빠지기"}</button></div></div></section>`}
+  const P=r.party,me2=P.find(x=>x.id===myId()),feed=`<div class="feedwrap" style="margin:14px -18px 0"><ul class="feed" id="gateFeed">${r.log.map(battleLine).join("")}</ul></div>`;
+  const dots=`<div class="acts8">${GACT.slice(1).map((g,i)=>`<span class="${i+1<r.act||r.status!=="fight"?"past":i+1===r.act?"now":""}">${i+1}<em>${g.n}</em></span>`).join("")}</div>`;
+  const bars=`<div class="lparty">${P.map(x=>`<div class="lp ${x.hp<=0?"dead":""}">${emblem(x.sect,"sm")}<div><b>${esc(x.name)}${x.id===myId()?" (나)":x.player?"":" · NPC"}</b><span>${ROLE_N[x.role]} · ${x.hp}/${x.max}${r.status==="fight"&&x.player&&x.hp>0?` · ${playerReady(r,x)?"골랐다":"고르는 중"}`:""}</span><div class="hpb"><i style="width:${x.hp/x.max*100}%"></i></div></div></div>`).join("")}</div>`;
+  let ctl="";
+  if(r.status==="fight"){
+    if(!me2||me2.hp<=0) ctl=`<p class="note">쓰러져 있다. 동료들의 싸움을 지켜본다.</p>`;
+    else{const chosen=mineA.act===r.act?mineA.action:null,auto=mineA.mode==="auto";
+      const btn=(k,b,s,dis)=>`<button class="opt ${chosen===k?"chosen":""}" type="button" data-gact="${k}" ${dis?"disabled":""}><b>${b}</b><span>${s}</span>${chosen===k?"<small>골랐다</small>":""}</button>`;
+      ctl=`<div class="omen">◆ ${r.act}막 · ${esc(r.omen.text).replace(/\u0001(.*?)\u0002/g,"<b>$1</b>")}</div>
+      <div class="row" style="justify-content:space-between;margin:10px 0"><span class="note" style="margin:0">기력 ${me2.qi}/${me2.qmax} · <span data-until="${r.deadline}"></span> 뒤 자동 진행</span>
+        <span class="seg"><button type="button" class="${auto?"":"on"}" data-gmode="manual">직접 고르기</button><button type="button" class="${auto?"on":""}" data-gmode="auto">자동</button></span></div>
+      ${auto?`<p class="note">자동으로 싸우는 중. 언제든 직접 고르기로 바꿀 수 있다.</p>`:`<div class="acts3">${r.act===3?btn("left","왼쪽","왼쪽 비탈로 피한다")+btn("right","오른쪽","오른쪽 비탈로 피한다")
+        :btn("atk","공격",`${ROLE_N[me2.role]}의 기본 공격`)+btn("def","방어",`받는 피해 60% 감소${me2.role==="tank"?" · 탱커는 시선을 끈다":""}`)+btn("skill","무공",`${SKILL_ACT[me2.sect]} · 기력 25${me2.cd?` · ${me2.cd}막 뒤 가능`:""}`,me2.cd||me2.qi<25)}</div>
+        ${chosen?`<p class="note">다른 사람이 고르기 전까지 바꿀 수 있다.</p>`:""}`}`}}
+  else{const done=me.gateDone?.[r.id];ctl=`<div class="wall"><p>${r.status==="win"?`<b>${G.boss}</b>를 쓰러뜨렸다!${isOwner2?` ${REALMS[r.realm].n}의 문이 열렸다.`:""}`:`관문을 넘지 못했다. 다시 열어 도전할 수 있다.`}</p>
+      ${!done&&me2?`<button class="btn sealb" id="claimGateBtn" type="button">결과 거두기</button>`:""}<button class="btn ghost" id="leaveGateBtn" type="button">관문에서 나온다</button></div>`}
+  return `<section><div class="case"><div class="kicker">${G.title} · ${REGIONS[G.region].n}</div><h3>${G.boss}</h3>
+    <div class="bar seal-c"><i style="width:${(r.bossHp/r.bossMax*100).toFixed(1)}%"></i></div>
+    <div class="barnote"><span>체력 ${r.bossHp.toLocaleString()} / ${r.bossMax.toLocaleString()}${r.rage?" · 광폭":""}${r.minions>0?` · 새끼 요괴 ${r.minions}`:""}</span><span>${r.status==="fight"?`${r.act}/8막`:r.status==="win"?"돌파":"실패"}</span></div>
+    ${dots}${bars}<div style="margin-top:14px">${ctl}</div>${feed}</div></section>`;
+}
+
+/* ───────── 인연 · 선물 · 동행 · 문파 우호도 · 직위 ─────────
+   각자 자기 기록에만 쓴다. 두 사람의 인연도 = 내가 쌓은 몫 + 상대가 쌓은 몫.
+   관계는 두 사람이 같은 관계를 골랐을 때 성립하고, 바꾸려면 다시 둘 다 골라야 한다. */
+const BOND_STAGES=[[0,"지인"],[100,"친분"],[300,"각별"],[600,"깊은 인연"]];
+const REL_FX={친우:"같이 임무하면 보상 +20%",사형제:"관문에서 도울 때 공격·방어 +15%",연인:"서로에게 쓰는 회복 +25%"};
+const COMBO={친우:"의기투합",사형제:"사문합벽",연인:"비익연리"};
+const GIFT_VAL={herb:5,wine:10,trinket:20};
+const FAVOR_STAGES=[[0,"냉담",0],[200,"우호",.1],[500,"신뢰",.2],[1000,"동지",.25]];
+const REGION_SECTS={henan:["sorim"],shaanxi:["hwasan"],hubei:["mudang"],sichuan:["ami","dang"]};
+const SECT_GIFT={herb:10,wine:15,trinket:25};
+let giftPick={}, relPick={}, sectPick=null, sectConfirm=false;
+const bondOf=(a,b)=>heroById(a)?.bonds?.[b]||{};
+const bondTotal=(a,b)=>(bondOf(a,b).pts||0)+(bondOf(b,a).pts||0);
+const stageOf=p=>{let s=BOND_STAGES[0];for(const x of BOND_STAGES)if(p>=x[0])s=x;return s};
+function relMutual(a,b){const A=bondOf(a,b),B=bondOf(b,a);
+  if(A.want==="지인"||B.want==="지인")return "지인";
+  if(A.want&&A.want===B.want)return A.want;
+  if(A.agreed&&A.agreed===B.agreed)return A.agreed;return "지인"}
+const relWith=id=>relMutual(myId(),id);
+const following=id=>me?.follow===id&&heroById(id)?.follow===myId();
+function addBond(h,otherId,pts){if(!otherId||otherId===myId())return 0;h.bonds=h.bonds||{};const b=h.bonds[otherId]=h.bonds[otherId]||{pts:0};
+  const mul=h.follow===otherId&&heroById(otherId)?.follow===myId()?1.5:1;const v=Math.round(pts*mul);b.pts=(b.pts||0)+v;return v}
+const favorOf=(h,k)=>h?.favor?.[k]||0;
+const favorStage=v=>{let s=FAVOR_STAGES[0];for(const x of FAVOR_STAGES)if(v>=x[0])s=x;return s};
+function addFavor(h,k,v){if(!k||!SECTS[k])return;h.favor=h.favor||{};h.favor[k]=(h.favor[k]||0)+v}
+function giftDayLeft(h){const g=h.giftDay||{};return g.day===dayKey()?3-g.n:3}
+function giveGift(to){
+  const it=giftPick[to]||"herb",h=structuredClone(me),o=heroById(to);if(!o)return;
+  if(h.items[it]<1){toast(`${josa(ITEMS[it][0],"이")} 없습니다.`);return}
+  if(giftDayLeft(h)<1){toast("오늘은 더 선물할 수 없습니다. (하루 3번)");return}
+  h.items[it]--;h.giftDay={day:dayKey(),n:3-giftDayLeft(h)+1};
+  const v=addBond(h,to,GIFT_VAL[it]);h.sent=[{id:Date.now().toString(36),to,item:it,t:Date.now()},...(h.sent||[])].slice(0,20);
+  addLog(h,`${josa(o.name,"에")}게 ${josa(ITEMS[it][0],"을")} 보냈다. (인연 +${v})`);save(h);toast(`${o.name}에게 ${josa(ITEMS[it][0],"을")} 보냈습니다.`);
+}
+function proposeRel(to,rel){const h=structuredClone(me);h.bonds=h.bonds||{};const b=h.bonds[to]=h.bonds[to]||{pts:0};b.want=rel;
+  addLog(h,rel==="지인"?`${josa(heroById(to)?.name,"와")}의 관계를 내려놓았다.`:`${josa(heroById(to)?.name||"","에")}게 ${rel}의 연을 청했다.`);save(h);toast(rel==="지인"?"관계를 내려놓았습니다.":`${rel}의 연을 청했습니다. 상대도 같은 관계를 고르면 맺어집니다.`)}
+function toggleFollow(to){const h=structuredClone(me);h.follow=h.follow===to?null:to;h.followT=Date.now();save(h);
+  toast(h.follow?`${josa(heroById(to)?.name,"와")} 동행을 청했습니다. 상대도 동행을 고르면 함께 움직입니다.`:"동행을 풀었습니다.")}
+/* 화면이 열려 있을 때 맞춰 두는 일: 합의된 관계 기록, 동행 따라가기, 받은 선물 확인 */
+let syncBusy=false;
+function syncBonds(){
+  if(!me||mode!=="db"||syncBusy)return;let h=null;const get=()=>h=h||structuredClone(me);
+  for(const o of others){const A=bondOf(myId(),o._id),B=bondOf(o._id,myId());
+    if(A.want&&A.want===B.want&&A.agreed!==A.want){get();h.bonds[o._id].agreed=A.want;addLog(h,`${josa(o.name,"와")} ${A.want}의 연을 맺었다.`);toast(`${josa(o.name,"와")} ${josa(A.want,"이")} 되었습니다!`)}}
+  const L=others.find(o=>o._id===me.follow&&o.follow===myId());
+  if(L&&L.travel&&!activity(me)&&me.loc===L.travel.from&&L.travel.start>(me.followT||0)&&L.travel.start>(me.travel?.start||0)){
+    get();h.travel={...L.travel};h.followT=L.travel.start;addLog(h,`${josa(L.name,"을")} 따라 ${REGIONS[L.travel.to].n}로 함께 떠났다.`);toast(`${josa(L.name,"을")} 따라 함께 떠납니다.`)}
+  if(h){syncBusy=true;save(h);setTimeout(()=>syncBusy=false,1500)}
+}
+function giftsToMe(){return others.flatMap(o=>(o.sent||[]).filter(s=>s.to===myId()).map(s=>({...s,from:o.name,fromId:o._id}))).sort((a,b)=>b.t-a.t)}
+/* 문파 옮기기 (파문) */
+function changeSect(to){
+  const h=structuredClone(me),from=h.sect;if(!SECTS[to]||to===from)return;
+  if(activity(h)){toast(`${busyText[activity(h)]} 문파를 옮길 수 없습니다.`);return}
+  const until=(h.leftSects?.[to]||0)+7*86400e3;if(Date.now()<until){toast(`${SECTS[to].n}는 ${fmtDays(until-Date.now())} 뒤에 다시 들어갈 수 있습니다.`);return}
+  h.favor=h.favor||{};h.favor[from]=Math.round((h.favor[from]||0)*.3);h.leftSects={...(h.leftSects||{}),[from]:Date.now()};h.sect=to;h.post=null;
+  addLog(h,`${josa(SECTS[from].n,"을")} 떠나 ${SECTS[to].n}의 문하가 되었다. ${SECTS[from].n} 우호도가 크게 떨어졌다.`);sectConfirm=false;sectPick=null;save(h);toast(`${SECTS[to].n}에 입문했습니다.`);
+}
+/* 직위 제안 */
+function postOffer(h){
+  const f=favorOf(h,h.sect);
+  if(!h.post&&h.realm>=5&&f>=1000&&h.postDeclined!=="elder")return {k:"elder",n:"장로",by:NPCS[h.sect][2],say:`"${h.name}, 그대의 무위와 문파를 향한 마음은 모두가 보았네. 장로의 자리를 맡아 주겠나?"`};
+  if(h.post==="elder"&&h.realm>=6&&h.tianmo&&h.postDeclined!=="master")return {k:"master",n:"장문인",by:NPCS[h.sect][3],say:`"이제 이 늙은이는 물러날 때가 되었네. ${josa(SECTS[h.sect].n,"을")} 맡아 주게."`};
+  return null;
+}
+function answerPost(yes){const h=structuredClone(me),o=postOffer(h);if(!o)return;
+  if(yes){h.post=o.k;addLog(h,`${SECTS[h.sect].n}의 ${josa(o.n,"이")} 되었다.`);toast(`${o.n}이 되었습니다!`)}else{h.postDeclined=o.k;addLog(h,`${o.n} 자리를 사양했다.`)}save(h)}
+function sectTabSection(){
+  const h=me,cur=h.sect,offer=postOffer(h);
+  const rows=Object.entries(SECTS).map(([k,s])=>{const v=favorOf(h,k),st=favorStage(v),nx=FAVOR_STAGES.find(x=>x[0]>v);
+    return `<div class="fav"><span>${emblem(k,"sm")}</span><div><b>${s.n}${k===cur?" · 본문":""}</b><span>${st[1]} · ${v}${nx?` / ${nx[0]} (${nx[1]})`:""}${st[2]?` · 그 문파 NPC 능력치 +${st[2]*100}%`:""}</span>
+      <div class="hpb"><i style="width:${Math.min(100,nx?(v-st[0])/(nx[0]-st[0])*100:100)}%"></i></div></div></div>`}).join("");
+  const post=h.post?`<p class="note"><b>${SECTS[cur].n} ${h.post==="elder"?"장로":"장문인"}</b>의 자리에 있다.</p>`:`<p class="note">장로: 화경 + 본문 우호도 동지(1000) · 장문인: 현경 + 장로 + 천마 토벌. 조건이 되면 문파 어른이 직접 찾아온다.</p>`;
+  const offerBox=offer?`<div class="wall"><p><b>${offer.by}</b>이(가) 찾아왔다.</p><p>${esc(offer.say)}</p><div class="row"><button class="btn sealb" id="postYes" type="button">${offer.n} 자리를 받는다</button><button class="btn ghost" id="postNo" type="button">사양한다</button></div></div>`:"";
+  const opts=Object.keys(SECTS).filter(k=>k!==cur);
+  const move=sectConfirm&&sectPick?`<div class="wall"><p><b>${SECTS[cur].n}</b>을(를) 떠나 <b>${SECTS[sectPick].n}</b>로 옮긴다. ${SECTS[cur].n} 우호도가 70% 줄고, 7일 동안 다시 들어갈 수 없다.${h.post?" 직위도 잃는다.":""}</p>
+      <div class="row"><button class="btn sealb" id="sectYes" type="button">파문을 감수하고 옮긴다</button><button class="btn ghost" id="sectNo" type="button">그만둔다</button></div></div>`
+    :`<div class="row"><span class="note" style="margin:0">문파 옮기기:</span>${opts.map(k=>`<button class="btn sm ghost" type="button" data-sect="${k}">${SECTS[k].n}</button>`).join("")}</div>`;
+  return `<section><div class="label">문파 우호도</div>${offerBox}<div class="favs">${rows}</div>${post}
+    <p class="note">우호도는 그 문파 근처의 사건 해결(+20), 문파에 선물(강호 탭에서, +10~25), 그 문파 NPC와 함께 이긴 싸움(+15)으로 오른다.</p>${move}</section>`;
+}
+/* 인연 탭 */
+function bondTab(){
+  const gifts=giftsToMe(),newG=gifts.filter(g=>g.t>(me.seenGift||0)).length;
+  const list=!others.length?(mode!=="db"?`<p class="empty">다른 사람의 소식은 공유된 링크로 들어왔을 때 보인다.</p>`:`<p class="empty">아직 함께할 사람이 강호에 들어오지 않았다. 관리 화면에서 초대코드를 만들어 친구에게 주면, 친구가 가입하고 입문하는 순간 여기에 나타난다.</p>`)
+    :others.map(o=>{const id=o._id,tot=bondTotal(myId(),id),st=stageOf(tot),nx=BOND_STAGES.find(x=>x[0]>tot),rel=relWith(id),A=bondOf(myId(),id),B=bondOf(id,myId());
+      const s=SECTS[o.sect]||SECTS.sorim,canRel=tot>=300,inv=B.want&&B.want!=="지인"&&B.want!==A.want&&B.want!==rel;
+      const fol=me.follow===id,folMut=following(id),folIn=o.follow===myId()&&!fol;
+      return `<div class="bond"><div class="bh">${emblem(o.sect in SECTS?o.sect:"sorim","sm")}<div><b>${esc(o.name)}</b><span>${s.n} · ${REALMS[o.realm]?.n||""} Lv.${o.level} · ${mateAct(o)}</span></div>
+          <span class="relb ${rel!=="지인"?"on":""}">${rel}</span></div>
+        <div class="bbar"><span>인연 ${st[1]} · ${tot}${nx?` / ${nx[0]} (${nx[1]})`:""}</span><div class="hpb"><i style="width:${Math.min(100,nx?(tot-st[0])/(nx[0]-st[0])*100:100)}%"></i></div></div>
+        ${rel!=="지인"?`<p class="note" style="margin:4px 0 0">${rel}의 효과: ${REL_FX[rel]}${tot>=600?` · 합격기 「${COMBO[rel]}」 (관문에서 둘이 같은 막에 무공을 쓰면 발동)`:` · 600에서 합격기`}</p>`:""}
+        ${inv?`<div class="wall" style="margin-top:8px"><p><b>${esc(o.name)}</b>이(가) <b>${B.want}</b>의 연을 청했다.</p><div class="row"><button class="btn sm sealb" type="button" data-rel="${id}" data-relv="${B.want}">받아들인다</button><button class="btn sm ghost" type="button" data-rel="${id}" data-relv="지인">사양한다</button></div></div>`:""}
+        <div class="row" style="margin-top:8px">
+          <select id="gp-${id}" data-gpick="${id}" aria-label="보낼 선물">${GIFTS.map(g=>`<option value="${g}" ${(giftPick[id]||"herb")===g?"selected":""}>${ITEMS[g][0]} (${me.items[g]}개 · 인연 +${GIFT_VAL[g]})</option>`).join("")}</select>
+          <button class="btn sm" type="button" data-gift="${id}" ${giftDayLeft(me)<1?"disabled":""}>선물 보내기 · 오늘 ${giftDayLeft(me)}/3</button>
+          <button class="btn sm ${fol?"sealb":"ghost"}" type="button" data-follow="${id}">${folMut?"동행 중 · 풀기":fol?"동행 청함 · 취소":folIn?"동행 받아들이기":"동행 청하기"}</button></div>
+        ${canRel?`<div class="row" style="margin-top:6px"><span class="note" style="margin:0">관계 맺기:</span>${["친우","사형제","연인"].map(r=>`<button class="btn sm ${A.want===r?"sealb":"ghost"}" type="button" data-rel="${id}" data-relv="${r}">${r}${A.want===r&&rel!==r?" · 청함":""}</button>`).join("")}${rel!=="지인"||A.want?`<button class="btn sm ghost" type="button" data-rel="${id}" data-relv="지인">내려놓기</button>`:""}</div>`
+          :`<p class="note" style="margin:6px 0 0">인연이 각별(300)에 닿으면 친우·사형제·연인 중 관계를 청할 수 있다.</p>`}
+        ${folIn?`<p class="note" style="margin:6px 0 0">${josa(esc(o.name),"이")} 동행을 청했다.</p>`:folMut?`<p class="note" style="margin:6px 0 0">동행 중: 한 사람이 떠나면 다른 사람도 같은 길을 따라간다(화면을 열었을 때). 동행 중 쌓는 인연 +50%.</p>`:""}
+      </div>`}).join("");
+  const giftList=gifts.length?`<ul class="log">${gifts.slice(0,10).map(g=>`<li class="${g.t>(me.seenGift||0)?"newg":""}"><time>${hhmm(g.t)}</time>${josa(esc(g.from),"이")} ${josa(ITEMS[g.item][0],"을")} 보냈다.</li>`).join("")}</ul>`:`<p class="empty">아직 받은 선물이 없다.</p>`;
+  return `<section><div class="label">인연</div>${list}
+    <p class="note">인연은 같이 한 사건(+10), 함께한 토벌(+20), 관문(+30), 선물로 쌓인다. 두 사람이 쌓은 몫을 합쳐 단계가 정해진다.</p></section>
+    <section class="grid2"><div><div class="label">받은 선물${newG?` · 새로 ${newG}`:""}</div>${giftList}</div>
+    <div><div class="label">행적</div><ul class="log">${(me.log||[]).map(l=>`<li><time>${hhmm(l.t)}</time>${esc(l.text)}</li>`).join("")}</ul></div></section>`;
+}
+function sectGift(k){
+  const it=giftPick["sect-"+k]||"herb",h=structuredClone(me);if(h.items[it]<1){toast(`${josa(ITEMS[it][0],"이")} 없습니다.`);return}
+  h.items[it]--;addFavor(h,k,SECT_GIFT[it]);addLog(h,`${SECTS[k].n}에 ${josa(ITEMS[it][0],"을")} 바쳤다. (우호도 +${SECT_GIFT[it]})`);save(h);toast(`${SECTS[k].n} 우호도 +${SECT_GIFT[it]}`)}
+function regionSectBox(region){
+  const ks=REGION_SECTS[region];if(!ks||me.travel||me.loc!==region)return "";
+  return `<div class="row" style="margin-top:8px;flex-wrap:wrap">${ks.map(k=>`<span class="note" style="margin:0">${SECTS[k].n}에 선물:</span>
+    <select data-gpick="sect-${k}" aria-label="${SECTS[k].n}에 바칠 선물">${GIFTS.map(g=>`<option value="${g}" ${(giftPick["sect-"+k]||"herb")===g?"selected":""}>${ITEMS[g][0]} (${me.items[g]}개 · +${SECT_GIFT[g]})</option>`).join("")}</select>
+    <button class="btn sm" type="button" data-sgift="${k}">바친다</button>`).join("")}</div>`;
+}
+
+/* ───────── 장비와 강화 ───────── */
+const SLOTS={weapon:"무기",armor:"의복",acc:"장신구"};
+const GRADE=["무명","청강","한철","현철","운철","천잠","만년한철"];
+const W_ATK=[10,20,40,70,110,160,220], A_DEF=[5,10,20,35,55,80,110], ACC=[3,5,8,12,17,23,30];
+const SPEC={tank:{n:"탱커 특화",atk:.8,def:1.3},dps:{n:"딜러 특화",atk:1.3,def:.8},heal:{n:"힐러 특화",atk:.9,def:1,nei:.5}};
+const NOUN={weapon:{tank:"선장",dps:"장검",heal:"철선"},armor:{tank:"갑의",dps:"경장",heal:"도포"},acc:{nei:"옥패",wai:"완갑",shen:"요대"}};
+const SECT_ITEM={sorim:{n:"금강선장",spec:"tank",fx:"나한권이 보스 시선을 더 강하게 끈다"},hwasan:{n:"매화검",spec:"dps",fx:"매화검법 연타 +1"},
+  ami:{n:"자운불진",spec:"heal",fx:"회춘수 회복량 +15%"},mudang:{n:"태극검",spec:"tank",fx:"태극권 보호막 +20%"},dang:{n:"만천화우통",spec:"dps",fx:"비도술 타수 +1"}};
+const SECT_SPEC={sorim:"tank",hwasan:"dps",ami:"heal",mudang:"tank",dang:"dps"};
+const ENH=[90,80,70,50,40,30,15,10,5,3];
+const enhChance=it=>Math.min(100,Math.round((ENH[it.plus]*Math.pow(.9,it.grade)+(it.fails||0))*10)/10);
+const enhCost=it=>(it.plus+1)*2;
+const SUCC=["망치가 내려칠 때마다 불꽃이 튄다. 담금질한 쇠가 푸르게 울었다.","{i|에} 새 기운이 스며든다. 손에 착 감긴다.","쩡! 맑은 소리와 함께 {i|의} 결이 한층 단단해졌다."];
+const FAILT=["쩌억— 불길한 소리. 강화석만 재가 되어 흩어졌다.","기운이 엇나가 튕겨 나왔다. {i|은} 그대로다.","담금질 물이 끓어 넘쳤다. 이번엔 실패다."];
+let gsel="weapon", gmsg=null, gconfirm=null;
+function makeItem(slot,grade,spec,opt={}){
+  const it={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),slot,grade,plus:0,fails:0};
+  if(opt.sect){const S=SECT_ITEM[opt.sect];Object.assign(it,{slot:"weapon",spec:S.spec,sect:opt.sect,name:S.n});return it}
+  if(slot==="acc"){it.stat=opt.stat||pickOne(["nei","wai","shen"]);it.name=`${GRADE[grade]} ${NOUN.acc[it.stat]}`}
+  else{it.spec=spec;it.name=`${GRADE[grade]} ${NOUN[slot][spec]}`}
+  return it;
+}
+function itemStats(it){
+  if(!it) return {};
+  const m=1+.1*(it.plus||0);
+  if(it.slot==="acc") return {[it.stat]:Math.round(ACC[it.grade]*m)};
+  const S=SPEC[it.spec],o={};
+  if(it.slot==="weapon") o.atk=Math.round(W_ATK[it.grade]*S.atk*m*(it.sect?1.1:1));
+  if(it.slot==="armor") o.def=Math.round(A_DEF[it.grade]*S.def*m);
+  if(S.nei) o.nei=Math.round(ACC[it.grade]*S.nei*m);
+  return o;
+}
+function statLine(it){const s=itemStats(it);return [s.atk?`공격 +${s.atk}`:"",s.def?`방어 +${s.def}`:"",...["nei","wai","shen"].filter(k=>s[k]).map(k=>`${STATS[k].n} +${s[k]}`)].filter(Boolean).join(" · ")}
+const gradeLine=it=>`${REALMS[it.grade].n}급 · ${it.slot==="acc"?STATS[it.stat].n+" 장신구":SPEC[it.spec].n}${it.sect?` · ${SECTS[it.sect].n} 전용`:""}`;
+function gearSum(h){const o={atk:0,def:0,nei:0,wai:0,shen:0};for(const k in SLOTS){const s=itemStats(h.gear?.[k]);for(const x in s)o[x]+=s[x]}return o}
+function effStats(h){const g=gearSum(h);return {nei:h.stats.nei+g.nei,wai:h.stats.wai+g.wai,shen:h.stats.shen+g.shen}}
+function gainItem(h,it){if(h.bag.length>=20){const n=it.grade+1;h.items.stone+=n;return `${it.name} (행낭이 가득 차 강화석 ${n}개로 녹임)`}h.bag.push(it);return it.name}
+function rollDrop(h,tier){
+  if(Math.random()*100>=[25,12,5][tier]) return null;
+  if(tier===0&&Math.random()<.15) return makeItem("weapon",h.realm,null,{sect:Math.random()<.5?h.sect:pickOne(Object.keys(SECTS))});
+  const slot=pickOne(["weapon","armor","acc"]);return makeItem(slot,h.realm,pickOne(["tank","dps","heal"]));
+}
+function enhance(slot){
+  const h=structuredClone(me),it=h.gear[slot];if(!it)return;
+  if(it.plus>=10){toast("이미 최고 강화입니다.");return}
+  const cost=enhCost(it);if(h.items.stone<cost){toast(`강화석이 ${cost-h.items.stone}개 모자랍니다.`);return}
+  const ch=enhChance(it),before=statLine(it),target=it.plus+1;h.items.stone-=cost;
+  if(Math.random()*100<ch){it.plus++;it.fails=0;gmsg={slot,ok:true,text:fill(pickOne(SUCC),{i:it.name}),tag:`+${it.plus} 성공`,sub:`${before} → ${statLine(it)}`};addLog(h,`${it.name} 강화 성공 · +${it.plus}`)}
+  else{it.fails=(it.fails||0)+1;gmsg={slot,ok:false,text:fill(pickOne(FAILT),{i:it.name}),tag:`+${target} 실패`,sub:`강화석 ${cost}개 소모 · 다음 확률 +${it.fails}% (실패 보정)`};addLog(h,`${it.name} +${target} 강화 실패 · 강화석 ${cost}개 소모`)}
+  gmsg.n=(gmsg.n||0)+1; save(h);
+}
+function equip(idx,inherit){
+  const h=structuredClone(me),it=h.bag[idx];if(!it)return;const old=h.gear[it.slot];
+  h.bag.splice(idx,1);let msg=`${josa(it.name,"을")} 장착했다.`;
+  if(inherit&&old&&old.plus>0){const p=Math.floor(old.plus/2);if(p>it.plus){it.plus=p;msg+=` ${old.name}의 강화 기운을 이어받아 +${p}가 되었다.`}old.plus=0;old.fails=0}
+  h.gear[it.slot]=it;if(old)h.bag.push(old);gsel=it.slot;gmsg=null;gconfirm=null;
+  addLog(h,msg);save(h);toast(msg);
+}
+function unequip(slot){const h=structuredClone(me),it=h.gear[slot];if(!it)return;if(h.bag.length>=20){toast("행낭이 가득 찼습니다.");return}h.bag.push(it);h.gear[slot]=null;gmsg=null;addLog(h,`${josa(it.name,"을")} 벗어 행낭에 넣었다.`);save(h)}
+function salvage(idx){const h=structuredClone(me),it=h.bag[idx];if(!it)return;const n=it.grade+1+Math.floor(it.plus/2);h.bag.splice(idx,1);h.items.stone+=n;
+  addLog(h,`${josa(it.name,"을")} 녹여 강화석 ${n}개를 얻었다.`);gconfirm=null;save(h);toast(`강화석 +${n}`)}
+function diffLine(it){
+  const cur=itemStats(me.gear[it.slot]),nw=itemStats(it),keys=["atk","def","nei","wai","shen"],nm={atk:"공격",def:"방어",nei:"내공",wai:"외공",shen:"신법"};
+  const parts=keys.map(k=>{const d=(nw[k]||0)-(cur[k]||0);return d?`<span class="${d>0?"up":"down"}">${nm[k]} ${d>0?"+":""}${d}</span>`:""}).filter(Boolean);
+  return parts.length?parts.join(" "):`<span>차이 없음</span>`;
+}
+function gearTab(){
+  const h=me,d=derived(h),it=h.gear[gsel];
+  const card=k=>{const x=h.gear[k];return `<button class="gslot ${gsel===k?"on":""}" type="button" data-gsel="${k}"><span class="sl">${SLOTS[k]}</span>
+    ${x?`<b>${esc(x.name)}${x.plus?` <em>+${x.plus}</em>`:""}</b><span class="gs">${gradeLine(x)}</span><span class="gst">${statLine(x)}</span>`
+      :`<b class="none">비어 있음</b><span class="gs">사건과 보스에서 얻는다</span>`}</button>`};
+  let forge;
+  if(!it) forge=`<div class="forge"><p class="note" style="margin:0">${SLOTS[gsel]} 칸이 비어 있다. 행낭의 장비를 장착하면 여기서 강화할 수 있다.</p></div>`;
+  else if(it.plus>=10) forge=`<div class="forge"><div class="kicker">강화 · ${esc(it.name)}</div><div class="fbig"><em>+10</em> 극에 달했다</div><p class="note" style="margin:0">더 이상 강화할 수 없다. 새 장비로 갈아탈 때 절반(+5)을 이어 줄 수 있다.</p></div>`;
+  else{const ch=enhChance(it),cost=enhCost(it),next={...it,plus:it.plus+1},lack=h.items.stone<cost;
+    forge=`<div class="forge"><div class="kicker">강화 · ${esc(it.name)}</div>
+      <div class="fbig">+${it.plus} → <em>+${it.plus+1}</em></div>
+      <dl><dt>성공 확률</dt><dd>${ch}%${it.fails?` <span class="note">(실패 보정 +${it.fails}% 포함)</span>`:""}</dd>
+        <dt>필요 강화석</dt><dd>${cost}개 <span class="${lack?"down":"note"}">(가진 것 ${h.items.stone}개)</span></dd>
+        <dt>성공하면</dt><dd>${statLine(it)} → ${statLine(next)}</dd>
+        <dt>실패하면</dt><dd>강화석만 사라지고 다음 확률 +1%</dd></dl>
+      ${gmsg&&gmsg.slot===gsel?`<div class="fres ${gmsg.ok?"":"fail"}" data-n="${gmsg.n}">▸ ${esc(gmsg.text)} <b>【${gmsg.tag}】</b><span class="note" style="display:block;margin:2px 0 0">${gmsg.sub}</span></div>`:""}
+      <div class="row"><button class="btn ${lack?"":"sealb"}" id="enhBtn" type="button" ${lack?"disabled":""}>망치를 든다 · 강화 시도</button>
+        <button class="btn ghost" id="unequipBtn" type="button">벗기</button></div>
+      ${lack?`<p class="note" style="margin:0">강화석은 사건 해결, 길 위의 만남, 장비 녹이기로 모은다.</p>`:""}
+      ${it.sect?`<p class="note" style="margin:0">전용 효과: ${SECT_ITEM[it.sect].fx} (${it.sect===h.sect?"레이드 전투에서 적용 예정":`${SECTS[it.sect].n} 문하만 효과를 받는다`})</p>`:""}</div>`}
+  const bag=h.bag.length?h.bag.map((x,i)=>{const cur=h.gear[x.slot],inh=cur&&cur.plus>1&&Math.floor(cur.plus/2)>x.plus;
+    return `<div class="itemrow"><div><b>${esc(x.name)}${x.plus?` <em>+${x.plus}</em>`:""}</b><div class="gs">${SLOTS[x.slot]} · ${gradeLine(x)}</div>
+      <div class="gst">${statLine(x)} · 지금 것보다 ${diffLine(x)}</div></div>
+      <div class="acts">${gconfirm===i?`<button class="btn sm sealb" type="button" data-salv="${i}">녹여서 강화석 ${x.grade+1+Math.floor(x.plus/2)}개</button><button class="btn sm ghost" type="button" data-salvno>그만두기</button>`
+        :`<button class="btn sm" type="button" data-eq="${i}">장착</button>${inh?`<button class="btn sm sealb" type="button" data-eqi="${i}">계승하며 장착 · +${Math.floor(cur.plus/2)}</button>`:""}<button class="btn sm ghost" type="button" data-salvq="${i}">녹이기</button>`}</div></div>`}).join("")
+    :`<p class="empty">행낭에 장비가 없다. 사건을 대성공으로 해결할수록 장비가 나올 확률이 높다.</p>`;
+  return `<section><div class="label">착용 중 · 공격력 ${d.atk} · 방어력 ${d.def}</div><div class="gslots">${card("weapon")}${card("armor")}${card("acc")}</div>${forge}</section>
+    <section><div class="label">행낭의 장비 · ${h.bag.length}/20</div><div class="items">${bag}</div>
+    <p class="note">강화 계승: 강화된 장비를 새 장비로 바꿀 때 강화 수치의 절반을 이어 줄 수 있다. 이어 준 옛 장비는 +0이 된다.</p></section>`;
+}
+
+/* ───────── 행동: 입문·수련·승급·배분 ───────── */
+function create(){
+  const name=$("#hname").value.trim(); const sect=document.querySelector('input[name="sect"]:checked')?.value;
+  if(!name){toast("강호에서 불릴 이름을 적어 주세요.");$("#hname").focus();return}
+  if(!sect){toast("들어갈 문파를 골라 주세요.");return}
+  const h=normalize({name:name.slice(0,12),sect,realm:0,level:1,exp:0,points:0,stats:{nei:10,wai:10,shen:10},frac:{nei:0,wai:0,shen:0},created:Date.now()});
+  addLog(h,`${SECTS[sect].n}에 입문했다. 하남에서 강호행을 시작한다.`); save(h); toast(`${SECTS[sect].n}의 문하가 되었습니다.`);
+}
+function startTrain(){
+  if(activity(me)){toast(`${busyText[activity(me)]} 수련할 수 없습니다.`);return}
+  const now=Date.now(),h=structuredClone(me);
+  h.training={stat:pick.stat,hours:pick.hours,start:now,end:now+pick.hours*3600e3,lvl:h.level};
+  addLog(h,`${STATS[pick.stat].train} ${pick.hours}시간을 시작했다.`); confirmCancel=false; save(h);
+}
+function finishTrain(cancel){
+  const h=structuredClone(me),t=h.training; if(!t) return;
+  const f=cancel?Math.min(1,(Date.now()-t.start)/(t.end-t.start))*.5:1;
+  const g=trainGain(t,f), lv0=h.level, ups=applyExp(h,g.exp), w=applyStat(h,t.stat,g.stat);
+  h.training=null;
+  addLog(h,`${STATS[t.stat].train}${cancel?"을 중도에 그만두었다":"을 마쳤다"}. 경험치 +${g.exp}${w?`, ${STATS[t.stat].n} +${w}`:""}${ups?`, Lv.${lv0}→${h.level}`:""}`);
+  confirmCancel=false; save(h);
+  toast(ups?`레벨이 올랐습니다! Lv.${h.level} · 능력치 포인트 +${ups*3}`:cancel?"쌓인 기운의 절반만 거두었습니다.":"수련을 마쳤습니다.");
+}
+function promote(){
+  const h=structuredClone(me); if(!atWall(h)) return;
+  const next=REALMS[h.realm+1]; if(!next||next.gate) return;
+  h.realm++; h.points+=5; applyExp(h,0);
+  addLog(h,`${next.n}의 경지에 올랐다.`); save(h); toast(`${next.n}에 올랐습니다! 보너스 포인트 +5`);
+}
+function commitAlloc(){
+  const h=structuredClone(me),used=alloc.nei+alloc.wai+alloc.shen; if(!used) return;
+  for(const k in alloc) h.stats[k]+=alloc[k];
+  h.points-=used; addLog(h,`능력치를 다듬었다 (${Object.keys(alloc).filter(k=>alloc[k]).map(k=>`${STATS[k].n}+${alloc[k]}`).join(", ")}).`);
+  alloc={nei:0,wai:0,shen:0}; save(h);
+}
+
+/* ───────── 행동: 이동 ───────── */
+function startTravel(to){
+  const h=structuredClone(me),hrsNeed=roadHours(h.loc,to);
+  if(activity(h)){toast(`${busyText[activity(h)]} 떠날 수 없습니다.`);return}
+  if(!hrsNeed) return;
+  const R=REGIONS[to]; if(R.minRealm&&h.realm<R.minRealm){toast(`${R.n}는 ${REALMS[R.minRealm].n} 이상만 들어갈 수 있습니다.`);return}
+  const now=Date.now(); h.travel={from:h.loc,to,start:now,end:now+hrsNeed*3600e3};
+  addLog(h,`${REGIONS[h.loc].n}을 떠나 ${R.n}로 향한다.`); dest=null; save(h);
+}
+function arrive(){
+  const h=structuredClone(me),t=h.travel; if(!t||Date.now()<t.end) return;
+  h.loc=t.to; h.travel=null; let msg=`${REGIONS[t.to].n}에 도착했다.`;
+  if(Math.random()<.4){
+    const ev=pickOne(["herb","stone","master","bandit"]);
+    if(ev==="herb"){h.items.herb++;msg+=" 길가 바위틈에서 약초를 캤다. (약초 +1)"}
+    if(ev==="stone"){h.items.stone++;msg+=" 버려진 수레에서 강화석을 주웠다. (강화석 +1)"}
+    if(ev==="master"){const x=expPerHour(h.level);applyExp(h,x);msg+=` 떠돌이 고수와 한 수 겨루고 깨달음을 얻었다. (경험치 +${x})`}
+    if(ev==="bandit"){const x=Math.round(expPerHour(h.level)/2);applyExp(h,x);h.items.stone++;msg+=` 길을 막은 산적을 혼쭐냈다. (경험치 +${x}, 강화석 +1)`}
+  }
+  addLog(h,msg); save(h); toast(msg);
+}
+function cancelTravel(){const h=structuredClone(me);if(!h.travel)return;addLog(h,`${REGIONS[h.travel.to].n}로 가던 길을 돌려 ${REGIONS[h.travel.from].n}로 돌아왔다.`);h.travel=null;confirmAbort=false;save(h)}
+
+/* ───────── 행동: 임무 ───────── */
+function startMission(){
+  const h=structuredClone(me),p=periodNow();
+  if(activity(h)){toast(`${busyText[activity(h)]} 임무를 맡을 수 없습니다.`);return}
+  if(h.done[h.loc]===p){toast("이 지역 사건은 이미 해결했습니다.");return}
+  const idx=incidentIdx(h.loc,p),inc=INC[h.loc][idx],now=Date.now(),d=missionHours(h.realm);
+  h.mission={region:h.loc,period:p,idx,start:now,end:now+d*3600e3,phase:"wait",step:0,clues:0,rolls:[],fight:null};
+  addLog(h,`「${inc.t}」 사건을 맡아 탐문을 시작했다.`); save(h);
+}
+/* 탐문 중 일어나는 일들: 임무 시작 시각으로 정해져서 새로고침해도 같다 */
+function josa(w,p){const w0=String(w).replace(/[\u0001\u0002]/g,""),c=w0.charCodeAt(w0.length-1),has=c>=0xAC00&&c<=0xD7A3&&(c-0xAC00)%28!==0;
+  return w+({"이":has?"이":"가","와":has?"과":"와","은":has?"은":"는","을":has?"을":"를","아":has?"아":"야"}[p]??p)}
+function fill(t,v){return t.replace(/\{(\w+)\|?(\S?)\}/g,(_,k,p)=>v[k]===undefined?_:p?josa(v[k],p):v[k])}
+const FEED={
+  npc:["객잔 점소이","주막 할멈","떠돌이 약장수","늙은 뱃사공","사찰의 동자승","장터 아이들","순찰 포쾌","술 취한 낭인","짐꾼","대장장이","사냥꾼","나무꾼","가난한 서생","거지 노인","찻집 주인","여인숙 주인"],
+  talk:["{n|에}게 말을 걸었다. 처음엔 경계하는 눈치다.","{n|에}게 술 한 잔을 사며 넌지시 소문을 물었다.","{n|에}게 은자 몇 냥을 쥐여 주고 이야기를 청했다.","{n|이} 늘어놓는 넋두리를 한참 들어 주었다.","{n|에}게 사건 이야기를 슬쩍 꺼냈다. 잠시 침묵이 흐른다."],
+  act:["{n|이} 낑낑대며 옮기던 짐을 대신 들어 주었다.","{n|이} 잃어버린 물건을 함께 찾아 주었다.","{n|와} 내기 바둑을 한 판 두었다.","멱살을 잡고 다투던 {n|와} {m|을} 뜯어말렸다.","{n|이} 끌던 수레바퀴가 빠져 함께 고쳐 주었다.","앓아누운 {n|에}게 기를 조금 불어넣어 주었다."],
+  ok:["\"그러고 보니 그날 밤에 수상한 놈을 봤수.\" 귀가 번쩍 뜨인다.","현장으로 이어지는 뒷길이 있다는 걸 알게 됐다.","고맙다며 들은 것을 낮은 목소리로 귀띔해 주었다.","사건이 난 날 밤의 일을 자세히 들었다.","누가 거짓말을 하는지 감이 왔다."],
+  no:["\"모르오, 아무것도.\" 고개를 저으며 등을 돌린다.","괜히 의심만 사고 말았다.","술만 잔뜩 마시고 들은 건 없다.","엉뚱한 이야기만 한 보따리 들었다.","도움은커녕 헛걸음이었다."],
+  foe:["시비 거는 낭인","길을 막은 산적","굶주린 들개 떼","수상한 복면인","소매치기 패거리","도박장 깡패"],
+  meet:["뒷골목으로 들어서자 {f|이} 앞을 막아섰다.","주막에서 {f|이} 시비를 걸어왔다.","산길 모퉁이에서 {f|와} 딱 마주쳤다.","밤길에 {f|이} 뒤를 밟아 왔다."],
+  win:["몇 합 만에 땅바닥에 눕혔다.","가볍게 제압하고 길을 열었다.","\"살려 주시오!\" 용서를 빌며 달아났다."],
+  lose:["한 대 얻어맞고 물러섰다. 입안에 피 맛이 돈다.","놓치고 말았다.","상대가 판을 엎고 연기처럼 사라졌다."],
+  spot:["주막 뒤뜰","무너진 담장 밑","버려진 수레 안","사당 제단 아래","강가 바위틈","오래된 우물가"],
+  amb:{dawn:["새벽안개가 지붕 위로 낮게 깔렸다.","멀리서 닭 우는 소리가 들린다.","이슬 젖은 풀 냄새가 코끝을 스친다."],
+       morn:["아침 짓는 연기가 골목마다 피어오른다.","물동이를 인 아낙들이 바삐 지나간다.","장터가 하나둘 판을 벌인다."],
+       day:["한낮의 볕이 돌길을 뜨겁게 달군다.","장사꾼들의 호객 소리가 귀를 울린다.","그늘 아래 누렁이 한 마리가 졸고 있다."],
+       eve:["해가 기울며 그림자가 길어진다.","산 너머에서 저녁 종소리가 울린다.","주막에 등불이 하나둘 켜진다."],
+       night:["달빛이 기와 위에 하얗게 내려앉았다.","풀벌레 소리만 가득하다.","어디선가 술 취한 노랫소리가 흘러온다.","순찰 도는 포쾌의 등불이 멀어진다."]},
+  mono:["{me|은} 잠시 숨을 고르며 들은 이야기를 곱씹었다.","어딘가 석연치 않다. {me|은} 발걸음을 재촉했다.","{me|은} 허리춤의 검을 한 번 쥐었다 놓았다.","바람이 바뀌었다. 무언가 가까워지고 있다."]};
+const RELS=["지인","친우","사형제","연인"];
+const COMP={
+  talk:{지인:["{c|이} 옆에서 묵묵히 이야기를 듣는다.","{c|이} 다른 골목을 맡겠다며 손짓하고 사라진다.","{c|와} 들은 이야기를 맞춰 보았다."],
+        친우:["{c|이} 어깨를 툭 치며 웃는다. \"역시 말발은 네가 낫다니까.\"","{c|이} 옆에서 슬쩍 거든다. 손발이 척척 맞는다.","{c|와} 눈짓 한 번으로 할 일을 나눴다."],
+        사형제:["{c|이} \"서두르지 마라, 강호는 도망가지 않는다.\" 하며 한발 앞서 걷는다.","{c|이} 사문에서 배운 요령을 귀띔해 준다.","{c|와} 같은 보법으로 나란히 골목을 누볐다."],
+        연인:["{c|이} 슬며시 소매를 잡아끈다. \"저쪽이 수상해.\"","{c|이} 건네준 물을 나눠 마셨다.","{c|와} 나란히 걷다 보니 탐문이 조금 즐거워졌다."]},
+  fight:{지인:["{c|이} 뒤를 받쳐 주었다.","{c|이} 상대의 퇴로를 막았다."],
+        친우:["{c|와} 등을 맞대고 싸웠다. 오랜만에 피가 끓는다.","{c|이} \"하나는 내 몫이다!\" 하며 뛰어들었다."],
+        사형제:["{c|와} 사문의 합격술로 단숨에 몰아붙였다.","{c|이} \"왼쪽이 빈다!\" 하고 빈틈을 정확히 짚어 주었다."],
+        연인:["{c|이} 날아드는 칼끝을 대신 쳐냈다.","싸움이 끝나자 {c|이} 다친 데 없냐며 손을 살핀다."]},
+  find:{지인:["{c|이} 쓸 만한 물건이라며 고개를 끄덕인다."],
+        친우:["{c|이} \"반은 내 몫이다?\" 하며 장난스레 웃는다."],
+        사형제:["{c|이} 사부님께 드리면 좋아하시겠다고 한다."],
+        연인:["{c|이} 이건 네가 가지라며 손에 쥐여 준다."]}};
+let fakeMate=null, typedKey="";
+function seeded(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const relOf=id=>relWith(id);
+function companionFor(m){
+  if(fakeMate) return fakeMate;
+  const o=others.find(o=>o.mission&&o.mission.region===m.region&&o.mission.period===m.period&&o.mission.idx===m.idx&&o.mission.start<m.end&&o.mission.end>m.start);
+  return o?{name:o.name,rel:relOf(o._id),id:o._id}:null;
+}
+function ambFor(t){const hr=new Date(t).getHours();return FEED.amb[hr<4?"night":hr<7?"dawn":hr<11?"morn":hr<17?"day":hr<20?"eve":"night"]}
+function feedFor(h,m,comp){
+  const R=seeded(m.start%2147483647),P=a=>a[Math.floor(R()*a.length)],n=4+Math.min(3,h.realm),dur=m.end-m.start,out=[],dc=dcFor(h.realm)-2;
+  const A=seeded(m.start%2147483647+7),PA=a=>a[Math.floor(A()*a.length)];
+  const C=seeded(m.start%2147483647+13),PC=a=>a[Math.floor(C()*a.length)];
+  const nm={me:h.name};
+  for(let i=0;i<n;i++){
+    const t=m.start+dur*(i+.5+R()*.4)/(n+.3),x=R(),stat=P(["nei","wai","shen"]),roll=1+Math.floor(R()*20),ok=roll+Math.floor(h.stats[stat]/10)>=dc;
+    const n1=P(FEED.npc);let n2=P(FEED.npc);if(n2===n1)n2="거지 노인";
+    if(A()<.55) out.push({t:t-dur*.03,kind:"amb",text:A()<.75?PA(ambFor(t)):fill(PA(FEED.mono),nm)});
+    let e;
+    if(x<.34) e={t,kind:"talk",ok,stat,text:fill(P(FEED.talk),{n:n1}).replace(/\{n\|에\}/,n1+"에"),res:P(ok?FEED.ok:FEED.no)};
+    else if(x<.6) e={t,kind:"act",ok,stat,text:fill(P(FEED.act),{n:n1,m:n2}),res:P(ok?FEED.ok:FEED.no)};
+    else if(x<.8){const f=P(FEED.foe),win=R()<.7+Math.min(.2,h.level/200);e={t,kind:"fight",ok:win,text:fill(P(FEED.meet),{f}),res:P(win?FEED.win:FEED.lose),stone:win&&R()<.4?1:0}}
+    else{const it=P(["herb","stone","herb","wine","trinket"]);e={t,kind:"find",ok:true,item:it,text:`${P(FEED.spot)}에서 ${josa(ITEMS[it][0],"을")} 발견했다.`,res:""}}
+    e.text=e.text.replace(/\{(\S+?)\|에\}/g,"$1에");
+    out.push(e);
+    if(comp&&C()<.75){const pool=COMP[e.kind==="fight"?"fight":e.kind==="find"?"find":"talk"][comp.rel]||COMP.talk.지인;
+      out.push({t:t+dur*.01,kind:"comp",text:fill(PC(pool),{c:"\u0001"+comp.name+"\u0002"})})}
+  }
+  return out;
+}
+function feedTag(e){
+  if(e.kind==="find") return `<span class="tag">【획득 · ${ITEMS[e.item][0]}】</span>`;
+  if(e.kind==="fight") return `<span class="tag">【전투 발생】</span><span class="tag ${e.ok?"":"fail"}">【${e.ok?"승리":"패배"}${e.stone?" · 강화석":""}】</span>`;
+  return `<span class="tag ${e.ok?"":"fail"}">【${STATS[e.stat].n} 판정 ${e.ok?"성공":"실패"}】</span>`;
+}
+function feedLine(e,isNew){
+  const tm=new Date(e.t),stamp=`${String(tm.getHours()).padStart(2,"0")}:${String(tm.getMinutes()).padStart(2,"0")}`;
+  const body=esc(e.text).replace(/\u0001(.*?)\u0002/g,"<b>$1</b>");
+  if(e.kind==="amb"||e.kind==="comp") return `<li class="${e.kind}${isNew?" new":""}"><span class="tm">${stamp}</span><span class="body">${body}</span></li>`;
+  return `<li class="ev${isNew?" new":""}"><span class="tm">${stamp}</span><span class="body"><span class="txt">${body}</span> ${feedTag(e)}${e.res?`<span class="res">${esc(e.res)}</span>`:""}</span></li>`;
+}
+const feedBonus=f=>Math.min(3,f.filter(e=>(e.kind==="talk"||e.kind==="act")&&e.ok).length);
+function typeNewest(){
+  const ul=$(".feed"),li=ul?.querySelector("li.new");if(!ul||!li)return;
+  const key=ul.dataset.key;if(key===typedKey)return;const first=typedKey==="";typedKey=key;
+  if(first||matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  const target=li.querySelector(".txt")||li.querySelector(".body"),html=target.innerHTML,txt=target.textContent,rest=[...li.querySelectorAll(".tag,.res")];
+  rest.forEach(r=>r.style.visibility="hidden");target.textContent="";let i=0;
+  const iv=setInterval(()=>{i+=1;target.textContent=txt.slice(0,i);if(i>=txt.length){clearInterval(iv);target.innerHTML=html;
+    rest.forEach((r,k)=>setTimeout(()=>r.style.visibility="",250+k*250))}},38);
+}
+function enterScene(){
+  const h=structuredClone(me),m=h.mission;if(!m||Date.now()<m.end)return;
+  const comp=companionFor(m),f=feedFor(h,m,comp).filter(e=>e.kind!=="amb"&&e.kind!=="comp"),got=[];let exp=0,stones=0;
+  for(const e of f){if(e.kind==="find"){h.items[e.item]++;got.push(ITEMS[e.item][0])}
+    if(e.kind==="fight"&&e.ok){exp+=Math.round(expPerHour(h.level)*.15);stones+=e.stone}
+    if((e.kind==="talk"||e.kind==="act")&&e.ok)exp+=Math.round(expPerHour(h.level)*.05)}
+  h.items.stone+=stones;if(stones)got.push(`강화석 ${stones}`);
+  const ups=applyExp(h,exp);m.bonus=feedBonus(f)+(comp?1:0);m.phase="scene";
+  addLog(h,`탐문을 마쳤다. 경험치 +${exp}${got.length?", "+got.join(", "):""} · 조사 판정 +${m.bonus}`);
+  save(h);toast(ups?`탐문 중에 레벨이 올랐습니다! Lv.${h.level}`:`탐문 성과로 조사 판정 +${m.bonus}`);
+}
+function investigate(i){
+  const h=structuredClone(me),m=h.mission; if(!m||m.phase!=="scene"||m.step>1) return;
+  const inc=INC[m.region][m.idx],[stat,txt]=inc.s[m.step].o[i];
+  const roll=1+Math.floor(Math.random()*20),bonus=Math.floor(h.stats[stat]/10)+(m.bonus||0),dc=dcFor(h.realm),ok=roll===20||(roll!==1&&roll+bonus>=dc);
+  m.rolls.push({step:m.step,stat,txt,roll,bonus,dc,ok,t:Date.now()}); if(ok)m.clues++; m.step++; save(h);
+}
+function fight(){
+  const h=structuredClone(me),m=h.mission; if(!m||m.step!==2) return;
+  const d=derived(h),L=h.level,foe={hp:Math.round(40+L*8),atk:8+L*2.5,def:L};
+  let php=d.hp,fhp=foe.hp; const log=[];
+  for(let turn=1;turn<=3&&php>0&&fhp>0;turn++){
+    const crit=Math.random()*100<d.crit;
+    let dmg=Math.max(1,Math.round(d.atk*100/(100+foe.def)*(0.9+Math.random()*.2)*(crit?1.5:1)));
+    fhp=Math.max(0,fhp-dmg);
+    let line=`${turn}합: 내가 <b>${dmg}</b> 피해${crit?" (치명타!)":""}`;
+    if(fhp>0){
+      if(Math.random()*100<d.eva) line+=` · 상대의 공격을 피했다`;
+      else{const fd=Math.max(1,Math.round(foe.atk*100/(100+d.def)*(0.9+Math.random()*.2)));php=Math.max(0,php-fd);line+=` · <b>${fd}</b> 피해를 입었다`}
+    }
+    log.push(line);
+  }
+  const res=fhp<=0?"win":php<=0?"lose":"flee";
+  m.fight={foeHp:foe.hp,fhp,php,maxHp:d.hp,log,res,t:Date.now()}; m.step=3; save(h);
+}
+function missionTier(m){const s=m.clues+(m.fight.res==="win"?1:m.fight.res==="flee"?.5:0);return m.clues===2&&m.fight.res==="win"?0:s>=1.5?1:2}
+function missionReward(h,m){const t=missionTier(m);return {t,exp:Math.round(expPerHour(h.level)*3*[1.3,1,.6][t]),stone:[4,3,2][t]}}
+function finishMission(){
+  const h=structuredClone(me),m=h.mission; if(!m||m.step!==3) return;
+  const inc=INC[m.region][m.idx],r=missionReward(h,m),comp=companionFor(m),bx=[];
+  if(comp?.id&&relWith(comp.id)==="친우"){r.exp=Math.round(r.exp*1.2);bx.push("친우 보너스 경험치 +20%")}
+  if(comp?.id){const v=addBond(h,comp.id,10);bx.push(`${josa(comp.name,"와")} 인연 +${v}`)}
+  (REGION_SECTS[m.region]||[]).forEach(k=>{addFavor(h,k,20);bx.push(`${SECTS[k].n} 우호도 +20`)});
+  const lv0=h.level,ups=applyExp(h,r.exp);
+  h.items.stone+=r.stone; const extra=[...bx];
+  if(Math.random()<[.6,.35,.15][r.t]){const g=pickOne(GIFTS);h.items[g]++;extra.push(`${ITEMS[g][0]} +1`)}
+  if(r.t===0&&Math.random()<.1){h.items.clue++;extra.push("비급 단서 +1")}
+  const drop=rollDrop(h,r.t); if(drop) extra.push("장비 「"+gainItem(h,drop)+"」");
+  saveJournal(h,m,inc,r.t,`보상: 경험치 +${r.exp}, 강화석 +${r.stone}${extra.length?", "+extra.join(", "):""}`);
+  h.done[m.region]=m.period; h.mission=null;
+  addLog(h,`「${inc.t}」 ${TIER[r.t]}. 경험치 +${r.exp}, 강화석 +${r.stone}${extra.length?", "+extra.join(", "):""}${ups?`, Lv.${lv0}→${h.level}`:""}`);
+  save(h); toast(ups?`사건 해결! 레벨이 올랐습니다. Lv.${h.level}`:`사건 해결 · ${TIER[r.t]}`);
+}
+function abortMission(){const h=structuredClone(me);if(!h.mission)return;addLog(h,`「${INC[h.mission.region][h.mission.idx].t}」 탐문을 그만두었다.`);h.mission=null;confirmAbort=false;save(h)}
+
+async function wipe(){
+  if(mode==="db"){try{await db.doc("heroes/"+uid).delete()}catch(e){toast("지우지 못했어요.");return}}
+  else{try{localStorage.removeItem("gangho-hero")}catch(e){}}
+  me=null; confirmWipe=false; render();
+}
+function fastForward(){
+  const h=structuredClone(me),now=Date.now();
+  for(const k of ["training","travel","mission"]) if(h[k]&&h[k].end>now){h[k].start=Math.min(h[k].start,now-1000);h[k].end=now}
+  save(h);
+}
+
+/* ───────── 그리기 ───────── */
+let lastView=null, fadeNext=true;
+function render(){
+  const app=$("#app"),fb0=$("#inlineFeed"),fbAt=!fb0||fb0.scrollHeight-fb0.scrollTop-fb0.clientHeight<30,fbSt=fb0?.scrollTop||0;
+  if(!ready){app.innerHTML="";return}
+  $("#status").textContent = mode==="db"
+    ? (others.length?`${others.length+(me?1:0)}명이 이 무림에 있습니다.`:"함께할 사람을 기다리는 중입니다.")
+    : "이 기기에만 기록되는 홀로 수련 모드입니다.";
+  const view=me?"hero":"intro"; if(view!==lastView){fadeNext=true;lastView=view}
+  const keepName=$("#hname")?.value, keepSect=document.querySelector('input[name="sect"]:checked')?.value, keepTools=$("details.tools")?.open;
+  app.innerHTML = me ? heroView() : introView();
+  if(keepName&&$("#hname"))$("#hname").value=keepName;
+  if(keepSect&&$("#sect-"+keepSect))$("#sect-"+keepSect).checked=true;
+  if(keepTools&&$("details.tools"))$("details.tools").open=true;
+  if(fadeNext){app.firstElementChild?.classList.add("fade");fadeNext=false}
+  const fb1=$("#inlineFeed");if(fb1){fb1.style.scrollBehavior="auto";fb1.scrollTop=fbAt?fb1.scrollHeight:fbSt;fb1.style.scrollBehavior=""}
+  document.querySelectorAll("#app [data-read]").forEach(b=>b.addEventListener("click",()=>{readerOpen=b.dataset.read==="live"?"live":+b.dataset.read;renderReader()}));
+  const gf=$("#gateFeed");if(gf){gf.style.scrollBehavior="auto";gf.scrollTop=gf.scrollHeight;gf.style.scrollBehavior=""}
+  const bf=$("#lairFeed");if(bf){bf.style.scrollBehavior="auto";bf.scrollTop=bf.scrollHeight;bf.style.scrollBehavior=""}
+  if(tab==="mates"&&me&&!render.seenT&&giftsToMe().some(g=>g.t>(me.seenGift||0))){render.seenT=setTimeout(()=>{render.seenT=null;const h=structuredClone(me);h.seenGift=Date.now();save(h)},2500)}
+  autoLoop(); bind(); typeNewest(); if(readerOpen!==null)renderReader(); phaseKey=curPhase(); tick();
+}
+function introView(){
+  return `<div class="intro">
+  <section><div class="label">입문</div>
+    <h2 style="font-family:var(--f-brush);font-size:32px;line-height:1.2;letter-spacing:.04em">강호에 첫발을 딛다</h2>
+    <p>이름을 정하고 몸을 맡길 문파를 고르세요. 문파는 파티에서 맡을 자리와 주력 능력치를 정합니다. 나중에 파문하고 옮길 수도 있지만 대가가 따릅니다.</p>
+    <div class="field"><label for="hname" style="font-size:13px;color:var(--ink-3);letter-spacing:.12em">강호에서 불릴 이름</label>
+      <input id="hname" maxlength="12" autocomplete="off" placeholder="예: 청풍"></div>
+  </section>
+  <section><div class="label">문파</div>
+    <div class="sects">${Object.entries(SECTS).map(([k,s])=>`
+      <label class="sectc"><input type="radio" name="sect" value="${k}" id="sect-${k}">
+        <div class="box">${emblem(k,"md")}
+          <div><h3>${s.n}</h3><div class="role">${s.role} · 주력 ${s.main.map(m=>STATS[m].n).join("+")}</div></div>
+          <p>${s.desc}</p>
+          <div class="sk">시작 무공 · ${s.sk.map(x=>x[0]).join(", ")} &nbsp;|&nbsp; 기본 장비 · ${SPEC[SECT_SPEC[k]].n} 무기와 의복</div></div></label>`).join("")}</div>
+    <div class="row" style="margin-top:22px"><button class="btn solid" id="createBtn" type="button">입문하기</button></div>
+  </section></div>`;
+}
+function heroView(){
+  const h=me,s=SECTS[h.sect],r=REALMS[h.realm],next=REALMS[h.realm+1],wall=atWall(h);
+  const pct=Math.min(100,h.exp/need(h.level)*100);
+  const tabs=[["train","수련"],["world","강호"],["raid","토벌"],["gate","관문"],["self","인물"],["gear","장비"],["mates","인연"]];
+  const dot={train:h.training&&Date.now()>=h.training.end,world:(h.travel&&Date.now()>=h.travel.end)||(h.mission&&(h.mission.phase==="scene"||Date.now()>=h.mission.end)),self:h.points>0||!!postOffer(h),mates:giftsToMe().some(g=>g.t>(h.seenGift||0))||others.some(o=>{const B=bondOf(o._id,myId()),A=bondOf(myId(),o._id);return (B.want&&B.want!=="지인"&&B.want!==A.want)||(o.follow===myId()&&h.follow!==o._id)}),gate:(()=>{const r=myRoom();if(r&&r.status==="fight"){const m=r.party.find(x=>x.id===myId());return !!(m&&m.hp>0&&!playerReady(r,m))}if(r&&(r.status==="win"||r.status==="fail")&&!h.gateDone?.[r.id])return true;return atWall(h)&&!!GATES[h.realm+1]?.ready&&!r})(),raid:(()=>{const st=raidState(periodNow());if(h.lair&&h.lair.phase!=="done")return true;return st.down&&h.raid?.period===periodNow()&&!h.raid.claimed})()};
+  return `<div>
+  <section style="margin-top:8px">
+    <div class="who">${emblem(h.sect,"big")}
+      <div><div class="name">${esc(h.name)}</div><div class="sect">${s.n} 문하 · ${s.role} · ${h.travel?`${REGIONS[h.travel.from].n} → ${REGIONS[h.travel.to].n}`:REGIONS[h.loc].n}</div></div></div>
+    <div class="realm"><b>${r.n}</b><span>Lv.${h.level} <small style="color:var(--ink-3)">/ ${cap(h.realm)}</small></span></div>
+    <div class="bar ${wall?"seal-c":""}"><i style="width:${pct}%"></i></div>
+    <div class="barnote"><span>경험치 ${h.exp.toLocaleString()} / ${need(h.level).toLocaleString()}</span>
+      <span>${wall?"경지의 벽에 닿았다":`다음 레벨까지 ${(need(h.level)-h.exp).toLocaleString()}`}</span></div>
+    ${wall&&next?`<div class="wall">${next.gate
+      ?`<p><b>${next.n}</b>의 벽은 홀로 넘을 수 없다. 관문 보스 <b>${next.boss}</b>를 쓰러뜨려야 한다.</p><button class="btn sealb" type="button" data-go="gate">관문으로 가기</button>`
+      :`<p>몸 안의 기운이 가득 찼다. <b>${next.n}</b>의 경지로 오를 수 있다.</p><button class="btn sealb" id="promoteBtn" type="button">${next.n}로 승급하기 · 포인트 +5</button>`}</div>`:""}
+    ${bannerView()}
+  </section>
+  <div class="tabs" role="tablist">${tabs.map(([k,n])=>`<button class="tab" role="tab" type="button" data-tab="${k}" aria-selected="${tab===k}">${n}${dot[k]?`<span class="dot" aria-label="확인할 것 있음"></span>`:""}</button>`).join("")}</div>
+  <div id="tabbody">${tab==="train"?trainTab():tab==="world"?worldTab():tab==="raid"?raidTab():tab==="gate"?gateTab():tab==="self"?selfTab():tab==="gear"?gearTab():bondTab()}</div>
+  ${isOwner||mode==="local"?`<details class="tools"><summary>시험용 도구 (만드는 동안만 쓰고 나중에 없앱니다)</summary>
+    <div class="row"><button class="btn ghost" id="stoneBtn" type="button">강화석 +20</button><button class="btn ghost" id="warpBtn" type="button">보스 지역으로 순간이동</button><button class="btn ghost" id="triesBtn" type="button">진입 횟수 초기화</button><button class="btn ghost" id="dropBtn" type="button">장비 하나 얻기</button></div>
+    <div class="row">${fakeOthers.length?`<button class="btn ghost" id="fakeUpBtn" type="button">백운 쪽 인연 +100</button>${["친우","사형제","연인"].map(r=>`<button class="btn ghost" type="button" data-fakerel="${r}">백운이 ${r} 청하기</button>`).join("")}<button class="btn ghost" id="fakeDelBtn" type="button">가상 동료 내보내기</button>`:`<button class="btn ghost" id="fakeMateBtn" type="button">가상 동료 넣기 (이 기기에서만)</button>`}</div>
+    <div class="row"><button class="btn ghost" id="lv30Btn" type="button">일류 Lv.30 (관문 직전)으로</button><button class="btn ghost" id="warpGateBtn" type="button">관문 지역으로 순간이동</button></div>
+    <div class="row">${activity(h)?`<button class="btn ghost" id="ffBtn" type="button">지금 하는 일 바로 끝내기</button>`:""}
+    ${h.done[h.loc]===periodNow()?`<button class="btn ghost" id="newIncBtn" type="button">이 지역 사건 다시 열기</button>`:""}</div>
+    ${h.mission?`<div class="row"><span>가상 동행 붙이기:</span>${["없음",...RELS].map(r=>`<button class="btn ghost" type="button" data-fake="${r}" style="padding:4px 10px;font-size:12px${(fakeMate?.rel||"없음")===r?";border-color:var(--ink);color:var(--ink)":""}">${r}</button>`).join("")}</div>`:""}
+    <div class="row">
+    <button class="btn ghost" id="wipeBtn" type="button">${confirmWipe?"정말 지울까요? 한 번 더 누르면 지워집니다":"내 캐릭터 지우기"}</button></div></details>`:""}
+  </div>`;
+}
+function bannerView(){
+  const h=me,a=activity(h); if(!a) return "";
+  const now=Date.now();
+  if(a==="train"){const t=h.training,done=now>=t.end;return `<div class="banner ${done?"done":""}"><span><b>${STATS[t.stat].train}</b> <span class="t">${done?"· 끝났다":`· <span data-until="${t.end}"></span> 남음`}</span></span>${tab!=="train"?`<button class="btn ghost" data-go="train" type="button">${done?"거두러 가기":"보기"}</button>`:""}</div>`}
+  if(a==="travel"){const t=h.travel,done=now>=t.end;return `<div class="banner ${done?"done":""}"><span><b>${REGIONS[t.to].n}</b>로 가는 길 <span class="t">${done?"· 도착했다":`· <span data-until="${t.end}"></span> 남음`}</span></span>${tab!=="world"?`<button class="btn ghost" data-go="world" type="button">${done?"도착하기":"보기"}</button>`:""}</div>`}
+  if(a==="lair"){const B=bossFor(h.lair.period);return `<div class="banner done"><span><b>${B.n}의 소굴</b> <span class="t">· ${h.lair.phase==="boss"?"보스방에서 싸우는 중":"탐험 중"}</span></span>${tab!=="raid"?`<button class="btn ghost" data-go="raid" type="button">돌아가기</button>`:""}</div>`}
+  const m=h.mission,inc=INC[m.region][m.idx],ready=m.phase==="scene"||now>=m.end;
+  return `<div class="banner ${ready?"done":""}"><span><b>「${inc.t}」</b> <span class="t">${m.phase==="scene"?"· 현장에 있다":ready?"· 탐문이 끝났다":`· 탐문 중 <span data-until="${m.end}"></span> 남음`}</span></span>${tab!=="world"?`<button class="btn ghost" data-go="world" type="button">${ready?"현장으로":"보기"}</button>`:""}</div>`;
+}
+
+/* 수련 탭 */
+function trainTab(){
+  const t=me.training,a=activity(me);
+  if(!t&&a) return `<section><p class="empty">${busyText[a]} 수련할 수 없습니다. 하던 일을 마치면 다시 기운을 모을 수 있습니다.</p></section>`;
+  if(!t){
+    const g=trainGain({hours:pick.hours,lvl:me.level},1);
+    return `<section><div class="chips kinds" role="radiogroup" aria-label="수련 종류">${Object.entries(STATS).map(([k,st])=>`
+      <label class="chip"><input type="radio" name="tk" value="${k}" id="tk-${k}" ${pick.stat===k?"checked":""}><span>${st.train}<em>${st.n} 단련</em></span></label>`).join("")}</div>
+    <div class="chips" style="margin-top:10px" role="radiogroup" aria-label="수련 시간">${HOURS.map(x=>`
+      <label class="chip"><input type="radio" name="th" value="${x}" id="th-${x}" ${pick.hours===x?"checked":""}><span>${x}시간<em>×${MULT[x].toFixed(1)}</em></span></label>`).join("")}</div>
+    <p class="preview">끝까지 마치면 경험치 <b>+${g.exp.toLocaleString()}</b>, ${STATS[pick.stat].n} <b>+${(+g.stat.toFixed(2))}</b>. 수련 중에는 이동과 임무를 할 수 없고, 중간에 그만두면 쌓인 것의 절반만 받습니다.</p>
+    <button class="btn solid" id="trainBtn" type="button">수련 시작</button></section>`;
+  }
+  const done=Date.now()>=t.end;
+  return `<section><div class="train-now">
+    <svg class="ring" viewBox="0 0 104 104" aria-hidden="true"><circle class="bg" cx="52" cy="52" r="44"/><circle class="fg" id="ringFg" cx="52" cy="52" r="44" stroke-dasharray="276.5" stroke-dashoffset="276.5" transform="rotate(-90 52 52)"/><text x="52" y="54" id="ringPct">0%</text></svg>
+    <div><h3>${STATS[t.stat].train}</h3>
+      <p>${done?"수련이 끝났다. 기운을 거두어라.":`<span data-until="${t.end}"></span> 남음 · ${t.hours}시간 수련 (×${MULT[t.hours].toFixed(1)})`}</p><p id="trainGain">…</p>
+      <div class="row" style="margin-top:10px">${done?`<button class="btn sealb" id="finBtn" type="button">수련 마치고 거두기</button>`
+          :confirmCancel?`<button class="btn sealb" id="cxYes" type="button">절반만 받고 그만두기</button><button class="btn ghost" id="cxNo" type="button">계속 수련하기</button>`
+          :`<button class="btn ghost" id="cxBtn" type="button">중도에 그만두기</button>`}</div></div></div></section>`;
+}
+
+/* 강호 탭: 지도 + 지역 + 임무 */
+function mapSvg(){
+  const h=me,here=h.travel?null:h.loc,sel=dest;
+  const roads=ROADS.map(([a,b,x])=>{const A=REGIONS[a],B=REGIONS[b];
+    const go=h.travel&&((h.travel.from===a&&h.travel.to===b)||(h.travel.from===b&&h.travel.to===a));
+    const near=here&&(a===here||b===here);
+    return `<line class="road ${go?"go":near?"near":""}" x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}"/>
+      ${(()=>{const L=Math.hypot(B.x-A.x,B.y-A.y),nx=-(B.y-A.y)/L,ny=(B.x-A.x)/L,s=ny>0?-1:1;return `<text class="hrs" x="${((A.x+B.x)/2+nx*9*s).toFixed(1)}" y="${((A.y+B.y)/2+ny*9*s+3).toFixed(1)}">${x}h</text>`})()}`}).join("");
+  const nodes=Object.entries(REGIONS).map(([k,R])=>{const lock=R.minRealm&&h.realm<R.minRealm;
+    return `<g class="node ${sel===k?"sel":""} ${lock?"lock":""}" data-r="${k}" tabindex="0" role="button" aria-label="${R.n}${k===here?" (현재 위치)":""}">
+      <circle class="hit" cx="${R.x}" cy="${R.y}" r="22"/>${sel===k?`<circle class="ring2" cx="${R.x}" cy="${R.y}" r="13"/>`:""}
+      ${k===here?`<rect class="here" x="${R.x-10}" y="${R.y-10}" width="20" height="20" rx="2" transform="rotate(-6 ${R.x} ${R.y})"/><text class="heret" x="${R.x}" y="${R.y+3}">我</text>`:`<circle class="pt" cx="${R.x}" cy="${R.y}" r="5"/>`}
+      <text class="name" x="${R.x}" y="${R.y+28}">${R.n}</text></g>`}).join("");
+  const mates=others.map((o,i)=>{const R=REGIONS[o.travel?o.travel.from:o.loc||"henan"];if(!R)return "";const dx=14+((i*9)%18),dy=-12-((i*7)%10);
+    return `<circle class="mate" cx="${R.x+dx}" cy="${R.y+dy}" r="3"/><text class="matet" x="${R.x+dx+5}" y="${R.y+dy+3}">${esc(o.name)}</text>`}).join("");
+  let me2="";
+  if(h.travel){const A=REGIONS[h.travel.from],B=REGIONS[h.travel.to];
+    me2=`<g id="traveler"><rect class="here" x="-8" y="-8" width="16" height="16" rx="2" transform="rotate(-6)"/><text class="heret" y="3">我</text></g>`;}
+  return `<div class="mapbox"><svg class="map" viewBox="0 0 400 270" role="img" aria-label="중원 지도">
+    <path class="river" d="M20,58 C80,52 120,74 175,82 S290,70 395,58"/><text class="rname" x="300" y="56">황하</text>
+    <path class="river" d="M70,248 C130,236 180,250 240,242 S330,252 395,236"/><text class="rname" x="250" y="262">장강</text>
+    ${roads}${nodes}${mates}${me2}</svg></div>`;
+}
+function worldTab(){
+  const h=me,a=activity(h),now=Date.now();
+  let travelBox="";
+  if(h.travel){const t=h.travel,done=now>=t.end;
+    travelBox=`<div class="case"><div class="kicker">이동</div><h3>${REGIONS[t.from].n} → ${REGIONS[t.to].n}</h3>
+      <p>${done?"목적지가 눈앞이다.":`<span data-until="${t.end}"></span> 남았다. 이동 중에는 수련과 임무를 할 수 없다.`}</p>
+      <div class="row">${done?`<button class="btn sealb" id="arriveBtn" type="button">${REGIONS[t.to].n}에 들어서기</button>`
+        :confirmAbort?`<button class="btn sealb" id="abYes" type="button">돌아가기</button><button class="btn ghost" id="abNo" type="button">계속 가기</button>`
+        :`<button class="btn ghost" id="abBtn" type="button">발길 돌리기</button>`}</div></div>`}
+  const focus=dest||(h.travel?h.travel.to:h.loc),R=REGIONS[focus];
+  let regionBox=`<div class="region"><div><h3>${R.n}</h3><div class="place">${R.place}</div></div><p>${R.note}</p>`;
+  if(!h.travel&&dest&&dest!==h.loc){
+    const direct=roadHours(h.loc,dest),lock=R.minRealm&&h.realm<R.minRealm;
+    if(lock) regionBox+=`<p class="note">${REALMS[R.minRealm].n} 이상만 들어갈 수 있다.</p>`;
+    else if(direct) regionBox+=`<div class="row" style="margin-top:6px"><button class="btn solid" id="goBtn" type="button" ${a?"disabled":""}>${R.n}로 떠나기 · ${direct}시간</button>${a?`<span class="note" style="margin:0">${busyText[a]} 떠날 수 없다.</span>`:""}</div>`;
+    else{const rt=route(h.loc,dest);regionBox+=`<p class="note">바로 가는 길이 없다. ${rt.path.map(p=>REGIONS[p].n).join(" → ")} (모두 ${rt.hours}시간) 순으로 한 곳씩 이동해야 한다.</p>`}
+  }
+  regionBox+=(focus===h.loc?regionSectBox(focus):"")+`</div>`;
+  return `<section><div class="label">지도</div>${mapSvg()}
+    <p class="note">지역을 누르면 정보가 보이고, 이어진 곳이면 바로 떠날 수 있다.</p>${regionBox}</section>
+    ${travelBox?`<section style="margin-top:20px">${travelBox}</section>`:""}
+    <section><div class="label">사건</div>${missionBox()}${journalList()}</section>`;
+}
+function missionBox(){
+  const h=me,m=h.mission,now=Date.now();
+  if(!m){
+    if(h.travel) return `<p class="empty">길 위에서는 사건을 맡을 수 없다. 목적지에 도착하면 그 지역의 사건을 볼 수 있다.</p>`;
+    const p=periodNow(),inc=INC[h.loc][incidentIdx(h.loc,p)],done=h.done[h.loc]===p,a=activity(h);
+    if(done) return `<div class="case"><div class="kicker">${REGIONS[h.loc].n} · 해결함</div><h3>${inc.t}</h3><p>이 지역의 사건은 해결했다. 새 소문은 ${fmtDays(periodEnds(p)-now)} 뒤에 돈다. 다른 지역으로 가 보자.</p></div>`;
+    return `<div class="case"><div class="kicker">${REGIONS[h.loc].n}의 사건</div><h3>${inc.t}</h3><p>${inc.i}</p>
+      <p class="note" style="margin:0 0 12px">먼저 ${hrs(missionHours(h.realm))} 동안 탐문한 뒤 현장에 들어선다. 조사 두 번과 짧은 싸움이 있고, 결과에 따라 보상이 달라진다. 이 사건은 ${fmtDays(periodEnds(p)-now)} 뒤에 바뀐다.</p>
+      <button class="btn solid" id="misBtn" type="button" ${a?"disabled":""}>사건을 맡는다</button>${a?` <span class="note">${busyText[a]} 맡을 수 없다.</span>`:""}</div>`;
+  }
+  const inc=INC[m.region][m.idx];
+  if(m.phase==="wait"){const ready=now>=m.end;
+    return `<div class="case"><div class="kicker">${REGIONS[m.region].n} · 탐문</div><h3>${inc.t}</h3><p>${inc.i}</p>
+      ${(()=>{const comp=companionFor(m),f=feedFor(h,m,comp),shown=f.filter(e=>e.t<=now),b=feedBonus(shown)+(comp?1:0);
+        return `<div class="kicker" style="margin-top:6px">탐문 일지 · 조사 판정 +${b}${comp?`<span class="mate-pill">동행 <b>${esc(comp.name)}</b> · ${comp.rel}</span>`:""}</div><div class="feedwrap"><ul class="feed" id="inlineFeed" data-key="${m.start}-${shown.length}">${shown.map((e,i)=>feedLine(e,i===shown.length-1&&!ready)).join("")}
+          ${ready?`<li class="amb"><span class="tm"></span><span class="body">— 탐문이 끝났다. 이제 현장으로 향할 때다.</span></li>`:`<li class="wait"><span class="tm"></span><span class="body">계속 탐문하는 중… <span data-until="${m.end}"></span> 남음</span></li>`}</ul><div class="feedtools"><span class="note" style="margin:0">위로 올리면 앞의 내용을 볼 수 있다.</span><button class="btn sm ghost" type="button" id="readerBtn" data-read="live">일지 크게 보기</button></div></div>`})()}
+      <p>${ready?"탐문을 마쳤다. 들어서면 탐문에서 얻은 것들을 챙기고 현장으로 간다.":"대화와 도움에 성공할수록 현장 조사가 쉬워진다. 화면을 닫아 둬도 탐문은 계속된다."}</p>
+      <div class="row">${ready?`<button class="btn sealb" id="sceneBtn" type="button">현장에 들어선다</button>`
+        :confirmAbort?`<button class="btn sealb" id="mxYes" type="button">사건에서 손 떼기</button><button class="btn ghost" id="mxNo" type="button">계속 탐문하기</button>`
+        :`<button class="btn ghost" id="mxBtn" type="button">사건 포기</button>`}</div></div>`}
+  const dc=dcFor(h.realm);
+  const rolls=m.rolls.length?`<ul class="rolls">${m.rolls.map(r=>`<li><span class="die ${r.ok?"":"fail"}">${r.roll}</span>
+      <span>${STATS[r.stat].n} · ${esc(r.txt)} — ${r.roll}+${r.bonus}=${r.roll+r.bonus} / 목표 ${r.dc} <span class="verdict ${r.ok?"":"fail"}">${r.ok?"단서를 찾았다":"허탕을 쳤다"}</span></span></li>`).join("")}</ul>`:"";
+  let body="";
+  if(m.step<2){const st=inc.s[m.step];
+    body=`<p class="q">${m.step+1}. ${st.q}</p><div class="opts">${(()=>{const bm=bestOf(st.o.map(o=>o[0]),m.bonus,dc);return st.o.map(([k,t],i)=>{const c=optCheck(k,m.bonus,dc,chanceOf(Math.floor(me.stats[k]/10)+(m.bonus||0),dc)===bm);return `<button class="opt" type="button" data-inv="${i}">${c.b}<span>${t}</span>${c.s}</button>`}).join("")})()}</div>`}
+  else if(m.step===2){
+    body=`<p class="q">조사 끝에 <b>${inc.f}</b>와 마주쳤다. 무공 없이 세 합을 겨룬다.</p><button class="btn solid" id="fightBtn" type="button">맞서 싸운다</button>`}
+  else{const f=m.fight,r=missionReward(h,m);
+    body=`<p class="q">${inc.f}와의 세 합</p><ul class="fight">${f.log.map(l=>`<li>${l}</li>`).join("")}</ul>
+      <p style="color:var(--ink)">${f.res==="win"?`${inc.f}를 쓰러뜨렸다.`:f.res==="lose"?"쓰러졌다. 겨우 몸을 피했다.":`${inc.f}가 달아났다.`} (남은 체력 ${f.php}/${f.maxHp})</p>
+      <div class="kicker" style="margin-top:14px">결말 · ${TIER[r.t]}</div><p style="color:var(--ink)">${inc.e[r.t]}</p>
+      <div class="reward"><span>경험치 +${r.exp.toLocaleString()}</span><span>강화석 +${r.stone}</span><span>선물 아이템 확률 ${[60,35,15][r.t]}%</span><span>장비 확률 ${[25,12,5][r.t]}%</span>${r.t===0?"<span>비급 단서 확률 10%</span>":""}</div>
+      <button class="btn sealb" id="finMisBtn" type="button">사건을 마무리한다</button>`}
+  return `<div class="case"><div class="kicker">${REGIONS[m.region].n} · 현장 · 단서 ${m.clues}/2</div><h3>${inc.t}</h3>${rolls}${body}</div>`;
+}
+
+/* 인물 탭 */
+function selfTab(){
+  const h=me,s=SECTS[h.sect],d=derived(h),left=h.points-(alloc.nei+alloc.wai+alloc.shen);
+  return `<section class="grid2">
+    <div><div class="label">능력치</div>
+      ${h.points?`<div class="points">남은 포인트 <b>${left}</b></div>`:""}
+      <div class="stats">${Object.entries(STATS).map(([k,st])=>`
+        <div class="stat"><span class="k">${st.n}<em>${st.d}${s.main.includes(k)?` · <b>주력: 공격력 +${2/s.main.length}</b>`:""}</em></span>
+          <span class="v">${h.stats[k]}${alloc[k]?`<small>+${alloc[k]}</small>`:""}</span>
+          ${h.points?`<span class="pm"><button type="button" data-m="${k}" aria-label="${st.n} 빼기" ${alloc[k]?"":"disabled"}>−</button><button type="button" data-p="${k}" aria-label="${st.n} 더하기" ${left?"":"disabled"}>+</button></span>`:"<span></span>"}
+        </div>`).join("")}</div>
+      ${h.points?`<div class="row" style="margin-top:12px"><button class="btn solid" id="allocBtn" type="button" ${alloc.nei+alloc.wai+alloc.shen?"":"disabled"}>배분 확정</button></div>`:""}
+    </div>
+    <div><div class="label">무위</div>
+      <dl class="derived">
+        <dt>체력</dt><dd>${d.hp}</dd><dt>기력</dt><dd>${d.qi}</dd>
+        <dt>공격력</dt><dd>${d.atk}</dd><dt>방어력</dt><dd>${d.def}</dd>
+        <dt>회피율</dt><dd>${d.eva.toFixed(1)}%</dd><dt>치명타</dt><dd>${d.crit.toFixed(1)}%</dd>
+      </dl>
+      <div class="label" style="margin-top:22px">익힌 무공</div>
+      <ul class="skills">${s.sk.map(k=>`<li><b>${k[0]}</b><span class="tag">${k[1]}</span><span>${k[2]}</span></li>`).join("")}</ul>
+    </div></section>
+    <section><div class="label">행낭</div>
+      <div class="bag">${Object.entries(ITEMS).map(([k,[n,sub]])=>`<div><b>${h.items[k]}</b>${n} <span>· ${sub}</span></div>`).join("")}</div>
+      <p class="note">강화석은 장비 탭에서 강화에 쓴다. 약초는 소굴에서 회복에, 약초·화주·장신구는 인연 탭에서 동료에게, 강호 탭에서 문파에 선물로 쓴다. 착용하는 장신구는 장비 탭에 있다.</p></section>${sectTabSection()}`;
+}
+
+/* 동행 탭 */
+function matesTab(){
+  return `<section class="grid2"><div><div class="label">동행</div>${matesView()}</div>
+    <div><div class="label">행적</div><ul class="log">${(me.log||[]).map(l=>`<li><time>${hhmm(l.t)}</time>${esc(l.text)}</li>`).join("")}</ul></div></section>`;
+}
+function mateAct(o){
+  const now=Date.now();
+  if(o.training) return now<o.training.end?`${STATS[o.training.stat].train} 중 · <span data-until="${o.training.end}"></span> 남음`:`${STATS[o.training.stat].train}을 마치고 숨을 고르는 중`;
+  if(o.travel) return now<o.travel.end?`${REGIONS[o.travel.to].n}로 가는 중 · <span data-until="${o.travel.end}"></span> 남음`:`${REGIONS[o.travel.to].n} 어귀에 다다름`;
+  if(o.mission) return `${REGIONS[o.mission.region].n}에서 「${esc(INC[o.mission.region][o.mission.idx].t)}」 사건을 쫓는 중`;
+  return `${REGIONS[o.loc||"henan"].n}에서 한가로이 쉬는 중`;
+}
+function matesView(){
+  if(mode!=="db") return `<p class="empty">함께하는 사람의 소식은 공유된 링크로 들어왔을 때 보입니다.</p>`;
+  if(!others.length) return `<p class="empty">아직 함께할 사람이 강호에 들어오지 않았습니다. 관리 화면에서 초대코드를 만들어 친구에게 주면, 친구가 가입하고 입문하는 순간 여기에 나타납니다.</p>`;
+  return others.map(o=>{const s=SECTS[o.sect]||SECTS.sorim;
+    return `<div class="mate">${emblem(o.sect in SECTS?o.sect:"sorim","sm")}<div><div class="n">${esc(o.name)}</div>
+      <div class="d">${s.n} · ${REALMS[o.realm]?.n||""} Lv.${o.level}</div><div class="d">${mateAct(o)}</div></div></div>`}).join("");
+}
+
+/* ───────── 이벤트 연결 ───────── */
+function on(sel,fn){const el=$(sel);if(el)el.addEventListener("click",fn)}
+function bind(){
+  on("#createBtn",create);
+  $("#hname")?.addEventListener("keydown",e=>{if(e.key==="Enter")create()});
+  on("#trainBtn",startTrain); on("#promoteBtn",promote); on("#allocBtn",commitAlloc);
+  on("#finBtn",()=>finishTrain(false)); on("#cxBtn",()=>{confirmCancel=true;render()}); on("#cxNo",()=>{confirmCancel=false;render()}); on("#cxYes",()=>finishTrain(true));
+  on("#goBtn",()=>startTravel(dest)); on("#arriveBtn",arrive);
+  on("#abBtn",()=>{confirmAbort=true;render()}); on("#abNo",()=>{confirmAbort=false;render()}); on("#abYes",cancelTravel);
+  on("#misBtn",startMission); on("#sceneBtn",enterScene); on("#fightBtn",fight); on("#finMisBtn",finishMission);
+  on("#mxBtn",()=>{confirmAbort=true;render()}); on("#mxNo",()=>{confirmAbort=false;render()}); on("#mxYes",abortMission);
+  document.querySelectorAll("[data-inv]").forEach(b=>b.addEventListener("click",()=>investigate(+b.dataset.inv)));
+  document.querySelectorAll("[data-tab],[data-go]").forEach(b=>b.addEventListener("click",()=>{tab=b.dataset.tab||b.dataset.go;confirmAbort=false;fadeNext=false;
+    try{localStorage.setItem("murim-tab",tab)}catch(e){};render();$("#tabbody")?.classList.add("fade")}));
+  document.querySelectorAll(".map .node").forEach(g=>{const f=()=>{dest=g.dataset.r===me.loc&&!me.travel?null:g.dataset.r;render()};
+    g.addEventListener("click",f);g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();f()}})});
+  document.querySelectorAll('input[name="tk"]').forEach(i=>i.addEventListener("change",()=>{pick.stat=i.value;render()}));
+  document.querySelectorAll('input[name="th"]').forEach(i=>i.addEventListener("change",()=>{pick.hours=+i.value;render()}));
+  document.querySelectorAll("[data-p]").forEach(b=>b.addEventListener("click",()=>{alloc[b.dataset.p]++;render()}));
+  document.querySelectorAll("[data-m]").forEach(b=>b.addEventListener("click",()=>{alloc[b.dataset.m]--;render()}));
+  on("#ffBtn",fastForward);
+  document.querySelectorAll("[data-gpick]").forEach(el=>el.addEventListener("change",()=>{giftPick[el.dataset.gpick]=el.value}));
+  document.querySelectorAll("[data-gift]").forEach(b=>b.addEventListener("click",()=>giveGift(b.dataset.gift)));
+  document.querySelectorAll("[data-rel]").forEach(b=>b.addEventListener("click",()=>proposeRel(b.dataset.rel,b.dataset.relv)));
+  document.querySelectorAll("[data-follow]").forEach(b=>b.addEventListener("click",()=>toggleFollow(b.dataset.follow)));
+  document.querySelectorAll("[data-sgift]").forEach(b=>b.addEventListener("click",()=>sectGift(b.dataset.sgift)));
+  document.querySelectorAll("[data-sect]").forEach(b=>b.addEventListener("click",()=>{sectPick=b.dataset.sect;sectConfirm=true;render()}));
+  on("#sectYes",()=>changeSect(sectPick)); on("#sectNo",()=>{sectConfirm=false;sectPick=null;render()});
+  on("#postYes",()=>answerPost(true)); on("#postNo",()=>answerPost(false));
+  on("#fakeMateBtn",()=>{fakeOthers=[normalize({_id:"fake-1",name:"백운",sect:"mudang",realm:me.realm,level:me.level,exp:0,points:0,stats:{nei:20,wai:20,shen:20},frac:{},loc:me.loc,
+      bonds:{[myId()]:{pts:290,want:"연인"}},sent:[{id:"g1",to:myId(),item:"wine",t:Date.now()}],follow:myId(),created:Date.now()})];saveFake();toast("가상 동료 백운이 들어왔습니다. 인연 탭에서 확인해 보세요.")});
+  on("#fakeUpBtn",()=>{const f=fakeOthers[0];if(!f)return;f.bonds[myId()].pts+=100;saveFake();toast(`백운 쪽 인연 +100 · 합계 ${bondTotal(myId(),"fake-1")}`)});
+  document.querySelectorAll("[data-fakerel]").forEach(b=>b.addEventListener("click",()=>{const f=fakeOthers[0];if(!f)return;f.bonds[myId()].want=b.dataset.fakerel;saveFake();toast(`백운이 ${b.dataset.fakerel}의 연을 청했습니다.`)}));
+  on("#fakeDelBtn",()=>{fakeOthers=[];saveFake();toast("가상 동료를 내보냈습니다.")});
+  on("#warpBtn",()=>{const h=structuredClone(me);h.travel=null;h.loc=bossFor(periodNow()).region;save(h)});
+  on("#triesBtn",()=>{const h=structuredClone(me);if(h.raid)h.raid.tries={day:dayKey(),n:0};save(h)});
+  on("#openGateBtn",openGate); on("#startGateBtn",startGate); on("#claimGateBtn",claimGate);
+  on("#leaveGateBtn",leaveGate);
+  on("#toGateBtn",e=>{dest=e.currentTarget.dataset.region;tab="world";try{localStorage.setItem("murim-tab",tab)}catch(err){};render()});
+  document.querySelectorAll("[data-join]").forEach(b=>b.addEventListener("click",()=>joinGate(b.dataset.join)));
+  document.querySelectorAll("[data-gact]").forEach(b=>b.addEventListener("click",()=>chooseGate(b.dataset.gact)));
+  document.querySelectorAll("[data-gmode]").forEach(b=>b.addEventListener("click",()=>setGateMode(b.dataset.gmode)));
+  document.querySelectorAll('input[name="grole"]').forEach(i=>i.addEventListener("change",()=>GS.setAct({...myAct(),role:i.value})));
+  on("#lv30Btn",()=>{const h=structuredClone(me),main=SECTS[h.sect].main;h.realm=2;h.level=30;h.exp=need(30);h.points=0;h.stats={nei:25,wai:45,shen:25};main.forEach(k=>h.stats[k]=100);
+    for(const k of ["weapon","armor"]){if(h.gear[k]){h.gear[k].grade=2;h.gear[k].plus=5;h.gear[k].name=h.gear[k].name.replace(/^\S+/,"한철")}}save(h);toast("일류 Lv.30, 경지의 벽까지 올렸습니다.")});
+  on("#warpGateBtn",()=>{const h=structuredClone(me);h.travel=null;h.loc=GATES[Math.min(6,Math.max(3,h.realm+1))].region;save(h)});
+  on("#chalBtn",enterLair); on("#claimBtn",claimRaid);
+  document.querySelectorAll("[data-fork]").forEach(b=>b.addEventListener("click",()=>pickFork(+b.dataset.fork)));
+  document.querySelectorAll("[data-ro]").forEach(b=>b.addEventListener("click",()=>roomAct(b.dataset.ro)));
+  document.querySelectorAll("[data-act]").forEach(b=>b.addEventListener("click",()=>bossTurn(b.dataset.act)));
+  document.querySelectorAll("[data-mode]").forEach(b=>b.addEventListener("click",()=>setMode(b.dataset.mode)));
+  on("#herbBtn",useHerb); on("#retBtn",()=>{retreatConfirm=true;render()}); on("#retNo",()=>{retreatConfirm=false;render()}); on("#retYes",retreat); on("#leaveBtn",leaveLair);
+  on("#toBossBtn",()=>{dest=bossFor(periodNow()).region;tab="world";try{localStorage.setItem("murim-tab",tab)}catch(e){};render()});
+  document.querySelectorAll('input[name="rrole"]').forEach(i=>i.addEventListener("change",()=>{raidRole=i.value;render()}));
+  on("#stoneBtn",()=>{const h=structuredClone(me);h.items.stone+=20;save(h)});
+  on("#dropBtn",()=>{const h=structuredClone(me);const it=Math.random()<.2?makeItem("weapon",h.realm,null,{sect:h.sect}):makeItem(pickOne(["weapon","armor","acc"]),h.realm,pickOne(["tank","dps","heal"]));toast("얻음: "+gainItem(h,it));save(h)});
+  document.querySelectorAll("[data-gsel]").forEach(b=>b.addEventListener("click",()=>{gsel=b.dataset.gsel;render()}));
+  on("#enhBtn",()=>enhance(gsel)); on("#unequipBtn",()=>unequip(gsel));
+  document.querySelectorAll("[data-eq]").forEach(b=>b.addEventListener("click",()=>equip(+b.dataset.eq,false)));
+  document.querySelectorAll("[data-eqi]").forEach(b=>b.addEventListener("click",()=>equip(+b.dataset.eqi,true)));
+  document.querySelectorAll("[data-salvq]").forEach(b=>b.addEventListener("click",()=>{gconfirm=+b.dataset.salvq;render()}));
+  document.querySelectorAll("[data-salv]").forEach(b=>b.addEventListener("click",()=>salvage(+b.dataset.salv)));
+  on("[data-salvno]",()=>{gconfirm=null;render()});
+  document.querySelectorAll("[data-fake]").forEach(b=>b.addEventListener("click",()=>{fakeMate=b.dataset.fake==="없음"?null:{name:"백운",rel:b.dataset.fake};typedKey="";render()}));
+  on("#newIncBtn",()=>{const h=structuredClone(me);delete h.done[h.loc];save(h)});
+  on("#wipeBtn",()=>{if(confirmWipe)wipe();else{confirmWipe=true;render()}});
+}
+
+/* 1초마다: 남은 시간 갱신, 끝나는 순간 다시 그리기 */
+let phaseKey="";
+function curPhase(){
+  const n=Date.now(),e=x=>x?(n>=x.end?"d":"r"):"-";
+  const fc=me?.mission?.phase==="wait"?feedFor(me,me.mission,companionFor(me.mission)).filter(x=>x.t<=n).length:0;
+  return me?[e(me.training),e(me.travel),e(me.mission),fc,...others.map(o=>e(o.training)+e(o.travel))].join(""):"";
+}
+function tick(){
+  maybeResolve();
+  if(!me) return;
+  const k=curPhase(); if(k!==phaseKey){phaseKey=k;render();return}
+  const now=Date.now();
+  document.querySelectorAll("[data-until]").forEach(el=>el.textContent=fmtLeft(+el.dataset.until-now));
+  const t=me.training,fg=$("#ringFg");
+  if(t&&fg){const f=Math.min(1,(now-t.start)/(t.end-t.start)),g=trainGain(t,f);
+    fg.style.strokeDashoffset=276.5*(1-f);$("#ringPct").textContent=Math.floor(f*100)+"%";
+    $("#trainGain").textContent=`지금까지 쌓인 기운: 경험치 +${g.exp.toLocaleString()}, ${STATS[t.stat].n} +${g.stat.toFixed(2)}`}
+  const tv=me.travel,el=$("#traveler");
+  if(tv&&el){const f=Math.min(1,(now-tv.start)/(tv.end-tv.start)),A=REGIONS[tv.from],B=REGIONS[tv.to];
+    el.setAttribute("transform",`translate(${A.x+(B.x-A.x)*f},${A.y+(B.y-A.y)*f})`)}
+}
+setInterval(tick,1000);
+
+/* ───────── 먹산 ───────── */
+function drawMountains(){
+  const c=$("#mount"),dpr=Math.min(2,devicePixelRatio||1),w=c.clientWidth,h=c.clientHeight;
+  c.width=w*dpr;c.height=h*dpr;const x=c.getContext("2d");x.scale(dpr,dpr);
+  const cs=getComputedStyle(document.documentElement),ink=cs.getPropertyValue("--ink").trim(),paper=cs.getPropertyValue("--paper").trim();
+  let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+  const layers=[{y:.50,a:.10,amp:38,b:4},{y:.62,a:.16,amp:30,b:2.5},{y:.74,a:.28,amp:26,b:1.2},{y:.88,a:.55,amp:16,b:0}];
+  for(const L of layers){
+    const ph=[rnd()*6,rnd()*6,rnd()*6];
+    x.save();x.filter=L.b?`blur(${L.b}px)`:"none";x.globalAlpha=L.a;x.fillStyle=ink;x.beginPath();x.moveTo(0,h);
+    for(let i=0;i<=w;i+=3){const t=i/w;
+      const y=h*L.y-L.amp*(Math.sin(t*5+ph[0])*.6+Math.sin(t*11+ph[1])*.3+Math.sin(t*23+ph[2])*.12+(rnd()-.5)*.08)-(t>.55&&t<.8?L.amp*.8*Math.sin((t-.55)/.25*Math.PI):0);
+      x.lineTo(i,y)}
+    x.lineTo(w,h);x.closePath();x.fill();x.restore();
+  }
+  const g=x.createLinearGradient(0,h*.55,0,h);g.addColorStop(0,"transparent");g.addColorStop(1,paper);
+  x.fillStyle=g;x.fillRect(0,0,w,h);
+  x.globalAlpha=.12;x.fillStyle=ink;x.beginPath();x.arc(w*.82,h*.26,13,0,Math.PI*2);x.fill();
+}
+let rT;addEventListener("resize",()=>{clearTimeout(rT);rT=setTimeout(drawMountains,150)});
+matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",()=>setTimeout(drawMountains,50));
+new MutationObserver(()=>setTimeout(drawMountains,50)).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+
+/* ───────── 시작 ───────── */
+let fakeOthers=(()=>{try{return JSON.parse(localStorage.getItem("murim-fake")||"[]")}catch(e){return []}})();
+function mergeFake(){others=others.filter(o=>!String(o._id).startsWith("fake-")).concat(fakeOthers)}
+function saveFake(){try{localStorage.setItem("murim-fake",JSON.stringify(fakeOthers))}catch(e){}mergeFake();render()}
+function startLocal(){
+  mergeFake();
+  try{gateRooms=JSON.parse(localStorage.getItem("murim-gates")||"{}");const a=JSON.parse(localStorage.getItem("murim-gateact")||"null");if(a)gateActs["local-me"]=a}catch(e){}
+  mode="local";isOwner=false;
+  try{const s=localStorage.getItem("gangho-hero");me=s?normalize(JSON.parse(s)):null}catch(e){me=null}
+  ready=true;render();
+}
+async function boot(){
+  drawMountains();
+  const C=window.claude;
+  if(!C?.use){startLocal();return}
+  const [d,u]=await Promise.all([C.use("db").catch(()=>null),C.use("user").catch(()=>null)]);
+  const id=u?await u.id():null;
+  if(!d||!id){startLocal();return}
+  db=d;uid=id;mode="db";isOwner=await u.isOwner();
+  db.collection("gates").onSnapshot(snap=>{gateRooms={};snap.docs.forEach(d=>{if(d.exists)gateRooms[d.id]=structuredClone(d.data())});if(ready)render();maybeResolve()},()=>{});
+  db.collection("gateacts").onSnapshot(snap=>{const mine=gateActs[uid];gateActs={};snap.docs.forEach(d=>{if(d.exists)gateActs[d.id]=structuredClone(d.data())});
+    if(mine&&(!gateActs[uid]||(gateActs[uid].t||0)<(mine.t||0)))gateActs[uid]=mine;if(ready)render();maybeResolve()},()=>{});
+  db.collection("heroes").onSnapshot(snap=>{
+    const mine=snap.docs.find(x=>x.id===uid);
+    if(!(mine?.metadata?.hasPendingWrites)) me=mine?.exists?normalize(structuredClone(mine.data())):null;
+    others=snap.docs.filter(x=>x.id!==uid&&x.exists).map(x=>Object.assign(normalize(structuredClone(x.data())),{_id:x.id}));
+    mergeFake();ready=true;render();syncBonds();
+  },e=>{toast("강호 소식이 끊겼어요. 새로고침해 주세요.")});
+  setTimeout(()=>{if(!ready){ready=true;render()}},8000);
+}
+window.__startGame=boot;
+</script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+window.FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAw3jYk4wTFxqsRF1GYDKgUHRYr2Ca-hzI",
+  authDomain: "murimhaeng-a348d.firebaseapp.com",
+  projectId: "murimhaeng-a348d",
+  storageBucket: "murimhaeng-a348d.firebasestorage.app",
+  messagingSenderId: "641927866519",
+  appId: "1:641927866519:web:295bc220f0c8af3ff561d2"
+};
+</script>
+<script>
+/* ───────── 무림행 웹사이트 껍데기: 로그인 · 초대코드 가입 · 관리 · 저장소 연결 ───────── */
+(function(){
+  const cfg=window.FIREBASE_CONFIG;
+  const $s=s=>document.querySelector(s);
+  const ID_RE=/^[a-z0-9_]{3,16}$/;
+  const idToEmail=id=>`${id}@murimhaeng.game`;
+  let fs,auth,me={uid:null,id:null,admin:false};
+
+  function adapter(){
+    const wrap=d=>({id:d.id,exists:d.exists,data:()=>d.data(),metadata:{hasPendingWrites:d.metadata.hasPendingWrites,fromCache:d.metadata.fromCache}});
+    const api={
+      doc(path){const ref=fs.doc(path);return{
+        set:data=>ref.set(data),update:data=>ref.update(data),delete:()=>ref.delete(),
+        get:async()=>wrap(await ref.get()),
+        onSnapshot:(n,e)=>ref.onSnapshot({includeMetadataChanges:true},s=>n(wrap(s)),e),
+        acquire:async({holder,ttlMs})=>{const lr=fs.doc("leases/"+path.replace(/\//g,"__"));
+          try{return await fs.runTransaction(async tx=>{const s=await tx.get(lr),now=Date.now();
+            if(s.exists&&s.data().exp>now&&s.data().holder!==holder)return{acquired:false};
+            tx.set(lr,{holder,exp:now+(ttlMs||30000)});return{acquired:true}})}catch(e){return{acquired:false}}}}},
+      collection(path){const ref=fs.collection(path);return{
+        doc:id=>api.doc(path+"/"+id),
+        onSnapshot:(n,e)=>ref.onSnapshot({includeMetadataChanges:true},s=>n({docs:s.docs.map(wrap),size:s.size,empty:s.empty}),e)}}};
+    return api;
+  }
+  function installClaude(){
+    const db=adapter(),user={id:async()=>me.uid,isOwner:async()=>me.admin,canEdit:async()=>me.admin,me:async()=>({id:me.uid,name:me.id})};
+    window.claude={use:async n=>n==="db"?db:n==="user"?user:null};
+  }
+
+  /* 화면 */
+  const css=`.gate-auth{position:fixed;inset:0;z-index:50;background:var(--paper);display:grid;place-items:center;padding:24px max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px));overflow:auto}
+  .gate-auth[hidden]{display:none}
+  .ga-box{width:100%;max-width:380px;display:grid;gap:14px}
+  .ga-box h1{font-family:var(--f-brush);font-size:46px;letter-spacing:.08em;line-height:1}
+  .ga-box .sub{color:var(--ink-3);font-size:13px;letter-spacing:.14em;margin-top:-6px}
+  .ga-tabs{display:flex;border-bottom:1px solid var(--line)}
+  .ga-tabs button{flex:1;background:none;border:0;padding:10px;font-family:var(--f-brush);font-size:18px;color:var(--ink-3);border-bottom:2px solid transparent;margin-bottom:-1px}
+  .ga-tabs button[aria-selected="true"]{color:var(--ink);border-color:var(--ink)}
+  .ga-f{display:grid;gap:4px}
+  .ga-f label{font-size:12px;color:var(--ink-3);letter-spacing:.12em}
+  .ga-f input{font:inherit;font-size:17px;padding:9px 4px;border:0;border-bottom:1.5px solid var(--ink);background:transparent;color:var(--ink)}
+  .ga-f small{font-size:12px;color:var(--seal)}
+  .ga-err{color:var(--seal);font-size:14px;min-height:1.2em}
+  .acct{position:relative;z-index:2;display:flex;justify-content:flex-end;gap:8px;align-items:center;font-size:12px;color:var(--ink-3);margin-top:-8px}
+  .acct button{background:none;border:1px solid var(--line);padding:3px 9px;font-size:12px;color:var(--ink-2);border-radius:2px}
+  .admin{position:fixed;inset:0;z-index:40;background:var(--paper);overflow:auto;padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px))}
+  .admin[hidden]{display:none}
+  .admin>div{max-width:720px;margin:0 auto;display:grid;gap:14px}
+  .admin table{width:100%;border-collapse:collapse;font-size:13px}
+  .admin td,.admin th{text-align:left;border-bottom:1px solid var(--line);padding:6px 4px}
+  .admin code{font-size:14px;letter-spacing:.06em}`;
+  const st=document.createElement("style");st.textContent=css;document.head.appendChild(st);
+  const box=document.createElement("div");box.className="gate-auth";box.id="gateAuth";
+  box.innerHTML=`<div class="ga-box"><div><h1>무림행</h1><div class="sub">武林行 · 초대받은 사람만 들어올 수 있는 강호</div></div>
+    <div class="ga-tabs" role="tablist"><button type="button" role="tab" id="gaTabIn" aria-selected="true">들어가기</button><button type="button" role="tab" id="gaTabUp" aria-selected="false">처음 왔어요</button></div>
+    <form id="gaForm" novalidate>
+      <div style="display:grid;gap:14px">
+      <div class="ga-f"><label for="gaId">아이디</label><input id="gaId" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="영문 소문자·숫자 3~16자"></div>
+      <div class="ga-f"><label for="gaPw">비밀번호</label><input id="gaPw" type="password" autocomplete="current-password" placeholder="6자 이상"><small>다른 사이트에서 쓰지 않는 비밀번호로 입력해 주세요.</small></div>
+      <div class="ga-f" id="gaCodeRow" hidden><label for="gaCode">초대코드</label><input id="gaCode" autocapitalize="characters" spellcheck="false" placeholder="받은 초대코드"></div>
+      <div class="ga-err" id="gaErr" role="alert"></div>
+      <button class="btn solid" type="submit" id="gaGo">들어가기</button>
+      <p class="note" id="gaNote" style="margin:0">비밀번호를 잊으면 관리자에게 말해 주세요. 캐릭터는 그대로 옮겨 줄 수 있어요.</p></div>
+    </form></div>`;
+  document.body.appendChild(box);
+  const admin=document.createElement("div");admin.className="admin";admin.id="adminPanel";admin.hidden=true;document.body.appendChild(admin);
+  let signup=false;
+  function setTab(up){signup=up;$s("#gaTabIn").setAttribute("aria-selected",!up);$s("#gaTabUp").setAttribute("aria-selected",up);$s("#gaCodeRow").hidden=!up;
+    $s("#gaGo").textContent=up?"초대코드로 가입하기":"들어가기";$s("#gaPw").autocomplete=up?"new-password":"current-password";$s("#gaErr").textContent=""}
+  $s("#gaTabIn").onclick=()=>setTab(false);$s("#gaTabUp").onclick=()=>setTab(true);
+  const err=t=>{$s("#gaErr").textContent=t};
+  const busy=b=>{$s("#gaGo").disabled=b};
+
+  if(!cfg||!cfg.apiKey||String(cfg.apiKey).includes("여기")){err("설정 파일(config.js)에 Firebase 설정값이 아직 없어요.");busy(true);return}
+  firebase.initializeApp(cfg);auth=firebase.auth();fs=firebase.firestore();
+
+  $s("#gaForm").addEventListener("submit",async e=>{
+    e.preventDefault();err("");
+    const id=$s("#gaId").value.trim().toLowerCase(),pw=$s("#gaPw").value,code=$s("#gaCode").value.trim().toUpperCase();
+    if(!ID_RE.test(id))return err("아이디는 영문 소문자, 숫자, _ 로 3~16자예요.");
+    if(pw.length<6)return err("비밀번호는 6자 이상이어야 해요.");
+    busy(true);
+    try{
+      if(signup){
+        if(!code)throw{code:"no-code"};
+        const cred=await auth.createUserWithEmailAndPassword(idToEmail(id),pw);
+        try{const b=fs.batch();
+          b.set(fs.doc("users/"+cred.user.uid),{id,code,created:Date.now()});
+          b.update(fs.doc("invites/"+code),{used:true,usedBy:cred.user.uid,usedAt:Date.now()});
+          await b.commit();
+        }catch(x){await cred.user.delete().catch(()=>{});throw{code:"bad-code"}}
+      }else await auth.signInWithEmailAndPassword(idToEmail(id),pw);
+    }catch(x){
+      const c=x.code||"";
+      err(c==="no-code"?"초대코드를 넣어 주세요.":c==="bad-code"?"초대코드가 맞지 않거나 이미 쓰인 코드예요.":c.includes("email-already-in-use")?"이미 있는 아이디예요. 다른 아이디를 골라 주세요."
+        :c.includes("invalid-credential")||c.includes("wrong-password")||c.includes("user-not-found")?"아이디나 비밀번호가 맞지 않아요.":c.includes("too-many-requests")?"시도가 너무 많아요. 잠시 뒤에 다시 해 주세요."
+        :c.includes("network")?"인터넷 연결을 확인해 주세요.":"들어가지 못했어요. ("+c+")");
+    }finally{busy(false)}
+  });
+
+  let started=false;
+  auth.onAuthStateChanged(async u=>{
+    if(!u){if(started)location.reload();box.hidden=false;return}
+    try{const s=await fs.doc("users/"+u.uid).get();
+      if(!s.exists){err("가입이 끝나지 않은 계정이에요. 초대코드로 다시 가입해 주세요.");await auth.signOut();return}
+      me={uid:u.uid,id:s.data().id,admin:s.data().admin===true};
+    }catch(x){err("계정을 확인하지 못했어요. 새로고침해 주세요.");return}
+    box.hidden=true;
+    if(!started){started=true;installClaude();accountBar();window.__startGame&&window.__startGame()}
+  });
+
+  function accountBar(){
+    const bar=document.createElement("div");bar.className="acct";
+    bar.innerHTML=`<span>${me.id}${me.admin?" · 관리자":""}</span>${me.admin?`<button type="button" id="adminOpen">관리</button>`:""}<button type="button" id="logout">나가기</button>`;
+    const w=document.querySelector(".wrap");w.insertBefore(bar,w.querySelector("#status"));
+    $s("#logout").onclick=()=>auth.signOut();
+    if(me.admin)$s("#adminOpen").onclick=openAdmin;
+  }
+
+  /* 관리 화면: 초대코드 만들기, 사람 목록, 캐릭터 옮기기 */
+  const rnd=n=>Array.from({length:n},()=>"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[Math.floor(Math.random()*32)]).join("");
+  async function openAdmin(){
+    admin.hidden=false;admin.innerHTML=`<div><div class="rhead"><div><div class="kicker">관리</div><h2>무림행 관리</h2></div><button class="btn ghost" type="button" id="adClose">닫기</button></div><p class="note">불러오는 중…</p></div>`;
+    $s("#adClose").onclick=()=>admin.hidden=true;
+    const [inv,users,heroes]=await Promise.all([fs.collection("invites").get(),fs.collection("users").get(),fs.collection("heroes").get()]);
+    const hname={};heroes.docs.forEach(d=>hname[d.id]=d.data().name);
+    const uid2id={};users.docs.forEach(d=>uid2id[d.id]=d.data().id);
+    const invRows=inv.docs.sort((a,b)=>(b.data().created||0)-(a.data().created||0)).map(d=>{const x=d.data();return `<tr><td><code>${d.id}</code></td><td>${x.used?`사용됨 · ${uid2id[x.usedBy]||"?"}`:"아직 안 씀"}</td><td>${x.note||""}</td></tr>`}).join("");
+    const userRows=users.docs.map(d=>{const x=d.data();return `<tr><td>${x.id}${x.admin?" (관리자)":""}</td><td>${hname[d.id]||"캐릭터 없음"}</td><td><code style="font-size:11px">${d.id}</code></td></tr>`}).join("");
+    admin.querySelector("div").innerHTML=`<div class="rhead"><div><div class="kicker">관리</div><h2>무림행 관리</h2></div><button class="btn ghost" type="button" id="adClose">닫기</button></div>
+      <section><div class="label">초대코드</div><div class="row"><input id="adNote" placeholder="누구에게 줄 코드인지 메모 (선택)" style="flex:1;min-width:0;font:inherit;padding:8px;border:1px solid var(--line);background:var(--paper);color:var(--ink)"><button class="btn sealb" type="button" id="adMake">초대코드 만들기</button></div>
+        <p class="note">코드 하나로 한 사람만 가입할 수 있다. 만든 코드를 친구에게 직접 전해 주자.</p>
+        <div class="mapbox"><table><tr><th>코드</th><th>상태</th><th>메모</th></tr>${invRows||"<tr><td colspan=3>아직 없음</td></tr>"}</table></div></section>
+      <section><div class="label">강호의 사람들</div><div class="mapbox"><table><tr><th>아이디</th><th>캐릭터</th><th>계정 번호</th></tr>${userRows}</table></div></section>
+      <section><div class="label">캐릭터 옮기기</div><p class="note">비밀번호를 잊은 사람은 새 초대코드로 새 아이디를 만들게 한 뒤, 옛 계정의 캐릭터를 새 계정으로 옮겨 준다.</p>
+        <div class="row"><select id="adFrom">${users.docs.map(d=>`<option value="${d.id}">${d.data().id} · ${hname[d.id]||"캐릭터 없음"}</option>`).join("")}</select> → <select id="adTo">${users.docs.map(d=>`<option value="${d.id}">${d.data().id}</option>`).join("")}</select>
+        <button class="btn" type="button" id="adMove">옮기기</button></div><p class="ga-err" id="adMsg"></p></section>`;
+    $s("#adClose").onclick=()=>admin.hidden=true;
+    $s("#adMake").onclick=async()=>{const code=`MURIM-${rnd(4)}`;await fs.doc("invites/"+code).set({used:false,usedBy:null,created:Date.now(),note:$s("#adNote").value.trim().slice(0,40)});openAdmin()};
+    $s("#adMove").onclick=async()=>{const f=$s("#adFrom").value,t=$s("#adTo").value;if(f===t)return $s("#adMsg").textContent="같은 계정이에요.";
+      const s=await fs.doc("heroes/"+f).get();if(!s.exists)return $s("#adMsg").textContent="옮길 캐릭터가 없어요.";
+      await fs.doc("heroes/"+t).set(s.data());await fs.doc("heroes/"+f).delete();$s("#adMsg").textContent="옮겼어요.";openAdmin()};
+  }
+})();
+</script>
+</body></html>
