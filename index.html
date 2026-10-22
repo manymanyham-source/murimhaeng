@@ -373,6 +373,9 @@ select{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--line);
 .fav b{display:block;font-size:14px}
 .fav span{font-size:12px;color:var(--ink-3)}
 .log li.newg{color:var(--seal)}
+.face{display:block;flex:none;border-radius:50%;object-fit:cover;border:1.5px solid var(--line);background:var(--paper-2)}
+.face.big{width:64px;height:64px}.face.md{width:50px;height:50px}.face.sm{width:36px;height:36px}
+.facebtn{background:none;border:0;padding:0;border-radius:50%;cursor:pointer;flex:none}
 </style>
 
 <div class="wrap">
@@ -966,7 +969,7 @@ function autoLoop(){
 }
 function lairView(){
   const h=me,run=h.lair,B=bossFor(run.period),party=lairParty(h,run);
-  const bars=`<div class="lparty">${party.map(x=>`<div class="lp ${x.hp<=0?"dead":""}">${emblem(x.sect,"sm")}<div><b>${esc(x.name)}${x.isMe?" (나)":""}</b><span>${ROLE_N[x.role]} · ${x.hp}/${x.max}</span><div class="hpb"><i style="width:${x.hp/x.max*100}%"></i></div></div></div>`).join("")}</div>`;
+  const bars=`<div class="lparty">${party.map(x=>`<div class="lp ${x.hp<=0?"dead":""}">${x.isMe?face(myId(),x.sect,"sm"):emblem(x.sect,"sm")}<div><b>${esc(x.name)}${x.isMe?" (나)":""}</b><span>${ROLE_N[x.role]} · ${x.hp}/${x.max}</span><div class="hpb"><i style="width:${x.hp/x.max*100}%"></i></div></div></div>`).join("")}</div>`;
   const mods=run.mods.length?`<div class="mods">${run.mods.map(m=>`<span class="${MODS[m.k].good?"good":"bad"}">${MODS[m.k].t}</span>`).join("")}</div>`:`<p class="note" style="margin:0">아직 보스 상태에 변화가 없다. 무기고, 부두목, 감옥, 보스의 거처에서 한 일이 보스를 바꾼다.</p>`;
   const lt=run.loot,lootTxt=[lt.exp?`경험치 ${lt.exp}`:"",lt.stone?`강화석 ${lt.stone}`:"",lt.herb?`약초 ${lt.herb}`:"",...lt.items.map(i=>i.name)].filter(Boolean).join(" · ")||"아직 없음";
   const feed=`<div class="feedwrap" style="margin:14px -18px 0"><ul class="feed" id="lairFeed">${run.log.map(battleLine).join("")}</ul></div>`;
@@ -1001,7 +1004,7 @@ function raidTab(){
   else if(!here) body=`<p class="note">${REGIONS[B.region].n}에 있어야 소굴에 들어갈 수 있다. 지금 위치는 ${h.travel?"길 위":REGIONS[h.loc].n}.</p><button class="btn" type="button" id="toBossBtn">지도에서 ${REGIONS[B.region].n} 보기</button>`;
   else{const party=partyFor(h,role);
     body=`<div class="label" style="margin-top:18px">함께 들어갈 파티 · 내 경지에 맞춰 ${TIER_N[npcTier(h.realm)]}들이 돕는다</div>
-    <div class="party">${party.map(x=>`<div class="pm2">${emblem(x.sect,"sm")}<div><b>${esc(x.name)}${x.isMe?" (나)":""}</b><span>${ROLE_N[x.role]} · 체력 ${x.max} · 공격 ${x.atk}</span></div></div>`).join("")}</div>
+    <div class="party">${party.map(x=>`<div class="pm2">${x.isMe?face(myId(),x.sect,"sm"):emblem(x.sect,"sm")}<div><b>${esc(x.name)}${x.isMe?" (나)":""}</b><span>${ROLE_N[x.role]} · 체력 ${x.max} · 공격 ${x.atk}</span></div></div>`).join("")}</div>
     <p class="note">소굴에는 갈림길 네 번과 보스방이 있다. 방에서 한 선택이 보스를 약하게도, 강하게도 만든다. 체력은 방에서 방으로 이어지고, 갈림길에서 약초를 쓰거나 돌아 나올 수 있다.</p>
     ${roles.length>1?`<div class="chips" style="margin:10px 0">${roles.map(r=>`<label class="chip"><input type="radio" name="rrole" value="${r}" id="rr-${r}" ${role===r?"checked":""}><span>${ROLE_N[r]}로 서기</span></label>`).join("")}</div>`:""}
     <div class="row" style="margin-top:10px"><button class="btn solid" id="chalBtn" type="button" ${a||triesUsed>=3?"disabled":""}>소굴에 들어간다 · 오늘 ${3-triesUsed}/3</button>
@@ -1210,14 +1213,14 @@ function gateRoomView(r){
   if(r.status==="lobby"){const ids=roomMembers(r),party=buildGateParty(r);const roles=SECT_ROLES[me.sect];
     return `<section><div class="case"><div class="kicker">${G.title} · ${REGIONS[G.region].n} · 모집 중</div><h3>${G.boss}</h3><p>${G.lore}</p>
       <div class="label" style="margin-top:14px">파티 (사람 ${ids.length}/4 · 빈자리는 NPC)</div>
-      <div class="party">${party.map(x=>`<div class="pm2">${emblem(x.sect,"sm")}<div><b>${esc(x.name)}${x.id===myId()?" (나)":x.player?"":" · NPC"}</b><span>${ROLE_N[x.role]} · 체력 ${x.max} · 공격 ${x.atk}</span></div></div>`).join("")}</div>
+      <div class="party">${party.map(x=>`<div class="pm2">${x.player?face(x.id,x.sect,"sm"):emblem(x.sect,"sm")}<div><b>${esc(x.name)}${x.id===myId()?" (나)":x.player?"":" · NPC"}</b><span>${ROLE_N[x.role]} · 체력 ${x.max} · 공격 ${x.atk}</span></div></div>`).join("")}</div>
       ${roles.length>1?`<div class="chips" style="margin-top:10px">${roles.map(rr=>`<label class="chip"><input type="radio" name="grole" value="${rr}" id="gr-${rr}" ${(mineA.role||roles[0])===rr?"checked":""}><span>${ROLE_N[rr]}로 서기</span></label>`).join("")}</div>`:""}
       <p class="note">8막 동안 싸운다. 매 막 전조를 보고 각자 행동을 고른다. 모두 고르면 바로 진행되고, 90초가 지나면 안 고른 사람은 자동으로 움직인다.</p>
       <div class="row" style="margin-top:10px">${isOwner2?`<button class="btn sealb" id="startGateBtn" type="button">싸움을 시작한다</button>`:`<span class="note" style="margin:0">${josa(esc(r.ownerName),"이")} 시작하기를 기다리는 중…</span>`}
       <button class="btn ghost" id="leaveGateBtn" type="button">${isOwner2?"관문 닫기":"빠지기"}</button></div></div></section>`}
   const P=r.party,me2=P.find(x=>x.id===myId()),feed=`<div class="feedwrap" style="margin:14px -18px 0"><ul class="feed" id="gateFeed">${r.log.map(battleLine).join("")}</ul></div>`;
   const dots=`<div class="acts8">${GACT.slice(1).map((g,i)=>`<span class="${i+1<r.act||r.status!=="fight"?"past":i+1===r.act?"now":""}">${i+1}<em>${g.n}</em></span>`).join("")}</div>`;
-  const bars=`<div class="lparty">${P.map(x=>`<div class="lp ${x.hp<=0?"dead":""}">${emblem(x.sect,"sm")}<div><b>${esc(x.name)}${x.id===myId()?" (나)":x.player?"":" · NPC"}</b><span>${ROLE_N[x.role]} · ${x.hp}/${x.max}${r.status==="fight"&&x.player&&x.hp>0?` · ${playerReady(r,x)?"골랐다":"고르는 중"}`:""}</span><div class="hpb"><i style="width:${x.hp/x.max*100}%"></i></div></div></div>`).join("")}</div>`;
+  const bars=`<div class="lparty">${P.map(x=>`<div class="lp ${x.hp<=0?"dead":""}">${x.player?face(x.id,x.sect,"sm"):emblem(x.sect,"sm")}<div><b>${esc(x.name)}${x.id===myId()?" (나)":x.player?"":" · NPC"}</b><span>${ROLE_N[x.role]} · ${x.hp}/${x.max}${r.status==="fight"&&x.player&&x.hp>0?` · ${playerReady(r,x)?"골랐다":"고르는 중"}`:""}</span><div class="hpb"><i style="width:${x.hp/x.max*100}%"></i></div></div></div>`).join("")}</div>`;
   let ctl="";
   if(r.status==="fight"){
     if(!me2||me2.hp<=0) ctl=`<p class="note">쓰러져 있다. 동료들의 싸움을 지켜본다.</p>`;
@@ -1325,7 +1328,7 @@ function bondTab(){
     :others.map(o=>{const id=o._id,tot=bondTotal(myId(),id),st=stageOf(tot),nx=BOND_STAGES.find(x=>x[0]>tot),rel=relWith(id),A=bondOf(myId(),id),B=bondOf(id,myId());
       const s=SECTS[o.sect]||SECTS.sorim,canRel=tot>=300,inv=B.want&&B.want!=="지인"&&B.want!==A.want&&B.want!==rel;
       const fol=me.follow===id,folMut=following(id),folIn=o.follow===myId()&&!fol;
-      return `<div class="bond"><div class="bh">${emblem(o.sect in SECTS?o.sect:"sorim","sm")}<div><b>${esc(o.name)}</b><span>${s.n} · ${REALMS[o.realm]?.n||""} Lv.${o.level} · ${mateAct(o)}</span></div>
+      return `<div class="bond"><div class="bh">${face(o._id,o.sect,"md")}<div><b>${esc(o.name)}</b><span>${s.n} · ${REALMS[o.realm]?.n||""} Lv.${o.level} · ${mateAct(o)}</span></div>
           <span class="relb ${rel!=="지인"?"on":""}">${rel}</span></div>
         <div class="bbar"><span>인연 ${st[1]} · ${tot}${nx?` / ${nx[0]} (${nx[1]})`:""}</span><div class="hpb"><i style="width:${Math.min(100,nx?(tot-st[0])/(nx[0]-st[0])*100:100)}%"></i></div></div>
         ${rel!=="지인"?`<p class="note" style="margin:4px 0 0">${rel}의 효과: ${REL_FX[rel]}${tot>=600?` · 합격기 「${COMBO[rel]}」 (관문에서 둘이 같은 막에 무공을 쓰면 발동)`:` · 600에서 합격기`}</p>`:""}
@@ -1354,6 +1357,22 @@ function regionSectBox(region){
     <button class="btn sm" type="button" data-sgift="${k}">바친다</button>`).join("")}</div>`;
 }
 
+/* ───────── 프로필 사진: 128×128로 줄여 avatars/내 번호 에 글자로 저장 ───────── */
+let avatars={};
+const okImg=v=>typeof v==="string"&&/^data:image\/(webp|jpeg|png);base64,[A-Za-z0-9+/=]+$/.test(v)&&v.length<60000;
+function face(id,sect,cls){const v=avatars[id];return okImg(v)?`<img class="face ${cls}" src="${v}" alt="">`:emblem(sect in SECTS?sect:"sorim",cls)}
+async function pickAvatar(file){
+  if(!file)return;if(!/^image\//.test(file.type)){toast("사진 파일만 올릴 수 있어요.");return}
+  try{const url=URL.createObjectURL(file),img=new Image();img.src=url;await img.decode();
+    const S=128,c=document.createElement("canvas");c.width=c.height=S;const x=c.getContext("2d"),m=Math.min(img.width,img.height);
+    x.drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,S,S);URL.revokeObjectURL(url);
+    let d=c.toDataURL("image/webp",.82);if(!d.startsWith("data:image/webp"))d=c.toDataURL("image/jpeg",.82);if(d.length>45000)d=c.toDataURL("image/jpeg",.6);
+    avatars[myId()]=d;render();
+    if(mode==="db")await db.doc("avatars/"+uid).set({img:d,t:Date.now()});else{try{localStorage.setItem("murim-avatar",d)}catch(e){}}
+    toast("프로필 사진을 바꿨어요.");
+  }catch(e){toast("사진을 읽지 못했어요. 다른 사진으로 해 주세요.")}
+}
+async function clearAvatar(){delete avatars[myId()];render();if(mode==="db")await db.doc("avatars/"+uid).delete().catch(()=>{});else{try{localStorage.removeItem("murim-avatar")}catch(e){}}}
 /* ───────── 장비와 강화 ───────── */
 const SLOTS={weapon:"무기",armor:"의복",acc:"장신구"};
 const GRADE=["무명","청강","한철","현철","운철","천잠","만년한철"];
@@ -1718,7 +1737,7 @@ function heroView(){
   const dot={train:h.training&&Date.now()>=h.training.end,world:(h.travel&&Date.now()>=h.travel.end)||(h.mission&&(h.mission.phase==="scene"||Date.now()>=h.mission.end)),self:h.points>0||!!postOffer(h),mates:giftsToMe().some(g=>g.t>(h.seenGift||0))||others.some(o=>{const B=bondOf(o._id,myId()),A=bondOf(myId(),o._id);return (B.want&&B.want!=="지인"&&B.want!==A.want)||(o.follow===myId()&&h.follow!==o._id)}),gate:(()=>{const r=myRoom();if(r&&r.status==="fight"){const m=r.party.find(x=>x.id===myId());return !!(m&&m.hp>0&&!playerReady(r,m))}if(r&&(r.status==="win"||r.status==="fail")&&!h.gateDone?.[r.id])return true;return atWall(h)&&!!GATES[h.realm+1]?.ready&&!r})(),raid:(()=>{const st=raidState(periodNow());if(h.lair&&h.lair.phase!=="done")return true;return st.down&&h.raid?.period===periodNow()&&!h.raid.claimed})()};
   return `<div>
   <section style="margin-top:8px">
-    <div class="who">${emblem(h.sect,"big")}
+    <div class="who"><button type="button" class="facebtn" data-go="self" aria-label="프로필 사진 바꾸기">${face(myId(),h.sect,"big")}</button>
       <div><div class="name">${esc(h.name)}</div><div class="sect">${s.n} 문하 · ${s.role} · ${h.travel?`${REGIONS[h.travel.from].n} → ${REGIONS[h.travel.to].n}`:REGIONS[h.loc].n}</div></div></div>
     <div class="realm"><b>${r.n}</b><span>Lv.${h.level} <small style="color:var(--ink-3)">/ ${cap(h.realm)}</small></span></div>
     <div class="bar ${wall?"seal-c":""}"><i style="width:${pct}%"></i></div>
@@ -1861,7 +1880,11 @@ function missionBox(){
 /* 인물 탭 */
 function selfTab(){
   const h=me,s=SECTS[h.sect],d=derived(h),left=h.points-(alloc.nei+alloc.wai+alloc.shen);
-  return `<section class="grid2">
+  return `<section><div class="label">프로필 사진</div><div class="row" style="gap:14px">${face(myId(),h.sect,"big")}
+      <label class="btn sm" for="avatarIn" style="cursor:pointer">사진 고르기</label><input id="avatarIn" type="file" accept="image/*" hidden>
+      ${avatars[myId()]?`<button class="btn sm ghost" type="button" id="avatarDel">지우기</button>`:""}
+      <span class="note" style="margin:0">정사각형으로 잘려서 작게 저장된다. 대화창, 인연, 파티에서 보인다.</span></div></section>
+  <section class="grid2">
     <div><div class="label">능력치</div>
       ${h.points?`<div class="points">남은 포인트 <b>${left}</b></div>`:""}
       <div class="stats">${Object.entries(STATS).map(([k,st])=>`
@@ -1926,6 +1949,7 @@ function bind(){
   document.querySelectorAll("[data-p]").forEach(b=>b.addEventListener("click",()=>{alloc[b.dataset.p]++;render()}));
   document.querySelectorAll("[data-m]").forEach(b=>b.addEventListener("click",()=>{alloc[b.dataset.m]--;render()}));
   on("#ffBtn",fastForward);
+  $("#avatarIn")?.addEventListener("change",e=>pickAvatar(e.target.files[0]));on("#avatarDel",clearAvatar);
   document.querySelectorAll("[data-gpick]").forEach(el=>el.addEventListener("change",()=>{giftPick[el.dataset.gpick]=el.value}));
   document.querySelectorAll("[data-gift]").forEach(b=>b.addEventListener("click",()=>giveGift(b.dataset.gift)));
   document.querySelectorAll("[data-rel]").forEach(b=>b.addEventListener("click",()=>proposeRel(b.dataset.rel,b.dataset.relv)));
@@ -2024,6 +2048,7 @@ let fakeOthers=(()=>{try{return JSON.parse(localStorage.getItem("murim-fake")||"
 function mergeFake(){others=others.filter(o=>!String(o._id).startsWith("fake-")).concat(fakeOthers)}
 function saveFake(){try{localStorage.setItem("murim-fake",JSON.stringify(fakeOthers))}catch(e){}mergeFake();render()}
 function startLocal(){
+  try{const a=localStorage.getItem("murim-avatar");if(a)avatars["local-me"]=a}catch(e){}
   mergeFake();
   try{gateRooms=JSON.parse(localStorage.getItem("murim-gates")||"{}");const a=JSON.parse(localStorage.getItem("murim-gateact")||"null");if(a)gateActs["local-me"]=a}catch(e){}
   mode="local";isOwner=false;
@@ -2039,6 +2064,7 @@ async function boot(){
   if(!d||!id){startLocal();return}
   db=d;uid=id;mode="db";isOwner=await u.isOwner();
   try{const js=await db.doc("journals/"+uid).get();if(js.exists){journalCache=js.data().list||[];lastJournal=JSON.stringify(journalCache)}}catch(e){}
+  db.collection("avatars").onSnapshot(snap=>{avatars={};snap.docs.forEach(d=>{if(d.exists)avatars[d.id]=d.data().img});if(ready)render()},()=>{});
   db.collection("gates").onSnapshot(snap=>{gateRooms={};snap.docs.forEach(d=>{if(d.exists)gateRooms[d.id]=structuredClone(d.data())});if(ready)render();maybeResolve()},()=>{});
   db.collection("gateacts").onSnapshot(snap=>{const mine=gateActs[uid];gateActs={};snap.docs.forEach(d=>{if(d.exists)gateActs[d.id]=structuredClone(d.data())});
     if(mine&&(!gateActs[uid]||(gateActs[uid].t||0)<(mine.t||0)))gateActs[uid]=mine;if(ready)render();maybeResolve()},()=>{});
@@ -2220,12 +2246,12 @@ window.FIREBASE_CONFIG = {
 (function(){
   const VID="abzNqOg59iU";
   const st=document.createElement("style");st.textContent=`
-  .bgm-btn{position:fixed;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:35;display:flex;align-items:center;gap:8px;
+  .bgm-btn{position:fixed;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:35;display:flex;align-items:center;gap:8px;
     border:1px solid var(--line);background:var(--paper);color:var(--ink-2);padding:8px 14px;border-radius:30px;font:inherit;font-size:13px;cursor:pointer}
   .bgm-btn i{display:inline-flex;gap:2px;height:12px;align-items:flex-end}.bgm-btn i b{width:2px;height:3px;background:var(--ink-2);border-radius:1px}
   .bgm-btn.on i b{animation:bgmw 1.4s ease-in-out infinite}.bgm-btn.on i b:nth-child(2){animation-delay:.25s}.bgm-btn.on i b:nth-child(3){animation-delay:.5s}
   @keyframes bgmw{50%{height:12px}}
-  .bgm-dock{position:fixed;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(58px + env(safe-area-inset-bottom,0px));z-index:35;width:240px;height:200px;border:1px solid var(--line);background:#000;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+  .bgm-dock{position:fixed;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(128px + env(safe-area-inset-bottom,0px));z-index:35;width:240px;height:200px;border:1px solid var(--line);background:#000;box-shadow:0 6px 24px rgba(0,0,0,.25)}
   .bgm-dock[hidden]{display:none}.bgm-dock iframe{width:100%;height:100%;border:0;display:block}
   @media (prefers-reduced-motion:reduce){.bgm-btn.on i b{animation:none}}`;document.head.appendChild(st);
   const btn=document.createElement("button");btn.type="button";btn.className="bgm-btn";btn.setAttribute("aria-pressed","false");
@@ -2259,8 +2285,8 @@ addEventListener("murim-ready",()=>{
   .chat .sub{font-size:12px;color:var(--ink-3);padding:6px 12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px}
   .chat .sub button{background:none;border:1px solid var(--line);font-size:12px;padding:2px 8px;color:var(--ink-2)}
   .chat .msgs{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;overscroll-behavior:contain}
-  .chat .m{font-size:14px;line-height:1.55;word-break:break-word}
-  .chat .m .who{font-weight:700;margin-right:6px}.chat .m .tm{font-size:11px;color:var(--ink-3);margin-left:6px;font-variant-numeric:tabular-nums}
+  .chat .m{font-size:14px;line-height:1.55;word-break:break-word;display:flex;gap:8px;align-items:flex-start}.chat .m>div{min-width:0}
+  .chat .m .who{font-weight:700;margin-right:6px}.chat .m .cav{width:26px;height:26px;flex:none;border-radius:50%;object-fit:cover;border:1px solid var(--line);margin-top:1px}.chat .m .tm{font-size:11px;color:var(--ink-3);margin-left:6px;font-variant-numeric:tabular-nums}
   .chat .m.mine .who{color:var(--seal)}
   .chat .empty2{color:var(--ink-3);font-size:13px;text-align:center;margin:auto}
   .chat form{display:flex;gap:6px;padding:8px;border-top:1px solid var(--line)}
@@ -2302,11 +2328,11 @@ addEventListener("murim-ready",()=>{
       body=`<div class="ppl">${ps.length?ps.map(o=>`<button type="button" data-dm="${o._id}">${o.name}<span>${unread(keyOf("dm",o._id))?"<b>새 귓속말</b>":((msgs[keyOf("dm",o._id)]||[]).slice(-1)[0]?.text||"").slice(0,18)}</span></button>`).join(""):`<p class="empty2" style="padding:20px">아직 귓속말을 나눌 사람이 없다.</p>`}</div>`}
     else{if(tab==="dm"){const o=peers().find(x=>x._id===dmWith);sub=`<div class="sub"><span>${o?(typeof josa==="function"?josa(o.name,"와"):o.name):"?"} 귓속말</span><button type="button" id="dmBack">목록</button></div>`}
       const list=k?msgs[k]||[]:[];
-      body=`<div class="msgs" id="chatMsgs">${list.length?list.map(m=>{const d=new Date(m.t);return `<div class="m ${m.from===uid?"mine":""}"><span class="who"></span><span class="tx"></span><span class="tm">${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}</span></div>`}).join(""):`<p class="empty2">${k?"아직 아무 말도 없다. 먼저 말을 걸어 보자.":""}</p>`}</div>`}
+      body=`<div class="msgs" id="chatMsgs">${list.length?list.map(m=>{const d=new Date(m.t);return `<div class="m ${m.from===uid?"mine":""}"><img class="cav" alt="" hidden><div><span class="who"></span><span class="tx"></span><span class="tm">${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}</span></div></div>`}).join(""):`<p class="empty2">${k?"아직 아무 말도 없다. 먼저 말을 걸어 보자.":""}</p>`}</div>`}
     const form=canSend?`<form id="chatForm"><input id="chatIn" maxlength="200" autocomplete="off" placeholder="${tab==="dm"?"귓속말":"말하기"} (200자까지)" aria-label="보낼 말"><button type="submit">보내기</button></form>`:"";
     const keepDraft=$c("#chatIn")?.value||"";const hadFocus=document.activeElement?.id==="chatIn";
     box.innerHTML=tabs+sub+body+form;
-    const list=k?msgs[k]||[]:[];box.querySelectorAll(".m").forEach((el,i)=>{el.querySelector(".who").textContent=list[i].name||"?";el.querySelector(".tx").textContent=list[i].text});
+    const list=k?msgs[k]||[]:[];box.querySelectorAll(".m").forEach((el,i)=>{el.querySelector(".who").textContent=list[i].name||"?";el.querySelector(".tx").textContent=list[i].text;const a=typeof avatars!=="undefined"&&avatars[list[i].from];if(typeof okImg==="function"&&okImg(a)){const im=el.querySelector(".cav");im.src=a;im.hidden=false}});
     const ml=$c("#chatMsgs");if(ml)ml.scrollTop=ml.scrollHeight;
     if($c("#chatIn")){$c("#chatIn").value=keepDraft;if(hadFocus)$c("#chatIn").focus()}
     box.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{tab=b.dataset.t;if(tab!=="dm")dmWith=null;paint()});
