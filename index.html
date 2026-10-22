@@ -2242,9 +2242,8 @@ window.FIREBASE_CONFIG = {
   }
 })();
 
-/* ───────── 브금: 백그라운드 재생 (bgm1.mp3 → bgm2.mp3 → 처음부터 반복) ───────── */
+/* ───────── 브금: 백그라운드 재생 (두 곡을 이어 붙인 bgm.mp3 하나를 계속 반복) ───────── */
 (function(){
-  const LIST=[{src:"bgm1.mp3",title:"Ancient Bamboo Harmony"},{src:"bgm2.mp3",title:"Soft Pads & Bamboo Flute"}];
   const st=document.createElement("style");st.textContent=`
   .bgm-btn{position:fixed;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:35;display:flex;align-items:center;gap:8px;
     border:1px solid var(--line);background:var(--paper);color:var(--ink-2);padding:8px 14px;border-radius:30px;font:inherit;font-size:13px;cursor:pointer}
@@ -2254,23 +2253,17 @@ window.FIREBASE_CONFIG = {
   @media (prefers-reduced-motion:reduce){.bgm-btn.on i b{animation:none}}`;document.head.appendChild(st);
   const btn=document.createElement("button");btn.type="button";btn.className="bgm-btn";btn.setAttribute("aria-pressed","false");
   btn.innerHTML=`<i aria-hidden="true"><b></b><b></b><b></b></i><span>브금 켜기</span>`;document.body.appendChild(btn);
-  const au=new Audio();au.preload="none";au.volume=.55;let idx=0,on=false;
-  const load=i=>{idx=(i+LIST.length)%LIST.length;au.src=LIST[idx].src;
-    if("mediaSession" in navigator){navigator.mediaSession.metadata=new MediaMetadata({title:LIST[idx].title,artist:"무림행 브금",album:"무림행"})}};
-  const label=()=>{btn.classList.toggle("on",on);btn.setAttribute("aria-pressed",on);btn.querySelector("span").textContent=on?"브금 끄기":"브금 켜기"};
-  au.addEventListener("ended",()=>{load(idx+1);au.play().catch(()=>{})});
-  au.addEventListener("error",()=>{if(on){on=false;label()}});
+  const au=new Audio();au.preload="none";au.loop=true;au.volume=.55;let on=false;
+  const label=t=>{btn.classList.toggle("on",on);btn.setAttribute("aria-pressed",on);btn.querySelector("span").textContent=t||(on?"브금 끄기":"브금 켜기")};
+  au.addEventListener("error",()=>{on=false;label("브금 파일을 못 찾았어요")});
   btn.addEventListener("click",async()=>{
     if(on){au.pause();on=false;label();return}
-    if(!au.src)load(0);
-    try{await au.play();on=true}catch(e){on=false;btn.querySelector("span").textContent="재생 실패 · 다시 누르기";return}
-    label();
+    if(!au.src){au.src="bgm.mp3";if("mediaSession" in navigator)navigator.mediaSession.metadata=new MediaMetadata({title:"무림행 브금",artist:"Ancient Bamboo Harmony · Soft Pads & Bamboo Flute"})}
+    try{await au.play();on=true;label()}catch(e){on=false;label("다시 눌러 주세요")}
   });
   if("mediaSession" in navigator){
     navigator.mediaSession.setActionHandler("play",()=>{au.play();on=true;label()});
     navigator.mediaSession.setActionHandler("pause",()=>{au.pause();on=false;label()});
-    navigator.mediaSession.setActionHandler("nexttrack",()=>{load(idx+1);au.play().catch(()=>{})});
-    navigator.mediaSession.setActionHandler("previoustrack",()=>{load(idx-1);au.play().catch(()=>{})});
   }
 })();
 
