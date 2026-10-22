@@ -2141,7 +2141,7 @@ window.FIREBASE_CONFIG = {
 
   $s("#gaForm").addEventListener("submit",async e=>{
     e.preventDefault();err("");
-    const id=$s("#gaId").value.trim().toLowerCase(),pw=$s("#gaPw").value,code=$s("#gaCode").value.trim().toUpperCase();
+    const id=$s("#gaId").value.trim().toLowerCase(),pw=$s("#gaPw").value,code=$s("#gaCode").value.replace(/\s+/g,"").toUpperCase();
     if(!ID_RE.test(id))return err("아이디는 영문 소문자, 숫자, _ 로 3~16자예요.");
     if(pw.length<6)return err("비밀번호는 6자 이상이어야 해요.");
     busy(true);
@@ -2153,11 +2153,11 @@ window.FIREBASE_CONFIG = {
           b.set(fs.doc("users/"+cred.user.uid),{id,code,created:Date.now()});
           b.update(fs.doc("invites/"+code),{used:true,usedBy:cred.user.uid,usedAt:Date.now()});
           await b.commit();
-        }catch(x){await cred.user.delete().catch(()=>{});throw{code:"bad-code"}}
+        }catch(x){await cred.user.delete().catch(()=>{});throw{code:"bad-code",why:x.code||x.message||""}}
       }else await auth.signInWithEmailAndPassword(idToEmail(id),pw);
     }catch(x){
       const c=x.code||"";
-      err(c==="no-code"?"초대코드를 넣어 주세요.":c==="bad-code"?"초대코드가 맞지 않거나 이미 쓰인 코드예요.":c.includes("email-already-in-use")?"이미 있는 아이디예요. 다른 아이디를 골라 주세요."
+      err(c==="no-code"?"초대코드를 넣어 주세요.":c==="bad-code"?`초대코드가 맞지 않거나 이미 쓰인 코드예요. (${code} · ${x.why})`:c.includes("email-already-in-use")?"이미 있는 아이디예요. 다른 아이디를 골라 주세요."
         :c.includes("invalid-credential")||c.includes("wrong-password")||c.includes("user-not-found")?"아이디나 비밀번호가 맞지 않아요.":c.includes("too-many-requests")?"시도가 너무 많아요. 잠시 뒤에 다시 해 주세요."
         :c.includes("network")?"인터넷 연결을 확인해 주세요.":"들어가지 못했어요. ("+c+")");
     }finally{busy(false)}
