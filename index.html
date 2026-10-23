@@ -1659,21 +1659,38 @@ function fight(){
     log.push(line);
   }
   const res=fhp<=0?"win":php<=0?"lose":"flee";
-  m.fight={foeHp:foe.hp,fhp,php,maxHp:d.hp,log,res,t:Date.now()}; m.step=3; save(h);
+  m.fight={foeHp:foe.hp,fhp,php,maxHp:d.hp,log,res,t:Date.now()}; m.step=3; m.loot=rollMissionLoot(h,m); save(h);
 }
 function missionTier(m){const s=m.clues+(m.fight.res==="win"?1:m.fight.res==="flee"?.5:0);return m.clues===2&&m.fight.res==="win"?0:s>=1.5?1:2}
 function missionReward(h,m){const t=missionTier(m);return {t,exp:Math.round(expPerHour(h.level)*3*[1.3,1,.6][t]),stone:[4,3,2][t]}}
+/* 사건 보상은 싸움이 끝나는 순간 한 번 정해 두고, 화면에는 실제로 얻은 것만 보여 준다 */
+function rollMissionLoot(h,m){
+  const r=missionReward(h,m),comp=companionFor(m),L={t:r.t,exp:r.exp,stone:r.stone,gift:null,clue:false,drop:null,friend:false};
+  if(comp?.id&&relWith(comp.id)==="친우"){L.exp=Math.round(L.exp*1.2);L.friend=true}
+  if(Math.random()<[.6,.35,.15][r.t])L.gift=pickOne(GIFTS);
+  if(r.t===0&&Math.random()<.1)L.clue=true;
+  L.drop=rollDrop(h,r.t);
+  return L;
+}
+function lootChips(L,m){
+  const c=[`경험치 +${L.exp.toLocaleString()}${L.friend?" (친우 +20%)":""}`,`강화석 +${L.stone}`];
+  if(L.gift)c.push(`${ITEMS[L.gift][0]} +1`);
+  if(L.drop)c.push(`장비 「${L.drop.name}」`);
+  if(L.clue)c.push("비급 단서 +1");
+  (REGION_SECTS[m.region]||[]).forEach(k=>c.push(`${SECTS[k].n} 우호도 +20`));
+  return c;
+}
 function finishMission(){
   const h=structuredClone(me),m=h.mission; if(!m||m.step!==3) return;
-  const inc=INC[m.region][m.idx],r=missionReward(h,m),comp=companionFor(m),bx=[];
-  if(comp?.id&&relWith(comp.id)==="친우"){r.exp=Math.round(r.exp*1.2);bx.push("친우 보너스 경험치 +20%")}
+  const inc=INC[m.region][m.idx],L=m.loot||rollMissionLoot(h,m),r={t:L.t,exp:L.exp,stone:L.stone},comp=companionFor(m),bx=[];
+  if(L.friend)bx.push("친우 보너스 경험치 +20%");
   if(comp?.id){const v=addBond(h,comp.id,10);bx.push(`${josa(comp.name,"와")} 인연 +${v}`)}
   (REGION_SECTS[m.region]||[]).forEach(k=>{addFavor(h,k,20);bx.push(`${SECTS[k].n} 우호도 +20`)});
   const lv0=h.level,ups=applyExp(h,r.exp);
   h.items.stone+=r.stone; const extra=[...bx];
-  if(Math.random()<[.6,.35,.15][r.t]){const g=pickOne(GIFTS);h.items[g]++;extra.push(`${ITEMS[g][0]} +1`)}
-  if(r.t===0&&Math.random()<.1){h.items.clue++;extra.push("비급 단서 +1")}
-  const drop=rollDrop(h,r.t); if(drop) extra.push("장비 「"+gainItem(h,drop)+"」");
+  if(L.gift){h.items[L.gift]++;extra.push(`${ITEMS[L.gift][0]} +1`)}
+  if(L.clue){h.items.clue++;extra.push("비급 단서 +1")}
+  if(L.drop) extra.push("장비 「"+gainItem(h,L.drop)+"」");
   saveJournal(h,m,inc,r.t,`보상: 경험치 +${r.exp}, 강화석 +${r.stone}${extra.length?", "+extra.join(", "):""}`);
   h.done[m.region]=m.period; h.mission=null;
   addLog(h,`「${inc.t}」 ${TIER[r.t]}. 경험치 +${r.exp}, 강화석 +${r.stone}${extra.length?", "+extra.join(", "):""}${ups?`, Lv.${lv0}→${h.level}`:""}`);
@@ -1870,11 +1887,11 @@ function missionBox(){
     body=`<p class="q">${m.step+1}. ${st.q}</p><div class="opts">${(()=>{const bm=bestOf(st.o.map(o=>o[0]),m.bonus,dc);return st.o.map(([k,t],i)=>{const c=optCheck(k,m.bonus,dc,chanceOf(Math.floor(me.stats[k]/10)+(m.bonus||0),dc)===bm);return `<button class="opt" type="button" data-inv="${i}">${c.b}<span>${t}</span>${c.s}</button>`}).join("")})()}</div>`}
   else if(m.step===2){
     body=`<p class="q">조사 끝에 <b>${inc.f}</b>와 마주쳤다. 무공 없이 세 합을 겨룬다.</p><button class="btn solid" id="fightBtn" type="button">맞서 싸운다</button>`}
-  else{const f=m.fight,r=missionReward(h,m);
+  else{const f=m.fight,L=m.loot||(()=>{const x=rollMissionLoot(h,m);m.loot=x;const hh=structuredClone(me);hh.mission.loot=x;setTimeout(()=>save(hh),0);return x})(),r={t:L.t};
     body=`<p class="q">${inc.f}와의 세 합</p><ul class="fight">${f.log.map(l=>`<li>${l}</li>`).join("")}</ul>
       <p style="color:var(--ink)">${f.res==="win"?`${inc.f}를 쓰러뜨렸다.`:f.res==="lose"?"쓰러졌다. 겨우 몸을 피했다.":`${inc.f}가 달아났다.`} (남은 체력 ${f.php}/${f.maxHp})</p>
       <div class="kicker" style="margin-top:14px">결말 · ${TIER[r.t]}</div><p style="color:var(--ink)">${inc.e[r.t]}</p>
-      <div class="reward"><span>경험치 +${r.exp.toLocaleString()}</span><span>강화석 +${r.stone}</span><span>선물 아이템 확률 ${[60,35,15][r.t]}%</span><span>장비 확률 ${[25,12,5][r.t]}%</span>${r.t===0?"<span>비급 단서 확률 10%</span>":""}</div>
+      <div class="kicker" style="margin-top:12px">얻은 것</div><div class="reward">${lootChips(L,m).map(x=>`<span>${esc(x)}</span>`).join("")}</div>
       <button class="btn sealb" id="finMisBtn" type="button">사건을 마무리한다</button>`}
   return `<div class="case"><div class="kicker">${REGIONS[m.region].n} · 현장 · 단서 ${m.clues}/2</div><h3>${inc.t}</h3>${rolls}${body}</div>`;
 }
