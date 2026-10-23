@@ -1578,7 +1578,7 @@ function seeded(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a
 const relOf=id=>relWith(id);
 function companionFor(m){
   if(fakeMate) return fakeMate;
-  const o=others.find(o=>o.mission&&o.mission.region===m.region&&o.mission.period===m.period&&o.mission.idx===m.idx&&o.mission.start<m.end&&o.mission.end>m.start);
+  const o=others.find(o=>following(o._id)&&o.mission&&o.mission.region===m.region&&o.mission.period===m.period&&o.mission.idx===m.idx&&o.mission.start<m.end&&o.mission.end>m.start);
   return o?{name:o.name,rel:relOf(o._id),id:o._id}:null;
 }
 function ambFor(t){const hr=new Date(t).getHours();return FEED.amb[hr<4?"night":hr<7?"dawn":hr<11?"morn":hr<17?"day":hr<20?"eve":"night"]}
