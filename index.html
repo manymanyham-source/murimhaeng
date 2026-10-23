@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261023160647">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261023164529">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1600,6 +1600,7 @@ async function coEdit(check,fn){
 const realMates=()=>partyMates().filter(o=>o._id&&!String(o._id).startsWith("fake-"));
 const mutualMate=()=>realMates()[0];
 function coParty(run){
+  run.members=[...new Set(run.members)];
   const ps=run.members.map(id=>{const h=heroById(id);if(!h)return null;const d=derived(h),role=run.roles?.[id]||SECT_ROLES[h.sect][0];
     return {id,name:h.name,sect:h.sect,role,hp:d.hp,max:d.hp,atk:d.atk,def:d.def,eva:d.eva,crit:d.crit,isMe:id===myId(),player:true,realm:h.realm}}).filter(Boolean);
   const need=["tank","dps","dps","heal"];ps.forEach(p=>{const i=need.indexOf(p.role);if(i>=0)need.splice(i,1);else need.pop()});
@@ -1629,11 +1630,17 @@ function coInvite(){
   addLog(h,`무리에게 ${B.n}의 소굴에 함께 들어가자고 했다.`);save(h);
 }
 function coInvitesForMe(){return Object.values(lairRuns).filter(r=>r.status==="invite"&&(r.invitees||[r.invitee]).includes(myId())&&!r.members.includes(myId())&&r.period===periodNow()&&Date.now()-(r.updated||0)<30*60e3)}
+let coJoining=false;
 async function coJoin(id){
+  if(coJoining)return;
   const why=coCheckReady();if(why){toast(why);return}
+  coJoining=true;try{await coJoinCore(id)}finally{setTimeout(()=>coJoining=false,800)}}
+async function coJoinCore(id){
   const role=raidRole&&SECT_ROLES[me.sect].includes(raidRole)?raidRole:SECT_ROLES[me.sect][0];
   if(mode==="db"&&!(await LS.lease(id))){toast("잠시 뒤 다시 눌러 주세요.");return}
-  const fresh=await LS.get(id);if(!fresh||fresh.status!=="invite"){toast("이미 닫힌 초대예요.");return}
+  const fresh=await LS.get(id);if(!fresh||fresh.status==="closed"||fresh.status==="done"){toast("이미 닫힌 초대예요.");return}
+  if(fresh.members.includes(myId())){if(me.colair!==id){const h=structuredClone(me);h.colair=id;save(h)}return}
+  if(fresh.status!=="invite"){toast("이미 출발한 소굴이에요.");return}
   if(fresh.members.length>=PARTY_MAX){toast("자리가 다 찼어요.");return}
   fresh.members.push(myId());fresh.roles[myId()]=role;fresh.log.push({k:"amb",x:`${josa(me.name,"이")} 어귀에 합류했다.`});
   if(fresh.members.length>=Math.min(PARTY_MAX,1+(fresh.invitees||[1]).length))coGo(fresh);
