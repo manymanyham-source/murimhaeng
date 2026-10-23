@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261023180102">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261023182012">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -100,6 +100,13 @@ section{margin-top:30px}
 .alarm p{margin:0;line-height:1.6}
 .alarm .aic{flex:none;width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--line);font-family:var(--f-brush);font-size:17px;color:var(--ink-2);border-radius:50%}
 .alarm.new .aic{border-color:var(--seal);color:var(--seal)}
+.ttl{font-size:.62em;color:var(--seal);letter-spacing:.04em;margin-right:4px;font-weight:normal;vertical-align:middle;white-space:nowrap}
+.tgrp{margin:12px 0}.tgrp .kicker{display:block;margin-bottom:6px}
+.tlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.tt{display:grid;gap:2px;text-align:left;padding:9px 11px;border:1px solid var(--line);background:none;font:inherit;color:var(--ink);border-radius:2px;cursor:pointer}
+.tt b{font-family:var(--f-brush);font-size:16px;font-weight:normal}.tt span{font-size:11px;color:var(--ink-3);line-height:1.4}
+.tt.on{border-color:var(--seal)}.tt.on b{color:var(--seal)}
+.tt.off{cursor:default;opacity:.55;border-style:dashed}
 .mailnew{display:block;width:100%;margin:10px 0 0;padding:9px 12px;border:1px solid var(--seal);color:var(--seal);background:none;font:inherit;font-size:14px;text-align:left;border-radius:2px;cursor:pointer}
 .mailf label.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink);grid-column:1/-1}
 .chip{position:relative}
@@ -552,7 +559,9 @@ function normalize(h){
   if(!h) return h;
   h.loc=h.loc||"henan"; h.items=Object.assign({stone:0,herb:0,wine:0,trinket:0,clue:0},h.items||{});
   h.bag=h.bag||[]; if(!h.gear){const sp=SECT_SPEC[h.sect]||"dps";h.gear={weapon:makeItem("weapon",0,sp),armor:makeItem("armor",0,sp),acc:null}}
-  h.bonds=h.bonds||{}; h.favor=h.favor||{}; h.done=h.done||{}; h.training=h.training||null; h.travel=h.travel||null; h.mission=h.mission||null; h.log=h.log||[];
+  h.bonds=h.bonds||{}; h.favor=h.favor||{};
+  /* 내 문파 우호도는 50에서 시작 (이미 있던 사람은 한 번 +50) */
+  if(!h.favorInit&&h.sect){h.favor[h.sect]=(h.favor[h.sect]||0)+50;h.favorInit=1} h.done=h.done||{}; h.training=h.training||null; h.travel=h.travel||null; h.mission=h.mission||null; h.log=h.log||[];
   return h;
 }
 
@@ -561,6 +570,7 @@ let writing=Promise.resolve();
 let journalCache=null,lastJournal=null;
 /* 지난 일지는 캐릭터 기록과 따로, 본인만 읽는 칸(journals/내 번호)에 둔다. 캐릭터 기록이 작아야 모두에게 빨리 간다. */
 function save(h){
+  try{checkTitles(h)}catch(e){}
   me=h; render();
   if(mode==="db"){
     const body=JSON.parse(JSON.stringify(h)),jl=body.journal||[],js=JSON.stringify(jl);delete body.journal;
@@ -787,7 +797,7 @@ function claimRaid(){
   if(Math.random()<.25){h.items.clue++;got.push("비급 단서 +1")}
   if(Math.random()<.5){const g=pickOne(GIFTS);h.items[g]++;got.push(`${ITEMS[g][0]} +1`)}
   st.ppl.filter(x=>x!==me&&x._id).forEach(x=>{const v=addBond(h,x._id,20);got.push(`${josa(x.name,"와")} 인연 +${v}`)});
-  h.raid.claimed=true;addLog(h,`${B.n} 토벌 보상: ${got.join(", ")}${ups?`, Lv.${lv0}→${h.level}`:""}`);save(h);toast(`토벌 보상을 받았습니다. ${got.slice(0,2).join(", ")}`);
+  h.raid.claimed=true;bump(h,"kill");addLog(h,`${B.n} 토벌 보상: ${got.join(", ")}${ups?`, Lv.${lv0}→${h.level}`:""}`);save(h);toast(`토벌 보상을 받았습니다. ${got.slice(0,2).join(", ")}`);
 }
 /* ───────── 소굴: 갈림길 → 방 → 보스방 ─────────
    방에서 한 선택이 보스 상태(공격력, 방어, 특수기, 기습)를 바꾼다. 파티 체력은 방에서 방으로 이어진다. */
@@ -977,7 +987,7 @@ function bossTurn(action){
 }
 function endRun(h,why){
   const run=h.lair,B=bossFor(run.period),loot=run.loot,half=why==="wipe";
-  let dealt=0;if(why==="boss"){dealt=run.boss.dealt;[...new Set(partyFor(h,run.role).filter(x=>!x.isMe).map(x=>x.sect))].forEach(k=>addFavor(h,k,15));loot.exp+=expPerHour(h.level);if(h.raid?.period===run.period)h.raid.dmg+=dealt}
+  let dealt=0;if(why==="boss"){dealt=run.boss.dealt;bump(h,"lair");[...new Set(partyFor(h,run.role).filter(x=>!x.isMe).map(x=>x.sect))].forEach(k=>addFavor(h,k,15));loot.exp+=expPerHour(h.level);if(h.raid?.period===run.period)h.raid.dmg+=dealt}
   const exp=Math.round(loot.exp*(half?.5:1)),stone=Math.floor(loot.stone*(half?.5:1)),herb=Math.floor(loot.herb*(half?.5:1));
   const lv0=h.level,ups=applyExp(h,exp);h.items.stone+=stone;h.items.herb+=herb;const got=[];
   if(exp)got.push(`경험치 +${exp}`);if(stone)got.push(`강화석 +${stone}`);if(herb)got.push(`약초 +${herb}`);
@@ -1221,6 +1231,7 @@ function claimGate(){
   const r=myRoom();if(!r||(r.status!=="win"&&r.status!=="fail"))return;const h=structuredClone(me);h.gateDone=h.gateDone||{};if(h.gateDone[r.id])return;
   const G=GATES[r.realm],got=[];
   if(r.status==="win"){
+    h.gateWins={...(h.gateWins||{}),[r.realm]:(h.gateWins?.[r.realm]||0)+1};if(r.owner!==myId())bump(h,"gateHelp");
     if(r.owner===myId()&&h.realm===r.realm-1&&atWall(h)){h.realm=r.realm;h.points+=5;applyExp(h,0);got.push(`${REALMS[r.realm].n}의 경지에 올랐다! (포인트 +5)`)}
     else{const exp=expPerHour(h.level)*3;applyExp(h,exp);got.push(`도우미 보상 · 경험치 +${exp}`)}
     h.items.stone+=5;got.push("강화석 +5");
@@ -1328,7 +1339,7 @@ function giveGift(to){
   const it=giftPick[to]||"herb",h=structuredClone(me),o=heroById(to);if(!o)return;
   if(h.items[it]<1){toast(`${josa(ITEMS[it][0],"이")} 없습니다.`);return}
   if(giftDayLeft(h)<1){toast("오늘은 더 선물할 수 없습니다. (하루 3번)");return}
-  h.items[it]--;h.giftDay={day:dayKey(),n:3-giftDayLeft(h)+1};
+  h.items[it]--;bump(h,"gift");h.giftDay={day:dayKey(),n:3-giftDayLeft(h)+1};
   const v=addBond(h,to,GIFT_VAL[it]);h.sent=[{id:Date.now().toString(36),to,item:it,t:Date.now()},...(h.sent||[])].slice(0,20);
   addLog(h,`${josa(o.name,"에")}게 ${josa(ITEMS[it][0],"을")} 보냈다. (인연 +${v})`);save(h);toast(`${o.name}에게 ${josa(ITEMS[it][0],"을")} 보냈습니다.`);
 }
@@ -1381,7 +1392,7 @@ function changeSect(to){
   const h=structuredClone(me),from=h.sect;if(!SECTS[to]||to===from)return;
   if(activity(h)){toast(`${busyText[activity(h)]} 문파를 옮길 수 없습니다.`);return}
   const until=(h.leftSects?.[to]||0)+7*86400e3;if(Date.now()<until){toast(`${SECTS[to].n}는 ${fmtDays(until-Date.now())} 뒤에 다시 들어갈 수 있습니다.`);return}
-  h.favor=h.favor||{};h.favor[from]=Math.round((h.favor[from]||0)*.3);h.leftSects={...(h.leftSects||{}),[from]:Date.now()};h.sect=to;h.post=null;
+  h.favor=h.favor||{};h.favor[from]=Math.round((h.favor[from]||0)*.3);h.leftSects={...(h.leftSects||{}),[from]:Date.now()};h.sect=to;h.favor[to]=Math.max(h.favor[to]||0,50);h.post=null;
   addLog(h,`${josa(SECTS[from].n,"을")} 떠나 ${SECTS[to].n}의 문하가 되었다. ${SECTS[from].n} 우호도가 크게 떨어졌다.`);sectConfirm=false;sectPick=null;save(h);toast(`${SECTS[to].n}에 입문했습니다.`);
 }
 /* 직위 제안 */
@@ -1414,7 +1425,7 @@ function bondTab(){
     :others.map(o=>{const id=o._id,tot=bondTotal(myId(),id),st=stageOf(tot),nx=BOND_STAGES.find(x=>x[0]>tot),rel=relWith(id),A=bondOf(myId(),id),B=bondOf(id,myId());
       const s=SECTS[o.sect]||SECTS.sorim,canRel=tot>=300,inv=B.want&&B.want!=="지인"&&!relMatch(B.want,A.want)&&relNorm(B.want)!==rel,lbl=relLabel(id);
       const inP=following(id),called=me.party===myId()&&(me.partyInv||[]).includes(id)&&!inP,canCall=(!me.party||me.party===myId())&&!inP;
-      return `<div class="bond"><div class="bh">${face(o._id,o.sect,"md")}<div><b>${esc(o.name)}</b><span>${s.n} · ${REALMS[o.realm]?.n||""} Lv.${o.level} · ${mateAct(o)}</span></div>
+      return `<div class="bond"><div class="bh">${face(o._id,o.sect,"md")}<div><b>${titled(o)}${esc(o.name)}</b><span>${s.n} · ${REALMS[o.realm]?.n||""} Lv.${o.level} · ${mateAct(o)}</span></div>
           <span class="relb ${rel!=="지인"?"on":""}">${lbl}</span></div>
         <div class="bbar"><span>인연 ${st[1]} · ${tot}${nx?` / ${nx[0]} (${nx[1]})`:""}</span><div class="hpb"><i style="width:${Math.min(100,nx?(tot-st[0])/(nx[0]-st[0])*100:100)}%"></i></div></div>
         ${rel!=="지인"?`<p class="note" style="margin:4px 0 0">${rel==="사제"?`사제(${lbl==="사부"?"내가 제자":"내가 스승"})`:rel}의 효과: ${REL_FX[rel]}${tot>=600?` · 합격기 「${COMBO[rel]}」 (관문에서 둘이 같은 막에 무공을 쓰면 발동)`:` · 600에서 합격기`}</p>`:""}
@@ -1574,6 +1585,83 @@ function bindAlarm(){
   if(tab==="alarm"&&me&&mode==="db"&&!render.alarmSeenT){const top=alarmsForMe().reduce((a,x)=>Math.max(a,x.t),0);
     if(top>(me.alarmSeen||0))render.alarmSeenT=setTimeout(()=>{render.alarmSeenT=null;const h=structuredClone(me);h.alarmSeen=top;save(h)},2500)}
   checkAlarms();
+}
+
+
+/* ───────── 칭호: 해낸 일마다 하나씩. 얻은 칭호 중 하나를 이름 앞에 단다 ─────────
+   h.titles = {칭호번호: 얻은 시각}, h.title = 달고 있는 칭호, h.cnt = 횟수 기록, h.visited = 가 본 지역 */
+const cnt=(h,k)=>h?.cnt?.[k]||0;
+function bump(h,k,n=1){h.cnt=h.cnt||{};h.cnt[k]=(h.cnt[k]||0)+n}
+const maxPlus=h=>Math.max(0,...[...Object.values(h.gear||{}),...(h.bag||[])].filter(Boolean).map(i=>i.plus||0));
+/* 칭호 확인은 내 기록을 저장할 때만 하므로, 관계는 나와 다른 사람 사이로 본다 */
+const anyRel=(h,r)=>others.some(o=>o._id&&!String(o._id).startsWith("fake-")&&(PAIR[r]?sajeRole(myId(),o._id)===r:relMutual(myId(),o._id)===r));
+const TITLES=[
+  /* 경지 */
+  {id:"r0",g:"경지",n:"강호초출",hint:"강호에 첫발을 딛는다",ok:h=>true},
+  {id:"r1",g:"경지",n:"이류무사",hint:"이류에 오른다",ok:h=>h.realm>=1},
+  {id:"r2",g:"경지",n:"일류고수",hint:"일류에 오른다",ok:h=>h.realm>=2},
+  {id:"r3",g:"경지",n:"절정고수",hint:"절정에 오른다",ok:h=>h.realm>=3},
+  {id:"r4",g:"경지",n:"초절정고수",hint:"초절정에 오른다",ok:h=>h.realm>=4},
+  {id:"r5",g:"경지",n:"화경의 고수",hint:"화경에 오른다",ok:h=>h.realm>=5},
+  {id:"r6",g:"경지",n:"현경의 고수",hint:"현경에 오른다",ok:h=>h.realm>=6},
+  /* 관문 (직접 넘거나 도우미로 이기면) */
+  {id:"g3",g:"관문",n:"산군을 벤 자",hint:"절정의 관문에서 혈안산군을 쓰러뜨린다",ok:h=>h.realm>=3||!!h.gateWins?.[3]},
+  {id:"g4",g:"관문",n:"흑사련을 꺾은 자",hint:"초절정의 관문에서 진무악을 쓰러뜨린다",ok:h=>h.realm>=4||!!h.gateWins?.[4]},
+  {id:"g5",g:"관문",n:"혈영을 지운 자",hint:"화경의 관문에서 사도현을 쓰러뜨린다",ok:h=>h.realm>=5||!!h.gateWins?.[5]},
+  {id:"g6",g:"관문",n:"천마를 벤 자",hint:"현경의 관문에서 천마를 쓰러뜨린다",ok:h=>h.realm>=6||!!h.gateWins?.[6]},
+  {id:"gh1",g:"관문",n:"관문의 조력자",hint:"남의 관문을 도와 이긴다",ok:h=>cnt(h,"gateHelp")>=1},
+  {id:"gh5",g:"관문",n:"관문지기",hint:"남의 관문을 다섯 번 도와 이긴다",ok:h=>cnt(h,"gateHelp")>=5},
+  /* 문파 */
+  {id:"p1",g:"문파",n:"장로",hint:"문파의 장로가 된다",ok:h=>h.post==="elder"||h.post==="master",show:h=>`${SECTS[h.sect]?.n||""} 장로`},
+  {id:"p2",g:"문파",n:"장문인",hint:"문파의 장문인이 된다",ok:h=>h.post==="master",show:h=>`${SECTS[h.sect]?.n||""} 장문인`},
+  {id:"f1",g:"문파",n:"문파의 기둥",hint:"본문 우호도 동지(1000)에 닿는다",ok:h=>(h.favor?.[h.sect]||0)>=1000,show:h=>`${SECTS[h.sect]?.n||""}의 기둥`},
+  {id:"f2",g:"문파",n:"떠도는 문하",hint:"문파를 옮긴다",ok:h=>Object.keys(h.leftSects||{}).length>0},
+  /* 탐문 */
+  {id:"m1",g:"강호",n:"첫 탐문",hint:"사건을 하나 해결한다",ok:h=>cnt(h,"mis")>=1},
+  {id:"m10",g:"강호",n:"탐문꾼",hint:"사건을 10번 해결한다",ok:h=>cnt(h,"mis")>=10},
+  {id:"m30",g:"강호",n:"강호의 해결사",hint:"사건을 30번 해결한다",ok:h=>cnt(h,"mis")>=30},
+  {id:"m100",g:"강호",n:"만사통",hint:"사건을 100번 해결한다",ok:h=>cnt(h,"mis")>=100},
+  {id:"t10",g:"강호",n:"떠돌이 협객",hint:"길을 10번 떠나 도착한다",ok:h=>cnt(h,"trav")>=10},
+  {id:"tall",g:"강호",n:"주유천하",hint:"강호의 모든 지역에 발을 디딘다",ok:h=>Object.keys(REGIONS).every(k=>(h.visited||[]).includes(k)||h.loc===k)},
+  {id:"horse",g:"강호",n:"말 탄 협객",hint:"말을 얻는다",ok:h=>!!h.horse},
+  /* 토벌 */
+  {id:"l1",g:"토벌",n:"소굴 탐험가",hint:"소굴의 보스방까지 싸워 낸다",ok:h=>cnt(h,"lair")>=1},
+  {id:"l10",g:"토벌",n:"소굴 사냥꾼",hint:"소굴 보스와 10번 싸워 낸다",ok:h=>cnt(h,"lair")>=10},
+  {id:"l30",g:"토벌",n:"토벌대장",hint:"소굴 보스와 30번 싸워 낸다",ok:h=>cnt(h,"lair")>=30},
+  {id:"k5",g:"토벌",n:"요괴 사냥꾼",hint:"보스 토벌 보상을 5번 받는다",ok:h=>cnt(h,"kill")>=5},
+  /* 장비 */
+  {id:"e5",g:"장비",n:"대장간 단골",hint:"장비 하나를 +5까지 강화한다",ok:h=>maxPlus(h)>=5},
+  {id:"e10",g:"장비",n:"신병이기",hint:"장비 하나를 +10까지 강화한다",ok:h=>maxPlus(h)>=10},
+  /* 인연 */
+  {id:"b1",g:"인연",n:"지기지우",hint:"누군가와 친우가 된다",ok:h=>anyRel(h,"친우")},
+  {id:"b2",g:"인연",n:"동문수학",hint:"누군가와 사형제가 된다",ok:h=>anyRel(h,"사형제")},
+  {id:"b3",g:"인연",n:"연리지",hint:"누군가와 연인이 된다",ok:h=>anyRel(h,"연인")},
+  {id:"b4",g:"인연",n:"사부",hint:"제자를 받는다",ok:h=>anyRel(h,"스승")},
+  {id:"b5",g:"인연",n:"입실제자",hint:"사부를 모신다",ok:h=>anyRel(h,"제자")},
+  {id:"b6",g:"인연",n:"깊은 인연",hint:"누군가와 인연 600(깊은 인연)에 닿는다",ok:h=>others.some(o=>o._id&&!String(o._id).startsWith("fake-")&&bondTotal(myId(),o._id)>=600)},
+  {id:"b7",g:"인연",n:"사인방",hint:"네 명이 꽉 찬 무리에 든다",ok:h=>myParty().length>=4},
+  {id:"b8",g:"인연",n:"인심 좋은 협객",hint:"선물을 10번 보낸다",ok:h=>cnt(h,"gift")>=10}];
+const TITLE_BY=Object.fromEntries(TITLES.map(t=>[t.id,t]));
+const titleOf=h=>{const t=h?.title&&h.titles?.[h.title]&&TITLE_BY[h.title];return t?(t.show?t.show(h):t.n):""};
+const titled=h=>{const t=titleOf(h);return t?`<span class="ttl">〔${esc(t)}〕</span>`:""};
+/* 저장할 때마다 새로 해낸 일을 확인한다. 처음 확인하는 사람은 지금까지의 행적으로 한꺼번에 받는다 */
+function checkTitles(h){
+  if(!h||!h.sect)return;const first=!h.titles;h.titles=h.titles||{};const now=Date.now(),got=[];
+  const ids=[];for(const t of TITLES){if(h.titles[t.id])continue;let ok=false;try{ok=t.ok(h)}catch(e){}if(ok){h.titles[t.id]=now;ids.push(t.id);got.push(t.show?t.show(h):t.n)}}
+  if(!got.length)return;
+  if(h.title===undefined){const rs=ids.filter(x=>/^r\d$/.test(x));h.title=rs.length?rs[rs.length-1]:ids[0]}
+  if(first){addLog(h,`지금까지의 행적으로 칭호 ${got.length}개를 얻었다: ${got.join(", ")}`);setTimeout(()=>toast(`칭호 ${got.length}개를 얻었습니다. 인물 탭에서 달 수 있어요.`),300);return}
+  addLog(h,`칭호를 얻었다: ${got.map(n=>`「${n}」`).join(", ")}`);
+  setTimeout(()=>toast(`칭호를 얻었습니다! 「${got[got.length-1]}」${got.length>1?` 외 ${got.length-1}개`:""}`),300);
+}
+function setTitle(id){const h=structuredClone(me);if(id&&!h.titles?.[id])return;h.title=id||null;save(h);toast(id?`칭호를 달았습니다: 「${titleOf(h)}」`:"칭호를 떼었습니다.")}
+function titleSection(){
+  const h=me,own=h.titles||{},n=Object.keys(own).filter(k=>TITLE_BY[k]).length,groups=[...new Set(TITLES.map(t=>t.g))];
+  return `<section><div class="label">칭호 · ${n}/${TITLES.length}</div>
+    <p class="note" style="margin-top:0">얻은 칭호를 누르면 이름 앞에 단다. 다른 사람에게도 보인다.${h.title?` <button class="btn sm ghost" type="button" data-title="">칭호 떼기</button>`:""}</p>
+    ${groups.map(g=>`<div class="tgrp"><span class="kicker">${g}</span><div class="tlist">${TITLES.filter(t=>t.g===g).map(t=>{const has=!!own[t.id],on=h.title===t.id;
+      return has?`<button type="button" class="tt ${on?"on":""}" data-title="${t.id}" title="${esc(t.hint)}"><b>${esc(t.show?t.show(h):t.n)}</b><span>${on?"달고 있음":esc(t.hint)}</span></button>`
+        :`<div class="tt off"><b>？？？</b><span>${esc(t.hint)}</span></div>`}).join("")}</div></div>`).join("")}</section>`;
 }
 
 
@@ -1770,7 +1858,7 @@ function coFinish(f,why){
 /* 끝난 판에서 각자 자기 몫을 챙긴다 (같은 몫을 각자 받는다) */
 function coClaim(){
   const r=myRun();if(!r||r.phase!=="done")return;const h=structuredClone(me),B=bossFor(r.period),half=r.why==="wipe",lt=r.loot;
-  const mine=r.boss?.dealtBy?.[myId()]||0;if(r.why==="boss"&&h.raid?.period===r.period)h.raid.dmg+=mine;
+  const mine=r.boss?.dealtBy?.[myId()]||0;if(r.why==="boss"&&h.raid?.period===r.period)h.raid.dmg+=mine;if(r.why==="boss")bump(h,"lair");
   const sj=[...new Set(r.members)].filter(x=>x!==myId()).map(x=>sajeRole(myId(),x)).filter(Boolean);
   const exp=Math.round((lt.exp+(r.why==="boss"?expPerHour(h.level):0))*(half?.5:1)*(sj.includes("제자")?1.25:1)),stone=Math.floor(lt.stone*(half?.5:1))+(sj.includes("스승")?1:0),herb=Math.floor(lt.herb*(half?.5:1));
   const lv0=h.level,ups=applyExp(h,exp);h.items.stone+=stone;h.items.herb+=herb;const got=[];
@@ -1917,7 +2005,7 @@ function create(){
   const name=$("#hname").value.trim(); const sect=document.querySelector('input[name="sect"]:checked')?.value;
   if(!name){toast("강호에서 불릴 이름을 적어 주세요.");$("#hname").focus();return}
   if(!sect){toast("들어갈 문파를 골라 주세요.");return}
-  const h=normalize({name:name.slice(0,12),sect,realm:0,level:1,exp:0,points:0,stats:{nei:10,wai:10,shen:10},frac:{nei:0,wai:0,shen:0},created:Date.now()});
+  const h=normalize({name:name.slice(0,12),sect,realm:0,level:1,exp:0,points:0,stats:{nei:10,wai:10,shen:10},frac:{nei:0,wai:0,shen:0},created:Date.now(),titles:{}});
   addLog(h,`${SECTS[sect].n}에 입문했다. 하남에서 강호행을 시작한다.`); save(h); toast(`${SECTS[sect].n}의 문하가 되었습니다.`);
 }
 function startTrain(){
@@ -1960,7 +2048,7 @@ function startTravel(to,withId){
 }
 function arrive(){
   const h=structuredClone(me),t=h.travel; if(!t||Date.now()<t.end) return;
-  h.loc=t.to; h.travel=null; let msg=`${REGIONS[t.to].n}에 도착했다.`;
+  h.loc=t.to; h.travel=null; bump(h,"trav"); h.visited=[...new Set([...(h.visited||[]),t.from,t.to])]; let msg=`${REGIONS[t.to].n}에 도착했다.`;
   if(Math.random()<.4){
     const ev=pickOne(["herb","stone","master","bandit"]);
     if(ev==="herb"){h.items.herb++;msg+=" 길가 바위틈에서 약초를 캤다. (약초 +1)"}
@@ -2001,6 +2089,16 @@ const FEED={
        day:["한낮의 볕이 돌길을 뜨겁게 달군다.","장사꾼들의 호객 소리가 귀를 울린다.","그늘 아래 누렁이 한 마리가 졸고 있다."],
        eve:["해가 기울며 그림자가 길어진다.","산 너머에서 저녁 종소리가 울린다.","주막에 등불이 하나둘 켜진다."],
        night:["달빛이 기와 위에 하얗게 내려앉았다.","풀벌레 소리만 가득하다.","어디선가 술 취한 노랫소리가 흘러온다.","순찰 도는 포쾌의 등불이 멀어진다."]},
+  idle:["{me|은} 골목 끝 찻집에서 잠시 목을 축였다. 찻집 주인이 힐끔 쳐다본다.","장터 쪽에서 흥정하는 소리가 요란하다. {me|은} 인파 사이로 귀를 세웠다.",
+    "담벼락에 붙은 방(榜)을 읽어 보았다. 현상금이 붙은 이름이 몇 있다.","{me|은} 들은 이야기들을 머릿속으로 이어 붙여 보았다. 아직 빈 곳이 많다.",
+    "아이 하나가 {me|의} 검을 신기한 듯 바라보다 달아났다.","주막 앞에서 늙은 이야기꾼이 옛 고수의 무용담을 늘어놓고 있다.",
+    "멀리서 종소리가 울린다. {me|은} 잠시 걸음을 멈췄다.","{me|은} 수상한 발자국을 따라가 보았지만, 개울가에서 끊겨 있었다.",
+    "포목점 주인이 요즘 낯선 무인들이 자주 오간다고 투덜댄다.","비린내 나는 뒷골목. {me|은} 코를 막고 빠르게 지나쳤다.",
+    "객잔 이층에서 누군가 이쪽을 내려다보다 창을 닫았다.","{me|은} 노점에서 만두 두어 개를 사 먹으며 오가는 이야기를 주워들었다.",
+    "길모퉁이에서 관병 둘이 무언가를 수군거리다 {me|을} 보고 입을 다물었다.","바람이 바뀌었다. 어디선가 타는 냄새가 실려 온다.",
+    "{me|은} 우물가 아낙들의 수다에서 쓸 만한 이름 하나를 건졌다.","나귀를 끄는 행상이 지나가며 길을 비켜 달라고 소리친다.",
+    "{me|은} 지붕 위로 올라가 마을 전체를 한눈에 내려다보았다.","사당 앞 향로에 새 향이 꽂혀 있다. 누군가 방금 다녀간 모양이다.",
+    "{me|은} 손에 쥔 단서를 다시 한번 들여다보았다.","해가 기울며 그림자가 길어진다. 탐문은 아직 끝나지 않았다."],
   mono:["{me|은} 잠시 숨을 고르며 들은 이야기를 곱씹었다.","어딘가 석연치 않다. {me|은} 발걸음을 재촉했다.","{me|은} 허리춤의 검을 한 번 쥐었다 놓았다.","바람이 바뀌었다. 무언가 가까워지고 있다."]};
 const RELS=["지인","친우","사형제","연인","사제"];
 const COMP={
@@ -2052,7 +2150,16 @@ function feedFor(h,m,comp){
     if(comp&&C()<.75){const pool=COMP[e.kind==="fight"?"fight":e.kind==="find"?"find":"talk"][comp.rel]||COMP.talk.지인;
       out.push({t:t+dur*.01,kind:"comp",text:fill(PC(pool),{c:"\u0001"+comp.name+"\u0002"})})}
   }
-  return out;
+  /* 사이사이 빈 시간을 채우는 소식: 5분마다 한 줄 (보상에는 영향 없음) */
+  const I=seeded(m.start%2147483647+41),PI=a=>a[Math.floor(I()*a.length)],GAP=5*60e3,used=new Set();
+  for(let t=m.start+GAP;t<m.end-60e3;t+=GAP){
+    if(out.some(e=>Math.abs(e.t-t)<GAP/2))continue;
+    const tt=t+Math.floor((I()-.5)*60e3);
+    if(comp&&I()<.25){const pool=COMP.talk[comp.rel]||COMP.talk.지인;out.push({t:tt,kind:"comp",text:fill(PI(pool),{c:"\u0001"+comp.name+"\u0002"})});continue}
+    let line,k=0;do{line=PI(I()<.7?FEED.idle:FEED.mono);k++}while(used.has(line)&&k<6);used.add(line);
+    out.push({t:tt,kind:"amb",text:fill(line,{me:h.name})});
+  }
+  return out.sort((a,b)=>a.t-b.t);
 }
 function feedTag(e){
   if(e.kind==="find") return `<span class="tag">【획득 · ${ITEMS[e.item][0]}】</span>`;
@@ -2146,7 +2253,7 @@ function finishMission(){
   if(L.drop) extra.push("장비 「"+gainItem(h,L.drop)+"」");
   if(L.horse&&!h.horse){h.horse={n:L.horse,t:Date.now()};extra.push(`말 「${L.horse}」 (이동 시간 -30%)`)}
   saveJournal(h,m,inc,r.t,`보상: 경험치 +${r.exp}, 강화석 +${r.stone}${extra.length?", "+extra.join(", "):""}`);
-  h.done[m.region]=m.period; h.mission=null;
+  h.done[m.region]=m.period; h.mission=null; bump(h,"mis");
   addLog(h,`「${inc.t}」 ${TIER[r.t]}. 경험치 +${r.exp}, 강화석 +${r.stone}${extra.length?", "+extra.join(", "):""}${ups?`, Lv.${lv0}→${h.level}`:""}`);
   save(h); toast(ups?`사건 해결! 레벨이 올랐습니다. Lv.${h.level}`:`사건 해결 · ${TIER[r.t]}`);
 }
@@ -2212,7 +2319,7 @@ function heroView(){
   return `<div>
   <section style="margin-top:8px">
     <div class="who"><button type="button" class="facebtn" data-go="self" aria-label="프로필 사진 바꾸기">${face(myId(),h.sect,"big")}</button>
-      <div><div class="name">${esc(h.name)}</div><div class="sect">${s.n} 문하 · ${s.role} · ${h.travel?`${REGIONS[h.travel.from].n} → ${REGIONS[h.travel.to].n}`:REGIONS[h.loc].n}</div></div></div>
+      <div><div class="name">${titled(h)}${esc(h.name)}</div><div class="sect">${s.n} 문하 · ${s.role} · ${h.travel?`${REGIONS[h.travel.from].n} → ${REGIONS[h.travel.to].n}`:REGIONS[h.loc].n}</div></div></div>
     <div class="realm"><b>${r.n}</b><span>Lv.${h.level} <small style="color:var(--ink-3)">/ ${cap(h.realm)}</small></span></div>
     <div class="bar ${wall?"seal-c":""}"><i style="width:${pct}%"></i></div>
     <div class="barnote"><span>경험치 ${h.exp.toLocaleString()} / ${need(h.level).toLocaleString()}</span>
@@ -2331,7 +2438,7 @@ function missionBox(){
     return `<div class="case"><div class="kicker">${REGIONS[m.region].n} · 탐문</div><h3>${inc.t}</h3><p>${inc.i}</p>
       ${(()=>{const comp=companionFor(m),f=feedFor(h,m,comp),shown=f.filter(e=>e.t<=now),b=feedBonus(shown)+(comp?1:0);
         return `<div class="kicker" style="margin-top:6px">탐문 일지 · 조사 판정 +${b}${comp?`<span class="mate-pill">동행 <b>${esc(comp.name)}</b> · ${comp.rel}</span>`:""}</div><div class="feedwrap"><ul class="feed" id="inlineFeed" data-key="${m.start}-${shown.length}">${shown.map((e,i)=>feedLine(e,i===shown.length-1&&!ready)).join("")}
-          ${ready?`<li class="amb"><span class="tm"></span><span class="body">— 탐문이 끝났다. 이제 현장으로 향할 때다.</span></li>`:`<li class="wait"><span class="tm"></span><span class="body">계속 탐문하는 중… 새 소식은 10~15분마다 들어온다 · 탐문 끝까지 <span data-until="${m.end}"></span></span></li>`}</ul><div class="feedtools"><span class="note" style="margin:0">위로 올리면 앞의 내용을 볼 수 있다.</span><button class="btn sm ghost" type="button" id="readerBtn" data-read="live">일지 크게 보기</button></div></div>`})()}
+          ${ready?`<li class="amb"><span class="tm"></span><span class="body">— 탐문이 끝났다. 이제 현장으로 향할 때다.</span></li>`:`<li class="wait"><span class="tm"></span><span class="body">계속 탐문하는 중… 새 소식은 5분쯤마다 들어온다 · 탐문 끝까지 <span data-until="${m.end}"></span></span></li>`}</ul><div class="feedtools"><span class="note" style="margin:0">위로 올리면 앞의 내용을 볼 수 있다.</span><button class="btn sm ghost" type="button" id="readerBtn" data-read="live">일지 크게 보기</button></div></div>`})()}
       <p>${ready?"탐문을 마쳤다. 들어서면 탐문에서 얻은 것들을 챙기고 현장으로 간다.":"대화와 도움에 성공할수록 현장 조사가 쉬워진다. 화면을 닫아 둬도 탐문은 계속된다."}</p>
       <div class="row">${ready?`<button class="btn sealb" id="sceneBtn" type="button">현장에 들어선다</button>`
         :confirmAbort?`<button class="btn sealb" id="mxYes" type="button">사건에서 손 떼기</button><button class="btn ghost" id="mxNo" type="button">계속 탐문하기</button>`
@@ -2381,7 +2488,7 @@ function selfTab(){
     </div></section>
     <section><div class="label">행낭</div>
       <div class="bag">${h.horse?`<div><b>🐎</b>${esc(h.horse.n)} <span>· 말 · 이동 시간 -30%</span></div>`:""}${Object.entries(ITEMS).map(([k,[n,sub]])=>`<div><b>${h.items[k]}</b>${n} <span>· ${sub}</span></div>`).join("")}</div>
-      <p class="note">강화석은 장비 탭에서 강화에 쓴다. 약초는 소굴에서 회복에, 약초·화주·장신구는 인연 탭에서 동료에게, 강호 탭에서 문파에 선물로 쓴다. 착용하는 장신구는 장비 탭에 있다.</p></section>${sectTabSection()}`;
+      <p class="note">강화석은 장비 탭에서 강화에 쓴다. 약초는 소굴에서 회복에, 약초·화주·장신구는 인연 탭에서 동료에게, 강호 탭에서 문파에 선물로 쓴다. 착용하는 장신구는 장비 탭에 있다.</p></section>${titleSection()}${sectTabSection()}`;
 }
 
 /* 동행 탭 */
@@ -2436,6 +2543,7 @@ function bind(){
   document.querySelectorAll("[data-gpick]").forEach(el=>el.addEventListener("change",()=>{giftPick[el.dataset.gpick]=el.value}));
   document.querySelectorAll("[data-gift]").forEach(b=>b.addEventListener("click",()=>giveGift(b.dataset.gift)));
   document.querySelectorAll("[data-rel]").forEach(b=>b.addEventListener("click",()=>proposeRel(b.dataset.rel,b.dataset.relv)));
+  document.querySelectorAll("[data-title]").forEach(b=>b.addEventListener("click",()=>setTitle(b.dataset.title)));
   document.querySelectorAll("[data-pcall]").forEach(b=>b.addEventListener("click",()=>partyInvite(b.dataset.pcall)));
   document.querySelectorAll("[data-pjoin]").forEach(b=>b.addEventListener("click",()=>partyJoin(b.dataset.pjoin)));
   document.querySelectorAll("[data-pkick]").forEach(b=>b.addEventListener("click",()=>partyKick(b.dataset.pkick)));
