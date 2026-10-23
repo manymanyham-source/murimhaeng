@@ -2181,14 +2181,17 @@ window.FIREBASE_CONFIG = {
     try{
       if(signup){
         if(!code)throw{code:"no-code"};
+        signingUp=true;
         const cred=await auth.createUserWithEmailAndPassword(idToEmail(id),pw);
         try{const b=fs.batch();
           b.set(fs.doc("users/"+cred.user.uid),{id,code,created:Date.now()});
           b.update(fs.doc("invites/"+code),{used:true,usedBy:cred.user.uid,usedAt:Date.now()});
           await b.commit();
-        }catch(x){await cred.user.delete().catch(()=>{});throw{code:"bad-code",why:x.code||x.message||""}}
+        }catch(x){await cred.user.delete().catch(()=>{});signingUp=false;throw{code:"bad-code",why:x.code||x.message||""}}
+        signingUp=false;await enter(cred.user);
       }else await auth.signInWithEmailAndPassword(idToEmail(id),pw);
     }catch(x){
+      signingUp=false;
       const c=x.code||"";
       err(c==="no-code"?"초대코드를 넣어 주세요.":c==="bad-code"?`초대코드가 맞지 않거나 이미 쓰인 코드예요. (${code} · ${x.why})`:c.includes("email-already-in-use")?"이미 있는 아이디예요. 다른 아이디를 골라 주세요."
         :c.includes("invalid-credential")||c.includes("wrong-password")||c.includes("user-not-found")?"아이디나 비밀번호가 맞지 않아요.":c.includes("too-many-requests")?"시도가 너무 많아요. 잠시 뒤에 다시 해 주세요."
@@ -2196,16 +2199,18 @@ window.FIREBASE_CONFIG = {
     }finally{busy(false)}
   });
 
-  let started=false;
-  auth.onAuthStateChanged(async u=>{
+  let started=false,signingUp=false;
+  /* 가입 중에는 초대코드 처리가 끝난 뒤에 직접 확인한다 (먼저 확인하면 아직 회원이 아니라서 막힌다) */
+  auth.onAuthStateChanged(u=>{if(signingUp)return;enter(u)});
+  async function enter(u){
     if(!u){if(started)location.reload();box.hidden=false;return}
-    try{const s=await fs.doc("users/"+u.uid).get();
+    try{let s;try{s=await fs.doc("users/"+u.uid).get()}catch(e){await new Promise(r=>setTimeout(r,900));s=await fs.doc("users/"+u.uid).get()}
       if(!s.exists){err("가입이 끝나지 않은 계정이에요. 초대코드로 다시 가입해 주세요.");await auth.signOut();return}
       me={uid:u.uid,id:s.data().id,admin:s.data().admin===true};
     }catch(x){err("계정을 확인하지 못했어요. 새로고침해 주세요.");return}
     box.hidden=true;
     if(!started){started=true;installClaude();accountBar();window.__startGame&&window.__startGame()}
-  });
+  }
 
   function accountBar(){
     const bar=document.createElement("div");bar.className="acct";
