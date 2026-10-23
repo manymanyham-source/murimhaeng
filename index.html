@@ -561,7 +561,7 @@ function applyExp(h,exp){
 const atWall=h=>h.level>=cap(h.realm)&&h.exp>=need(h.level);
 function trainGain(t,f){const m=MULT[t.hours];return {exp:Math.round(expPerHour(t.lvl)*t.hours*m*f),stat:t.hours/2*m*f}}
 function applyStat(h,k,g){h.frac[k]=(h.frac[k]||0)+g;const w=Math.floor(h.frac[k]+1e-9);h.stats[k]+=w;h.frac[k]-=w;return w}
-const activity=h=>h?.training?"train":h?.travel?"travel":h?.mission?"mission":h?.lair&&h.lair.phase!=="done"?"lair":null;
+const activity=h=>h?.training?"train":h?.travel?"travel":h?.mission?"mission":(h?.lair&&h.lair.phase!=="done")||h?.colair?"lair":null;
 const busyText={train:"수련 중에는",travel:"이동 중에는",mission:"임무 중에는",lair:"소굴 안에서는"};
 
 /* ───────── 문파 문양 (직접 그린 SVG) ───────── */
@@ -791,7 +791,7 @@ const SKILL_NAME={sorim:"나한권",hwasan:"매화검법",ami:"회춘수",mudang
 const roleMul=r=>r==="tank"?.8:r==="dps"?1.2:.6;
 const hasMod=(run,k)=>run.mods.some(m=>m.k===k);
 let retreatConfirm=false;
-function lairParty(h,run){const p=partyFor(h,run.role);p.forEach(x=>{if(run.hp[x.id]!==undefined)x.hp=run.hp[x.id]});return p}
+function lairParty(h,run){if(run.coop)return coParty(run);const p=partyFor(h,run.role);p.forEach(x=>{if(run.hp[x.id]!==undefined)x.hp=run.hp[x.id]});return p}
 function storeHp(run,party){party.forEach(x=>run.hp[x.id]=x.hp)}
 const nmx=x=>x.isMe?`\u0001${x.name}\u0002`:x.name, nmjx=(x,p)=>x.isMe?`\u0001${josa(x.name,p)}\u0002`:josa(x.name,p);
 function forksFor(run){
@@ -842,7 +842,17 @@ function pickFork(i){
 }
 function roomAct(opt){
   const h=structuredClone(me),run=h.lair;if(!run||run.phase!=="room")return;
-  const t=run.room.t,R=ROOMS[t],o=R.opts.find(x=>x[0]===opt);if(!o)return;
+  if(!roomCore(h,run,opt))return;
+  run.room=null;
+  const alive=lairParty(h,run).filter(x=>x.hp>0).length;
+  if(!lairParty(h,run).find(x=>x.isMe).hp||!alive){endRun(h,"wipe");return}
+  run.step++;
+  if(run.step>4)startBoss(h);else run.phase="fork";
+  save(h);
+}
+/* 방에서 고른 선택지를 실제로 처리한다. 혼자 소굴과 동행 소굴이 함께 쓴다. h = 고른 사람 */
+function roomCore(h,run,opt){
+  const t=run.room.t,R=ROOMS[t],o=R.opts.find(x=>x[0]===opt);if(!o)return false;
   const log=run.log,L=h.level,ep=expPerHour(L),r=o[1]?checkRoll(h,o[1]):null;
   log.push({k:"ev2",sub:"act",x:`${o[2]}.`});if(r)log.push(rollLine(o[1],r));
   const party=()=>lairParty(h,run);
@@ -876,12 +886,7 @@ function roomAct(opt){
     if(r.ok){addMod(run,"ambush",log);log.push({k:"amb",x:opt==="trap"?"보스가 돌아오면 발이 걸려 넘어질 것이다.":"향 연기가 방 안에 은은하게 퍼진다."})}
     else{addMod(run,"atkUp",log);log.push({k:"amb",x:"향로가 뒤집히며 요란한 소리가 났다!"})}
   }
-  run.room=null;
-  const alive=lairParty(h,run).filter(x=>x.hp>0).length;
-  if(!lairParty(h,run).find(x=>x.isMe).hp||!alive){endRun(h,"wipe");return}
-  run.step++;
-  if(run.step>4)startBoss(h);else run.phase="fork";
-  save(h);
+  return true;
 }
 function useHerb(){const h=structuredClone(me),run=h.lair;if(!run||h.items.herb<1)return;const p=lairParty(h,run);
   p.filter(x=>x.hp>0).forEach(x=>x.hp=Math.min(x.max,x.hp+Math.round(x.max*.3)));storeHp(run,p);h.items.herb--;run.log.push({k:"end",x:"약초를 씹어 나눠 먹었다. 파티 체력이 회복됐다. (약초 -1)"});save(h)}
@@ -998,7 +1003,10 @@ function raidTab(){
   const triesUsed=mine&&mine.tries.day===dayKey()?mine.tries.n:0,roles=SECT_ROLES[h.sect],role=raidRole&&roles.includes(raidRole)?raidRole:roles[0];
   const hpShown=st.hp||hpShareFor(h,role,B),pct=st.hp?Math.max(0,100-st.dmg/st.hp*100):100,here=h.loc===B.region,a=activity(h);
   let body;
-  if(run) body=lairView();
+  const cr=myRun(),invs=coInvitesForMe();
+  if(cr) body=coLairView(cr);
+  else if(h.colair) body=`<p class="note">함께 들어간 소굴 기록을 불러오는 중이다. 오래 걸리면 정리하고 다시 들어가자.</p><button class="btn ghost" type="button" id="coCancel">소굴 기록 정리</button>`;
+  else if(run) body=lairView();
   else if(st.down) body=mine&&!mine.claimed?`<div class="wall"><p><b>${B.n}</b>을(를) 토벌했다! 함께 싸운 사람 모두 보상을 받을 수 있다.</p><button class="btn sealb" id="claimBtn" type="button">토벌 보상 받기</button></div>`
       :`<div class="wall"><p><b>${B.n}</b> 토벌 완료. ${mine?"보상을 받았다.":"이번 토벌에는 함께하지 못했다."} 다음 보스는 ${fmtDays(periodEnds(p)-now)} 뒤에 나타난다.</p></div>`;
   else if(!here) body=`<p class="note">${REGIONS[B.region].n}에 있어야 소굴에 들어갈 수 있다. 지금 위치는 ${h.travel?"길 위":REGIONS[h.loc].n}.</p><button class="btn" type="button" id="toBossBtn">지도에서 ${REGIONS[B.region].n} 보기</button>`;
@@ -1007,9 +1015,12 @@ function raidTab(){
     <div class="party">${party.map(x=>`<div class="pm2">${x.isMe?face(myId(),x.sect,"sm"):emblem(x.sect,"sm")}<div><b>${esc(x.name)}${x.isMe?" (나)":""}</b><span>${ROLE_N[x.role]} · 체력 ${x.max} · 공격 ${x.atk}</span></div></div>`).join("")}</div>
     <p class="note">소굴에는 갈림길 네 번과 보스방이 있다. 방에서 한 선택이 보스를 약하게도, 강하게도 만든다. 체력은 방에서 방으로 이어지고, 갈림길에서 약초를 쓰거나 돌아 나올 수 있다.</p>
     ${roles.length>1?`<div class="chips" style="margin:10px 0">${roles.map(r=>`<label class="chip"><input type="radio" name="rrole" value="${r}" id="rr-${r}" ${role===r?"checked":""}><span>${ROLE_N[r]}로 서기</span></label>`).join("")}</div>`:""}
+    ${(()=>{const mm=mutualMate();return mm?`<div class="wall" style="margin:10px 0"><p>동행 <b>${esc(mm.name)}</b>와(과) 함께 들어갈 수 있다. 파티는 두 사람과 NPC 둘. 갈림길과 방은 먼저 누르는 사람이 고르고, 보스방에서는 각자 고른다. ${mm.loc===B.region&&!mm.travel?"":`(지금 ${esc(mm.name)}은(는) ${mm.travel?"길 위":REGIONS[mm.loc]?.n}에 있다. ${REGIONS[B.region].n}로 와야 함께 들어갈 수 있다.)`}</p>
+      <button class="btn sealb" type="button" id="coInvite" ${a||triesUsed>=3?"disabled":""}>동행과 함께 들어간다</button></div>`:""})()}
     <div class="row" style="margin-top:10px"><button class="btn solid" id="chalBtn" type="button" ${a||triesUsed>=3?"disabled":""}>소굴에 들어간다 · 오늘 ${3-triesUsed}/3</button>
     ${a?`<span class="note" style="margin:0">${busyText[a]} 들어갈 수 없다.</span>`:triesUsed>=3?`<span class="note" style="margin:0">오늘은 다 들어갔다. 자정에 다시 채워진다.</span>`:""}</div>`}
-  return `<section><div class="case">
+  const invBox=!cr&&invs.length?invs.map(x=>{const fr=heroById(x.members[0]);return `<div class="wall" style="margin-bottom:12px"><p><b>${esc(fr?.name||"동행")}</b>이(가) ${bossFor(x.period).n}의 소굴에 함께 들어가자고 한다. 들어가면 오늘 진입 횟수가 하나 줄어든다.</p><button class="btn sealb" type="button" data-cojoin="${x.id}">함께 들어간다</button></div>`}).join(""):"";
+  return `<section>${invBox}<div class="case">
     <div class="kicker">토벌 · ${REGIONS[B.region].n} · ${fmtDays(periodEnds(p)-now)} 뒤 떠남</div>
     <h3>${B.title} ${B.n}</h3><p>${B.lore}</p>
     <div class="bar seal-c"><i style="width:${pct}%"></i></div>
@@ -1373,6 +1384,207 @@ async function pickAvatar(file){
   }catch(e){toast("사진을 읽지 못했어요. 다른 사진으로 해 주세요.")}
 }
 async function clearAvatar(){delete avatars[myId()];render();if(mode==="db")await db.doc("avatars/"+uid).delete().catch(()=>{});else{try{localStorage.removeItem("murim-avatar")}catch(e){}}}
+/* ───────── 동행 소굴: 동행 둘이 한 소굴에 함께 들어간다 ─────────
+   판은 lairs/<번호> 하나를 함께 쓴다. 갈림길과 방은 먼저 누른 사람이 고른다(잠금으로 한 명만 통과).
+   보스방은 관문처럼 각자 고르고, 둘 다 고르거나 60초가 지나면 진행한다. */
+const CO_WAIT=60e3;
+let lairRuns={}, coBusy=false, coRetreat=false;
+const myRun=()=>me?.colair?lairRuns[me.colair]||null:null;
+const LS={
+  async set(id,data){data.updated=Date.now();lairRuns[id]=structuredClone(data);
+    if(mode==="db"){try{await db.doc("lairs/"+id).set(JSON.parse(JSON.stringify(data)))}catch(e){toast("소굴 기록에 실패했어요. 다시 시도해 주세요.")}}
+    else setTimeout(render,0)},
+  async get(id){if(mode==="db"){const s=await db.doc("lairs/"+id).get();return s.exists?structuredClone(s.data()):null}return structuredClone(lairRuns[id]||null)},
+  async lease(id){if(mode!=="db")return true;try{return (await db.doc("lairs/"+id).acquire({holder:uid,ttlMs:5000})).acquired}catch(e){return false}}};
+/* 먼저 잠금을 얻은 사람만 판을 바꾼다. check: 최신 판이 아직 그 상태인지, fn: 바꾸기 */
+async function coEdit(check,fn){
+  const r=myRun();if(!r||coBusy)return false;coBusy=true;
+  try{if(!(await LS.lease(r.id))){toast("동행이 먼저 골랐어요.");return false}
+    const fresh=await LS.get(r.id);if(!fresh||!check(fresh)){toast("동행이 먼저 골랐어요.");return false}
+    const ok=fn(fresh);if(ok===false)return false;await LS.set(r.id,fresh);return true}
+  finally{setTimeout(()=>coBusy=false,300)}
+}
+function mutualMate(){return others.find(o=>o._id&&!String(o._id).startsWith("fake-")&&following(o._id))}
+function coParty(run){
+  const ps=run.members.map(id=>{const h=heroById(id);if(!h)return null;const d=derived(h),role=run.roles?.[id]||SECT_ROLES[h.sect][0];
+    return {id,name:h.name,sect:h.sect,role,hp:d.hp,max:d.hp,atk:d.atk,def:d.def,eva:d.eva,crit:d.crit,isMe:id===myId(),player:true,realm:h.realm}}).filter(Boolean);
+  const need=["tank","dps","dps","heal"];ps.forEach(p=>{const i=need.indexOf(p.role);if(i>=0)need.splice(i,1);else need.pop()});
+  const top=ps.reduce((a,p)=>Math.max(a,p.realm),0),tier=npcTier(top),mul=[.8,.9,1,1.1][tier],ref=ps.reduce((a,p)=>p.atk>a.atk?p:a,ps[0]),lead=heroById(run.members[0]),used={};
+  const npcs=ref?need.slice(0,4-ps.length).map(r=>{const opts=NPC_SECT[r],k=used[r]?opts[(opts.indexOf(used[r])+1)%opts.length]:opts[0];used[r]=k;const fm=mul*(1+favorStage(favorOf(lead,k))[2]);
+    return {id:k+r,name:NPCS[k][tier],role:r,sect:k,hp:Math.round(ref.max*fm),max:Math.round(ref.max*fm),atk:Math.round(ref.atk*fm),def:Math.round(ref.def*fm),eva:5,crit:5}}):[];
+  const all=[...ps,...npcs].sort((a,b)=>["tank","dps","heal"].indexOf(a.role)-["tank","dps","heal"].indexOf(b.role));
+  all.forEach(x=>{if(run.hp[x.id]!==undefined)x.hp=Math.min(x.max,run.hp[x.id])});return all;
+}
+function coCheckReady(){
+  const p=periodNow(),B=bossFor(p),h=me,st=raidState(p),tries=h.raid?.period===p&&h.raid.tries.day===dayKey()?h.raid.tries.n:0;
+  if(activity(h))return `${busyText[activity(h)]} 들어갈 수 없다.`;
+  if(h.loc!==B.region)return `${REGIONS[B.region].n}에 있어야 한다.`;
+  if(st.down)return "이미 토벌된 보스다.";
+  if(tries>=3)return "오늘은 다 들어갔다.";
+  return null;
+}
+function takeTry(h,role){const p=periodNow(),B=bossFor(p);
+  if(!h.raid||h.raid.period!==p)h.raid={period:p,dmg:0,share:hpShareFor(h,role,B),tries:{day:dayKey(),n:0},claimed:false};
+  if(h.raid.tries.day!==dayKey())h.raid.tries={day:dayKey(),n:0};h.raid.tries.n++}
+function coInvite(){
+  const mate=mutualMate(),why=coCheckReady();if(!mate){toast("서로 동행 중인 사람이 있어야 합니다.");return}if(why){toast(why);return}
+  const p=periodNow(),B=bossFor(p),id=myId().replace(/[^A-Za-z0-9_-]/g,"")+"-"+Date.now().toString(36),role=raidRole&&SECT_ROLES[me.sect].includes(raidRole)?raidRole:SECT_ROLES[me.sect][0];
+  const h=structuredClone(me);takeTry(h,role);h.colair=id;
+  LS.set(id,{id,coop:true,period:p,status:"invite",invitee:mate._id,members:[myId()],roles:{[myId()]:role},seed:Date.now()%2147483647,start:Date.now(),step:1,phase:"fork",hp:{},mods:[],path:[],
+    loot:{exp:0,stone:0,herb:0,items:[]},room:null,boss:null,log:[{k:"sec",x:`${B.n}의 소굴`},{k:"amb",x:`${josa(h.name,"과")} ${josa(mate.name,"이")} ${B.title} ${B.n}의 소굴 어귀에 함께 섰다.`}]});
+  addLog(h,`${josa(mate.name,"에")}게 ${B.n}의 소굴에 함께 들어가자고 했다.`);save(h);
+}
+function coInvitesForMe(){return Object.values(lairRuns).filter(r=>r.status==="invite"&&r.invitee===myId()&&r.period===periodNow()&&Date.now()-(r.updated||0)<30*60e3)}
+async function coJoin(id){
+  const why=coCheckReady();if(why){toast(why);return}
+  const role=raidRole&&SECT_ROLES[me.sect].includes(raidRole)?raidRole:SECT_ROLES[me.sect][0];
+  if(mode==="db"&&!(await LS.lease(id))){toast("잠시 뒤 다시 눌러 주세요.");return}
+  const fresh=await LS.get(id);if(!fresh||fresh.status!=="invite"){toast("이미 닫힌 초대예요.");return}
+  fresh.members.push(myId());fresh.roles[myId()]=role;fresh.status="active";
+  fresh.log.push({k:"amb",x:"두 사람이 나란히 어둠 속으로 들어선다."});
+  const h=structuredClone(me);takeTry(h,role);h.colair=id;addLog(h,`${josa(heroById(fresh.members[0])?.name||"동행","과")} 함께 ${bossFor(fresh.period).n}의 소굴에 들어섰다.`);
+  await LS.set(id,fresh);save(h);
+}
+async function coCancel(){const r=myRun();if(!r)return;const h=structuredClone(me);
+  if(r.status==="invite"&&r.members[0]===myId()){const f=structuredClone(r);f.status="closed";await LS.set(r.id,f);if(h.raid?.tries?.n)h.raid.tries.n--}
+  h.colair=null;save(h)}
+function coPickFork(i){const r=myRun();if(!r)return;const step=r.step;
+  coEdit(f=>f.status==="active"&&f.phase==="fork"&&f.step===step,f=>{const fk=forksFor(f)[i];if(!fk)return false;
+    f.path.push(fk.t);f.room={t:fk.t,by:myId()};f.phase="room";f.log.push({k:"sec",x:`갈림길 ${f.step} · ${fk.label}`},{k:"comp",x:`${josa(me.name,"이")} ${fk.label} 쪽으로 앞장선다.`},{k:"amb",x:`${ROOMS[fk.t].name}. ${ROOMS[fk.t].text}`})})}
+function coRoomAct(opt){const r=myRun();if(!r)return;const step=r.step;
+  coEdit(f=>f.status==="active"&&f.phase==="room"&&f.step===step,f=>{
+    const h=structuredClone(me);if(!roomCore(h,f,opt))return false;
+    f.room=null;
+    const ps=coParty(f).filter(x=>x.player);
+    if(!ps.some(x=>x.hp>0)){coFinish(f,"wipe");return}
+    f.step++;if(f.step>4)coStartBoss(f);else f.phase="fork"})}
+async function coHerb(){const r=myRun();if(!r||me.items.herb<1)return;
+  const ok=await coEdit(f=>f.status==="active"&&f.phase==="fork",f=>{const p=coParty(f);p.filter(x=>x.hp>0).forEach(x=>x.hp=Math.min(x.max,x.hp+Math.round(x.max*.3)));storeHp(f,p);
+    f.log.push({k:"end",x:`${josa(me.name,"이")} 약초를 꺼내 나눠 주었다. 파티 체력이 회복됐다.`})});
+  if(ok){const h=structuredClone(me);h.items.herb--;save(h)}}
+function coRetreatNow(){coRetreat=false;coEdit(f=>f.status==="active"&&f.phase==="fork",f=>{coFinish(f,"retreat")})}
+function coStartBoss(f){
+  const B=bossFor(f.period),party=coParty(f);f.phase="boss";
+  f.boss={t:1,rage:false,poison:{},dealtBy:{},p:{},omen:null,deadline:Date.now()+CO_WAIT};
+  party.filter(x=>x.player).forEach(x=>{const d=derived(heroById(x.id));f.boss.p[x.id]={qi:d.qi,qmax:d.qi,cd:0}});
+  f.boss.omen=coOmen(f,party);
+  f.log.push({k:"sec",x:`보스방 · ${B.n}`},{k:"comp",x:`${B.n}: ${B.start}`});
+  if(f.mods.length)f.log.push({k:"amb",x:`소굴에서 한 일: ${f.mods.map(m=>MODS[m.k].t).join(" / ")}`});
+}
+function coOmen(f,party){
+  let r=Math.random(),type=r<.4?"aoe":r<.8?"smash":"sp";if(type==="sp"&&hasMod(f,"spSeal"))type="aoe";
+  const alive=party.filter(x=>x.hp>0),tank=alive.find(x=>x.role==="tank");
+  return {type,target:type==="smash"?(tank&&Math.random()<.55?tank:pickOne(alive)).id:null};
+}
+const coActOf=id=>(id===myId()?myAct():gateActs[id])||{};
+function coReady(f,m){const a=coActOf(m.id);return a.lr===f.id&&(a.lm==="auto"||(a.lt===f.boss.t&&a.la))}
+function coChoose(action){const r=myRun();if(!r||r.phase!=="boss")return;GS.setAct({...myAct(),lr:r.id,lt:r.boss.t,la:action})}
+function coSetMode(m){const r=myRun();if(!r)return;GS.setAct({...myAct(),lr:r.id,lm:m})}
+function coAuto(f,m,party){const b=f.boss,ps=b.p[m.id]||{qi:0,cd:9},hurt=party.some(x=>x.hp>0&&x.hp/x.max<.6);
+  if(b.omen.type==="smash"&&b.omen.target===m.id)return "def";if(m.hp/m.max<.35)return "def";
+  if(!ps.cd&&ps.qi>=25&&(m.sect!=="ami"||hurt))return "skill";return "atk"}
+function maybeResolveLair(){
+  const r=myRun();if(!r||r.status!=="active"||r.phase!=="boss"||coBusy)return;
+  const party=coParty(r),ps=party.filter(x=>x.player&&x.hp>0);
+  if(!ps.every(m=>coReady(r,m))&&Date.now()<r.boss.deadline)return;
+  const t=r.boss.t;coEdit(f=>f.status==="active"&&f.phase==="boss"&&f.boss.t===t,f=>coBossTurn(f)).catch(()=>{});
+}
+function coBossTurn(f){
+  const b=f.boss,B=bossFor(f.period),party=coParty(f),log=f.log,om=b.omen;
+  const L=Math.max(...party.filter(x=>x.player).map(x=>heroById(x.id)?.level||1));
+  let bAtk=(20+L*8)*(hasMod(f,"atkDown")?.85:1)*Math.pow(1.1,f.mods.filter(m=>m.k==="atkUp").length);
+  const bDef=hasMod(f,"defDown")?Math.round(L*.5):L,mulIn=hasMod(f,"defDown")?1.3:1;
+  const blind=om.type==="sp"&&B.sp==="blind",shieldB=om.type==="sp"&&B.sp==="shield";
+  const deal=(atk,mult,hits,crit)=>{let s=0;for(let i=0;i<hits;i++){let d=blind&&Math.random()<.3?0:Math.max(1,Math.round(atk*mult*100/(100+bDef)*(.9+Math.random()*.2)*mulIn));if(d&&Math.random()*100<crit)d=Math.round(d*1.5);s+=d}return shieldB?Math.round(s*.5):s};
+  const nm=x=>x.player?`\u0001${x.name}\u0002`:x.name;
+  const tg0=party.find(x=>x.id===om.target);
+  log.push({k:"sec",x:`${b.t}합`},{k:"ev2",sub:"omen",x:om.type==="aoe"?B.aoe:om.type==="smash"?fill(B.smash,{t:tg0?nm(tg0):"누군가"}):B.spx});
+  let guard={},taunt=null,pshield=1,weak=1,turn=0;
+  for(const m of party){if(m.hp<=0)continue;
+    if(!m.player){
+      if(m.role==="heal"){const low=party.filter(x=>x.hp>0).sort((x,y)=>x.hp/x.max-y.hp/y.max)[0];if(low&&low.hp/low.max<.65){const amt=Math.round(Math.max(m.atk*1.3,20+L*5));low.hp=Math.min(low.max,low.hp+amt);log.push({k:"ev2",sub:"act",x:`${m.name}의 회춘수 · ${nm(low)} +${amt}`});continue}}
+      const d=deal(m.atk,roleMul(m.role),1,m.crit);turn+=d;if(m.role==="tank"&&!taunt&&Math.random()<.6)taunt=m;
+      log.push({k:"ev2",sub:"act",x:`${m.role==="tank"?`${josa(m.name,"이")} 앞을 막아서며 친다`:`${m.name}의 일격`} · ${d?`${d} 피해`:"빗나갔다"}`});continue}
+    const ps=b.p[m.id]=b.p[m.id]||{qi:50,qmax:50,cd:0};if(ps.cd>0)ps.cd--;
+    const a=coActOf(m.id),act=a.lr===f.id&&a.lm!=="auto"&&a.lt===b.t&&a.la?a.la:coAuto(f,m,party);
+    if(act==="def"){guard[m.id]=true;if(m.role==="tank")taunt=m;const d=deal(m.atk,.3,1,m.crit);turn+=d;b.dealtBy[m.id]=(b.dealtBy[m.id]||0)+d;log.push({k:"ev2",sub:"act",x:`${josa(nm(m),"이")} 자세를 낮추고 막아선다 · 반격 ${d}`})}
+    else if(act==="skill"&&!ps.cd&&ps.qi>=25){ps.qi-=25;ps.cd=2;
+      if(m.sect==="ami"){const parts=party.filter(x=>x.hp>0).map(x=>{const amt=Math.round(Math.max(m.atk*1.1,20+L*5)*(x.player&&x.id!==m.id&&relMutual(m.id,x.id)==="연인"?1.25:1));x.hp=Math.min(x.max,x.hp+amt);return `${nm(x)} +${amt}`});log.push({k:"ev2",sub:"act",x:`${nm(m)}의 회춘수! ${parts.join(" · ")}`})}
+      else{const sp={sorim:[1.25,1],hwasan:[.9,2],mudang:[.9,1],dang:[.6,2]}[m.sect],d=deal(m.atk,sp[0],sp[1],m.crit);turn+=d;b.dealtBy[m.id]=(b.dealtBy[m.id]||0)+d;
+        if(m.sect==="sorim")taunt=m;if(m.sect==="mudang")pshield=.75;if(m.sect==="dang")weak=.8;
+        log.push({k:"ev2",sub:"act",x:`${nm(m)}의 ${SKILL_NAME[m.sect]}!${sp[1]>1?` ${sp[1]}연타`:""} · ${d} 피해`})}}
+    else{const d=deal(m.atk,roleMul(m.role),1,m.crit);turn+=d;b.dealtBy[m.id]=(b.dealtBy[m.id]||0)+d;log.push({k:"ev2",sub:"act",x:`${nm(m)}의 공격 · ${d?`${d} 피해`:"빗나갔다"}`})}
+  }
+  const pl=party.filter(x=>x.player&&x.hp>0);if(pl.length===2&&Math.random()<.3){const [x,y]=pickOne([[pl[0],pl[1]],[pl[1],pl[0]]]);const pool=COMP.fight[relMutual(x.id,y.id)]||COMP.fight.지인;log.push({k:"comp",x:fill(pickOne(pool),{c:nm(x)})})}
+  const bp=bAtk*(b.rage?1.5:1)*weak;b.rage=false;
+  const take=(x,base)=>{if(x.player&&Math.random()*100<x.eva)return -1;let d=Math.max(1,Math.round(base*100/(100+x.def)*(.9+Math.random()*.2)*pshield));if(guard[x.id])d=Math.round(d*.4);x.hp=Math.max(0,x.hp-d);return d};
+  if(b.t===1&&hasMod(f,"ambush"))log.push({k:"ev2",sub:"hit",x:`${josa(B.n,"이")} 함정에 걸려 비틀거린다. 이번 합은 공격하지 못했다.`});
+  else if(om.type==="aoe"){const parts=party.filter(x=>x.hp>0).map(x=>{const d=take(x,bp*.6);return `${nm(x)} ${d<0?"회피":d}${x.hp<=0?"(쓰러짐)":""}`});log.push({k:"ev2",sub:"hit",x:`광역 공격! ${parts.join(" · ")}`})}
+  else if(om.type==="smash"){let tg=party.find(x=>x.id===om.target);if(taunt&&taunt.hp>0&&taunt!==tg){log.push({k:"ev2",sub:"act",x:`${josa(nm(taunt),"이")} 강타를 대신 받아낸다!`});tg=taunt}
+    if(tg&&tg.hp>0){const d=take(tg,bp*1.6);log.push({k:"ev2",sub:"hit",x:d<0?`${josa(nm(tg),"이")} 몸을 틀어 강타를 흘려냈다!`:`강타! ${nm(tg)} ${d} 피해${tg.hp<=0?" — 쓰러졌다!":""}`})}}
+  else{if(B.sp==="rage"){b.rage=true;log.push({k:"ev2",sub:"hit",x:"다음 합의 공격이 1.5배로 거세진다."})}
+    if(B.sp==="poison"){const v=party.filter(x=>x.hp>0).sort(()=>Math.random()-.5).slice(0,2);v.forEach(x=>b.poison[x.id]=2);log.push({k:"ev2",sub:"hit",x:`${v.map(nm).join(", ")}에게 독이 퍼졌다.`})}
+    if(B.sp==="blind")log.push({k:"ev2",sub:"hit",x:"물보라 탓에 이번 합은 공격이 자주 빗나갔다."});
+    if(B.sp==="shield")log.push({k:"ev2",sub:"hit",x:"이번 합은 피해가 절반만 들어갔다."})}
+  for(const id in b.poison){const a=party.find(x=>x.id===id);if(a&&a.hp>0&&b.poison[id]>0){const d=Math.round(bAtk*.3);a.hp=Math.max(0,a.hp-d);b.poison[id]--;log.push({k:"ev2",sub:"hit",x:`${nm(a)} 독 피해 ${d}${a.hp<=0?" — 쓰러졌다!":""}`})}}
+  Object.values(b.p).forEach(x=>x.qi=Math.min(x.qmax,x.qi+10));
+  const tot=Object.values(b.dealtBy).reduce((a,x)=>a+x,0);
+  log.push({k:"amb",x:`이번 합 피해 ${turn} · 두 사람 누적 ${tot.toLocaleString()}`});
+  storeHp(f,party);b.t++;
+  if(b.t>6||!party.some(x=>x.player&&x.hp>0)){coFinish(f,"boss");return}
+  b.omen=coOmen(f,party);b.deadline=Date.now()+CO_WAIT;
+  if(f.log.length>220)f.log=f.log.slice(-220);
+}
+function coFinish(f,why){
+  const B=bossFor(f.period);f.phase="done";f.status="done";f.why=why;
+  if(why==="boss")f.loot.expBoss=1;
+  const head=why==="boss"?`여섯 합이 끝났다. 두 사람이 ${B.n}에게 ${Object.values(f.boss.dealtBy).reduce((a,x)=>a+x,0).toLocaleString()} 피해를 입혔다.`:why==="retreat"?"더 들어가지 않고 함께 소굴을 빠져나왔다.":"모두 쓰러졌다. 서로를 부축해 겨우 빠져나왔다. 챙긴 것의 절반을 잃었다.";
+  f.log.push({k:"sec",x:"소굴을 나서며"},{k:"end",x:head});
+}
+/* 끝난 판에서 각자 자기 몫을 챙긴다 (같은 몫을 각자 받는다) */
+function coClaim(){
+  const r=myRun();if(!r||r.phase!=="done")return;const h=structuredClone(me),B=bossFor(r.period),half=r.why==="wipe",lt=r.loot;
+  const mine=r.boss?.dealtBy?.[myId()]||0;if(r.why==="boss"&&h.raid?.period===r.period)h.raid.dmg+=mine;
+  const exp=Math.round((lt.exp+(r.why==="boss"?expPerHour(h.level):0))*(half?.5:1)),stone=Math.floor(lt.stone*(half?.5:1)),herb=Math.floor(lt.herb*(half?.5:1));
+  const lv0=h.level,ups=applyExp(h,exp);h.items.stone+=stone;h.items.herb+=herb;const got=[];
+  if(exp)got.push(`경험치 +${exp}`);if(stone)got.push(`강화석 +${stone}`);if(herb)got.push(`약초 +${herb}`);
+  (half?lt.items.slice(0,Math.floor(lt.items.length/2)):lt.items).forEach(it=>got.push(`장비 「${gainItem(h,{...it,id:it.id+myId().slice(-3)})}」`));
+  const mate=r.members.find(x=>x!==myId());if(mate&&r.why==="boss"){const v=addBond(h,mate,20);got.push(`${josa(heroById(mate)?.name||"동행","과")} 인연 +${v}`)}
+  if(r.why==="boss")[...new Set(coParty(r).filter(x=>!x.player).map(x=>x.sect))].forEach(k=>addFavor(h,k,15));
+  h.journal=[{title:`소굴 · ${B.n} (동행)`,region:B.region,start:r.start,tier:1,label:r.why==="boss"?`내 피해 ${mine.toLocaleString()}`:r.why==="retreat"?"돌아섬":"쓰러짐",
+    lines:[...r.log,{k:"amb",x:`내가 챙긴 것: ${got.join(", ")||"없음"}`}].map((l,i)=>({...l,t:r.start+i}))},...(h.journal||[])].slice(0,10);
+  addLog(h,`동행과 함께한 ${B.n}의 소굴: ${got.join(", ")||"얻은 것 없음"}${ups?`, Lv.${lv0}→${h.level}`:""}`);
+  h.colair=null;save(h);toast(got.length?`챙긴 것: ${got.slice(0,2).join(", ")}`:"소굴에서 나왔습니다.");
+}
+function coLairView(r){
+  const B=bossFor(r.period),party=coParty(r),mate=heroById(r.members.find(x=>x!==myId())||r.invitee);
+  if(r.status==="invite")return `<div class="wall" style="margin-top:16px"><p><b>${esc(mate?.name||"동행")}</b>이(가) 들어오기를 기다리는 중이다. 상대 화면의 토벌 탭에 초대가 뜬다.</p><button class="btn ghost" type="button" id="coCancel">초대 거두기</button></div>`;
+  const bars=`<div class="lparty">${party.map(x=>`<div class="lp ${x.hp<=0?"dead":""}">${x.player?face(x.id,x.sect,"sm"):emblem(x.sect,"sm")}<div><b>${esc(x.name)}${x.isMe?" (나)":x.player?" · 동행":""}</b><span>${ROLE_N[x.role]} · ${x.hp}/${x.max}${r.phase==="boss"&&x.player&&x.hp>0?` · ${coReady(r,x)?"골랐다":"고르는 중"}`:""}</span><div class="hpb"><i style="width:${x.hp/x.max*100}%"></i></div></div></div>`).join("")}</div>`;
+  const mods=r.mods.length?`<div class="mods">${r.mods.map(m=>`<span class="${MODS[m.k].good?"good":"bad"}">${MODS[m.k].t}</span>`).join("")}</div>`:`<p class="note" style="margin:0">아직 보스 상태에 변화가 없다.</p>`;
+  const lt=r.loot,lootTxt=[lt.exp?`경험치 ${lt.exp}`:"",lt.stone?`강화석 ${lt.stone}`:"",lt.herb?`약초 ${lt.herb}`:"",...lt.items.map(i=>i.name)].filter(Boolean).join(" · ")||"아직 없음";
+  const feed=`<div class="feedwrap" style="margin:14px -18px 0"><ul class="feed" id="lairFeed">${r.log.map(battleLine).join("")}</ul></div>`;
+  let ctl="";
+  if(r.phase==="fork"){const fk=forksFor(r);
+    ctl=`<p class="q">갈림길 ${r.step}/4. 먼저 누르는 사람이 길을 정한다.</p><div class="opts">${fk.map((f,i)=>`<button class="opt" type="button" data-cofork="${i}"><b>${f.label}</b><span>${f.hint}</span></button>`).join("")}</div>
+      <div class="row" style="margin-top:12px"><button class="btn sm" type="button" id="coHerb" ${me.items.herb<1?"disabled":""}>내 약초 쓰기 · ${me.items.herb}개 (파티 +30%)</button>
+      ${coRetreat?`<button class="btn sm sealb" type="button" id="coRetYes">둘 다 돌아간다</button><button class="btn sm ghost" type="button" id="coRetNo">계속 간다</button>`:`<button class="btn sm ghost" type="button" id="coRetBtn">여기서 돌아가기</button>`}</div>`}
+  else if(r.phase==="room"){const R=ROOMS[r.room.t],dc=dcFor(me.realm),bm=bestOf(R.opts.map(o=>o[1]),0,dc),multi=R.opts.filter(o=>o[1]).length>1;
+    ctl=`<p class="q">${R.name}. ${R.text} <span class="note">먼저 고르는 사람의 능력치로 판정한다.</span></p><div class="opts">${R.opts.map(([k,st,txt])=>{if(!st)return `<button class="opt" type="button" data-coro="${k}"><b>행동</b><span>${txt}</span><small>판정 없음</small></button>`;
+      const c=optCheck(st,0,dc,multi&&chanceOf(Math.floor(me.stats[st]/10),dc)===bm);return `<button class="opt" type="button" data-coro="${k}">${c.b}<span>${txt}</span>${c.s}</button>`}).join("")}</div>`}
+  else if(r.phase==="boss"){const b=r.boss,mm=party.find(x=>x.isMe),ps=b.p[myId()]||{qi:0,qmax:0,cd:0},a=myAct(),auto=a.lm==="auto"&&a.lr===r.id,chosen=a.lr===r.id&&a.lt===b.t?a.la:null,tg=party.find(x=>x.id===b.omen.target);
+    const omen=b.omen.type==="aoe"?B.aoe:b.omen.type==="smash"?fill(B.smash,{t:tg?(tg.player?"\u0001"+tg.name+"\u0002":tg.name):"누군가"}):B.spx;
+    const btn=(k,t,s,dis)=>`<button class="opt ${chosen===k?"chosen":""}" type="button" data-coact="${k}" ${dis?"disabled":""}><b>${t}</b><span>${s}</span>${chosen===k?"<small>골랐다</small>":""}</button>`;
+    ctl=`<div class="omen">◆ ${b.t}합 · ${esc(omen).replace(/\u0001(.*?)\u0002/g,"<b>$1</b>")}</div>
+      <div class="row" style="justify-content:space-between;margin:10px 0"><span class="note" style="margin:0">기력 ${ps.qi}/${ps.qmax} · <span data-until="${b.deadline}"></span> 뒤 자동 진행</span>
+      <span class="seg"><button type="button" class="${auto?"":"on"}" data-comode="manual">직접 고르기</button><button type="button" class="${auto?"on":""}" data-comode="auto">자동</button></span></div>
+      ${!mm||mm.hp<=0?`<p class="note">쓰러져 있다. 동행의 싸움을 지켜본다.</p>`:auto?`<p class="note">자동으로 싸우는 중. 둘 다 고르면 바로 다음 합으로 넘어간다.</p>`
+        :`<div class="acts3">${btn("atk","공격",`${ROLE_N[mm.role]}의 기본 공격`)}${btn("def","방어",`받는 피해 60% 감소${mm.role==="tank"?" · 강타를 대신 받음":""}`)}${btn("skill","무공",`${SKILL_ACT[mm.sect]} · 기력 25${ps.cd?` · ${ps.cd}합 뒤 가능`:""}`,ps.cd||ps.qi<25)}</div>`}`}
+  else{const mine=r.boss?.dealtBy?.[myId()]||0;
+    ctl=`<div class="wall"><p>${r.why==="boss"?`두 사람이 ${B.n}에게 피해를 입혔다. 내 몫은 <b>${mine.toLocaleString()}</b>.`:r.why==="retreat"?"함께 무사히 돌아 나왔다.":"쓰러져 실려 나왔다."} 챙긴 것은 두 사람이 똑같이 나눠 받는다.</p><button class="btn sealb" type="button" id="coClaim">챙겨서 소굴에서 나온다</button></div>`}
+  return `<div class="label" style="margin-top:18px">${B.n}의 소굴 · 동행과 함께 · ${r.phase==="boss"?"보스방":r.phase==="done"?"탐험 끝":`갈림길 ${r.step}/4`}</div>${bars}
+    <div class="label" style="margin-top:14px">보스 상태</div>${mods}<p class="note">챙긴 것: ${lootTxt}</p>${feed}<div style="margin-top:14px">${ctl}</div>`;
+}
+
 /* ───────── 장비와 강화 ───────── */
 const SLOTS={weapon:"무기",armor:"의복",acc:"장신구"};
 const GRADE=["무명","청강","한철","현철","운철","천잠","만년한철"];
@@ -1753,7 +1965,7 @@ function heroView(){
   const h=me,s=SECTS[h.sect],r=REALMS[h.realm],next=REALMS[h.realm+1],wall=atWall(h);
   const pct=Math.min(100,h.exp/need(h.level)*100);
   const tabs=[["train","수련"],["world","강호"],["raid","토벌"],["gate","관문"],["self","인물"],["gear","장비"],["mates","인연"]];
-  const dot={train:h.training&&Date.now()>=h.training.end,world:(h.travel&&Date.now()>=h.travel.end)||(h.mission&&(h.mission.phase==="scene"||Date.now()>=h.mission.end)),self:h.points>0||!!postOffer(h),mates:giftsToMe().some(g=>g.t>(h.seenGift||0))||others.some(o=>{const B=bondOf(o._id,myId()),A=bondOf(myId(),o._id);return (B.want&&B.want!=="지인"&&B.want!==A.want)||(o.follow===myId()&&h.follow!==o._id)}),gate:(()=>{const r=myRoom();if(r&&r.status==="fight"){const m=r.party.find(x=>x.id===myId());return !!(m&&m.hp>0&&!playerReady(r,m))}if(r&&(r.status==="win"||r.status==="fail")&&!h.gateDone?.[r.id])return true;return atWall(h)&&!!GATES[h.realm+1]?.ready&&!r})(),raid:(()=>{const st=raidState(periodNow());if(h.lair&&h.lair.phase!=="done")return true;return st.down&&h.raid?.period===periodNow()&&!h.raid.claimed})()};
+  const dot={train:h.training&&Date.now()>=h.training.end,world:(h.travel&&Date.now()>=h.travel.end)||(h.mission&&(h.mission.phase==="scene"||Date.now()>=h.mission.end)),self:h.points>0||!!postOffer(h),mates:giftsToMe().some(g=>g.t>(h.seenGift||0))||others.some(o=>{const B=bondOf(o._id,myId()),A=bondOf(myId(),o._id);return (B.want&&B.want!=="지인"&&B.want!==A.want)||(o.follow===myId()&&h.follow!==o._id)}),gate:(()=>{const r=myRoom();if(r&&r.status==="fight"){const m=r.party.find(x=>x.id===myId());return !!(m&&m.hp>0&&!playerReady(r,m))}if(r&&(r.status==="win"||r.status==="fail")&&!h.gateDone?.[r.id])return true;return atWall(h)&&!!GATES[h.realm+1]?.ready&&!r})(),raid:(()=>{const st=raidState(periodNow());if(coInvitesForMe().length&&!h.colair)return true;if(h.colair)return true;if(h.lair&&h.lair.phase!=="done")return true;return st.down&&h.raid?.period===periodNow()&&!h.raid.claimed})()};
   return `<div>
   <section style="margin-top:8px">
     <div class="who"><button type="button" class="facebtn" data-go="self" aria-label="프로필 사진 바꾸기">${face(myId(),h.sect,"big")}</button>
@@ -1785,6 +1997,7 @@ function bannerView(){
   const now=Date.now();
   if(a==="train"){const t=h.training,done=now>=t.end;return `<div class="banner ${done?"done":""}"><span><b>${STATS[t.stat].train}</b> <span class="t">${done?"· 끝났다":`· <span data-until="${t.end}"></span> 남음`}</span></span>${tab!=="train"?`<button class="btn ghost" data-go="train" type="button">${done?"거두러 가기":"보기"}</button>`:""}</div>`}
   if(a==="travel"){const t=h.travel,done=now>=t.end;return `<div class="banner ${done?"done":""}"><span><b>${REGIONS[t.to].n}</b>로 가는 길 <span class="t">${done?"· 도착했다":`· <span data-until="${t.end}"></span> 남음`}</span></span>${tab!=="world"?`<button class="btn ghost" data-go="world" type="button">${done?"도착하기":"보기"}</button>`:""}</div>`}
+  if(a==="lair"&&h.colair&&!h.lair){const r=lairRuns[h.colair];return `<div class="banner done"><span><b>동행과 함께 소굴</b> <span class="t">· ${!r?"불러오는 중":r.status==="invite"?"동행을 기다리는 중":r.phase==="boss"?"보스방에서 싸우는 중":r.phase==="done"?"탐험 끝":"탐험 중"}</span></span>${tab!=="raid"?`<button class="btn ghost" data-go="raid" type="button">돌아가기</button>`:""}</div>`}
   if(a==="lair"){const B=bossFor(h.lair.period);return `<div class="banner done"><span><b>${B.n}의 소굴</b> <span class="t">· ${h.lair.phase==="boss"?"보스방에서 싸우는 중":"탐험 중"}</span></span>${tab!=="raid"?`<button class="btn ghost" data-go="raid" type="button">돌아가기</button>`:""}</div>`}
   const m=h.mission,inc=INC[m.region][m.idx],ready=m.phase==="scene"||now>=m.end;
   return `<div class="banner ${ready?"done":""}"><span><b>「${inc.t}」</b> <span class="t">${m.phase==="scene"?"· 현장에 있다":ready?"· 탐문이 끝났다":`· 탐문 중 <span data-until="${m.end}"></span> 남음`}</span></span>${tab!=="world"?`<button class="btn ghost" data-go="world" type="button">${ready?"현장으로":"보기"}</button>`:""}</div>`;
@@ -1968,6 +2181,13 @@ function bind(){
   document.querySelectorAll("[data-p]").forEach(b=>b.addEventListener("click",()=>{alloc[b.dataset.p]++;render()}));
   document.querySelectorAll("[data-m]").forEach(b=>b.addEventListener("click",()=>{alloc[b.dataset.m]--;render()}));
   on("#ffBtn",fastForward);
+  on("#coInvite",coInvite); on("#coCancel",coCancel); on("#coClaim",coClaim); on("#coHerb",coHerb);
+  on("#coRetBtn",()=>{coRetreat=true;render()}); on("#coRetNo",()=>{coRetreat=false;render()}); on("#coRetYes",coRetreatNow);
+  document.querySelectorAll("[data-cojoin]").forEach(b=>b.addEventListener("click",()=>coJoin(b.dataset.cojoin)));
+  document.querySelectorAll("[data-cofork]").forEach(b=>b.addEventListener("click",()=>coPickFork(+b.dataset.cofork)));
+  document.querySelectorAll("[data-coro]").forEach(b=>b.addEventListener("click",()=>coRoomAct(b.dataset.coro)));
+  document.querySelectorAll("[data-coact]").forEach(b=>b.addEventListener("click",()=>coChoose(b.dataset.coact)));
+  document.querySelectorAll("[data-comode]").forEach(b=>b.addEventListener("click",()=>coSetMode(b.dataset.comode)));
   $("#avatarIn")?.addEventListener("change",e=>pickAvatar(e.target.files[0]));on("#avatarDel",clearAvatar);
   document.querySelectorAll("[data-gpick]").forEach(el=>el.addEventListener("change",()=>{giftPick[el.dataset.gpick]=el.value}));
   document.querySelectorAll("[data-gift]").forEach(b=>b.addEventListener("click",()=>giveGift(b.dataset.gift)));
@@ -2024,7 +2244,7 @@ function curPhase(){
   return me?[e(me.training),e(me.travel),e(me.mission),fc,...others.map(o=>e(o.training)+e(o.travel))].join(""):"";
 }
 function tick(){
-  maybeResolve();
+  maybeResolve();maybeResolveLair();
   if(!me) return;
   const k=curPhase(); if(k!==phaseKey){phaseKey=k;render();return}
   const now=Date.now();
@@ -2084,9 +2304,10 @@ async function boot(){
   db=d;uid=id;mode="db";isOwner=await u.isOwner();
   try{const js=await db.doc("journals/"+uid).get();if(js.exists){journalCache=js.data().list||[];lastJournal=JSON.stringify(journalCache)}}catch(e){}
   db.collection("avatars").onSnapshot(snap=>{avatars={};snap.docs.forEach(d=>{if(d.exists)avatars[d.id]=d.data().img});if(ready)render()},()=>{});
+  db.collection("lairs").onSnapshot(snap=>{lairRuns={};snap.docs.forEach(d=>{if(d.exists)lairRuns[d.id]=structuredClone(d.data())});if(ready)render();maybeResolveLair()},()=>{});
   db.collection("gates").onSnapshot(snap=>{gateRooms={};snap.docs.forEach(d=>{if(d.exists)gateRooms[d.id]=structuredClone(d.data())});if(ready)render();maybeResolve()},()=>{});
   db.collection("gateacts").onSnapshot(snap=>{const mine=gateActs[uid];gateActs={};snap.docs.forEach(d=>{if(d.exists)gateActs[d.id]=structuredClone(d.data())});
-    if(mine&&(!gateActs[uid]||(gateActs[uid].t||0)<(mine.t||0)))gateActs[uid]=mine;if(ready)render();maybeResolve()},()=>{});
+    if(mine&&(!gateActs[uid]||(gateActs[uid].t||0)<(mine.t||0)))gateActs[uid]=mine;if(ready)render();maybeResolve();maybeResolveLair()},()=>{});
   db.collection("heroes").onSnapshot(snap=>{
     const mine=snap.docs.find(x=>x.id===uid);
     if(!(mine?.metadata?.hasPendingWrites)){me=mine?.exists?normalize(structuredClone(mine.data())):null;if(me){if(me.journal&&!journalCache)journalCache=me.journal;me.journal=journalCache||me.journal||[]}}
