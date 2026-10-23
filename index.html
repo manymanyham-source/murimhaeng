@@ -1587,6 +1587,8 @@ function feedFor(h,m,comp){
   const A=seeded(m.start%2147483647+7),PA=a=>a[Math.floor(A()*a.length)];
   const C=seeded(m.start%2147483647+13),PC=a=>a[Math.floor(C()*a.length)];
   const nm={me:h.name};
+  { const opens=["{me|은} {r|의} 마을 어귀에 들어섰다. 사람들의 눈길이 낯선 무인에게 쏠린다.","{me|은} 객잔 한구석에 자리를 잡고 귀를 기울였다.","{me|은} 소문이 시작된 곳부터 차근차근 짚어 보기로 했다.","길가 찻집에 앉으니 사건 이야기가 절로 들려온다. {me|은} 찻잔을 들며 귀를 연다."];
+    out.push({t:m.start,kind:"amb",text:fill(opens[Math.floor(seeded(m.start%2147483647+29)()*opens.length)],{me:h.name,r:REGIONS[m.region].n})}); }
   for(let i=0;i<n;i++){
     const t=m.start+dur*(i+.5+R()*.4)/(n+.3),x=R(),stat=P(["nei","wai","shen"]),roll=1+Math.floor(R()*20),ok=roll+Math.floor(h.stats[stat]/10)>=dc;
     const n1=P(FEED.npc);let n2=P(FEED.npc);if(n2===n1)n2="거지 노인";
@@ -1855,7 +1857,7 @@ function missionBox(){
     return `<div class="case"><div class="kicker">${REGIONS[m.region].n} · 탐문</div><h3>${inc.t}</h3><p>${inc.i}</p>
       ${(()=>{const comp=companionFor(m),f=feedFor(h,m,comp),shown=f.filter(e=>e.t<=now),b=feedBonus(shown)+(comp?1:0);
         return `<div class="kicker" style="margin-top:6px">탐문 일지 · 조사 판정 +${b}${comp?`<span class="mate-pill">동행 <b>${esc(comp.name)}</b> · ${comp.rel}</span>`:""}</div><div class="feedwrap"><ul class="feed" id="inlineFeed" data-key="${m.start}-${shown.length}">${shown.map((e,i)=>feedLine(e,i===shown.length-1&&!ready)).join("")}
-          ${ready?`<li class="amb"><span class="tm"></span><span class="body">— 탐문이 끝났다. 이제 현장으로 향할 때다.</span></li>`:`<li class="wait"><span class="tm"></span><span class="body">계속 탐문하는 중… <span data-until="${m.end}"></span> 남음</span></li>`}</ul><div class="feedtools"><span class="note" style="margin:0">위로 올리면 앞의 내용을 볼 수 있다.</span><button class="btn sm ghost" type="button" id="readerBtn" data-read="live">일지 크게 보기</button></div></div>`})()}
+          ${ready?`<li class="amb"><span class="tm"></span><span class="body">— 탐문이 끝났다. 이제 현장으로 향할 때다.</span></li>`:`<li class="wait"><span class="tm"></span><span class="body">계속 탐문하는 중… 새 소식은 10~15분마다 들어온다 · 탐문 끝까지 <span data-until="${m.end}"></span></span></li>`}</ul><div class="feedtools"><span class="note" style="margin:0">위로 올리면 앞의 내용을 볼 수 있다.</span><button class="btn sm ghost" type="button" id="readerBtn" data-read="live">일지 크게 보기</button></div></div>`})()}
       <p>${ready?"탐문을 마쳤다. 들어서면 탐문에서 얻은 것들을 챙기고 현장으로 간다.":"대화와 도움에 성공할수록 현장 조사가 쉬워진다. 화면을 닫아 둬도 탐문은 계속된다."}</p>
       <div class="row">${ready?`<button class="btn sealb" id="sceneBtn" type="button">현장에 들어선다</button>`
         :confirmAbort?`<button class="btn sealb" id="mxYes" type="button">사건에서 손 떼기</button><button class="btn ghost" id="mxNo" type="button">계속 탐문하기</button>`
