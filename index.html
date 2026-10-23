@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261023160647">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -96,6 +96,10 @@ section{margin-top:30px}
 .mailg{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
 .mailg input[type=number]{width:100%;min-width:0;box-sizing:border-box}
 .mailf label.chk input{width:auto;margin:0}
+.alarm{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.alarm p{margin:0;line-height:1.6}
+.alarm .aic{flex:none;width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--line);font-family:var(--f-brush);font-size:17px;color:var(--ink-2);border-radius:50%}
+.alarm.new .aic{border-color:var(--seal);color:var(--seal)}
 .mailnew{display:block;width:100%;margin:10px 0 0;padding:9px 12px;border:1px solid var(--seal);color:var(--seal);background:none;font:inherit;font-size:14px;text-align:left;border-radius:2px;cursor:pointer}
 .mailf label.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink);grid-column:1/-1}
 .chip{position:relative}
@@ -1036,7 +1040,7 @@ function raidTab(){
     ${roles.length>1?`<div class="chips" style="margin:10px 0">${roles.map(r=>`<label class="chip"><input type="radio" name="rrole" value="${r}" id="rr-${r}" ${role===r?"checked":""}><span>${ROLE_N[r]}로 서기</span></label>`).join("")}</div>`:""}
     ${(()=>{const ms=realMates();if(!ms.length)return "";const away=ms.filter(o=>o.loc!==B.region||o.travel);
       return `<div class="wall" style="margin:10px 0"><p>무리 ${ms.map(o=>`<b>${esc(o.name)}</b>`).join(", ")}와(과) 함께 들어갈 수 있다. 빈자리는 NPC가 채운다. 갈림길과 방은 먼저 누르는 사람이 고르고, 보스방에서는 각자 고른다.${away.length?` (${away.map(o=>`${esc(o.name)}: ${o.travel?"길 위":REGIONS[o.loc]?.n}`).join(", ")} — ${REGIONS[B.region].n}로 와야 함께 들어갈 수 있다.)`:""}</p>
-      <button class="btn sealb" type="button" id="coInvite" ${a||triesUsed>=3?"disabled":""}>무리와 함께 들어간다</button></div>`})()}
+      <div class="row"><button class="btn sealb" type="button" id="coInvite" ${a||triesUsed>=3?"disabled":""}>무리와 함께 들어간다</button>${away.length?`<button class="btn ghost" type="button" id="callRaid">무리에게 토벌 가자고 알리기</button>`:""}</div></div>`})()}
     <div class="row" style="margin-top:10px"><button class="btn solid" id="chalBtn" type="button" ${a||triesUsed>=3?"disabled":""}>소굴에 들어간다 · 오늘 ${3-triesUsed}/3</button>
     ${a?`<span class="note" style="margin:0">${busyText[a]} 들어갈 수 없다.</span>`:triesUsed>=3?`<span class="note" style="margin:0">오늘은 다 들어갔다. 자정에 다시 채워진다.</span>`:""}</div>`}
   const invBox=!cr&&invs.length?invs.map(x=>{const fr=heroById(x.members[0]);return `<div class="wall" style="margin-bottom:12px"><p><b>${esc(fr?.name||"동행")}</b>이(가) ${bossFor(x.period).n}의 소굴에 함께 들어가자고 한다. 들어가면 오늘 진입 횟수가 하나 줄어든다.</p><button class="btn sealb" type="button" data-cojoin="${x.id}">함께 들어간다</button></div>`}).join(""):"";
@@ -1247,6 +1251,7 @@ function gateRoomView(r){
       <div class="party">${party.map(x=>`<div class="pm2">${x.player?face(x.id,x.sect,"sm"):emblem(x.sect,"sm")}<div><b>${esc(x.name)}${x.id===myId()?" (나)":x.player?"":" · NPC"}</b><span>${ROLE_N[x.role]} · 체력 ${x.max} · 공격 ${x.atk}</span></div></div>`).join("")}</div>
       ${roles.length>1?`<div class="chips" style="margin-top:10px">${roles.map(rr=>`<label class="chip"><input type="radio" name="grole" value="${rr}" id="gr-${rr}" ${(mineA.role||roles[0])===rr?"checked":""}><span>${ROLE_N[rr]}로 서기</span></label>`).join("")}</div>`:""}
       <p class="note">8막 동안 싸운다. 매 막 전조를 보고 각자 행동을 고른다. 모두 고르면 바로 진행되고, 90초가 지나면 안 고른 사람은 자동으로 움직인다.</p>
+      ${isOwner2?`<div class="row" style="margin-top:10px">${realMates().length?`<button class="btn ghost" type="button" data-callgate="party">무리에게 도움 청하기</button>`:""}<button class="btn ghost" type="button" data-callgate="all">모두에게 도움 청하기</button></div>`:""}
       <div class="row" style="margin-top:10px">${isOwner2?`<button class="btn sealb" id="startGateBtn" type="button">싸움을 시작한다</button>`:`<span class="note" style="margin:0">${josa(esc(r.ownerName),"이")} 시작하기를 기다리는 중…</span>`}
       <button class="btn ghost" id="leaveGateBtn" type="button">${isOwner2?"관문 닫기":"빠지기"}</button></div></div></section>`}
   const P=r.party,me2=P.find(x=>x.id===myId()),feed=`<div class="feedwrap" style="margin:14px -18px 0"><ul class="feed" id="gateFeed">${r.log.map(battleLine).join("")}</ul></div>`;
@@ -1314,7 +1319,7 @@ function giveGift(to){
   const v=addBond(h,to,GIFT_VAL[it]);h.sent=[{id:Date.now().toString(36),to,item:it,t:Date.now()},...(h.sent||[])].slice(0,20);
   addLog(h,`${josa(o.name,"에")}게 ${josa(ITEMS[it][0],"을")} 보냈다. (인연 +${v})`);save(h);toast(`${o.name}에게 ${josa(ITEMS[it][0],"을")} 보냈습니다.`);
 }
-function proposeRel(to,rel){const h=structuredClone(me);h.bonds=h.bonds||{};const b=h.bonds[to]=h.bonds[to]||{pts:0};b.want=rel;
+function proposeRel(to,rel){const h=structuredClone(me);h.bonds=h.bonds||{};const b=h.bonds[to]=h.bonds[to]||{pts:0};b.want=rel;b.wantT=Date.now();
   addLog(h,rel==="지인"?`${josa(heroById(to)?.name,"와")}의 관계를 내려놓았다.`:`${josa(heroById(to)?.name||"","에")}게 ${rel}의 연을 청했다.`);save(h);toast(rel==="지인"?"관계를 내려놓았습니다.":`${rel}의 연을 청했습니다. 상대도 같은 관계를 고르면 맺어집니다.`)}
 /* 무리 부르기·들어가기·나가기 */
 function partyInvite(to){const h=structuredClone(me),o=heroById(to);if(!o)return;
@@ -1489,6 +1494,70 @@ function bindMail(){
   const s=document.getElementById("mailSend");if(s)s.addEventListener("click",sendMail);
   if(tab==="mail"&&me&&mode==="db"&&!render.mailSeenT){const lastT=myMails().filter(m=>!hasGifts(m)).reduce((a,m)=>Math.max(a,m.t),0);
     if(lastT>(me.mailSeen||0))render.mailSeenT=setTimeout(()=>{render.mailSeenT=null;const h=structuredClone(me);h.mailSeen=lastT;save(h)},2500)}
+}
+
+
+/* ───────── 알림: 무리에게 "같이 가자 / 토벌 가자 / 관문 도와줘" 부르기 + 모든 소식 모아 보기 ─────────
+   부르기는 보내는 사람 자기 기록 h.calls 에만 남긴다. 받는 사람은 남의 기록을 읽어 알림으로 만든다. */
+const CALL_TTL=3*3600e3, CALL_N={go:"같이 가자",raid:"토벌 가자",gate:"관문 도움 요청"};
+function sendCall(k,data,toAll){
+  const h=structuredClone(me),now=Date.now(),mates=realMates().map(o=>o._id);
+  const to=toAll?["*"]:mates;if(!to.length){toast("같은 무리에 사람이 있어야 합니다.");return}
+  const last=(h.calls||[]).find(c=>c.k===k&&now-c.t<60e3);if(last){toast("방금 불렀어요. 1분 뒤에 다시 부를 수 있어요.");return}
+  h.calls=[{id:now.toString(36),k,to,t:now,...data},...(h.calls||[]).filter(c=>now-c.t<CALL_TTL)].slice(0,8);
+  addLog(h,`${toAll?"강호에":"무리에게"} ${CALL_N[k]}고 알렸다.`);save(h);toast(`${toAll?"모두":"무리"}에게 알렸습니다.`);
+}
+function alarmsForMe(){
+  if(!me)return [];const now=Date.now(),out=[],me_=myId();
+  for(const o of others){if(!o._id||String(o._id).startsWith("fake-"))continue;
+    for(const c of o.calls||[]){if(now-c.t>CALL_TTL||!(c.to||[]).some(x=>x===me_||x==="*"))continue;
+      if(c.k==="go"){const R=REGIONS[c.reg];if(!R||me.loc===c.reg)continue;
+        out.push({key:"c"+o._id+c.id,t:c.t,who:o._id,icon:"行",text:`${josa(esc(o.name),"이")} <b>${R.n}</b>로 같이 가자고 한다.`,btn:[["함께 떠난다",`data-ago="${c.reg}"`]]})}
+      if(c.k==="raid"){const R=REGIONS[c.reg];out.push({key:"c"+o._id+c.id,t:c.t,who:o._id,icon:"討",text:`${josa(esc(o.name),"이")} ${R?`<b>${R.n}</b>의 `:""}<b>${esc(c.boss||"보스")}</b> 토벌을 같이 가자고 한다.`,btn:[["토벌 탭 보기",`data-atab="raid"`]]})}
+      if(c.k==="gate"){const r=gateRooms[c.room];if(!r||r.status!=="lobby")continue;const G=GATES[r.realm];
+        out.push({key:"c"+o._id+c.id,t:c.t,who:o._id,icon:"關",text:`${josa(esc(o.name),"이")} <b>${G.title}</b>(${REGIONS[G.region].n} · ${G.boss})에 도우미를 청한다.`,btn:[["도우미로 합류",`data-join="${c.room}"`],["관문 탭 보기",`data-atab="gate"`]]})}}}
+  for(const r of coInvitesForMe()){const L=heroById(r.members[0]);out.push({key:"l"+r.id,t:r.start,who:r.members[0],icon:"窟",text:`${josa(esc(L?.name||"무리"),"이")} <b>${bossFor(r.period).n}의 소굴</b> 어귀에서 기다린다.`,btn:[["소굴에 들어간다",`data-cojoin="${r.id}"`]]})}
+  for(const o of partyCallsForMe())out.push({key:"p"+o._id+(o.partyT||0),t:o.partyT||0,who:o._id,icon:"伴",text:`${josa(esc(o.name),"이")} 무리로 불렀다.`,btn:[["무리에 들어간다",`data-pjoin="${o._id}"`]]});
+  for(const m of myMails())if(!mailGot(m.id)&&(hasGifts(m)||!(me.mailSeen>=m.t)))out.push({key:"m"+m.id,t:m.t,icon:"信",text:`우편 <b>「${esc(m.title)}」</b>${hasGifts(m)?" · 보상이 들어 있다":""}`,btn:[["우편함 열기",`data-atab="mail"`]]});
+  for(const o of others){if(!o._id)continue;const B=bondOf(o._id,myId()),A=bondOf(myId(),o._id);
+    if(B.want&&B.want!=="지인"&&B.want!==A.want)out.push({key:"r"+o._id+B.want,t:B.wantT||0,who:o._id,icon:"緣",text:`${josa(esc(o.name),"이")} <b>${B.want}</b>의 연을 청했다.`,btn:[["인연 탭 보기",`data-atab="mates"`]]})}
+  for(const g of giftsToMe().slice(0,5))out.push({key:"g"+g.fromId+g.id,t:g.t,who:g.fromId,icon:"禮",text:`${josa(esc(g.from),"이")} ${josa(ITEMS[g.item][0],"을")} 보냈다.`,btn:[]});
+  return out.sort((a,b)=>b.t-a.t);
+}
+const alarmUnread=()=>alarmsForMe().filter(a=>a.t>(me?.alarmSeen||0)&&a.btn.length).length;
+/* 새 알림이 생기면 화면에 띄우고, 창이 뒤에 있으면 기기 알림도 보낸다 */
+let alarmKnown=null;
+function checkAlarms(){
+  if(!me||mode!=="db"||!ready)return;const list=alarmsForMe();
+  if(alarmKnown===null){alarmKnown=new Set(list.map(a=>a.key));return}
+  const fresh=list.filter(a=>!alarmKnown.has(a.key)&&Date.now()-a.t<10*60e3);list.forEach(a=>alarmKnown.add(a.key));
+  if(!fresh.length)return;const plain=fresh[0].text.replace(/<[^>]+>/g,"");
+  toast(`알림 · ${plain}`);
+  try{if("Notification" in window&&Notification.permission==="granted"&&document.hidden)new Notification("무림행",{body:plain+(fresh.length>1?` 외 ${fresh.length-1}건`:""),tag:"murim-"+fresh[0].key})}catch(e){}
+}
+async function askNotify(){try{const p=await Notification.requestPermission();toast(p==="granted"?"이 기기에서 알림을 받습니다. (화면이 열려 있을 때)":"알림이 꺼져 있어요. 브라우저 설정에서 켤 수 있어요.");render()}catch(e){toast("이 브라우저는 알림을 지원하지 않아요.")}}
+function alarmTab(){
+  const list=alarmsForMe(),seen=me.alarmSeen||0;
+  const canN="Notification" in window,perm=canN?Notification.permission:"none";
+  const rows=list.length?list.map(a=>`<div class="alarm ${a.t>seen?"new":""}"><span class="aic">${a.icon}</span><div><p>${a.text}</p><span class="note" style="margin:0">${a.t?hhmm(a.t):""}</span>
+      ${a.btn.length?`<div class="row" style="margin-top:6px">${a.btn.map(([l,at])=>`<button class="btn sm ${at.startsWith("data-atab")?"ghost":"sealb"}" type="button" ${at}>${l}</button>`).join("")}</div>`:""}</div></div>`).join("")
+    :`<p class="empty">새 소식이 없다.</p>`;
+  return `<section><div class="label">알림</div>
+    ${mode==="db"&&canN&&perm!=="granted"?`<div class="row" style="margin-bottom:10px"><button class="btn sm" type="button" id="notifyBtn" ${perm==="denied"?"disabled":""}>이 기기 알림 켜기</button><span class="note" style="margin:0">${perm==="denied"?"브라우저 설정에서 알림이 막혀 있다.":"창을 다른 데 둬도 알림이 뜬다. (무림행 창이 열려 있을 때만)"}</span></div>`:""}
+    ${rows}<p class="note">무리 부르기, 소굴 초대, 관문 도움 요청, 우편, 관계 청함, 선물이 여기에 모인다. 부르기는 3시간 뒤에 사라진다.</p></section>`;
+}
+function bindAlarm(){
+  document.querySelectorAll("[data-ago]").forEach(b=>b.addEventListener("click",()=>{const to=b.dataset.ago;
+    if(!activity(me)&&roadHours(me.loc,to)){startTravel(to);tab="world";render()}else{dest=to;tab="world";render();if(activity(me))toast(`${busyText[activity(me)]} 지금은 떠날 수 없습니다.`);else toast("바로 가는 길이 없어요. 지도에서 길을 확인해 주세요.")}}));
+  document.querySelectorAll("[data-atab]").forEach(b=>b.addEventListener("click",()=>{tab=b.dataset.atab;try{localStorage.setItem("murim-tab",tab)}catch(e){}render()}));
+  document.querySelectorAll("[data-cojoin]").forEach(b=>b.addEventListener("click",async()=>{await coJoin(b.dataset.cojoin);tab="raid";render()}));
+  document.querySelectorAll("[data-callgo]").forEach(b=>b.addEventListener("click",()=>sendCall("go",{reg:b.dataset.callgo})));
+  on("#callRaid",()=>{const B=bossFor(periodNow());sendCall("raid",{reg:B.region,boss:B.n})});
+  document.querySelectorAll("[data-callgate]").forEach(b=>b.addEventListener("click",()=>{const r=myRoom();if(r)sendCall("gate",{room:r.id},b.dataset.callgate==="all")}));
+  on("#notifyBtn",askNotify);
+  if(tab==="alarm"&&me&&mode==="db"&&!render.alarmSeenT){const top=alarmsForMe().reduce((a,x)=>Math.max(a,x.t),0);
+    if(top>(me.alarmSeen||0))render.alarmSeenT=setTimeout(()=>{render.alarmSeenT=null;const h=structuredClone(me);h.alarmSeen=top;save(h)},2500)}
+  checkAlarms();
 }
 
 
@@ -2104,8 +2173,8 @@ function introView(){
 function heroView(){
   const h=me,s=SECTS[h.sect],r=REALMS[h.realm],next=REALMS[h.realm+1],wall=atWall(h);
   const pct=Math.min(100,h.exp/need(h.level)*100);
-  const tabs=[["train","수련"],["world","강호"],["raid","토벌"],["gate","관문"],["self","인물"],["gear","장비"],["mates","인연"],["mail","우편"]];
-  const dot={mail:mode==="db"&&mailUnread()>0,train:h.training&&Date.now()>=h.training.end,world:(h.travel&&Date.now()>=h.travel.end)||(h.mission&&(h.mission.phase==="scene"||Date.now()>=h.mission.end)),self:h.points>0||!!postOffer(h),mates:giftsToMe().some(g=>g.t>(h.seenGift||0))||others.some(o=>{const B=bondOf(o._id,myId()),A=bondOf(myId(),o._id);return (B.want&&B.want!=="지인"&&B.want!==A.want)||false})||partyCallsForMe().length>0,gate:(()=>{const r=myRoom();if(r&&r.status==="fight"){const m=r.party.find(x=>x.id===myId());return !!(m&&m.hp>0&&!playerReady(r,m))}if(r&&(r.status==="win"||r.status==="fail")&&!h.gateDone?.[r.id])return true;return atWall(h)&&!!GATES[h.realm+1]?.ready&&!r})(),raid:(()=>{const st=raidState(periodNow());if(coInvitesForMe().length&&!h.colair)return true;if(h.colair)return true;if(h.lair&&h.lair.phase!=="done")return true;return st.down&&h.raid?.period===periodNow()&&!h.raid.claimed})()};
+  const tabs=[["train","수련"],["world","강호"],["raid","토벌"],["gate","관문"],["self","인물"],["gear","장비"],["alarm","알림"],["mates","인연"],["mail","우편"]];
+  const dot={alarm:mode==="db"&&alarmUnread()>0,mail:mode==="db"&&mailUnread()>0,train:h.training&&Date.now()>=h.training.end,world:(h.travel&&Date.now()>=h.travel.end)||(h.mission&&(h.mission.phase==="scene"||Date.now()>=h.mission.end)),self:h.points>0||!!postOffer(h),mates:giftsToMe().some(g=>g.t>(h.seenGift||0))||others.some(o=>{const B=bondOf(o._id,myId()),A=bondOf(myId(),o._id);return (B.want&&B.want!=="지인"&&B.want!==A.want)||false})||partyCallsForMe().length>0,gate:(()=>{const r=myRoom();if(r&&r.status==="fight"){const m=r.party.find(x=>x.id===myId());return !!(m&&m.hp>0&&!playerReady(r,m))}if(r&&(r.status==="win"||r.status==="fail")&&!h.gateDone?.[r.id])return true;return atWall(h)&&!!GATES[h.realm+1]?.ready&&!r})(),raid:(()=>{const st=raidState(periodNow());if(coInvitesForMe().length&&!h.colair)return true;if(h.colair)return true;if(h.lair&&h.lair.phase!=="done")return true;return st.down&&h.raid?.period===periodNow()&&!h.raid.claimed})()};
   return `<div>
   <section style="margin-top:8px">
     <div class="who"><button type="button" class="facebtn" data-go="self" aria-label="프로필 사진 바꾸기">${face(myId(),h.sect,"big")}</button>
@@ -2119,9 +2188,9 @@ function heroView(){
       :`<p>몸 안의 기운이 가득 찼다. <b>${next.n}</b>의 경지로 오를 수 있다.</p><button class="btn sealb" id="promoteBtn" type="button">${next.n}로 승급하기 · 포인트 +5</button>`}</div>`:""}
     ${bannerView()}
   </section>
-  ${mode==="db"&&tab!=="mail"&&mailUnread()?`<button class="mailnew" type="button" data-tab="mail">새 우편 ${mailUnread()}통이 와 있다 · 우편함 열기</button>`:""}
+  ${mode==="db"&&tab!=="alarm"&&alarmUnread()?`<button class="mailnew" type="button" data-tab="alarm">새 알림 ${alarmUnread()}개 · 알림 보기</button>`:""}
   <div class="tabs" role="tablist">${tabs.map(([k,n])=>`<button class="tab" role="tab" type="button" data-tab="${k}" aria-selected="${tab===k}">${n}${dot[k]?`<span class="dot" aria-label="확인할 것 있음"></span>`:""}</button>`).join("")}</div>
-  <div id="tabbody">${tab==="train"?trainTab():tab==="world"?worldTab():tab==="raid"?raidTab():tab==="gate"?gateTab():tab==="self"?selfTab():tab==="gear"?gearTab():tab==="mail"?mailTab():bondTab()}</div>
+  <div id="tabbody">${tab==="train"?trainTab():tab==="world"?worldTab():tab==="raid"?raidTab():tab==="gate"?gateTab():tab==="self"?selfTab():tab==="gear"?gearTab():tab==="mail"?mailTab():tab==="alarm"?alarmTab():bondTab()}</div>
   ${isOwner||mode==="local"?`<details class="tools"><summary>시험용 도구 (만드는 동안만 쓰고 나중에 없앱니다)</summary>
     <div class="row"><button class="btn ghost" id="stoneBtn" type="button">강화석 +20</button><button class="btn ghost" id="warpBtn" type="button">보스 지역으로 순간이동</button><button class="btn ghost" id="triesBtn" type="button">진입 횟수 초기화</button><button class="btn ghost" id="dropBtn" type="button">장비 하나 얻기</button><button class="btn ghost" id="horseBtn" type="button">말 얻기/놓아주기</button></div>
     <div class="row">${fakeOthers.length?`<button class="btn ghost" id="fakeUpBtn" type="button">백운 쪽 인연 +100</button>${["친우","사형제","연인"].map(r=>`<button class="btn ghost" type="button" data-fakerel="${r}">백운이 ${r} 청하기</button>`).join("")}<button class="btn ghost" id="fakePartyBtn" type="button">백운이 무리 부름 받기</button><button class="btn ghost" id="fakeDelBtn" type="button">가상 동료 내보내기</button>`:`<button class="btn ghost" id="fakeMateBtn" type="button">가상 동료 넣기 (이 기기에서만)</button>`}</div>
@@ -2204,7 +2273,7 @@ function worldTab(){
   if(!h.travel&&dest&&dest!==h.loc){
     const direct=hrsFor(h,roadHours(h.loc,dest)),lock=R.minRealm&&h.realm<R.minRealm;
     if(lock) regionBox+=`<p class="note">${REALMS[R.minRealm].n} 이상만 들어갈 수 있다.</p>`;
-    else if(direct) regionBox+=`<div class="row" style="margin-top:6px"><button class="btn solid" id="goBtn" type="button" ${a?"disabled":""}>${R.n}로 떠나기 · ${hrsTxt(direct)}${h.horse?" (말 -30%)":""}</button>${a?`<span class="note" style="margin:0">${busyText[a]} 떠날 수 없다.</span>`:""}</div>`;
+    else if(direct) regionBox+=`<div class="row" style="margin-top:6px"><button class="btn solid" id="goBtn" type="button" ${a?"disabled":""}>${R.n}로 떠나기 · ${hrsTxt(direct)}${h.horse?" (말 -30%)":""}</button>${realMates().length?`<button class="btn ghost" type="button" data-callgo="${dest}">무리에게 같이 가자고 하기</button>`:""}${a?`<span class="note" style="margin:0">${busyText[a]} 떠날 수 없다.</span>`:""}</div>`;
     else{const rt=route(h.loc,dest);regionBox+=`<p class="note">바로 가는 길이 없다. ${rt.path.map(p=>REGIONS[p].n).join(" → ")} (모두 ${hrsTxt(hrsFor(h,rt.hours))}) 순으로 한 곳씩 이동해야 한다.</p>`}
   }
   regionBox+=(focus===h.loc?regionSectBox(focus):"")+`</div>`;
@@ -2367,7 +2436,7 @@ function bind(){
   on("#herbBtn",useHerb); on("#retBtn",()=>{retreatConfirm=true;render()}); on("#retNo",()=>{retreatConfirm=false;render()}); on("#retYes",retreat); on("#leaveBtn",leaveLair);
   on("#toBossBtn",()=>{dest=bossFor(periodNow()).region;tab="world";try{localStorage.setItem("murim-tab",tab)}catch(e){};render()});
   document.querySelectorAll('input[name="rrole"]').forEach(i=>i.addEventListener("change",()=>{raidRole=i.value;render()}));
-  bindMail();
+  bindMail(); bindAlarm();
   on("#horseBtn",()=>{const h=structuredClone(me);h.horse=h.horse?null:{n:"적토",t:Date.now()};save(h);toast(h.horse?"말을 얻었습니다.":"말을 놓아주었습니다.")});
   on("#stoneBtn",()=>{const h=structuredClone(me);h.items.stone+=20;save(h)});
   on("#dropBtn",()=>{const h=structuredClone(me);const it=Math.random()<.2?makeItem("weapon",h.realm,null,{sect:h.sect}):makeItem(pickOne(["weapon","armor","acc"]),h.realm,pickOne(["tank","dps","heal"]));toast("얻음: "+gainItem(h,it));save(h)});
@@ -2745,5 +2814,22 @@ addEventListener("murim-ready",()=>{
   setInterval(()=>{ensure();if(box.hidden)paint()},5000);
   paint();
 });
+
+/* 새 판 알림: 올라가 있는 index.html 의 판 번호가 지금 화면과 다르면 아래에 안내를 띄운다 */
+(()=>{
+  const mine=document.querySelector('meta[name="murim-build"]')?.content;if(!mine)return;
+  const bar=document.createElement("div");bar.className="newver";bar.hidden=true;bar.setAttribute("role","status");
+  bar.innerHTML=`<span>새로운 무림을 불러옵니다. 새로고침을 부탁드립니다.</span><button type="button">새로고침</button>`;
+  bar.querySelector("button").onclick=()=>location.reload();
+  const st=document.createElement("style");st.textContent=`.newver{position:fixed;left:16px;right:16px;margin:0 auto;max-width:520px;justify-content:space-between;bottom:calc(132px + env(safe-area-inset-bottom,0px));z-index:60;display:flex;gap:12px;align-items:center;padding:10px 12px 10px 16px;background:var(--ink);color:var(--paper);font-size:14px;border-radius:2px;box-shadow:0 4px 18px rgba(0,0,0,.25)}
+  .newver[hidden]{display:none}.newver button{flex:none;font:inherit;font-size:13px;padding:5px 12px;background:var(--seal);color:#fff;border:0;border-radius:2px;cursor:pointer}`;
+  document.head.appendChild(st);document.body.appendChild(bar);
+  let last=0;
+  async function check(){if(Date.now()-last<60e3)return;last=Date.now();
+    try{const t=await (await fetch(location.pathname+"?v="+Date.now(),{cache:"no-store"})).text();
+      const m=t.match(/<meta name="murim-build" content="([^"]+)"/);if(m&&m[1]!==mine)bar.hidden=false}catch(e){}}
+  setInterval(check,5*60e3);addEventListener("visibilitychange",()=>{if(!document.hidden)check()});addEventListener("focus",check);
+  setTimeout(check,30e3);
+})();
 </script>
 </body></html>
