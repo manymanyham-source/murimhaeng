@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261023165359">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261023180102">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1528,7 +1528,7 @@ function alarmsForMe(){
   for(const o of others){if(!o._id||String(o._id).startsWith("fake-"))continue;
     for(const c of o.calls||[]){if(now-c.t>CALL_TTL||!(c.to||[]).some(x=>x===me_||x==="*"))continue;
       if(c.k==="go"){const R=REGIONS[c.reg];if(!R||me.loc===c.reg)continue;
-        out.push({key:"c"+o._id+c.id,t:c.t,who:o._id,icon:"行",text:`${josa(esc(o.name),"이")} <b>${R.n}</b>로 같이 가자고 한다.`,btn:[["함께 떠난다",`data-ago="${c.reg}"`]]})}
+        out.push({key:"c"+o._id+c.id,t:c.t,who:o._id,icon:"行",text:`${josa(esc(o.name),"이")} <b>${R.n}</b>로 같이 가자고 한다.`,btn:[["함께 떠난다",`data-ago="${c.reg}" data-awith="${o._id}"`]]})}
       if(c.k==="raid"){const R=REGIONS[c.reg];out.push({key:"c"+o._id+c.id,t:c.t,who:o._id,icon:"討",text:`${josa(esc(o.name),"이")} ${R?`<b>${R.n}</b>의 `:""}<b>${esc(c.boss||"보스")}</b> 토벌을 같이 가자고 한다.`,btn:[["토벌 탭 보기",`data-atab="raid"`]]})}
       if(c.k==="gate"){const r=gateRooms[c.room];if(!r||r.status!=="lobby")continue;const G=GATES[r.realm];
         out.push({key:"c"+o._id+c.id,t:c.t,who:o._id,icon:"關",text:`${josa(esc(o.name),"이")} <b>${G.title}</b>(${REGIONS[G.region].n} · ${G.boss})에 도우미를 청한다.`,btn:[["도우미로 합류",`data-join="${c.room}"`],["관문 탭 보기",`data-atab="gate"`]]})}}}
@@ -1564,7 +1564,7 @@ function alarmTab(){
 }
 function bindAlarm(){
   document.querySelectorAll("[data-ago]").forEach(b=>b.addEventListener("click",()=>{const to=b.dataset.ago;
-    if(!activity(me)&&roadHours(me.loc,to)){startTravel(to);tab="world";render()}else{dest=to;tab="world";render();if(activity(me))toast(`${busyText[activity(me)]} 지금은 떠날 수 없습니다.`);else toast("바로 가는 길이 없어요. 지도에서 길을 확인해 주세요.")}}));
+    if(!activity(me)&&roadHours(me.loc,to)){startTravel(to,b.dataset.awith);tab="world";render()}else{dest=to;tab="world";render();if(activity(me))toast(`${busyText[activity(me)]} 지금은 떠날 수 없습니다.`);else toast("바로 가는 길이 없어요. 지도에서 길을 확인해 주세요.")}}));
   document.querySelectorAll("[data-atab]").forEach(b=>b.addEventListener("click",()=>{tab=b.dataset.atab;try{localStorage.setItem("murim-tab",tab)}catch(e){}render()}));
   document.querySelectorAll("[data-cojoin]").forEach(b=>b.addEventListener("click",async()=>{await coJoin(b.dataset.cojoin);tab="raid";render()}));
   document.querySelectorAll("[data-callgo]").forEach(b=>b.addEventListener("click",()=>sendCall("go",{reg:b.dataset.callgo})));
@@ -1949,13 +1949,14 @@ function commitAlloc(){
 }
 
 /* ───────── 행동: 이동 ───────── */
-function startTravel(to){
-  const h=structuredClone(me),hrsNeed=hrsFor(h,roadHours(h.loc,to));
+function startTravel(to,withId){
+  const h=structuredClone(me),W=withId&&following(withId)?heroById(withId):null,ride=!h.horse&&W?.horse?W:null;
+  const hrsNeed=ride?hrsFor(ride,roadHours(h.loc,to)):hrsFor(h,roadHours(h.loc,to));
   if(activity(h)){toast(`${busyText[activity(h)]} 떠날 수 없습니다.`);return}
   if(!hrsNeed) return;
   const R=REGIONS[to]; if(R.minRealm&&h.realm<R.minRealm){toast(`${R.n}는 ${REALMS[R.minRealm].n} 이상만 들어갈 수 있습니다.`);return}
   const now=Date.now(); h.travel={from:h.loc,to,start:now,end:now+hrsNeed*3600e3};
-  addLog(h,`${REGIONS[h.loc].n}을 떠나 ${R.n}로 향한다.${h.horse?` (${josa(h.horse.n,"을")} 타고)`:""}`); dest=null; save(h);
+  addLog(h,`${REGIONS[h.loc].n}을 떠나 ${R.n}로 향한다.${h.horse?` (${josa(h.horse.n,"을")} 타고)`:ride?` (${josa(ride.name,"의")} 말 ${ride.horse.n}에 함께 올라)`:""}`); dest=null; save(h);
 }
 function arrive(){
   const h=structuredClone(me),t=h.travel; if(!t||Date.now()<t.end) return;
