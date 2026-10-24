@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261025001333">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261025003705">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1437,6 +1437,7 @@ function bondTab(){
         <div class="row" style="margin-top:8px">
           <select id="gp-${id}" data-gpick="${id}" aria-label="보낼 선물">${GIFTS.map(g=>`<option value="${g}" ${(giftPick[id]||"herb")===g?"selected":""}>${ITEMS[g][0]} (${me.items[g]}개 · 인연 +${GIFT_VAL[g]})</option>`).join("")}</select>
           <button class="btn sm" type="button" data-gift="${id}" ${giftDayLeft(me)<1?"disabled":""}>선물 보내기 · 오늘 ${giftDayLeft(me)}/3</button>
+          ${mode==="db"&&!String(id).startsWith("fake-")?`<button class="btn sm ghost" type="button" data-duel="${id}" ${myDuel()||duelDayN(me)>=DUEL_DAY?"disabled":""}>논검 청하기</button>`:""}
           ${inP?`<span class="relb on">같은 무리</span>`:canCall?`<button class="btn sm ${called?"sealb":"ghost"}" type="button" data-pcall="${id}">${called?"부르는 중 · 거두기":"무리로 부르기"}</button>`:""}</div>
         ${canRel?(()=>{const mine=rel!=="지인"?(rel==="사제"?sajeRole(myId(),id):rel):null,editing=!mine||relPick[id];
           const opts=[["친우","친우"],["사형제","사형제"],["연인","연인"],["스승","제자로 받기"],["제자","사부로 모시기"]].filter(([r])=>r!==mine);
@@ -1448,7 +1449,8 @@ function bondTab(){
           :`<p class="note" style="margin:6px 0 0">인연이 각별(300)에 닿으면 친우·사형제·연인·사제 중 관계를 청할 수 있다.</p>`}
       </div>`}).join("");
   const giftList=gifts.length?`<ul class="log">${gifts.slice(0,10).map(g=>`<li class="${g.t>(me.seenGift||0)?"newg":""}"><time>${hhmm(g.t)}</time>${josa(esc(g.from),"이")} ${josa(ITEMS[g.item][0],"을")} 보냈다.</li>`).join("")}</ul>`:`<p class="empty">아직 받은 선물이 없다.</p>`;
-  return `${mode==="db"||others.length?partyBox():""}<section><div class="label">인연</div>${list}
+  const dl=myDuel();
+  return `${dl?duelView(dl):""}${duelInvitesForMe().length&&!dl?`<section>${duelInviteBox()}</section>`:""}${mode==="db"||others.length?partyBox():""}<section><div class="label">인연${mode==="db"?` · 논검 ${duelRecord(me)}`:""}</div>${list}
     <p class="note">인연은 같이 한 사건(+10), 함께한 토벌(+20), 관문(+30), 선물로 쌓인다. 두 사람이 쌓은 몫을 합쳐 단계가 정해진다.</p></section>
     <section class="grid2"><div><div class="label">받은 선물${newG?` · 새로 ${newG}`:""}</div>${giftList}</div>
     <div><div class="label">행적</div><ul class="log">${(me.log||[]).map(l=>`<li><time>${hhmm(l.t)}</time>${esc(l.text)}</li>`).join("")}</ul></div></section>`;
@@ -1554,6 +1556,7 @@ function alarmsForMe(){
       if(c.k==="gate"){const r=gateRooms[c.room];if(!r||r.status!=="lobby")continue;const G=GATES[r.realm];
         out.push({key:"c"+o._id+c.id,t:c.t,who:o._id,icon:"關",text:`${josa(esc(o.name),"이")} <b>${G.title}</b>(${REGIONS[G.region].n} · ${G.boss})에 도우미를 청한다.`,btn:[["도우미로 합류",`data-join="${c.room}"`],["관문 탭 보기",`data-atab="gate"`]]})}}}
   for(const r of coInvitesForMe()){const L=heroById(r.members[0]);out.push({key:"l"+r.id,t:r.start,who:r.members[0],icon:"窟",text:`${josa(esc(L?.name||"무리"),"이")} <b>${bossFor(r.period).n}의 소굴</b> 어귀에서 기다린다.`,btn:[["소굴에 들어간다",`data-cojoin="${r.id}"`]]})}
+  for(const d of duelInvitesForMe())out.push({key:"d"+d.id,t:d.t,who:d.a,icon:"劍",text:`${josa(esc(d.an),"이")} <b>논검비무</b>를 청했다.`,btn:[["받는다",`data-duelok="${d.id}"`],["사양한다",`data-duelno="${d.id}"`]]});
   for(const o of partyCallsForMe())out.push({key:"p"+o._id+(o.partyT||0),t:o.partyT||0,who:o._id,icon:"伴",text:`${josa(esc(o.name),"이")} 무리로 불렀다.`,btn:[["무리에 들어간다",`data-pjoin="${o._id}"`]]});
   for(const m of myMails())if(!mailGot(m.id)&&(hasGifts(m)||!(me.mailSeen>=m.t)))out.push({key:"m"+m.id,t:m.t,icon:"信",text:`우편 <b>「${esc(m.title)}」</b>${hasGifts(m)?" · 보상이 들어 있다":""}`,btn:[["우편함 열기",`data-atab="mail"`]]});
   for(const o of others){if(!o._id)continue;const B=bondOf(o._id,myId()),A=bondOf(myId(),o._id);
@@ -1650,7 +1653,10 @@ const TITLES=[
   {id:"b5",g:"인연",n:"입실제자",hint:"사부를 모신다",ok:h=>anyRel(h,"제자")},
   {id:"b6",g:"인연",n:"깊은 인연",hint:"누군가와 인연 600(깊은 인연)에 닿는다",ok:h=>others.some(o=>o._id&&!String(o._id).startsWith("fake-")&&bondTotal(myId(),o._id)>=600)},
   {id:"b7",g:"인연",n:"사인방",hint:"네 명이 꽉 찬 무리에 든다",ok:h=>myParty().length>=4},
-  {id:"b8",g:"인연",n:"인심 좋은 협객",hint:"선물을 10번 보낸다",ok:h=>cnt(h,"gift")>=10}];
+  {id:"b8",g:"인연",n:"인심 좋은 협객",hint:"선물을 10번 보낸다",ok:h=>cnt(h,"gift")>=10},
+  {id:"d1",g:"논검",n:"논검 첫 승",hint:"논검비무에서 처음 이긴다",ok:h=>cnt(h,"duelW")>=1},
+  {id:"d10",g:"논검",n:"검론의 달인",hint:"논검비무에서 10번 이긴다",ok:h=>cnt(h,"duelW")>=10},
+  {id:"d30",g:"논검",n:"검을 논하는 자",hint:"논검비무를 30번 겨룬다",ok:h=>cnt(h,"duelW")+cnt(h,"duelL")+cnt(h,"duelD")>=30}];
 const TITLE_BY=Object.fromEntries(TITLES.map(t=>[t.id,t]));
 const titleOf=h=>{const t=h?.title&&h.titles?.[h.title]&&TITLE_BY[h.title];return t?(t.show?t.show(h):t.n):""};
 const titled=h=>{const t=titleOf(h);return t?`<span class="ttl">〔${esc(t)}〕</span>`:""};
@@ -1672,6 +1678,118 @@ function titleSection(){
     ${groups.map(g=>`<div class="tgrp"><span class="kicker">${g}</span><div class="tlist">${TITLES.filter(t=>t.g===g).map(t=>{const has=!!own[t.id],on=h.title===t.id;
       return has?`<button type="button" class="tt ${on?"on":""}" data-title="${t.id}" title="${esc(t.hint)}"><b>${esc(t.show?t.show(h):t.n)}</b><span>${on?"달고 있음":esc(t.hint)}</span></button>`
         :`<div class="tt off"><b>？？？</b><span>${esc(t.hint)}</span></div>`}).join("")}</div></div>`).join("")}</section>`;
+}
+
+
+/* ───────── 논검비무: 수치는 똑같이, 승부는 고르는 수로 ─────────
+   duels/<번호> 한 판을 둘이 함께 본다. 매 합 각자 공격·방어·무공을 고르고(gateacts 에 dr/dt/da),
+   둘 다 고르거나 30초가 지나면 먼저 잠금을 얻은 쪽이 그 합을 풀어 기록한다.
+   상성: 방어는 공격을 막고 반격 / 무공은 방어를 깬다 / 공격은 무공보다 빠르다 */
+const DUEL_WAIT=30e3,DUEL_ROUNDS=5,DUEL_DAY=5,DUEL_COST=30;
+let duels={},duelBusy=false;
+const duelDayN=h=>h?.duelDay?.day===dayKey()?h.duelDay.n:0;
+const DUEL_FX={hwasan:"매화검법 · 이번 합 피해 +25%",sorim:"나한권 · 이번 합 받는 피해 -35%",ami:"회춘수 · 체력 12 회복",mudang:"태극권 · 받는 피해 -20%, 체력 6 회복",dang:"비도술 · 상대에게 두 합 동안 독(5)"};
+/* 능력치 총합은 버리고, 어떤 비율로 찍었는지만 성향으로 남긴다 */
+function duelBase(h){const st=h.stats||{nei:10,wai:10,shen:10},t=Math.max(1,st.nei+st.wai+st.shen);
+  return {hp:100,max:100,atk:Math.round(20*(.85+.45*st.wai/t)),eva:Math.round(3+18*st.shen/t),qi:0,qmax:Math.round(40+45*st.nei/t),poison:0,sect:h.sect,name:h.name}}
+const duelOf=id=>duels[id]||null;
+function myDuel(){if(!me)return null;const id=myId(),now=sNow();
+  return Object.values(duels).filter(d=>(d.a===id||d.b===id)&&!me.duelDone?.[d.id]&&(d.status==="fight"||(d.status==="done"&&now-(d.end||d.t)<24*3600e3)||(d.status==="invite"&&d.a===id&&now-d.t<10*60e3)))
+    .sort((x,y)=>y.t-x.t)[0]||null}
+const duelInvitesForMe=()=>Object.values(duels).filter(d=>d.b===myId()&&d.status==="invite"&&sNow()-d.t<10*60e3&&!me?.duelDone?.[d.id]);
+const DS={
+  async set(d){d.updated=sNow();duels[d.id]=structuredClone(d);if(mode==="db"){try{await db.doc("duels/"+d.id).set(JSON.parse(JSON.stringify(d)))}catch(e){toast("논검 기록에 실패했어요.")}}render()},
+  async get(id){if(mode!=="db")return structuredClone(duels[id]||null);const s=await db.doc("duels/"+id).get();return s.exists?structuredClone(s.data()):null},
+  async lease(id){if(mode!=="db")return true;try{return (await db.doc("duels/"+id).acquire({holder:uid,ttlMs:5000})).acquired}catch(e){return false}}};
+async function duelEdit(id,check,fn){if(duelBusy)return false;duelBusy=true;
+  try{if(!(await DS.lease(id)))return false;const f=await DS.get(id);if(!f||!check(f))return false;if(fn(f)===false)return false;await DS.set(f);return true}
+  finally{setTimeout(()=>duelBusy=false,300)}}
+function duelWhyNot(o){
+  if(mode!=="db")return "여럿이 함께 쓰는 강호에서만 할 수 있다.";
+  if(myDuel())return "이미 논검 중이다.";
+  if(duelDayN(me)>=DUEL_DAY)return `오늘은 논검을 ${DUEL_DAY}번 다 했다.`;
+  if(o&&duelDayN(o)>=DUEL_DAY)return `${o.name}은(는) 오늘 논검을 다 했다.`;
+  return null}
+function duelInvite(to){const o=heroById(to),why=duelWhyNot(o);if(!o)return;if(why){toast(why);return}
+  const id="d"+myId().replace(/[^A-Za-z0-9]/g,"").slice(-6)+Date.now().toString(36);
+  DS.set({id,a:myId(),b:to,an:me.name,bn:o.name,status:"invite",t:sNow(),round:0,log:[{k:"sec",x:"논검비무"},{k:"amb",x:`${josa(me.name,"이")} ${o.name}에게 검을 논하자고 청했다.`}]});
+  toast(`${o.name}에게 논검을 청했습니다.`)}
+async function duelAccept(id){const why=duelWhyNot();if(why&&!(why==="이미 논검 중이다."&&myDuel()?.id===id)){toast(why);return}
+  const ok=await duelEdit(id,f=>f.status==="invite"&&f.b===myId(),f=>{const A=heroById(f.a);if(!A)return false;
+    f.status="fight";f.round=1;f.deadline=sNow()+DUEL_WAIT;f.p={[f.a]:duelBase(A),[f.b]:duelBase(me)};
+    f.p[f.a].qi=f.p[f.a].qmax;f.p[f.b].qi=f.p[f.b].qmax;
+    f.log.push({k:"amb",x:`${josa(me.name,"이")} 검을 뽑아 들었다. 두 사람이 마주 선다.`},{k:"sec",x:"1합"})});
+  if(!ok)toast("이미 닫힌 논검이에요.")}
+async function duelDecline(id){await duelEdit(id,f=>f.status==="invite",f=>{f.status="closed";f.log.push({k:"end",x:"논검이 성사되지 않았다."})})}
+function duelChoose(act){const d=myDuel();if(!d||d.status!=="fight")return;GS.setAct({...myAct(),dr:d.id,dt:d.round,da:act})}
+const duelActOf=(d,id)=>{const a=(id===myId()?myAct():gateActs[id])||{};return a.dr===d.id&&a.dt===d.round?a.da:null};
+function maybeResolveDuel(){const d=myDuel();if(!d||d.status!=="fight"||duelBusy)return;
+  const both=duelActOf(d,d.a)&&duelActOf(d,d.b);if(!both&&sNow()<d.deadline)return;
+  const r=d.round;duelEdit(d.id,f=>f.status==="fight"&&f.round===r,f=>duelRound(f)).catch(()=>{})}
+function duelAuto(p){const r=Math.random();if(p.qi>=DUEL_COST&&r<.33)return "skill";return r<.66?"atk":"def"}
+function duelRound(f){
+  const ids=[f.a,f.b],P=f.p,act={},log=f.log,nm=id=>`\u0001${P[id].name}\u0002`;
+  ids.forEach(id=>{let a=duelActOf(f,id)||duelAuto(P[id]);if(a==="skill"&&P[id].qi<DUEL_COST)a="atk";act[id]=a});
+  const ACT_T={atk:"공격",def:"방어",skill:"무공"};
+  log.push({k:"amb",x:`${P[f.a].name}: ${ACT_T[act[f.a]]} · ${P[f.b].name}: ${ACT_T[act[f.b]]}`});
+  const dmg={[f.a]:0,[f.b]:0},cut={[f.a]:1,[f.b]:1},heal={[f.a]:0,[f.b]:0};
+  ids.forEach(id=>{if(act[id]==="skill"){P[id].qi-=DUEL_COST;const s=P[id].sect;if(s==="sorim")cut[id]*=.65;if(s==="mudang"){cut[id]*=.8;heal[id]+=6}if(s==="ami")heal[id]+=12}});
+  for(const x of ids){const y=x===f.a?f.b:f.a,X=act[x],Y=act[y],px=P[x],py=P[y];let m=0,line="";
+    if(X==="atk"){m=Y==="def"?.3:1;line=Y==="def"?`${josa(nm(x),"이")} 찔러 들어가지만 ${josa(nm(y),"이")} 막아 낸다`:Y==="skill"?`${josa(nm(x),"이")} 한발 빠르게 파고들어 ${nm(y)}의 초식을 끊는다`:`${josa(nm(x),"과")} ${josa(nm(y),"이")} 정면으로 부딪친다`}
+    else if(X==="skill"){m=Y==="def"?1.6:Y==="atk"?.5:1.3;line=Y==="def"?`${nm(x)}의 ${SKILL_NAME[px.sect]}! ${nm(y)}의 방어가 깨진다`:Y==="atk"?`${nm(x)}의 ${josa(SKILL_NAME[px.sect],"이")} 펼쳐지다 끊긴다`:`${nm(x)}의 ${josa(SKILL_NAME[px.sect],"이")} 맞부딪친다`;
+      if(px.sect==="dang"&&Y!=="atk"){py.poison=2}}
+    else{m=Y==="atk"?.6:0;line=Y==="atk"?`${josa(nm(x),"이")} 흘려 내고 되받아친다`:Y==="def"?`${josa(nm(x),"이")} 자세를 낮추고 기를 고른다`:""}
+    if(!m){if(line)log.push({k:"ev2",sub:"act",x:line});continue}
+    if(X!=="def"&&Y!=="def"&&Math.random()*100<py.eva){log.push({k:"ev2",sub:"act",x:`${line} — ${josa(nm(y),"이")} 몸을 틀어 흘려냈다!`});continue}
+    let d=px.atk*m*(.9+Math.random()*.2);if(X==="skill"&&px.sect==="hwasan"&&Y!=="atk")d*=1.25;d=Math.max(1,Math.round(d*cut[y]));dmg[y]+=d;
+    log.push({k:"ev2",sub:"hit",x:`${line} · ${nm(y)} -${d}`})}
+  ids.forEach(id=>{const p=P[id];p.hp=Math.max(0,Math.min(p.max,p.hp-dmg[id]+heal[id]));if(heal[id]&&p.hp>0)log.push({k:"ev2",sub:"act",x:`${nm(id)} 체력 +${heal[id]}`});
+    if(p.poison>0&&p.hp>0){p.hp=Math.max(0,p.hp-5);p.poison--;log.push({k:"ev2",sub:"hit",x:`${nm(id)} 독 -5`})}
+    p.qi=Math.min(p.qmax,p.qi+10)});
+  if(act[f.a]==="def"&&act[f.b]==="def")ids.forEach(id=>P[id].qi=Math.min(P[id].qmax,P[id].qi+15));
+  if(f.round>=2&&Math.random()<.35){const rel=relMutual(f.a,f.b),x=pickOne(ids),pool=DUEL_TALK[rel]||DUEL_TALK.지인;log.push({k:"comp",x:fill(pickOne(pool),{a:nm(x)})})}
+  log.push({k:"amb",x:`${P[f.a].name} ${P[f.a].hp} · ${P[f.b].name} ${P[f.b].hp}`});
+  const ko=ids.filter(id=>P[id].hp<=0);
+  if(ko.length||f.round>=DUEL_ROUNDS){f.status="done";f.end=sNow();
+    const ha=P[f.a].hp,hb=P[f.b].hp;f.winner=ha===hb?null:ha>hb?f.a:f.b;
+    log.push({k:"sec",x:"승부"},{k:"end",x:f.winner?`${josa(P[f.winner].name,"이")} 한 수 위였다.${ko.length?" 상대가 검을 떨어뜨렸다.":""}`:"우열을 가리지 못했다. 두 사람이 웃으며 검을 거둔다."});return}
+  f.round++;f.deadline=sNow()+DUEL_WAIT;log.push({k:"sec",x:`${f.round}합`});if(f.log.length>120)f.log=f.log.slice(-120);
+}
+const DUEL_TALK={지인:["{a|이} \"제법이군.\" 하고 짧게 웃는다.","{a|이} 숨을 고르며 상대의 검끝을 노려본다."],
+  친우:["{a|이} \"봐주지 않는다!\" 하며 이를 드러내고 웃는다.","{a|이} \"오늘은 내가 이긴다니까.\" 하고 장난스레 외친다."],
+  사형제:["{a|이} \"사문의 이름을 걸고!\" 하고 자세를 바로잡는다.","{a|이} \"사형, 그 초식은 이미 읽었습니다.\" 하고 웃는다."],
+  연인:["{a|이} 검을 겨누면서도 눈가가 웃고 있다.","{a|이} \"다치지 마.\" 하고 낮게 말한다."],
+  사제:["{a|이} \"그래, 그렇게 하는 것이다!\" 하고 외친다.","{a|이} \"아직 가르칠 게 많구나.\" 하고 미소 짓는다."]};
+function duelClaim(){const d=myDuel();if(!d||d.status!=="done")return;const h=structuredClone(me),other=d.a===myId()?d.b:d.a,on=d.a===myId()?d.bn:d.an;
+  h.duelDone=Object.fromEntries(Object.entries({...(h.duelDone||{}),[d.id]:Date.now()}).sort((a,b)=>b[1]-a[1]).slice(0,20));
+  h.duelDay={day:dayKey(),n:duelDayN(h)+1};const res=!d.winner?"D":d.winner===myId()?"W":"L";bump(h,"duel"+res);
+  const v=addBond(h,other,10);
+  h.journal=[{title:`논검 · ${on}`,region:h.loc,start:d.t,tier:1,label:res==="W"?"승":res==="L"?"패":"무승부",lines:d.log.map((l,i)=>({...l,t:d.t+i}))},...(h.journal||[])].slice(0,10);
+  addLog(h,`${josa(on,"과")} 논검: ${res==="W"?"승":res==="L"?"패":"무승부"} (인연 +${v})`);save(h);toast(res==="W"?"논검에서 이겼습니다!":res==="L"?"논검에서 졌습니다.":"비겼습니다.")}
+function duelRecord(h){return `${cnt(h,"duelW")}승 ${cnt(h,"duelL")}패${cnt(h,"duelD")?` ${cnt(h,"duelD")}무`:""}`}
+function duelView(d){
+  const me_=myId(),other=d.a===me_?d.b:d.a,on=d.a===me_?d.bn:d.an;
+  if(d.status==="invite")return `<section><div class="label">논검비무</div><div class="wall"><p><b>${esc(on)}</b>의 대답을 기다리는 중이다. (10분 안에 받지 않으면 사라진다)</p><button class="btn ghost sm" type="button" data-duelno="${d.id}">청한 것 거두기</button></div></section>`;
+  const P=d.p||{},mine=P[me_],his=P[other],a=myAct(),chosen=a.dr===d.id&&a.dt===d.round?a.da:null,hisReady=!!duelActOf(d,other);
+  const card=(id,p)=>`<div class="lp ${p.hp<=0?"dead":""}">${face(id,p.sect,"sm")}<div><b>${esc(p.name)}${id===me_?" (나)":""}</b><span>체력 ${p.hp}/${p.max} · 기력 ${p.qi}/${p.qmax}${p.poison?" · 중독":""}${d.status==="fight"&&id===other?` · ${hisReady?"골랐다":"고르는 중"}`:""}</span><div class="hpb"><i style="width:${p.hp/p.max*100}%"></i></div></div></div>`;
+  const feed=`<div class="feedwrap" style="margin:14px -18px 0"><ul class="feed" id="duelFeed">${d.log.map(battleLine).join("")}</ul></div>`;
+  let ctl="";
+  if(d.status==="fight"){const btn=(k,t,sub,dis)=>`<button class="opt ${chosen===k?"chosen":""}" type="button" data-duelact="${k}" ${dis?"disabled":""}><b>${t}</b><span>${sub}</span>${chosen===k?"<small>골랐다</small>":""}</button>`;
+    ctl=`<div class="row" style="justify-content:space-between;margin:10px 0"><span class="note" style="margin:0">${d.round}/${DUEL_ROUNDS}합 · <span data-suntil="${d.deadline}"></span> 뒤 자동 진행</span></div>
+      <div class="acts3">${btn("atk","공격","무공보다 빠르다 · 방어에 막힌다")}${btn("def","방어","공격을 막고 반격 · 무공에 깨진다")}${btn("skill",SKILL_NAME[mine.sect],`방어를 깬다 · 기력 ${DUEL_COST} · ${DUEL_FX[mine.sect]}`,mine.qi<DUEL_COST)}</div>
+      <p class="note">둘 다 고르면 바로 다음 합. 수치는 둘이 똑같고, 능력치 비율만 성향으로 남는다 (외공→공격, 신법→회피, 내공→기력).</p>`}
+  else ctl=`<div class="wall"><p>${!d.winner?"무승부.":d.winner===me_?"<b>이겼다!</b>":"<b>졌다.</b>"} 서로 인연 +10.</p><button class="btn sealb" type="button" id="duelClaim">논검을 마친다</button></div>`;
+  return `<section><div class="label">논검비무 · ${esc(on)}</div><div class="lparty">${mine?card(me_,mine):""}${his?card(other,his):""}</div>${ctl}${feed}</section>`;
+}
+function duelInviteBox(){return duelInvitesForMe().map(d=>`<div class="wall" style="margin-bottom:12px"><p><b>${esc(d.an)}</b>${josa(d.an,"이").slice(d.an.length)} 논검을 청했다. 수치는 똑같이 맞춰 5합을 겨룬다.</p>
+  <div class="row"><button class="btn sm sealb" type="button" data-duelok="${d.id}">받는다</button><button class="btn sm ghost" type="button" data-duelno="${d.id}">사양한다</button></div></div>`).join("")}
+function bindDuel(){
+  document.querySelectorAll("[data-duel]").forEach(b=>b.addEventListener("click",()=>duelInvite(b.dataset.duel)));
+  document.querySelectorAll("[data-duelok]").forEach(b=>b.addEventListener("click",async()=>{await duelAccept(b.dataset.duelok);tab="mates";render()}));
+  document.querySelectorAll("[data-duelno]").forEach(b=>b.addEventListener("click",()=>duelDecline(b.dataset.duelno)));
+  document.querySelectorAll("[data-duelact]").forEach(b=>b.addEventListener("click",()=>duelChoose(b.dataset.duelact)));
+  on("#duelClaim",duelClaim);
+  const f=$("#duelFeed");if(f)f.scrollTop=f.scrollHeight;
 }
 
 
@@ -2325,7 +2443,7 @@ function heroView(){
   const h=me,s=SECTS[h.sect],r=REALMS[h.realm],next=REALMS[h.realm+1],wall=atWall(h);
   const pct=Math.min(100,h.exp/need(h.level)*100);
   const tabs=[["train","수련"],["world","강호"],["raid","토벌"],["gate","관문"],["self","인물"],["gear","장비"],["alarm","알림"],["mates","인연"],["mail","우편"]];
-  const dot={alarm:mode==="db"&&alarmUnread()>0,mail:mode==="db"&&mailUnread()>0,train:h.training&&Date.now()>=h.training.end,world:(h.travel&&Date.now()>=h.travel.end)||(h.mission&&(h.mission.phase==="scene"||Date.now()>=h.mission.end)),self:h.points>0||!!postOffer(h),mates:giftsToMe().some(g=>g.t>(h.seenGift||0))||others.some(o=>{const B=bondOf(o._id,myId()),A=bondOf(myId(),o._id);return (B.want&&B.want!=="지인"&&!relMatch(B.want,A.want)&&relNorm(B.want)!==relMutual(myId(),o._id))||false})||partyCallsForMe().length>0,gate:(()=>{const r=myRoom();if(r&&r.status==="fight"){const m=r.party.find(x=>x.id===myId());return !!(m&&m.hp>0&&!playerReady(r,m))}if(r&&(r.status==="win"||r.status==="fail")&&!h.gateDone?.[r.id])return true;return atWall(h)&&!!GATES[h.realm+1]?.ready&&!r})(),raid:(()=>{const st=raidState(periodNow());if(coInvitesForMe().length&&!h.colair)return true;if(h.colair)return true;if(h.lair&&h.lair.phase!=="done")return true;return st.down&&h.raid?.period===periodNow()&&!h.raid.claimed})()};
+  const dot={alarm:mode==="db"&&alarmUnread()>0,mail:mode==="db"&&mailUnread()>0,train:h.training&&Date.now()>=h.training.end,world:(h.travel&&Date.now()>=h.travel.end)||(h.mission&&(h.mission.phase==="scene"||Date.now()>=h.mission.end)),self:h.points>0||!!postOffer(h),mates:giftsToMe().some(g=>g.t>(h.seenGift||0))||others.some(o=>{const B=bondOf(o._id,myId()),A=bondOf(myId(),o._id);return (B.want&&B.want!=="지인"&&!relMatch(B.want,A.want)&&relNorm(B.want)!==relMutual(myId(),o._id))||false})||partyCallsForMe().length>0||duelInvitesForMe().length>0||(()=>{const d=myDuel();return !!d&&(d.status==="done"||(d.status==="fight"&&!duelActOf(d,myId())))})(),gate:(()=>{const r=myRoom();if(r&&r.status==="fight"){const m=r.party.find(x=>x.id===myId());return !!(m&&m.hp>0&&!playerReady(r,m))}if(r&&(r.status==="win"||r.status==="fail")&&!h.gateDone?.[r.id])return true;return atWall(h)&&!!GATES[h.realm+1]?.ready&&!r})(),raid:(()=>{const st=raidState(periodNow());if(coInvitesForMe().length&&!h.colair)return true;if(h.colair)return true;if(h.lair&&h.lair.phase!=="done")return true;return st.down&&h.raid?.period===periodNow()&&!h.raid.claimed})()};
   return `<div>
   <section style="margin-top:8px">
     <div class="who"><button type="button" class="facebtn" data-go="self" aria-label="프로필 사진 바꾸기">${face(myId(),h.sect,"big")}</button>
@@ -2339,6 +2457,7 @@ function heroView(){
       :`<p>몸 안의 기운이 가득 찼다. <b>${next.n}</b>의 경지로 오를 수 있다.</p><button class="btn sealb" id="promoteBtn" type="button">${next.n}로 승급하기 · 포인트 +5</button>`}</div>`:""}
     ${bannerView()}
   </section>
+  ${mode==="db"&&tab!=="mates"&&myDuel()?.status==="fight"?`<button class="mailnew" type="button" data-tab="mates">논검 중이다 · ${myDuel().round}합 · 보러 가기</button>`:""}
   ${mode==="db"&&tab!=="alarm"&&alarmUnread()?`<button class="mailnew" type="button" data-tab="alarm">새 알림 ${alarmUnread()}개 · 알림 보기</button>`:""}
   <div class="tabs" role="tablist">${tabs.map(([k,n])=>`<button class="tab" role="tab" type="button" data-tab="${k}" aria-selected="${tab===k}">${n}${dot[k]?`<span class="dot" aria-label="확인할 것 있음"></span>`:""}</button>`).join("")}</div>
   <div id="tabbody">${tab==="train"?trainTab():tab==="world"?worldTab():tab==="raid"?raidTab():tab==="gate"?gateTab():tab==="self"?selfTab():tab==="gear"?gearTab():tab==="mail"?mailTab():tab==="alarm"?alarmTab():bondTab()}</div>
@@ -2589,7 +2708,7 @@ function bind(){
   on("#herbBtn",useHerb); on("#retBtn",()=>{retreatConfirm=true;render()}); on("#retNo",()=>{retreatConfirm=false;render()}); on("#retYes",retreat); on("#leaveBtn",leaveLair);
   on("#toBossBtn",()=>{dest=bossFor(periodNow()).region;tab="world";try{localStorage.setItem("murim-tab",tab)}catch(e){};render()});
   document.querySelectorAll('input[name="rrole"]').forEach(i=>i.addEventListener("change",()=>{raidRole=i.value;render()}));
-  bindMail(); bindAlarm();
+  bindMail(); bindAlarm(); bindDuel();
   on("#horseBtn",()=>{const h=structuredClone(me);h.horse=h.horse?null:{n:"적토",t:Date.now()};save(h);toast(h.horse?"말을 얻었습니다.":"말을 놓아주었습니다.")});
   on("#stoneBtn",()=>{const h=structuredClone(me);h.items.stone+=20;save(h)});
   on("#dropBtn",()=>{const h=structuredClone(me);const it=Math.random()<.2?makeItem("weapon",h.realm,null,{sect:h.sect}):makeItem(pickOne(["weapon","armor","acc"]),h.realm,pickOne(["tank","dps","heal"]));toast("얻음: "+gainItem(h,it));save(h)});
@@ -2613,7 +2732,7 @@ function curPhase(){
   return me?[e(me.training),e(me.travel),e(me.mission),fc,...others.map(o=>e(o.training)+e(o.travel))].join(""):"";
 }
 function tick(){
-  maybeResolve();maybeResolveLair();
+  maybeResolve();maybeResolveLair();try{maybeResolveDuel()}catch(e){}
   if(!me) return;
   const k=curPhase(); if(k!==phaseKey){phaseKey=k;render();return}
   const now=Date.now();
@@ -2673,12 +2792,13 @@ async function boot(){
   if(!d||!id){startLocal();return}
   db=d;uid=id;mode="db";isOwner=await u.isOwner();
   try{const js=await db.doc("journals/"+uid).get();if(js.exists){journalCache=js.data().list||[];lastJournal=JSON.stringify(journalCache)}}catch(e){}
+  db.collection("duels").onSnapshot(snap=>{duels={};snap.docs.forEach(d=>{if(d.exists)duels[d.id]=structuredClone(d.data())});if(ready)render();maybeResolveDuel()},()=>{});
   db.collection("mail").onSnapshot(snap=>{mails={};snap.docs.forEach(d=>{if(d.exists)mails[d.id]=structuredClone(d.data())});if(ready)render()},()=>{});
   db.collection("avatars").onSnapshot(snap=>{avatars={};snap.docs.forEach(d=>{if(d.exists)avatars[d.id]=d.data().img});if(ready)render()},()=>{});
   db.collection("lairs").onSnapshot(snap=>{lairRuns={};snap.docs.forEach(d=>{if(d.exists)lairRuns[d.id]=structuredClone(d.data())});if(ready)render();maybeResolveLair()},()=>{});
   db.collection("gates").onSnapshot(snap=>{gateRooms={};snap.docs.forEach(d=>{if(d.exists)gateRooms[d.id]=structuredClone(d.data())});if(ready)render();maybeResolve()},()=>{});
   db.collection("gateacts").onSnapshot(snap=>{const mine=gateActs[uid];gateActs={};snap.docs.forEach(d=>{if(d.exists)gateActs[d.id]=structuredClone(d.data())});
-    if(mine&&(!gateActs[uid]||(gateActs[uid].t||0)<(mine.t||0)))gateActs[uid]=mine;if(ready)render();maybeResolve();maybeResolveLair()},()=>{});
+    if(mine&&(!gateActs[uid]||(gateActs[uid].t||0)<(mine.t||0)))gateActs[uid]=mine;if(ready)render();maybeResolve();maybeResolveLair();try{maybeResolveDuel()}catch(e){}},()=>{});
   db.collection("heroes").onSnapshot(snap=>{
     const mine=snap.docs.find(x=>x.id===uid);
     if(!(mine?.metadata?.hasPendingWrites)){me=mine?.exists?normalize(structuredClone(mine.data())):null;if(me){if(me.journal&&!journalCache)journalCache=me.journal;me.journal=journalCache||me.journal||[]}}
