@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261025003705">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261025011752">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -107,6 +107,11 @@ section{margin-top:30px}
 .tt b{font-family:var(--f-brush);font-size:16px;font-weight:normal}.tt span{font-size:11px;color:var(--ink-3);line-height:1.4}
 .tt.on{border-color:var(--seal)}.tt.on b{color:var(--seal)}
 .tt.off{cursor:default;opacity:.55;border-style:dashed}
+.diff{font-weight:bold}.diff.d0{color:#4f7a52}.diff.d1{color:var(--ink-2)}.diff.d2{color:var(--seal)}
+.case.done{opacity:.6}
+.notice .pin{font-size:11px;color:#fff;background:var(--seal);padding:1px 6px;border-radius:2px;margin-right:6px;vertical-align:2px;font-weight:normal}
+.notice.new .mailh b::after{content:"새";font-size:10px;color:var(--seal);border:1px solid var(--seal);border-radius:2px;padding:0 4px;margin-left:6px;vertical-align:2px;font-weight:normal}
+.notice .sig{text-align:right;font-family:var(--f-brush)}
 .mailnew{display:block;width:100%;margin:10px 0 0;padding:9px 12px;border:1px solid var(--seal);color:var(--seal);background:none;font:inherit;font-size:14px;text-align:left;border-radius:2px;cursor:pointer}
 .mailf label.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink);grid-column:1/-1}
 .chip{position:relative}
@@ -474,7 +479,11 @@ const INC={
   {t:"숭산 기슭의 부상자",i:"소림사로 오르는 길목에 피투성이 행인이 쓰러져 있다. 숨은 붙어 있지만 상처가 심상치 않다.",
    s:[{q:"행인의 상처에 검푸른 기운이 맴돈다.",o:[["nei","상처에 남은 기운을 읽어 내력을 짐작한다"],["wai","상처 깊이로 흉기의 종류를 가늠한다"],["shen","주변 숲을 재빨리 한 바퀴 훑는다"]]},
       {q:"바위 뒤에서 누군가 이쪽을 지켜보고 있다.",o:[["nei","모른 척 기를 모으며 상대가 먼저 움직이길 기다린다"],["wai","돌을 집어 바위째 날려버린다"],["shen","바람처럼 돌아 들어가 퇴로를 막는다"]]}],
-   f:"숲 속의 습격자",e:["습격자를 제압하고 행인을 소림사로 옮겼다. 마중 나온 혜원이 연신 합장한다.","습격자를 쫓아내고 행인을 무사히 산문까지 데려갔다.","습격자는 놓쳤지만 행인의 목숨은 건졌다."]}],
+   f:"숲 속의 습격자",e:["습격자를 제압하고 행인을 소림사로 옮겼다. 마중 나온 혜원이 연신 합장한다.","습격자를 쫓아내고 행인을 무사히 산문까지 데려갔다.","습격자는 놓쳤지만 행인의 목숨은 건졌다."]},
+  {t:"낙양 전장의 위조 은표",i:"낙양 큰 전장에 위조 은표가 돌기 시작했다. 진짜와 똑같아 장부를 맞추던 서기마저 속았다.",
+   s:[{q:"전장 주인이 위조 은표 한 장을 내민다.",o:[["nei","종이에 밴 먹 냄새와 기운을 차분히 가려낸다"],["wai","인장 자국을 손끝으로 눌러 깊이를 잰다"],["shen","은표를 바꿔 간 손님의 뒤를 재빨리 밟는다"]]},
+      {q:"흔적이 성 남쪽 낡은 인쇄소로 이어진다.",o:[["nei","문밖에서 판목 두드리는 소리의 박자를 센다"],["wai","뒷문 빗장을 부수고 들이닥친다"],["shen","천장 들보 위로 올라 안을 내려다본다"]]}],
+   f:"위조단의 칼잡이",e:["위조단을 일망타진했다. 판목 뒷면에 검은 뱀 문양이 새겨져 있었다.","판목을 부수고 위조를 멈추게 했다. 전장 주인이 연신 고개를 숙인다.","위조단은 달아났지만 판목 몇 개는 거둬들였다."]}],
  shaanxi:[
   {t:"화산 산길의 검귀",i:"달 없는 밤마다 화산 오르는 길에 검을 든 그림자가 나타나 행인을 벤다는 소문이 돈다.",
    s:[{q:"베인 나뭇가지들이 길을 따라 늘어서 있다.",o:[["nei","베인 자리에 남은 검기의 결을 읽는다"],["wai","잘린 단면으로 검의 무게를 가늠한다"],["shen","가지가 떨어진 순서를 따라 산길을 거슬러 오른다"]]},
@@ -483,7 +492,11 @@ const INC={
   {t:"장안 시장의 가짜 보약",i:"장안 시장에서 먹으면 사흘을 앓는 보약이 팔린다. 약방 주인들이 서로를 의심하며 다툰다.",
    s:[{q:"쓰러진 손님 곁에 약 봉지가 떨어져 있다.",o:[["nei","약 냄새를 맡아 섞인 독을 가려낸다"],["wai","약재를 손으로 부숴 속을 확인한다"],["shen","시장을 돌며 같은 봉지를 든 사람을 찾는다"]]},
       {q:"약장수가 호위들을 데리고 골목으로 빠져나간다.",o:[["nei","기척을 숨기고 그들의 대화를 엿듣는다"],["wai","골목 입구를 막아선다"],["shen","지붕 위로 앞질러 간다"]]}],
-   f:"약장수의 호위",e:["약장수를 잡아 관아에 넘겼다. 가짜 약의 재료가 서역에서 왔다는 장부가 나왔다.","가짜 약 장사를 멈추게 했다. 시장이 조용해졌다.","약장수는 도망쳤지만 가짜 약은 모두 거둬들였다."]}],
+   f:"약장수의 호위",e:["약장수를 잡아 관아에 넘겼다. 가짜 약의 재료가 서역에서 왔다는 장부가 나왔다.","가짜 약 장사를 멈추게 했다. 시장이 조용해졌다.","약장수는 도망쳤지만 가짜 약은 모두 거둬들였다."]},
+  {t:"종남산의 끊긴 봉화",i:"종남산 봉화대의 불이 사흘째 꺼져 있다. 올라간 관병 셋이 돌아오지 않았다.",
+   s:[{q:"봉화대로 오르는 돌계단에 핏자국이 말라 붙어 있다.",o:[["nei","핏자국에 남은 기운으로 싸움의 때를 짐작한다"],["wai","무너진 돌난간을 들어 아래를 확인한다"],["shen","절벽을 타고 지름길로 먼저 올라간다"]]},
+      {q:"봉화대 안에서 낮은 웃음소리가 들린다.",o:[["nei","숨을 죽이고 안에 있는 사람 수를 가늠한다"],["wai","봉화대 문을 정면으로 걷어찬다"],["shen","연기 구멍으로 숨어 들어간다"]]}],
+   f:"봉화대를 차지한 마적",e:["마적을 물리치고 갇힌 관병들을 구했다. 다시 봉화가 올랐다.","마적을 쫓아내고 봉화를 다시 피웠다.","마적은 달아났고, 관병 하나만 겨우 데리고 내려왔다."]}],
  hubei:[
   {t:"무당산 기슭의 사라진 나무꾼",i:"무당산 아랫마을에서 나무꾼 셋이 연달아 돌아오지 않았다. 아이들은 산에 큰 고양이가 산다고 수군댄다.",
    s:[{q:"숲 어귀에 부러진 도끼 자루가 떨어져 있다.",o:[["nei","숲에 감도는 기운이 이상한지 살핀다"],["wai","쓰러진 나무들을 밀어 길을 낸다"],["shen","나무 위로 올라 멀리까지 내려다본다"]]},
@@ -492,7 +505,11 @@ const INC={
   {t:"울리지 않는 산사의 종",i:"무당산 중턱 작은 산사의 저녁 종이 사흘째 울리지 않는다. 송하가 '스님이 늦잠 주무시나?' 하며 고개를 갸웃한다.",
    s:[{q:"산사 문이 반쯤 열려 있고 안은 고요하다.",o:[["nei","향 냄새에 섞인 낯선 기운을 맡는다"],["wai","무너진 담장을 들춰 흔적을 찾는다"],["shen","재빨리 법당과 요사채를 돌아본다"]]},
       {q:"종루 위에서 낯선 웃음소리가 들린다.",o:[["nei","종을 향해 내공을 실어 크게 울린다"],["wai","종루 기둥을 흔들어 놈들을 떨어뜨린다"],["shen","처마를 밟고 종루로 뛰어오른다"]]}],
-   f:"산적 무리",e:["산적을 몰아내고 묶여 있던 스님들을 풀어주었다. 다시 저녁 종이 울린다.","산적을 쫓아내고 산사를 되찾았다.","산적은 흩어졌지만 종은 금이 가 버렸다."]}],
+   f:"산적 무리",e:["산적을 몰아내고 묶여 있던 스님들을 풀어주었다. 다시 저녁 종이 울린다.","산적을 쫓아내고 산사를 되찾았다.","산적은 흩어졌지만 종은 금이 가 버렸다."]},
+  {t:"한수의 뒤집힌 나룻배",i:"한수 나루에서 나룻배가 연달아 뒤집힌다. 사공들은 물속에서 누가 배를 잡아당긴다고 한다.",
+   s:[{q:"뒤집힌 배 밑바닥에 날카로운 긁힌 자국이 있다.",o:[["nei","물살에 섞인 기척을 읽는다"],["wai","배를 뒤집어 자국의 깊이를 확인한다"],["shen","물가 갈대숲을 따라 흔적을 쫓는다"]]},
+      {q:"상류 갈대밭에 작은 배 한 척이 숨겨져 있다.",o:[["nei","배 안의 숨소리를 가만히 듣는다"],["wai","배를 통째로 끌어낸다"],["shen","물 위 바위를 밟고 단숨에 건너간다"]]}],
+   f:"수적 두목",e:["수적을 붙잡고 빼앗긴 짐을 되찾았다. 나루에 다시 배가 오간다.","수적을 쫓아내자 배가 뒤집히는 일이 멎었다.","수적은 물속으로 사라졌다. 사공들이 당분간 조심하겠다고 한다."]}],
  sichuan:[
   {t:"독충이 퍼진 마을",i:"성도 외곽 마을에 독충이 들끓어 사람들이 앓아눕는다. 당소미가 '우리 집 독충 아니거든요!' 하고 발끈한다.",
    s:[{q:"앓는 사람들의 팔에 붉은 반점이 번져 있다.",o:[["nei","맥을 짚어 독의 성질을 가린다"],["wai","독충 하나를 잡아 직접 살펴본다"],["shen","독충이 모여드는 쪽으로 재빨리 따라간다"]]},
@@ -501,7 +518,11 @@ const INC={
   {t:"아미산 약초꾼의 부탁",i:"아미산 약초꾼이 귀한 설련화를 캐러 갔다가 도적에게 길을 막혔다며 도움을 청한다.",
    s:[{q:"약초꾼이 그려 준 지도가 엉망이다.",o:[["nei","산의 기운 흐름을 읽어 길을 짚는다"],["wai","지도 대신 산을 직접 오르며 길을 낸다"],["shen","지름길을 찾아 앞서 달려간다"]]},
       {q:"설련화 군락 앞에 도적들이 진을 쳤다.",o:[["nei","눈을 감고 도적들의 기척을 하나하나 헤아린다"],["wai","바위를 굴려 진을 흩뜨린다"],["shen","도적들 사이를 스치듯 지나 설련화부터 챙긴다"]]}],
-   f:"약초 도적",e:["도적을 물리치고 설련화를 넉넉히 캤다. 약초꾼이 한 포기를 선물로 내민다.","도적을 쫓고 약초꾼과 함께 무사히 내려왔다.","설련화 몇 포기만 겨우 건졌다."]}],
+   f:"약초 도적",e:["도적을 물리치고 설련화를 넉넉히 캤다. 약초꾼이 한 포기를 선물로 내민다.","도적을 쫓고 약초꾼과 함께 무사히 내려왔다.","설련화 몇 포기만 겨우 건졌다."]},
+  {t:"당가 비도의 행방",i:"사천당가의 비전 비도 한 벌이 사라졌다. 당가는 외부인을 의심하고, 성도는 술렁인다.",
+   s:[{q:"비도가 보관되던 방의 창틀에 미세한 가루가 묻어 있다.",o:[["nei","가루에 섞인 독기를 읽어 낸다"],["wai","창틀을 뜯어 숨겨진 틈을 찾는다"],["shen","지붕 위로 올라 빠져나간 길을 찾는다"]]},
+      {q:"성도 뒷골목 노름판에 당가 비도를 판다는 소문이 돈다.",o:[["nei","노름꾼들 사이에서 거짓말하는 자를 가려낸다"],["wai","판을 엎고 물건을 내놓으라 윽박지른다"],["shen","물건을 든 자가 빠져나갈 길목을 먼저 막는다"]]}],
+   f:"비도를 훔친 첩자",e:["첩자를 붙잡고 비도를 되찾았다. 당가 사람이 고개를 숙이며 고마움을 전한다. 첩자의 소매에서 마교의 표식이 나왔다.","비도를 되찾아 당가에 돌려주었다.","첩자는 놓쳤지만 비도 절반은 되찾았다."]}],
  shandong:[
   {t:"항구의 밀수선",i:"밤마다 불을 끈 배가 항구에 닿는다. 상인들은 무기가 오간다고 쑥덕인다.",
    s:[{q:"부두에 젖은 발자국과 끌린 자국이 있다.",o:[["nei","바다 냄새 사이로 쇠 냄새를 가려낸다"],["wai","끌린 자국으로 짐의 무게를 가늠한다"],["shen","발자국을 따라 창고 사이를 누빈다"]]},
@@ -510,7 +531,11 @@ const INC={
   {t:"태산 참배길의 소매치기",i:"태산에 오르는 참배객들의 전대가 자꾸 사라진다. 범인은 아이처럼 작고 날쌔다고 한다.",
    s:[{q:"인파가 가장 붐비는 돌계단이 보인다.",o:[["nei","사람들 사이 이질적인 기척 하나를 찾는다"],["wai","일부러 전대를 크게 드러내고 걷는다"],["shen","사람들 머리 위 바위를 건너뛰며 내려다본다"]]},
       {q:"작은 그림자가 숲길로 빠진다.",o:[["nei","부드럽게 불러 세워 사정을 묻는다"],["wai","길목의 나무를 흔들어 앞을 막는다"],["shen","단숨에 거리를 좁혀 뒷덜미를 잡는다"]]}],
-   f:"소매치기 패거리",e:["패거리를 잡고 보니 굶주린 아이들을 부리던 어른들이 있었다. 아이들은 산 아래 절에 맡겼다.","패거리를 쫓아내고 전대를 대부분 돌려주었다.","패거리는 흩어졌지만 전대 몇 개는 찾지 못했다."]}],
+   f:"소매치기 패거리",e:["패거리를 잡고 보니 굶주린 아이들을 부리던 어른들이 있었다. 아이들은 산 아래 절에 맡겼다.","패거리를 쫓아내고 전대를 대부분 돌려주었다.","패거리는 흩어졌지만 전대 몇 개는 찾지 못했다."]},
+  {t:"공자묘의 사라진 고서",i:"곡부 공자묘 서고에서 고서 한 권이 사라졌다. 유생들은 무림인의 짓이라며 수군댄다.",
+   s:[{q:"서고 바닥에 먹물 묻은 발자국이 찍혀 있다.",o:[["nei","발자국에 남은 내력의 무게를 가늠한다"],["wai","서가를 밀어 숨은 공간을 찾는다"],["shen","발자국을 따라 담장 밖까지 단숨에 쫓는다"]]},
+      {q:"고서를 사겠다는 서역 상인이 객잔에 머물고 있다.",o:[["nei","상인과 차를 마시며 속내를 떠본다"],["wai","상인의 방문을 열고 짐을 뒤진다"],["shen","밤에 창문으로 몰래 들어가 살핀다"]]}],
+   f:"상인의 호위 무사",e:["고서를 되찾아 공자묘에 돌려놓았다. 책갈피에 천산의 지도가 끼워져 있었다.","고서를 되찾았다. 유생들이 오해를 사과한다.","상인은 떠났지만 고서는 겨우 되찾았다."]}],
  jiangnan:[
   {t:"장강의 물귀신",i:"장강 물길에서 배들이 연달아 뒤집힌다. 뱃사공들은 물귀신 짓이라며 배를 띄우지 않는다.",
    s:[{q:"뒤집힌 배의 바닥에 구멍이 나 있다.",o:[["nei","물살에 실린 기운을 읽어 수상한 곳을 짚는다"],["wai","구멍 가장자리를 만져 무엇에 뚫렸는지 가늠한다"],["shen","강가를 따라 달리며 수상한 배를 찾는다"]]},
@@ -519,7 +544,11 @@ const INC={
   {t:"항주 찻집의 실종 사건",i:"서호 가의 이름난 찻집에서 일하던 사람들이 하나둘 사라진다. 주인은 입을 꾹 다물고 있다.",
    s:[{q:"찻집 주인이 무언가를 숨기는 눈치다.",o:[["nei","차를 한 잔 청하며 주인의 기색을 살핀다"],["wai","탁자를 내리쳐 주인을 겁준다"],["shen","손님인 척 뒤뜰로 슬쩍 들어간다"]]},
       {q:"뒤뜰 창고 밑에 지하로 내려가는 계단이 있다.",o:[["nei","등불 없이 기척만으로 내려간다"],["wai","잠긴 철문을 힘으로 비튼다"],["shen","소리 없이 계단을 미끄러져 내려간다"]]}],
-   f:"찻집의 경호무사",e:["갇혀 있던 사람들을 모두 구했다. 그들은 흑사련에 팔려 갈 참이었다.","사람들을 구해 내고 찻집 문을 닫게 했다.","몇 사람은 구했지만 경호무사들은 달아났다."]}],
+   f:"찻집의 경호무사",e:["갇혀 있던 사람들을 모두 구했다. 그들은 흑사련에 팔려 갈 참이었다.","사람들을 구해 내고 찻집 문을 닫게 했다.","몇 사람은 구했지만 경호무사들은 달아났다."]},
+  {t:"서호의 그림 도둑",i:"항주 서호 화방에서 명화가 하룻밤 새 가짜로 바뀌었다. 화방 주인은 앓아누웠다.",
+   s:[{q:"걸려 있는 가짜 그림의 물감이 아직 덜 말랐다.",o:[["nei","물감 냄새로 그린 때를 짐작한다"],["wai","액자를 뜯어 뒤에 남은 표식을 찾는다"],["shen","어젯밤 화방을 드나든 배를 찾아 호숫가를 달린다"]]},
+      {q:"호수 한가운데 정자에서 그림을 거래한다는 말이 있다.",o:[["nei","정자를 오가는 사람들의 말을 몰래 엿듣는다"],["wai","배를 저어 정면으로 다가간다"],["shen","연잎을 밟고 소리 없이 다가간다"]]}],
+   f:"그림 도둑 일당",e:["일당을 붙잡고 진짜 그림을 되찾았다. 화방 주인이 벌떡 일어나 술상을 차린다.","진짜 그림을 되찾아 화방에 돌려주었다.","일당은 달아났지만 그림은 찢긴 채로 되찾았다."]}],
  xiyu:[
   {t:"모래바람 속의 대상",i:"천산 아래 사막에서 대상 행렬이 통째로 사라졌다. 살아 돌아온 낙타 한 마리만 피 묻은 깃발을 달고 있다.",
    s:[{q:"모래 언덕에 반쯤 묻힌 수레가 보인다.",o:[["nei","모래 아래 남은 기운을 더듬는다"],["wai","수레를 파내 짐을 뒤진다"],["shen","언덕 꼭대기로 올라 사방을 살핀다"]]},
@@ -528,12 +557,25 @@ const INC={
   {t:"천산 설봉의 수행자",i:"천산 눈 덮인 봉우리에서 누군가 밤새 무공을 수련하며 산을 울린다. 그 기운에 눈사태가 잦아졌다.",
    s:[{q:"눈 위에 맨발 자국이 곧게 이어진다.",o:[["nei","발자국에 스민 차가운 내력을 읽는다"],["wai","눈을 헤치고 발자국을 그대로 따라간다"],["shen","눈 위를 스치듯 달려 발자국을 앞지른다"]]},
       {q:"얼음 동굴 안에서 붉은 빛이 새어 나온다.",o:[["nei","한기를 내공으로 버티며 천천히 들어간다"],["wai","얼음벽을 깨부수고 들어간다"],["shen","고드름 사이를 빠르게 지나친다"]]}],
-   f:"눈보라 속의 마인",e:["마인을 쓰러뜨렸다. 그가 수련하던 동굴 벽에 '천마혈강'이라는 글자가 새겨져 있었다.","마인을 물리치자 산이 조용해졌다.","마인은 눈보라 속으로 사라졌다."]}]};
+   f:"눈보라 속의 마인",e:["마인을 쓰러뜨렸다. 그가 수련하던 동굴 벽에 '천마혈강'이라는 글자가 새겨져 있었다.","마인을 물리치자 산이 조용해졌다.","마인은 눈보라 속으로 사라졌다."]},
+  {t:"오아시스의 마른 우물",i:"사막 한가운데 오아시스의 우물이 하룻밤 사이 말랐다. 상단들이 발이 묶였다.",
+   s:[{q:"우물 바닥에 큰 바위가 일부러 굴려 넣어져 있다.",o:[["nei","바위에 남은 손의 기운을 읽는다"],["wai","바위를 들어 올려 물길을 확인한다"],["shen","모래 위 수레바퀴 자국을 따라 달린다"]]},
+      {q:"모래 언덕 너머에 물통을 실은 낙타 떼가 있다.",o:[["nei","낙타몰이꾼의 말투에서 속셈을 읽는다"],["wai","낙타 떼를 막아서고 물통을 열게 한다"],["shen","모래바람을 타고 뒤쪽으로 돌아간다"]]}],
+   f:"물을 독차지한 사막 도적",e:["도적을 물리치고 우물을 다시 열었다. 상단들이 물 한 바가지씩 건네며 고마워한다.","도적을 쫓아내고 물길을 되살렸다.","도적은 달아났고, 우물은 반만 되살렸다."]}]};
 const PERIOD=3*86400e3, KST=9*3600e3;
 const periodNow=()=>Math.floor((Date.now()+KST)/PERIOD);
 const periodEnds=p=>(p+1)*PERIOD-KST;
 function incidentIdx(region,p){let h=7;for(const c of region+p)h=(h*31+c.charCodeAt(0))>>>0;return h%INC[region].length}
-const missionHours=r=>[1,1,1.5,2,2,2,2][r];
+/* 사건 난이도: 지역마다 쉬움·보통·어려움 세 건. 어려울수록 오래 걸리고 판정이 어렵지만 보상이 크다.
+   경지가 오를수록 탐문이 빨라진다 */
+const DIFF=[{n:"쉬움",h:.75,dc:-3,foe:.8,rw:.6,st:-1,horse:.6},{n:"보통",h:1.5,dc:0,foe:1,rw:1,st:0,horse:1},{n:"어려움",h:2.5,dc:3,foe:1.3,rw:1.8,st:2,horse:1.6}];
+const REALM_SPEED=[1,.95,.9,.82,.74,.67,.6];
+const missionHours=(r,d=1)=>Math.round(DIFF[d].h*REALM_SPEED[r]*60)/60;
+/* 이번 시기 이 지역의 세 사건: 난이도마다 서로 다른 이야기 */
+function incidentSlots(region,p){const n=INC[region].length,s=incidentIdx(region,p),ids=[];for(let i=0;i<n&&ids.length<3;i++)ids.push((s+i)%n);return ids}
+const misDiff=m=>m?.diff??1;
+const misDc=(h,m)=>dcFor(h.realm)+DIFF[misDiff(m)].dc;
+function misDone(h,region,d,p){if(h.dn?.[region+"|"+d]===p)return true;return h.done?.[region]===p&&incidentSlots(region,p)[d]===incidentIdx(region,p)}
 const dcFor=r=>10+2*r;
 const TIER=["대성공","성공","미흡"];
 const ITEMS={stone:["강화석","장비 강화 재료"],herb:["약초","선물 · 회복"],wine:["화주","선물"],trinket:["장신구","선물"],clue:["비급 단서","모으면 비급"]};
@@ -1558,6 +1600,7 @@ function alarmsForMe(){
   for(const r of coInvitesForMe()){const L=heroById(r.members[0]);out.push({key:"l"+r.id,t:r.start,who:r.members[0],icon:"窟",text:`${josa(esc(L?.name||"무리"),"이")} <b>${bossFor(r.period).n}의 소굴</b> 어귀에서 기다린다.`,btn:[["소굴에 들어간다",`data-cojoin="${r.id}"`]]})}
   for(const d of duelInvitesForMe())out.push({key:"d"+d.id,t:d.t,who:d.a,icon:"劍",text:`${josa(esc(d.an),"이")} <b>논검비무</b>를 청했다.`,btn:[["받는다",`data-duelok="${d.id}"`],["사양한다",`data-duelno="${d.id}"`]]});
   for(const o of partyCallsForMe())out.push({key:"p"+o._id+(o.partyT||0),t:o.partyT||0,who:o._id,icon:"伴",text:`${josa(esc(o.name),"이")} 무리로 불렀다.`,btn:[["무리에 들어간다",`data-pjoin="${o._id}"`]]});
+  for(const n of noticeList())if(n.t>(me.noticeSeen||0))out.push({key:"n"+n.id,t:n.t,icon:"榜",text:`[${NOTICE_BY}] 공지 <b>「${esc(n.title)}」</b>`,btn:[["공지 보기",`data-atab="notice"`]]});
   for(const m of myMails())if(!mailGot(m.id)&&(hasGifts(m)||!(me.mailSeen>=m.t)))out.push({key:"m"+m.id,t:m.t,icon:"信",text:`우편 <b>「${esc(m.title)}」</b>${hasGifts(m)?" · 보상이 들어 있다":""}`,btn:[["우편함 열기",`data-atab="mail"`]]});
   for(const o of others){if(!o._id)continue;const B=bondOf(o._id,myId()),A=bondOf(myId(),o._id);
     if(B.want&&B.want!=="지인"&&!relMatch(B.want,A.want)&&relNorm(B.want)!==relMutual(myId(),o._id))out.push({key:"r"+o._id+B.want,t:B.wantT||0,who:o._id,icon:"緣",text:`${josa(esc(o.name),"이")} ${B.want==="스승"?"나를 <b>제자로 받겠다고</b> 한다.":B.want==="제자"?"나를 <b>사부로 모시겠다고</b> 한다.":`<b>${B.want}</b>의 연을 청했다.`}`,btn:[["인연 탭 보기",`data-atab="mates"`]]})}
@@ -1634,6 +1677,7 @@ const TITLES=[
   {id:"m10",g:"강호",n:"탐문꾼",hint:"사건을 10번 해결한다",ok:h=>cnt(h,"mis")>=10},
   {id:"m30",g:"강호",n:"강호의 해결사",hint:"사건을 30번 해결한다",ok:h=>cnt(h,"mis")>=30},
   {id:"m100",g:"강호",n:"만사통",hint:"사건을 100번 해결한다",ok:h=>cnt(h,"mis")>=100},
+  {id:"mh5",g:"강호",n:"난제 해결사",hint:"어려운 사건을 5번 해결한다",ok:h=>cnt(h,"misHard")>=5},
   {id:"t10",g:"강호",n:"떠돌이 협객",hint:"길을 10번 떠나 도착한다",ok:h=>cnt(h,"trav")>=10},
   {id:"tall",g:"강호",n:"주유천하",hint:"강호의 모든 지역에 발을 디딘다",ok:h=>Object.keys(REGIONS).every(k=>(h.visited||[]).includes(k)||h.loc===k)},
   {id:"horse",g:"강호",n:"말 탄 협객",hint:"말을 얻는다",ok:h=>!!h.horse},
@@ -1790,6 +1834,47 @@ function bindDuel(){
   document.querySelectorAll("[data-duelact]").forEach(b=>b.addEventListener("click",()=>duelChoose(b.dataset.duelact)));
   on("#duelClaim",duelClaim);
   const f=$("#duelFeed");if(f)f.scrollTop=f.scrollHeight;
+}
+
+
+/* ───────── 공지(무림맹 방문): 관리자만 쓰고 모두가 본다. 쓴 사람 이름 대신 [무림맹]으로 나온다 ─────────
+   notices/<번호> = {title, body, t, pin} */
+const NOTICE_BY="무림맹";
+let notices={}, noticeDraft={title:"",body:"",pin:false}, noticeOpen=null, noticeBusy=false;
+const noticeList=()=>Object.entries(notices).map(([id,n])=>({...n,id})).sort((a,b)=>(b.pin?1:0)-(a.pin?1:0)||b.t-a.t);
+const noticeUnread=()=>noticeList().filter(n=>n.t>(me?.noticeSeen||0)).length;
+async function postNotice(){
+  if(!isOwner||mode!=="db"||noticeBusy)return;const d=noticeDraft,title=d.title.trim().slice(0,80),body=d.body.trim().slice(0,3000);
+  if(!title){toast("제목을 적어 주세요.");return}
+  const id="n"+Date.now().toString(36),doc={title,body,t:sNow(),pin:!!d.pin};noticeBusy=true;
+  try{await db.doc("notices/"+id).set(doc);notices[id]=doc;noticeDraft={title:"",body:"",pin:false};toast("공지를 내걸었습니다.");render()}
+  catch(e){toast("올리지 못했어요. ("+(e?.code||e?.message||"오류")+")")}finally{noticeBusy=false}}
+async function delNotice(id){if(!isOwner||mode!=="db")return;try{await db.doc("notices/"+id).delete();delete notices[id];render();toast("공지를 내렸습니다.")}catch(e){toast("지우지 못했어요.")}}
+async function pinNotice(id){if(!isOwner||mode!=="db")return;const n=notices[id];if(!n)return;try{const d={...n,pin:!n.pin};await db.doc("notices/"+id).set(d);notices[id]=d;render()}catch(e){toast("바꾸지 못했어요.")}}
+function noticeTab(){
+  const list=noticeList(),seen=me.noticeSeen||0;
+  const items=list.length?list.map((n,i)=>{const open=noticeOpen===n.id||(noticeOpen===null&&i===0);
+    return `<div class="mail notice ${n.t>seen?"new":""}"><button class="mailh" type="button" data-nopen="${n.id}"><b>${n.pin?`<span class="pin">고정</span>`:""}${esc(n.title)}</b><span>[${NOTICE_BY}] · ${hhmm(n.t)}</span></button>
+      ${open?`<div class="mailb"><p>${esc(n.body||"").replace(/\n/g,"<br>")}</p><p class="note sig" style="margin:0">— ${NOTICE_BY}</p>
+        ${isOwner&&mode==="db"?`<div class="row"><button class="btn ghost sm" type="button" data-npin="${n.id}">${n.pin?"고정 풀기":"맨 위에 고정"}</button><button class="btn ghost sm" type="button" data-ndel="${n.id}">공지 내리기</button></div>`:""}</div>`:""}</div>`}).join("")
+    :`<p class="empty">아직 내걸린 공지가 없다.</p>`;
+  const form=isOwner&&mode==="db"?`<section><div class="label">공지 내걸기 · 관리자</div>
+    <div class="mailf"><label>제목<input data-nd="title" maxlength="80" value="${esc(noticeDraft.title)}" placeholder="예: 10월 25일 새 판 안내"></label>
+    <label>내용<textarea data-nd="body" rows="6" maxlength="3000" placeholder="모두에게 알릴 내용">${esc(noticeDraft.body)}</textarea></label>
+    <label class="chk"><input type="checkbox" data-npinc ${noticeDraft.pin?"checked":""}> 맨 위에 고정</label>
+    <p class="note" style="margin:0">쓴 사람은 [${NOTICE_BY}]로 나온다. 내걸면 모두에게 알림이 간다.</p>
+    <div class="row"><button class="btn solid" type="button" id="noticePost" ${noticeBusy?"disabled":""}>내걸기</button></div></div></section>`:"";
+  return `<section><div class="label">무림맹 방문(榜文)</div>${items}${mode!=="db"?`<p class="note">공지는 여럿이 함께 쓰는 강호에서만 보인다.</p>`:""}</section>${form}`;
+}
+function bindNotice(){
+  document.querySelectorAll("[data-nopen]").forEach(b=>b.addEventListener("click",()=>{noticeOpen=noticeOpen===b.dataset.nopen?"":b.dataset.nopen;render()}));
+  document.querySelectorAll("[data-ndel]").forEach(b=>b.addEventListener("click",()=>delNotice(b.dataset.ndel)));
+  document.querySelectorAll("[data-npin]").forEach(b=>b.addEventListener("click",()=>pinNotice(b.dataset.npin)));
+  document.querySelectorAll("[data-nd]").forEach(i=>i.addEventListener("input",()=>noticeDraft[i.dataset.nd]=i.value));
+  document.querySelectorAll("[data-npinc]").forEach(i=>i.addEventListener("change",()=>noticeDraft.pin=i.checked));
+  on("#noticePost",postNotice);
+  if(tab==="notice"&&me&&mode==="db"&&!render.noticeSeenT){const top=noticeList().reduce((a,n)=>Math.max(a,n.t),0);
+    if(top>(me.noticeSeen||0))render.noticeSeenT=setTimeout(()=>{render.noticeSeenT=null;const h=structuredClone(me);h.noticeSeen=top;save(h)},2000)}
 }
 
 
@@ -2189,12 +2274,12 @@ function arrive(){
 function cancelTravel(){const h=structuredClone(me);if(!h.travel)return;addLog(h,`${REGIONS[h.travel.to].n}로 가던 길을 돌려 ${REGIONS[h.travel.from].n}로 돌아왔다.`);h.travel=null;confirmAbort=false;save(h)}
 
 /* ───────── 행동: 임무 ───────── */
-function startMission(){
-  const h=structuredClone(me),p=periodNow();
+function startMission(diff){
+  const h=structuredClone(me),p=periodNow();diff=+diff||0;
   if(activity(h)){toast(`${busyText[activity(h)]} 임무를 맡을 수 없습니다.`);return}
-  if(h.done[h.loc]===p){toast("이 지역 사건은 이미 해결했습니다.");return}
-  const idx=incidentIdx(h.loc,p),inc=INC[h.loc][idx],now=Date.now(),d=missionHours(h.realm);
-  h.mission={region:h.loc,period:p,idx,start:now,end:now+d*3600e3,phase:"wait",step:0,clues:0,rolls:[],fight:null};
+  if(misDone(h,h.loc,diff,p)){toast("이 사건은 이미 해결했습니다.");return}
+  const idx=incidentSlots(h.loc,p)[diff],inc=INC[h.loc][idx],now=Date.now(),d=missionHours(h.realm,diff);
+  h.mission={region:h.loc,period:p,idx,diff,start:now,end:now+d*3600e3,phase:"wait",step:0,clues:0,rolls:[],fight:null};
   addLog(h,`「${inc.t}」 사건을 맡아 탐문을 시작했다.`); save(h);
 }
 /* 탐문 중 일어나는 일들: 임무 시작 시각으로 정해져서 새로고침해도 같다 */
@@ -2324,12 +2409,12 @@ function enterScene(){
 function investigate(i){
   const h=structuredClone(me),m=h.mission; if(!m||m.phase!=="scene"||m.step>1) return;
   const inc=INC[m.region][m.idx],[stat,txt]=inc.s[m.step].o[i];
-  const roll=1+Math.floor(Math.random()*20),bonus=Math.floor(h.stats[stat]/10)+(m.bonus||0),dc=dcFor(h.realm),ok=roll===20||(roll!==1&&roll+bonus>=dc);
+  const roll=1+Math.floor(Math.random()*20),bonus=Math.floor(h.stats[stat]/10)+(m.bonus||0),dc=misDc(h,m),ok=roll===20||(roll!==1&&roll+bonus>=dc);
   m.rolls.push({step:m.step,stat,txt,roll,bonus,dc,ok,t:Date.now()}); if(ok)m.clues++; m.step++; save(h);
 }
 function fight(){
   const h=structuredClone(me),m=h.mission; if(!m||m.step!==2) return;
-  const d=derived(h),L=h.level,foe={hp:Math.round(40+L*8),atk:8+L*2.5,def:L};
+  const d=derived(h),L=h.level,F=DIFF[misDiff(m)].foe,foe={hp:Math.round((40+L*8)*F),atk:(8+L*2.5)*F,def:Math.round(L*F)};
   let php=d.hp,fhp=foe.hp; const log=[];
   for(let turn=1;turn<=3&&php>0&&fhp>0;turn++){
     const crit=Math.random()*100<d.crit;
@@ -2346,7 +2431,7 @@ function fight(){
   m.fight={foeHp:foe.hp,fhp,php,maxHp:d.hp,log,res,t:Date.now()}; m.step=3; m.loot=rollMissionLoot(h,m); save(h);
 }
 function missionTier(m){const s=m.clues+(m.fight.res==="win"?1:m.fight.res==="flee"?.5:0);return m.clues===2&&m.fight.res==="win"?0:s>=1.5?1:2}
-function missionReward(h,m){const t=missionTier(m);return {t,exp:Math.round(expPerHour(h.level)*3*[1.3,1,.6][t]),stone:[4,3,2][t]}}
+function missionReward(h,m){const t=missionTier(m),D=DIFF[misDiff(m)];return {t,exp:Math.round(expPerHour(h.level)*3*[1.3,1,.6][t]*D.rw),stone:Math.max(1,[4,3,2][t]+D.st)}}
 /* 사건 보상은 싸움이 끝나는 순간 한 번 정해 두고, 화면에는 실제로 얻은 것만 보여 준다 */
 function rollMissionLoot(h,m){
   const r=missionReward(h,m),comp=companionFor(m),L={t:r.t,exp:r.exp,stone:r.stone,gift:null,clue:false,drop:null,friend:false};
@@ -2356,7 +2441,9 @@ function rollMissionLoot(h,m){
   if(Math.random()<[.6,.35,.15][r.t])L.gift=pickOne(GIFTS);
   if(r.t===0&&Math.random()<.1)L.clue=true;
   L.drop=rollDrop(h,r.t);
-  if(!h.horse&&Math.random()<HORSE_RATE[r.t])L.horse=pickOne(HORSES);
+  if(misDiff(m)===2&&!L.drop)L.drop=rollDrop(h,r.t);
+  if(misDiff(m)===2&&!L.clue&&Math.random()<.1)L.clue=true;
+  if(!h.horse&&Math.random()<HORSE_RATE[r.t]*DIFF[misDiff(m)].horse)L.horse=pickOne(HORSES);
   return L;
 }
 function lootChips(L,m){
@@ -2381,7 +2468,7 @@ function finishMission(){
   if(L.drop) extra.push("장비 「"+gainItem(h,L.drop)+"」");
   if(L.horse&&!h.horse){h.horse={n:L.horse,t:Date.now()};extra.push(`말 「${L.horse}」 (이동 시간 -30%)`)}
   saveJournal(h,m,inc,r.t,`보상: 경험치 +${r.exp}, 강화석 +${r.stone}${extra.length?", "+extra.join(", "):""}`);
-  h.done[m.region]=m.period; h.mission=null; bump(h,"mis");
+  h.dn={...(h.dn||{}),[m.region+"|"+misDiff(m)]:m.period}; if(misDiff(m)===2)bump(h,"misHard"); h.mission=null; bump(h,"mis");
   addLog(h,`「${inc.t}」 ${TIER[r.t]}. 경험치 +${r.exp}, 강화석 +${r.stone}${extra.length?", "+extra.join(", "):""}${ups?`, Lv.${lv0}→${h.level}`:""}`);
   save(h); toast(ups?`사건 해결! 레벨이 올랐습니다. Lv.${h.level}`:`사건 해결 · ${TIER[r.t]}`);
 }
@@ -2442,8 +2529,8 @@ function introView(){
 function heroView(){
   const h=me,s=SECTS[h.sect],r=REALMS[h.realm],next=REALMS[h.realm+1],wall=atWall(h);
   const pct=Math.min(100,h.exp/need(h.level)*100);
-  const tabs=[["train","수련"],["world","강호"],["raid","토벌"],["gate","관문"],["self","인물"],["gear","장비"],["alarm","알림"],["mates","인연"],["mail","우편"]];
-  const dot={alarm:mode==="db"&&alarmUnread()>0,mail:mode==="db"&&mailUnread()>0,train:h.training&&Date.now()>=h.training.end,world:(h.travel&&Date.now()>=h.travel.end)||(h.mission&&(h.mission.phase==="scene"||Date.now()>=h.mission.end)),self:h.points>0||!!postOffer(h),mates:giftsToMe().some(g=>g.t>(h.seenGift||0))||others.some(o=>{const B=bondOf(o._id,myId()),A=bondOf(myId(),o._id);return (B.want&&B.want!=="지인"&&!relMatch(B.want,A.want)&&relNorm(B.want)!==relMutual(myId(),o._id))||false})||partyCallsForMe().length>0||duelInvitesForMe().length>0||(()=>{const d=myDuel();return !!d&&(d.status==="done"||(d.status==="fight"&&!duelActOf(d,myId())))})(),gate:(()=>{const r=myRoom();if(r&&r.status==="fight"){const m=r.party.find(x=>x.id===myId());return !!(m&&m.hp>0&&!playerReady(r,m))}if(r&&(r.status==="win"||r.status==="fail")&&!h.gateDone?.[r.id])return true;return atWall(h)&&!!GATES[h.realm+1]?.ready&&!r})(),raid:(()=>{const st=raidState(periodNow());if(coInvitesForMe().length&&!h.colair)return true;if(h.colair)return true;if(h.lair&&h.lair.phase!=="done")return true;return st.down&&h.raid?.period===periodNow()&&!h.raid.claimed})()};
+  const tabs=[["train","수련"],["world","강호"],["raid","토벌"],["gate","관문"],["self","인물"],["gear","장비"],["alarm","알림"],["mates","인연"],["mail","우편"],["notice","공지"]];
+  const dot={notice:mode==="db"&&noticeUnread()>0,alarm:mode==="db"&&alarmUnread()>0,mail:mode==="db"&&mailUnread()>0,train:h.training&&Date.now()>=h.training.end,world:(h.travel&&Date.now()>=h.travel.end)||(h.mission&&(h.mission.phase==="scene"||Date.now()>=h.mission.end)),self:h.points>0||!!postOffer(h),mates:giftsToMe().some(g=>g.t>(h.seenGift||0))||others.some(o=>{const B=bondOf(o._id,myId()),A=bondOf(myId(),o._id);return (B.want&&B.want!=="지인"&&!relMatch(B.want,A.want)&&relNorm(B.want)!==relMutual(myId(),o._id))||false})||partyCallsForMe().length>0||duelInvitesForMe().length>0||(()=>{const d=myDuel();return !!d&&(d.status==="done"||(d.status==="fight"&&!duelActOf(d,myId())))})(),gate:(()=>{const r=myRoom();if(r&&r.status==="fight"){const m=r.party.find(x=>x.id===myId());return !!(m&&m.hp>0&&!playerReady(r,m))}if(r&&(r.status==="win"||r.status==="fail")&&!h.gateDone?.[r.id])return true;return atWall(h)&&!!GATES[h.realm+1]?.ready&&!r})(),raid:(()=>{const st=raidState(periodNow());if(coInvitesForMe().length&&!h.colair)return true;if(h.colair)return true;if(h.lair&&h.lair.phase!=="done")return true;return st.down&&h.raid?.period===periodNow()&&!h.raid.claimed})()};
   return `<div>
   <section style="margin-top:8px">
     <div class="who"><button type="button" class="facebtn" data-go="self" aria-label="프로필 사진 바꾸기">${face(myId(),h.sect,"big")}</button>
@@ -2460,13 +2547,13 @@ function heroView(){
   ${mode==="db"&&tab!=="mates"&&myDuel()?.status==="fight"?`<button class="mailnew" type="button" data-tab="mates">논검 중이다 · ${myDuel().round}합 · 보러 가기</button>`:""}
   ${mode==="db"&&tab!=="alarm"&&alarmUnread()?`<button class="mailnew" type="button" data-tab="alarm">새 알림 ${alarmUnread()}개 · 알림 보기</button>`:""}
   <div class="tabs" role="tablist">${tabs.map(([k,n])=>`<button class="tab" role="tab" type="button" data-tab="${k}" aria-selected="${tab===k}">${n}${dot[k]?`<span class="dot" aria-label="확인할 것 있음"></span>`:""}</button>`).join("")}</div>
-  <div id="tabbody">${tab==="train"?trainTab():tab==="world"?worldTab():tab==="raid"?raidTab():tab==="gate"?gateTab():tab==="self"?selfTab():tab==="gear"?gearTab():tab==="mail"?mailTab():tab==="alarm"?alarmTab():bondTab()}</div>
+  <div id="tabbody">${tab==="train"?trainTab():tab==="world"?worldTab():tab==="raid"?raidTab():tab==="gate"?gateTab():tab==="self"?selfTab():tab==="gear"?gearTab():tab==="mail"?mailTab():tab==="alarm"?alarmTab():tab==="notice"?noticeTab():bondTab()}</div>
   ${isOwner||mode==="local"?`<details class="tools"><summary>시험용 도구 (만드는 동안만 쓰고 나중에 없앱니다)</summary>
     <div class="row"><button class="btn ghost" id="stoneBtn" type="button">강화석 +20</button><button class="btn ghost" id="warpBtn" type="button">보스 지역으로 순간이동</button><button class="btn ghost" id="triesBtn" type="button">진입 횟수 초기화</button><button class="btn ghost" id="dropBtn" type="button">장비 하나 얻기</button><button class="btn ghost" id="horseBtn" type="button">말 얻기/놓아주기</button></div>
     <div class="row">${fakeOthers.length?`<button class="btn ghost" id="fakeUpBtn" type="button">백운 쪽 인연 +100</button>${["친우","사형제","연인","스승","제자"].map(r=>`<button class="btn ghost" type="button" data-fakerel="${r}">백운이 ${r==="스승"?"제자로 받기":r==="제자"?"사부로 모시기":r} 청하기</button>`).join("")}<button class="btn ghost" id="fakePartyBtn" type="button">백운이 무리 부름 받기</button><button class="btn ghost" id="fakeDelBtn" type="button">가상 동료 내보내기</button>`:`<button class="btn ghost" id="fakeMateBtn" type="button">가상 동료 넣기 (이 기기에서만)</button>`}</div>
     <div class="row"><button class="btn ghost" id="lv30Btn" type="button">일류 Lv.30 (관문 직전)으로</button><button class="btn ghost" id="warpGateBtn" type="button">관문 지역으로 순간이동</button></div>
     <div class="row">${activity(h)?`<button class="btn ghost" id="ffBtn" type="button">지금 하는 일 바로 끝내기</button>`:""}
-    ${h.done[h.loc]===periodNow()?`<button class="btn ghost" id="newIncBtn" type="button">이 지역 사건 다시 열기</button>`:""}</div>
+    <button class="btn ghost" id="newIncBtn" type="button">이 지역 사건 다시 열기</button></div>
     ${h.mission?`<div class="row"><span>가상 동행 붙이기:</span>${["없음",...RELS].map(r=>`<button class="btn ghost" type="button" data-fake="${r}" style="padding:4px 10px;font-size:12px${(fakeMate?.rel||"없음")===r?";border-color:var(--ink);color:var(--ink)":""}">${r}</button>`).join("")}</div>`:""}
     <div class="row">
     <button class="btn ghost" id="wipeBtn" type="button">${confirmWipe?"정말 지울까요? 한 번 더 누르면 지워집니다":"내 캐릭터 지우기"}</button></div></details>`:""}
@@ -2556,15 +2643,16 @@ function missionBox(){
   const h=me,m=h.mission,now=Date.now();
   if(!m){
     if(h.travel) return `<p class="empty">길 위에서는 사건을 맡을 수 없다. 목적지에 도착하면 그 지역의 사건을 볼 수 있다.</p>`;
-    const p=periodNow(),inc=INC[h.loc][incidentIdx(h.loc,p)],done=h.done[h.loc]===p,a=activity(h);
-    if(done) return `<div class="case"><div class="kicker">${REGIONS[h.loc].n} · 해결함</div><h3>${inc.t}</h3><p>이 지역의 사건은 해결했다. 새 소문은 ${fmtDays(periodEnds(p)-now)} 뒤에 돈다. 다른 지역으로 가 보자.</p></div>`;
-    return `<div class="case"><div class="kicker">${REGIONS[h.loc].n}의 사건</div><h3>${inc.t}</h3><p>${inc.i}</p>
-      <p class="note" style="margin:0 0 12px">먼저 ${hrs(missionHours(h.realm))} 동안 탐문한 뒤 현장에 들어선다. 조사 두 번과 짧은 싸움이 있고, 결과에 따라 보상이 달라진다. 이 사건은 ${fmtDays(periodEnds(p)-now)} 뒤에 바뀐다.</p>
-      <button class="btn solid" id="misBtn" type="button" ${a?"disabled":""}>사건을 맡는다</button>${a?` <span class="note">${busyText[a]} 맡을 수 없다.</span>`:""}</div>`;
+    const p=periodNow(),a=activity(h),slots=incidentSlots(h.loc,p);
+    const cards=slots.map((idx,d)=>{const inc=INC[h.loc][idx],D=DIFF[d],done=misDone(h,h.loc,d,p);
+      return `<div class="case ${done?"done":""}" style="margin-bottom:12px"><div class="kicker">${REGIONS[h.loc].n} · <span class="diff d${d}">${D.n}</span> · 탐문 ${hrsTxt(missionHours(h.realm,d))}${done?" · 해결함":""}</div><h3>${inc.t}</h3>${done?"":`<p>${inc.i}</p>`}
+        ${done?"":`<p class="note" style="margin:0 0 12px">조사 판정 목표 ${dcFor(h.realm)+D.dc} · 보상 ×${D.rw}${d===2?" · 장비·말이 더 잘 나온다":""}</p>
+        <button class="btn ${d===2?"sealb":"solid"}" type="button" data-mis="${d}" ${a?"disabled":""}>이 사건을 맡는다</button>`}</div>`}).join("");
+    return `<p class="note" style="margin-top:0">이 지역에 사건이 세 건 있다. 하나씩 맡을 수 있고, ${fmtDays(periodEnds(p)-now)} 뒤에 새 사건으로 바뀐다. 경지가 오를수록 탐문이 빨라진다${h.realm?` (지금 ${Math.round((1-REALM_SPEED[h.realm])*100)}% 빠름)`:""}.${a?` ${busyText[a]} 지금은 맡을 수 없다.`:""}</p>${cards}`;
   }
   const inc=INC[m.region][m.idx];
   if(m.phase==="wait"){const ready=now>=m.end;
-    return `<div class="case"><div class="kicker">${REGIONS[m.region].n} · 탐문</div><h3>${inc.t}</h3><p>${inc.i}</p>
+    return `<div class="case"><div class="kicker">${REGIONS[m.region].n} · <span class="diff d${misDiff(m)}">${DIFF[misDiff(m)].n}</span> · 탐문</div><h3>${inc.t}</h3><p>${inc.i}</p>
       ${(()=>{const comp=companionFor(m),f=feedFor(h,m,comp),shown=f.filter(e=>e.t<=now),b=feedBonus(shown)+(comp?1:0);
         return `<div class="kicker" style="margin-top:6px">탐문 일지 · 조사 판정 +${b}${comp?`<span class="mate-pill">동행 <b>${esc(comp.name)}</b> · ${comp.rel}</span>`:""}</div><div class="feedwrap"><ul class="feed" id="inlineFeed" data-key="${m.start}-${shown.length}">${shown.map((e,i)=>feedLine(e,i===shown.length-1&&!ready)).join("")}
           ${ready?`<li class="amb"><span class="tm"></span><span class="body">— 탐문이 끝났다. 이제 현장으로 향할 때다.</span></li>`:`<li class="wait"><span class="tm"></span><span class="body">계속 탐문하는 중… 새 소식은 5분쯤마다 들어온다 · 탐문 끝까지 <span data-until="${m.end}"></span></span></li>`}</ul><div class="feedtools"><span class="note" style="margin:0">위로 올리면 앞의 내용을 볼 수 있다.</span><button class="btn sm ghost" type="button" id="readerBtn" data-read="live">일지 크게 보기</button></div></div>`})()}
@@ -2572,7 +2660,7 @@ function missionBox(){
       <div class="row">${ready?`<button class="btn sealb" id="sceneBtn" type="button">현장에 들어선다</button>`
         :confirmAbort?`<button class="btn sealb" id="mxYes" type="button">사건에서 손 떼기</button><button class="btn ghost" id="mxNo" type="button">계속 탐문하기</button>`
         :`<button class="btn ghost" id="mxBtn" type="button">사건 포기</button>`}</div></div>`}
-  const dc=dcFor(h.realm);
+  const dc=misDc(h,m);
   const rolls=m.rolls.length?`<ul class="rolls">${m.rolls.map(r=>`<li><span class="die ${r.ok?"":"fail"}">${r.roll}</span>
       <span>${STATS[r.stat].n} · ${esc(r.txt)} — ${r.roll}+${r.bonus}=${r.roll+r.bonus} / 목표 ${r.dc} <span class="verdict ${r.ok?"":"fail"}">${r.ok?"단서를 찾았다":"허탕을 쳤다"}</span></span></li>`).join("")}</ul>`:"";
   let body="";
@@ -2649,7 +2737,7 @@ function bind(){
   on("#finBtn",()=>finishTrain(false)); on("#cxBtn",()=>{confirmCancel=true;render()}); on("#cxNo",()=>{confirmCancel=false;render()}); on("#cxYes",()=>finishTrain(true));
   on("#goBtn",()=>startTravel(dest)); on("#arriveBtn",arrive);
   on("#abBtn",()=>{confirmAbort=true;render()}); on("#abNo",()=>{confirmAbort=false;render()}); on("#abYes",cancelTravel);
-  on("#misBtn",startMission); on("#sceneBtn",enterScene); on("#fightBtn",fight); on("#finMisBtn",finishMission);
+  document.querySelectorAll("[data-mis]").forEach(b=>b.addEventListener("click",()=>startMission(b.dataset.mis))); on("#sceneBtn",enterScene); on("#fightBtn",fight); on("#finMisBtn",finishMission);
   on("#mxBtn",()=>{confirmAbort=true;render()}); on("#mxNo",()=>{confirmAbort=false;render()}); on("#mxYes",abortMission);
   document.querySelectorAll("[data-inv]").forEach(b=>b.addEventListener("click",()=>investigate(+b.dataset.inv)));
   document.querySelectorAll("[data-tab],[data-go]").forEach(b=>b.addEventListener("click",()=>{tab=b.dataset.tab||b.dataset.go;confirmAbort=false;fadeNext=false;
@@ -2708,7 +2796,7 @@ function bind(){
   on("#herbBtn",useHerb); on("#retBtn",()=>{retreatConfirm=true;render()}); on("#retNo",()=>{retreatConfirm=false;render()}); on("#retYes",retreat); on("#leaveBtn",leaveLair);
   on("#toBossBtn",()=>{dest=bossFor(periodNow()).region;tab="world";try{localStorage.setItem("murim-tab",tab)}catch(e){};render()});
   document.querySelectorAll('input[name="rrole"]').forEach(i=>i.addEventListener("change",()=>{raidRole=i.value;render()}));
-  bindMail(); bindAlarm(); bindDuel();
+  bindMail(); bindAlarm(); bindDuel(); bindNotice();
   on("#horseBtn",()=>{const h=structuredClone(me);h.horse=h.horse?null:{n:"적토",t:Date.now()};save(h);toast(h.horse?"말을 얻었습니다.":"말을 놓아주었습니다.")});
   on("#stoneBtn",()=>{const h=structuredClone(me);h.items.stone+=20;save(h)});
   on("#dropBtn",()=>{const h=structuredClone(me);const it=Math.random()<.2?makeItem("weapon",h.realm,null,{sect:h.sect}):makeItem(pickOne(["weapon","armor","acc"]),h.realm,pickOne(["tank","dps","heal"]));toast("얻음: "+gainItem(h,it));save(h)});
@@ -2720,7 +2808,7 @@ function bind(){
   document.querySelectorAll("[data-salv]").forEach(b=>b.addEventListener("click",()=>salvage(+b.dataset.salv)));
   on("[data-salvno]",()=>{gconfirm=null;render()});
   document.querySelectorAll("[data-fake]").forEach(b=>b.addEventListener("click",()=>{fakeMate=b.dataset.fake==="없음"?null:{name:"백운",rel:b.dataset.fake};typedKey="";render()}));
-  on("#newIncBtn",()=>{const h=structuredClone(me);delete h.done[h.loc];save(h)});
+  on("#newIncBtn",()=>{const h=structuredClone(me);delete h.done[h.loc];h.dn=Object.fromEntries(Object.entries(h.dn||{}).filter(([k])=>!k.startsWith(h.loc+"|")));save(h)});
   on("#wipeBtn",()=>{if(confirmWipe)wipe();else{confirmWipe=true;render()}});
 }
 
@@ -2793,6 +2881,7 @@ async function boot(){
   db=d;uid=id;mode="db";isOwner=await u.isOwner();
   try{const js=await db.doc("journals/"+uid).get();if(js.exists){journalCache=js.data().list||[];lastJournal=JSON.stringify(journalCache)}}catch(e){}
   db.collection("duels").onSnapshot(snap=>{duels={};snap.docs.forEach(d=>{if(d.exists)duels[d.id]=structuredClone(d.data())});if(ready)render();maybeResolveDuel()},()=>{});
+  db.collection("notices").onSnapshot(snap=>{notices={};snap.docs.forEach(d=>{if(d.exists)notices[d.id]=structuredClone(d.data())});if(ready)render()},()=>{});
   db.collection("mail").onSnapshot(snap=>{mails={};snap.docs.forEach(d=>{if(d.exists)mails[d.id]=structuredClone(d.data())});if(ready)render()},()=>{});
   db.collection("avatars").onSnapshot(snap=>{avatars={};snap.docs.forEach(d=>{if(d.exists)avatars[d.id]=d.data().img});if(ready)render()},()=>{});
   db.collection("lairs").onSnapshot(snap=>{lairRuns={};snap.docs.forEach(d=>{if(d.exists)lairRuns[d.id]=structuredClone(d.data())});if(ready)render();maybeResolveLair()},()=>{});
