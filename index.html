@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261025224124">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261026012931">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1164,9 +1164,9 @@ const GACT=[null,
   {n:"새끼 요괴",omen:"덤불 속에서 새끼 요괴 둘이 튀어나온다! 공격의 절반이 새끼들에게 막히고, 살아 있는 동안 매 막 물어뜯는다.",say:"끼잉, 끼잉!"},
   {n:"독기",omen:"혈안산군의 입에서 검푸른 김이 흘러나온다. 누군가 이 짐승에게 약을 먹여 키운 흔적이다.",say:"쿨럭…"},
   {n:"도주",omen:"혈안산군이 숲 쪽을 힐끔거린다. 이번 막에 쓰러뜨리지 못하면 달아난다!",say:"…"}];
-const GREL={guard:{지인:["{a|이} 외친다. \"{b}, 피해요!\""],친우:["{a|이} 소리친다. \"{b}! 내 뒤로 와!\""],사형제:["{a|이} 외친다. \"물러서라, 내가 받는다!\""],연인:["{a|이} 망설임 없이 {b|의} 앞을 가로막는다."],사제:["{a|이} 외친다. \"내 뒤에 서라, 아직 네 차례가 아니다!\""]},
-  down:{지인:["{a|이} 쓰러진 {b|을} 돌아본다."],친우:["\"{b}!\" {a|의} 목소리가 떨린다."],사형제:["{a|이} 이를 악문다. \"사문의 이름으로, 이 빚은 갚는다.\""],연인:["{a|이} {b|의} 이름을 부르며 달려간다."],사제:["{a|이} 쓰러진 {b|을} 보고 이를 악문다. \"가르친 대로만 버텨라.\""]},
-  skill:{지인:["{a|와} {b|이} 눈빛을 주고받는다."],친우:["\"지금이다!\" {a|와} {b|의} 호흡이 딱 맞는다."],사형제:["\"사형, 지금입니다!\" 같은 사문의 초식이 겹친다."],연인:["{a|와} {b|이} 등을 맞댄다. 말이 필요 없다."],사제:["\"보아라, 이것이 그 초식이다!\" {a|와} {b|의} 검로가 한 줄로 겹친다."]}};
+const GREL={guard:{지인:["{a|이} 외친다. \"{b}, 피해요!\""],친우:["{a|이} 소리친다. \"{b}! 내 뒤로 와!\""],사형제:["{a|이} 외친다. \"물러서라, 내가 받는다!\""],연인:["{a|이} 망설임 없이 {b|의} 앞을 가로막는다."],사부:["{a|이} 외친다. \"내 뒤에 서라, 아직 네 차례가 아니다!\""],제자:["{a|이} 외친다. \"사부님, 이번엔 제가 막겠습니다!\""]},
+  down:{지인:["{a|이} 쓰러진 {b|을} 돌아본다."],친우:["\"{b}!\" {a|의} 목소리가 떨린다."],사형제:["{a|이} 이를 악문다. \"사문의 이름으로, 이 빚은 갚는다.\""],연인:["{a|이} {b|의} 이름을 부르며 달려간다."],사부:["{a|이} 쓰러진 {b|을} 보고 이를 악문다. \"가르친 대로만 버텨라.\""],제자:["\"사부님!\" {a|의} 목소리가 떨린다. \"제가 끝까지 지키겠습니다.\""]},
+  skill:{지인:["{a|와} {b|이} 눈빛을 주고받는다."],친우:["\"지금이다!\" {a|와} {b|의} 호흡이 딱 맞는다."],사형제:["\"사형, 지금입니다!\" 같은 사문의 초식이 겹친다."],연인:["{a|와} {b|이} 등을 맞댄다. 말이 필요 없다."],사부:["\"보아라, 이것이 그 초식이다!\" {a|와} {b|의} 검로가 한 줄로 겹친다."],제자:["\"사부님, 배운 대로 갑니다!\" {a|와} {b|의} 초식이 맞물린다."]}};
 const GATE_WAIT=90e3;
 let gateRooms={}, gateActs={}, gateResolving=false, gateLeaveConfirm=false;
 const myId=()=>uid||"local-me";
@@ -1247,7 +1247,7 @@ function gateAuto(room,m){
   if(!m.cd&&m.qi>=25&&(m.sect!=="ami"||hurt))return "skill";
   return "atk";
 }
-function relLine(room,kind,a,b,log){if(!a||!b||a.id===b.id)return;const pool=GREL[kind][relBetween(a.id,b.id)]||GREL[kind].지인;log.push({k:"comp",x:fill(pickOne(pool),{a:gnm(a),b:gnm(b)})})}
+function relLine(room,kind,a,b,log){if(!a||!b||a.id===b.id)return;const pool=GREL[kind][relDir(a.id,b.id)]||GREL[kind].지인;log.push({k:"comp",x:fill(pickOne(pool),{a:gnm(a),b:gnm(b)})})}
 function resolveGate(room){
   const n=structuredClone(room),G=GATES[n.realm],a=n.act,log=n.log,P=n.party,alive=()=>P.filter(x=>x.hp>0);
   const acts={};for(const m of P)if(m.hp>0){const ad=m.player?(m.id===myId()?myAct():gateActs[m.id]||{}):{};
@@ -1397,6 +1397,8 @@ function relMutual(a,b){const r=relRaw(a,b);return r?relNorm(r):"지인"}
 /* 사제일 때 a가 스승이면 "스승", 제자면 "제자" */
 function sajeRole(a,b){const r=relRaw(a,b);return PAIR[r]?r:null}
 /* 내 쪽에서 본 관계 이름: 사제면 상대가 "사부"인지 "제자"인지 */
+/* 말하는 쪽(a) 기준 관계: 사제면 a가 스승일 때 "사부", 제자일 때 "제자" */
+function relDir(a,b){const r=relMutual(a,b);if(r!=="사제")return r;return sajeRole(a,b)==="스승"?"사부":"제자"}
 function relLabel(id){const r=relWith(id);if(r!=="사제")return r;return sajeRole(myId(),id)==="스승"?"제자":"사부"}
 const relWith=id=>relMutual(myId(),id);
 /* 무리(동행): 무리장 h.party=자기 번호, h.partyInv=[부른 사람]. 무리원 h.party=무리장 번호. 최대 4명. 각자 자기 기록만 고친다. */
@@ -1826,7 +1828,7 @@ function duelRound(f){
     if(p.poison>0&&p.hp>0){p.hp=Math.max(0,p.hp-5);p.poison--;log.push({k:"ev2",sub:"hit",x:`${nm(id)} 독 -5`})}
     p.qi=Math.min(p.qmax,p.qi+10)});
   if(act[f.a]==="def"&&act[f.b]==="def")ids.forEach(id=>P[id].qi=Math.min(P[id].qmax,P[id].qi+15));
-  if(f.round>=2&&Math.random()<.35){const rel=relMutual(f.a,f.b),x=pickOne(ids),pool=DUEL_TALK[rel]||DUEL_TALK.지인;log.push({k:"comp",x:fill(pickOne(pool),{a:nm(x)})})}
+  if(f.round>=2&&Math.random()<.35){const x=pickOne(ids),rel=relDir(x,x===f.a?f.b:f.a),pool=DUEL_TALK[rel]||DUEL_TALK.지인;log.push({k:"comp",x:fill(pickOne(pool),{a:nm(x)})})}
   log.push({k:"amb",x:`${P[f.a].name} ${P[f.a].hp} · ${P[f.b].name} ${P[f.b].hp}`});
   const ko=ids.filter(id=>P[id].hp<=0);
   if(ko.length||f.round>=DUEL_ROUNDS){f.status="done";f.end=sNow();
@@ -1838,7 +1840,8 @@ const DUEL_TALK={지인:["{a|이} \"제법이군.\" 하고 짧게 웃는다.","{
   친우:["{a|이} \"봐주지 않는다!\" 하며 이를 드러내고 웃는다.","{a|이} \"오늘은 내가 이긴다니까.\" 하고 장난스레 외친다."],
   사형제:["{a|이} \"사문의 이름을 걸고!\" 하고 자세를 바로잡는다.","{a|이} \"사형, 그 초식은 이미 읽었습니다.\" 하고 웃는다."],
   연인:["{a|이} 검을 겨누면서도 눈가가 웃고 있다.","{a|이} \"다치지 마.\" 하고 낮게 말한다."],
-  사제:["{a|이} \"그래, 그렇게 하는 것이다!\" 하고 외친다.","{a|이} \"아직 가르칠 게 많구나.\" 하고 미소 짓는다."]};
+  사부:["{a|이} \"그래, 그렇게 하는 것이다!\" 하고 외친다.","{a|이} \"아직 가르칠 게 많구나.\" 하고 미소 짓는다."],
+  제자:["{a|이} \"오늘은 한 수 배우러 왔습니다!\" 하고 고개를 숙인다.","{a|이} \"사부님, 이번엔 봐주지 마세요.\" 하고 웃는다."]};
 function duelClaim(){const d=myDuel();if(!d||d.status!=="done")return;const h=structuredClone(me),other=d.a===myId()?d.b:d.a,on=d.a===myId()?d.bn:d.an;
   h.duelDone=Object.fromEntries(Object.entries({...(h.duelDone||{}),[d.id]:Date.now()}).sort((a,b)=>b[1]-a[1]).slice(0,20));
   h.duelDay={day:dayKey(),n:duelDayN(h)+1};const res=!d.winner?"D":d.winner===myId()?"W":"L";bump(h,"duel"+res);
@@ -2077,7 +2080,7 @@ function coBossTurn(f){
         log.push({k:"ev2",sub:"act",x:`${nm(m)}의 ${SKILL_NAME[m.sect]}!${sp[1]>1?` ${sp[1]}연타`:""} · ${d} 피해${m.sect==="namgung"?" · 창을 세운 채 버틴다":m.sect==="kunlun"?" · 보스의 허점이 드러났다":m.sect==="jegal"?" · 화살비가 쏟아진다":""}${wTag(W)}${wHeal(W,party,nm)}`})}}
     else{const d=deal(m.atk,roleMul(m.role),1,m.crit);turn+=d;b.dealtBy[m.id]=(b.dealtBy[m.id]||0)+d;log.push({k:"ev2",sub:"act",x:`${nm(m)}의 공격 · ${d?`${d} 피해`:"빗나갔다"}`})}
   }
-  const pl=party.filter(x=>x.player&&x.hp>0);if(pl.length>=2&&Math.random()<.3){const sh=[...pl].sort(()=>Math.random()-.5),[x,y]=sh;const pool=COMP.fight[relMutual(x.id,y.id)]||COMP.fight.지인;log.push({k:"comp",x:fill(pickOne(pool),{c:nm(x)})})}
+  const pl=party.filter(x=>x.player&&x.hp>0);if(pl.length>=2&&Math.random()<.3){const sh=[...pl].sort(()=>Math.random()-.5),[x,y]=sh;const pool=COMP.fight[relDir(x.id,y.id)]||COMP.fight.지인;log.push({k:"comp",x:fill(pickOne(pool),{c:nm(x)})})}
   const bp=bAtk*(b.rage?1.5:1)*weak;b.rage=false;
   const take=(x,base)=>{if(x.player&&Math.random()*100<x.eva)return -1;let d=Math.max(1,Math.round(base*100/(100+x.def)*(.9+Math.random()*.2)*pshield));if(guard[x.id])d=Math.round(d*.4);if(iron[x.id])d=Math.round(d*iron[x.id]);x.hp=Math.max(0,x.hp-d);return d};
   if(b.t===1&&hasMod(f,"ambush"))log.push({k:"ev2",sub:"hit",x:`${josa(B.n,"이")} 함정에 걸려 비틀거린다. 이번 합은 공격하지 못했다.`});
@@ -2362,30 +2365,33 @@ const FEED={
     "{me|은} 지붕 위로 올라가 마을 전체를 한눈에 내려다보았다.","사당 앞 향로에 새 향이 꽂혀 있다. 누군가 방금 다녀간 모양이다.",
     "{me|은} 손에 쥔 단서를 다시 한번 들여다보았다.","해가 기울며 그림자가 길어진다. 탐문은 아직 끝나지 않았다."],
   mono:["{me|은} 잠시 숨을 고르며 들은 이야기를 곱씹었다.","어딘가 석연치 않다. {me|은} 발걸음을 재촉했다.","{me|은} 허리춤의 검을 한 번 쥐었다 놓았다.","바람이 바뀌었다. 무언가 가까워지고 있다."]};
-const RELS=["지인","친우","사형제","연인","사제"];
+const RELS=["지인","친우","사형제","연인","사부","제자"];
 const COMP={
   talk:{지인:["{c|이} 옆에서 묵묵히 이야기를 듣는다.","{c|이} 다른 골목을 맡겠다며 손짓하고 사라진다.","{c|와} 들은 이야기를 맞춰 보았다."],
         친우:["{c|이} 어깨를 툭 치며 웃는다. \"역시 말발은 네가 낫다니까.\"","{c|이} 옆에서 슬쩍 거든다. 손발이 척척 맞는다.","{c|와} 눈짓 한 번으로 할 일을 나눴다."],
         사형제:["{c|이} \"서두르지 마라, 강호는 도망가지 않는다.\" 하며 한발 앞서 걷는다.","{c|이} 사문에서 배운 요령을 귀띔해 준다.","{c|와} 같은 보법으로 나란히 골목을 누볐다."],
-        사제:["{c|이} \"눈으로 듣고 귀로 보아라.\" 하며 탐문의 요령을 일러 준다.","{c|이} 앞서 걸으며 한 마디씩 가르침을 흘린다.","{c|와} 묻고 답하며 골목을 돌았다. 배움이 깊어진다."],
+        사부:["{c|이} \"눈으로 듣고 귀로 보아라.\" 하며 탐문의 요령을 일러 준다.","{c|이} 앞서 걸으며 한 마디씩 가르침을 흘린다.","{c|이} 묻는 말에 하나하나 답해 준다. 배움이 깊어진다."],
+        제자:["{c|이} \"사부님, 이건 제가 물어보겠습니다!\" 하고 먼저 나선다.","{c|이} 배운 대로 해 보겠다며 눈을 반짝인다.","{c|이} 사부의 말을 놓칠세라 바짝 붙어 따라 걷는다."],
         연인:["{c|이} 슬며시 소매를 잡아끈다. \"저쪽이 수상해.\"","{c|이} 건네준 물을 나눠 마셨다.","{c|와} 나란히 걷다 보니 탐문이 조금 즐거워졌다."]},
   fight:{지인:["{c|이} 뒤를 받쳐 주었다.","{c|이} 상대의 퇴로를 막았다."],
         친우:["{c|와} 등을 맞대고 싸웠다. 오랜만에 피가 끓는다.","{c|이} \"하나는 내 몫이다!\" 하며 뛰어들었다."],
         사형제:["{c|와} 사문의 합격술로 단숨에 몰아붙였다.","{c|이} \"왼쪽이 빈다!\" 하고 빈틈을 정확히 짚어 주었다."],
-        사제:["{c|이} \"발을 더 낮춰라!\" 하고 외치며 함께 칼을 받아냈다.","{c|이} 한 수를 일부러 남겨 두어 마무리를 맡겼다."],
+        사부:["{c|이} \"발을 더 낮춰라!\" 하고 외치며 함께 칼을 받아냈다.","{c|이} 한 수를 일부러 남겨 두어 마무리를 맡겼다."],
+        제자:["{c|이} \"사부님은 뒤에 계세요!\" 하고 앞으로 뛰어나갔다.","{c|이} 배운 초식을 그대로 펼쳐 보이고 슬쩍 눈치를 본다."],
         연인:["{c|이} 날아드는 칼끝을 대신 쳐냈다.","싸움이 끝나자 {c|이} 다친 데 없냐며 손을 살핀다."]},
   find:{지인:["{c|이} 쓸 만한 물건이라며 고개를 끄덕인다."],
         친우:["{c|이} \"반은 내 몫이다?\" 하며 장난스레 웃는다."],
         사형제:["{c|이} 사부님께 드리면 좋아하시겠다고 한다."],
         연인:["{c|이} 이건 네가 가지라며 손에 쥐여 준다."],
-        사제:["{c|이} 물건의 쓰임새를 하나하나 짚어 준다."]}};
+        사부:["{c|이} 물건의 쓰임새를 하나하나 짚어 준다."],
+        제자:["{c|이} \"사부님께 드리려고 챙겼어요.\" 하며 내민다."]}};
 let fakeMate=null, typedKey="";
 function seeded(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 const relOf=id=>relWith(id);
 function companionsFor(m){
   if(fakeMate) return [fakeMate];
   return others.filter(o=>following(o._id)&&o.mission&&o.mission.region===m.region&&o.mission.period===m.period&&o.mission.idx===m.idx&&o.mission.start<m.end&&o.mission.end>m.start)
-    .sort((a,b)=>String(a._id).localeCompare(String(b._id))).map(o=>({name:o.name,rel:relOf(o._id),id:o._id}));
+    .sort((a,b)=>String(a._id).localeCompare(String(b._id))).map(o=>({name:o.name,rel:relDir(o._id,myId()),id:o._id}));
 }
 /* 일지 문구에 나오는 동행은 한 명(정해진 순서로), 이름 표시와 인연은 모두 */
 function companionFor(m){const cs=companionsFor(m);if(!cs.length)return null;if(cs.length===1)return cs[0];
