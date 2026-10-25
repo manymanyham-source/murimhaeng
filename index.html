@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261025211814">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261025213858">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -2890,12 +2890,17 @@ async function boot(){
   if(!d||!id){startLocal();return}
   db=d;uid=id;mode="db";isOwner=await u.isOwner();
   try{const js=await db.doc("journals/"+uid).get();if(js.exists){journalCache=js.data().list||[];lastJournal=JSON.stringify(journalCache)}}catch(e){}
-  db.collection("duels").onSnapshot(snap=>{duels={};snap.docs.forEach(d=>{if(d.exists)duels[d.id]=structuredClone(d.data())});if(ready)render();maybeResolveDuel()},()=>{});
+  /* 청소: 3일 넘게 손대지 않은 소굴·관문·논검 기록은 지워서, 들어올 때 읽는 양이 쌓이지 않게 한다 (한 번에 30개까지) */
+  const OLD=3*86400e3;let swept=0;
+  const sweep=(col,docs)=>{if(sweep.done?.[col])return;sweep.done={...(sweep.done||{}),[col]:1};const now=Date.now();
+    docs.filter(d=>{const x=d.data()||{},t=x.updated||x.end||x.start||x.created||x.t||0;return t&&now-t>OLD&&d.id!==me?.colair}).slice(0,30-swept)
+      .forEach(d=>{swept++;db.doc(col+"/"+d.id).delete().catch(()=>{})})};
+  db.collection("duels").onSnapshot(snap=>{sweep("duels",snap.docs.filter(d=>d.exists));duels={};snap.docs.forEach(d=>{if(d.exists)duels[d.id]=structuredClone(d.data())});if(ready)render();maybeResolveDuel()},()=>{});
   db.collection("notices").onSnapshot(snap=>{notices={};snap.docs.forEach(d=>{if(d.exists)notices[d.id]=structuredClone(d.data())});if(ready)render()},()=>{});
   db.collection("mail").onSnapshot(snap=>{mails={};snap.docs.forEach(d=>{if(d.exists)mails[d.id]=structuredClone(d.data())});if(ready)render()},()=>{});
   db.collection("avatars").onSnapshot(snap=>{avatars={};snap.docs.forEach(d=>{if(d.exists)avatars[d.id]=d.data().img});if(ready)render()},()=>{});
-  db.collection("lairs").onSnapshot(snap=>{lairRuns={};snap.docs.forEach(d=>{if(d.exists)lairRuns[d.id]=structuredClone(d.data())});if(ready)render();maybeResolveLair()},()=>{});
-  db.collection("gates").onSnapshot(snap=>{gateRooms={};snap.docs.forEach(d=>{if(d.exists)gateRooms[d.id]=structuredClone(d.data())});if(ready)render();maybeResolve()},()=>{});
+  db.collection("lairs").onSnapshot(snap=>{sweep("lairs",snap.docs.filter(d=>d.exists));lairRuns={};snap.docs.forEach(d=>{if(d.exists)lairRuns[d.id]=structuredClone(d.data())});if(ready)render();maybeResolveLair()},()=>{});
+  db.collection("gates").onSnapshot(snap=>{sweep("gates",snap.docs.filter(d=>d.exists));gateRooms={};snap.docs.forEach(d=>{if(d.exists)gateRooms[d.id]=structuredClone(d.data())});if(ready)render();maybeResolve()},()=>{});
   db.collection("gateacts").onSnapshot(snap=>{const mine=gateActs[uid];gateActs={};snap.docs.forEach(d=>{if(d.exists)gateActs[d.id]=structuredClone(d.data())});
     if(mine&&(!gateActs[uid]||(gateActs[uid].t||0)<(mine.t||0)))gateActs[uid]=mine;if(ready)render();maybeResolve();maybeResolveLair();try{maybeResolveDuel()}catch(e){}},()=>{});
   db.collection("heroes").onSnapshot(snap=>{
