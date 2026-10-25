@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261025011752">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261025211814">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -835,7 +835,7 @@ function claimRaid(){
   const p=periodNow(),h=structuredClone(me),st=raidState(p);if(!st.down||h.raid?.period!==p||h.raid.claimed)return;
   const B=bossFor(p),top=st.ppl[0]===me,exp=expPerHour(h.level)*4,lv0=h.level,ups=applyExp(h,exp),got=[`경험치 +${exp}`];
   const stones=5+(top?2:0);h.items.stone+=stones;got.push(`강화석 +${stones}${top?" (최다 피해 +2)":""}`);
-  if(Math.random()<.5){const it=Math.random()<.2?makeItem("weapon",h.realm,null,{sect:h.sect}):makeItem(pickOne(["weapon","armor","acc"]),h.realm,pickOne(["tank","dps","heal"]));got.push(`장비 「${gainItem(h,it)}」`)}
+  if(Math.random()<.5){const it=Math.random()<.2?makeItem("weapon",h.realm,null,{sect:h.sect}):makeItem(pickOne(["weapon","armor","acc"]),h.realm,pickOne(SPECS));got.push(`장비 「${gainItem(h,it)}」`)}
   if(Math.random()<.25){h.items.clue++;got.push("비급 단서 +1")}
   if(Math.random()<.5){const g=pickOne(GIFTS);h.items[g]++;got.push(`${ITEMS[g][0]} +1`)}
   st.ppl.filter(x=>x!==me&&x._id).forEach(x=>{const v=addBond(h,x._id,20);got.push(`${josa(x.name,"와")} 인연 +${v}`)});
@@ -949,7 +949,7 @@ function roomCore(h,run,opt){
     else hurtParty(run,party(),.2,log,"벽에서 화살이 쏟아졌다!");
   }else if(t==="treasure"){
     if(r.ok){const n=2+Math.floor(Math.random()*2);run.loot.stone+=n;let msg=`궤짝 안에서 강화석 ${n}개`;
-      if(Math.random()<.4){const it=makeItem(pickOne(["weapon","armor","acc"]),h.realm,pickOne(["tank","dps","heal"]));run.loot.items.push(it);msg+=`와 ${josa(it.name,"을")}`}else msg+="를";
+      if(Math.random()<.4){const it=makeItem(pickOne(["weapon","armor","acc"]),h.realm,pickOne(SPECS));run.loot.items.push(it);msg+=`와 ${josa(it.name,"을")}`}else msg+="를";
       log.push({k:"end",x:msg+" 찾았다."})}
     else{run.loot.stone++;log.push({k:"amb",x:"궤짝이 부서지며 안의 것들도 대부분 깨졌다. 강화석 하나만 건졌다."})}
   }else if(t==="rest"){
@@ -995,15 +995,15 @@ function bossTurn(action){
   const blind=om.type==="sp"&&B.sp==="blind",shieldB=om.type==="sp"&&B.sp==="shield";
   const deal=(atk,mult,hits=1,crit=5)=>{let s=0;for(let i=0;i<hits;i++){let d=blind&&Math.random()<.3?0:Math.max(1,Math.round(atk*mult*100/(100+bDef)*(.9+Math.random()*.2)*mulIn));if(d&&Math.random()*100<crit)d=Math.round(d*1.5);s+=d}return shieldB?Math.round(s*.5):s};
   log.push({k:"sec",x:`${b.t}합`},{k:"ev2",sub:"omen",x:omenText(B,om,party)});
-  let guard=false,taunt=null,pshield=1,weak=1,turn=0;
+  let guard=false,taunt=null,pshield=1,weak=1,turn=0,iron=false;const W=wfx(h);
   if(b.cd>0)b.cd--;
   if(mm.hp>0){
     if(action==="def"){guard=true;if(run.role==="tank")taunt=mm;const d=deal(mm.atk,.3,1,mm.crit);turn+=d;log.push({k:"ev2",sub:"act",x:`${nmjx(mm,"이")} 자세를 낮추고 막아선다${run.role==="tank"?" · 보스의 시선을 끈다":""} · 반격 ${d}`})}
     else if(action==="skill"&&!b.cd&&b.qi>=25){b.qi-=25;b.cd=2;const s=h.sect,nmS=SKILL_NAME[s];
-      if(s==="ami"){const parts=[];party.filter(x=>x.hp>0).forEach(x=>{const a=Math.round(Math.max(mm.atk*1.1,20+L*5));x.hp=Math.min(x.max,x.hp+a);parts.push(`${nmx(x)} +${a}`)});log.push({k:"ev2",sub:"act",x:`${nmx(mm)}의 회춘수! ${parts.join(" · ")}`})}
-      else{const spec={sorim:[1.25,1],hwasan:[.9,2],mudang:[.9,1],dang:[.6,2]}[s],d=deal(mm.atk,spec[0],spec[1],mm.crit);turn+=d;
-        if(s==="sorim")taunt=mm;if(s==="mudang")pshield=.75;if(s==="dang")weak=.8;
-        log.push({k:"ev2",sub:"act",x:`${nmx(mm)}의 ${nmS}!${spec[1]>1?` ${spec[1]}연타`:""} · ${d} 피해${s==="sorim"?" · 보스의 시선이 쏠린다":s==="mudang"?" · 파티에 태극의 막이 둘러진다":s==="dang"?" · 보스의 손끝이 저린다":""}`})}}
+      if(s==="ami"){const parts=[];party.filter(x=>x.hp>0).forEach(x=>{const a=Math.round(Math.max(mm.atk*1.1,20+L*5)*(W==="ami"?1.15:1));x.hp=Math.min(x.max,x.hp+a);parts.push(`${nmx(x)} +${a}`)});log.push({k:"ev2",sub:"act",x:`${nmx(mm)}의 회춘수!${W==="ami"?" (자운불진)":""} ${parts.join(" · ")}`})}
+      else{const spec=WSP(s,W),d=deal(mm.atk,spec[0],spec[1],mm.crit);turn+=d;
+        if(s==="sorim"){taunt=mm;if(W==="sorim")iron=true}if(s==="mudang")pshield=W==="mudang"?.7:.75;if(s==="dang")weak=.8;
+        log.push({k:"ev2",sub:"act",x:`${nmx(mm)}의 ${nmS}!${spec[1]>1?` ${spec[1]}연타`:""} · ${d} 피해${s==="sorim"?" · 보스의 시선이 쏠린다":s==="mudang"?" · 파티에 태극의 막이 둘러진다":s==="dang"?" · 보스의 손끝이 저린다":""}${wTag(W)}${wHeal(W,party,nmx)}`})}}
     else{const d=deal(mm.atk,roleMul(run.role),1,mm.crit);turn+=d;log.push({k:"ev2",sub:"act",x:`${nmx(mm)}의 공격 · ${d?`${d} 피해`:"빗나갔다"}`})}
   }else log.push({k:"amb",x:`${nmjx(mm,"은")} 쓰러져 있다.`});
   if(Math.random()<.3){const n=pickOne(party.filter(x=>!x.isMe&&x.hp>0)||[null]);if(n&&NPC_SAY[n.name])log.push({k:"comp",x:`${n.name}: ${pickOne(NPC_SAY[n.name])}`})}
@@ -1012,7 +1012,7 @@ function bossTurn(action){
     const d=deal(a.atk,roleMul(a.role),1,a.crit);turn+=d;if(a.role==="tank"&&!taunt&&Math.random()<.6)taunt=a;
     log.push({k:"ev2",sub:"act",x:`${a.role==="tank"?`${josa(a.name,"이")} 앞을 막아서며 친다`:`${a.name}의 일격`} · ${d?`${d} 피해`:"빗나갔다"}`})}
   const bp=bAtk*(b.rage?1.5:1)*weak;b.rage=false;
-  const take=(x,base)=>{if(x.isMe&&Math.random()*100<x.eva)return -1;let d=Math.max(1,Math.round(base*100/(100+x.def)*(.9+Math.random()*.2)*pshield));if(x.isMe&&guard)d=Math.round(d*.4);x.hp=Math.max(0,x.hp-d);return d};
+  const take=(x,base)=>{if(x.isMe&&Math.random()*100<x.eva)return -1;let d=Math.max(1,Math.round(base*100/(100+x.def)*(.9+Math.random()*.2)*pshield));if(x.isMe&&guard)d=Math.round(d*.4);if(x.isMe&&iron)d=Math.round(d*.8);x.hp=Math.max(0,x.hp-d);return d};
   if(b.t===1&&hasMod(run,"ambush"))log.push({k:"ev2",sub:"hit",x:`${josa(B.n,"이")} 함정에 걸려 비틀거린다. 이번 합은 공격하지 못했다.`});
   else if(om.type==="aoe"){const parts=party.filter(x=>x.hp>0).map(x=>{const d=take(x,bp*.6);return `${nmx(x)} ${d<0?"회피":d}${x.hp<=0?"(쓰러짐)":""}`});log.push({k:"ev2",sub:"hit",x:`광역 공격! ${parts.join(" · ")}`})}
   else if(om.type==="smash"){let tg=party.find(x=>x.id===om.target);if(taunt&&taunt.hp>0&&taunt!==tg){log.push({k:"ev2",sub:"act",x:`${nmjx(taunt,"이")} 강타를 대신 받아낸다!`});tg=taunt}
@@ -1223,7 +1223,7 @@ function resolveGate(room){
     acts[m.id]=m.player&&ad.room===n.id&&ad.mode!=="auto"&&ad.act===a&&ad.action?ad.action:gateAuto(n,m)}
   log.push({k:"sec",x:`${a}막 · ${GACT[a].n}`},{k:"ev2",sub:"omen",x:n.omen.text});
   if(a===6){n.minions=600;log.push({k:"ev2",sub:"hit",x:"새끼 요괴 둘이 앞을 가로막았다. (새끼 체력 600)"})}
-  let actDmg=0,taunt=null;const guard={},pshield={v:1};let weak=1;
+  let actDmg=0,taunt=null;const guard={},iron={},pshield={v:1};let weak=1;
   const deal=(atk,mult,hits,crit)=>{let s=0;for(let i=0;i<hits;i++){let d=Math.max(1,Math.round(atk*mult*100/(100+G.def)*(.9+Math.random()*.2)));if(Math.random()*100<crit)d=Math.round(d*1.5);s+=d}return s};
   const hitBoss=d=>{if(n.minions>0){const half=Math.round(d/2);n.minions=Math.max(0,n.minions-half);d-=half;if(n.minions===0)log.push({k:"ev2",sub:"act",x:"새끼 요괴들이 모두 쓰러졌다!"})}n.bossHp=Math.max(0,n.bossHp-d);actDmg+=d;return d};
   if(Math.random()<.35){const np=alive().filter(x=>!x.player);const s=np.length?pickOne(np):null;if(s&&NPC_SAY[s.name])log.push({k:"comp",x:`${s.name}: ${pickOne(NPC_SAY[s.name])}`})}
@@ -1232,17 +1232,17 @@ function resolveGate(room){
     if(a===3){sides[m.id]=act==="left"||act==="right"?act:(Math.random()<.5?"left":"right");continue}
     if(m.role==="heal"&&!m.player){const low=alive().sort((x,y)=>x.hp/x.max-y.hp/y.max)[0];if(low.hp/low.max<.65){const amt=Math.round(Math.max(m.atk*1.3,60));low.hp=Math.min(low.max,low.hp+amt);log.push({k:"ev2",sub:"act",x:`${m.name}의 회춘수 · ${gnm(low)} +${amt}`});continue}}
     if(act==="def"){guard[m.id]=true;if(m.role==="tank")taunt=m;const d=hitBoss(deal(m.atk,.3,1,m.crit));log.push({k:"ev2",sub:"act",x:`${josa(gnm(m),"이")} 자세를 낮추고 막아선다 · 반격 ${d}`})}
-    else if(act==="skill"&&!m.cd&&m.qi>=25){m.qi-=25;m.cd=2;
-      if(m.sect==="ami"){const parts=alive().map(x=>{const amt=Math.round(Math.max(m.atk*1.1,60)*(m.player&&x.player&&x.id!==m.id&&relMutual(m.id,x.id)==="연인"?1.25:1));x.hp=Math.min(x.max,x.hp+amt);return `${gnm(x)} +${amt}`});log.push({k:"ev2",sub:"act",x:`${gnm(m)}의 회춘수! ${parts.join(" · ")}`});skillers.push({m,d:0})}
-      else{const sp={sorim:[1.25,1],hwasan:[.9,2],mudang:[.9,1],dang:[.6,2]}[m.sect],d=hitBoss(deal(m.atk,sp[0],sp[1],m.crit));if(m.sect==="sorim")taunt=m;if(m.sect==="mudang")pshield.v=.75;if(m.sect==="dang")weak=.8;
-        log.push({k:"ev2",sub:"act",x:`${gnm(m)}의 ${SKILL_NAME[m.sect]}!${sp[1]>1?` ${sp[1]}연타`:""} · ${d} 피해`});skillers.push({m,d})}
+    else if(act==="skill"&&!m.cd&&m.qi>=25){m.qi-=25;m.cd=2;const W=m.player?wfx(heroById(m.id)):null;
+      if(m.sect==="ami"){const parts=alive().map(x=>{const amt=Math.round(Math.max(m.atk*1.1,60)*(W==="ami"?1.15:1)*(m.player&&x.player&&x.id!==m.id&&relMutual(m.id,x.id)==="연인"?1.25:1));x.hp=Math.min(x.max,x.hp+amt);return `${gnm(x)} +${amt}`});log.push({k:"ev2",sub:"act",x:`${gnm(m)}의 회춘수! ${parts.join(" · ")}`});skillers.push({m,d:0})}
+      else{const sp=WSP(m.sect,W),d=hitBoss(deal(m.atk,sp[0],sp[1],m.crit));if(m.sect==="sorim"){taunt=m;if(W==="sorim")iron[m.id]=true}if(m.sect==="mudang")pshield.v=Math.min(pshield.v,W==="mudang"?.7:.75);if(m.sect==="dang")weak=.8;
+        log.push({k:"ev2",sub:"act",x:`${gnm(m)}의 ${SKILL_NAME[m.sect]}!${sp[1]>1?` ${sp[1]}연타`:""} · ${d} 피해${wTag(W)}${wHeal(W,alive(),gnm)}`});skillers.push({m,d})}
       const mate=alive().find(x=>x.player&&x.id!==m.id);if(m.player&&mate&&Math.random()<.5)relLine(n,"skill",m,mate,log)}
     else{const d=hitBoss(deal(m.atk,roleMul(m.role),1,m.crit));if(m.role==="tank"&&!taunt&&!m.player&&Math.random()<.6)taunt=m;log.push({k:"ev2",sub:"act",x:`${m.role==="tank"&&!m.player?`${josa(m.name,"이")} 앞을 막아서며 친다`:`${gnm(m)}의 공격`} · ${d} 피해`})}
   }
   for(let i=0;i<skillers.length;i++)for(let j=i+1;j<skillers.length;j++){const A=skillers[i],B=skillers[j];if(!A.m.player||!B.m.player)continue;const rel=relMutual(A.m.id,B.m.id);
     if(rel!=="지인"&&bondTotal(A.m.id,B.m.id)>=600){const d=hitBoss(Math.round((A.d+B.d)*.5+(A.m.atk+B.m.atk)*.5));log.push({k:"ev2",sub:"act",x:`합격기 「${COMBO[rel]}」! ${josa(gnm(A.m),"와")} ${gnm(B.m)}의 초식이 하나로 겹친다 · ${d} 피해`})}}
   const bMul=(n.rage?1.3:1)*weak;
-  const take=(m,base,noGuard)=>{if(m.player&&Math.random()*100<m.eva)return -1;let d=Math.max(1,Math.round(base*bMul*100/(100+m.def)*(.9+Math.random()*.2)*pshield.v));if(guard[m.id]&&!noGuard)d=Math.round(d*.4);m.hp=Math.max(0,m.hp-d);return d};
+  const take=(m,base,noGuard)=>{if(m.player&&Math.random()*100<m.eva)return -1;let d=Math.max(1,Math.round(base*bMul*100/(100+m.def)*(.9+Math.random()*.2)*pshield.v));if(guard[m.id]&&!noGuard)d=Math.round(d*.4);if(iron[m.id])d=Math.round(d*.8);m.hp=Math.max(0,m.hp-d);return d};
   const downs=[];const mark=m=>{if(m.hp<=0)downs.push(m)};
   if(n.bossHp>0){
     if(a===1){const t=P.find(x=>x.id===n.omen.target);if(t&&t.hp>0){const d=take(t,G.smash);mark(t);log.push({k:"ev2",sub:"hit",x:d<0?`${josa(gnm(t),"이")} 몸을 틀어 일격을 흘려냈다!`:`일격! ${gnm(t)} ${d} 피해${t.hp<=0?" — 쓰러졌다!":""}`});
@@ -1277,7 +1277,7 @@ function claimGate(){
     if(r.owner===myId()&&h.realm===r.realm-1&&atWall(h)){h.realm=r.realm;h.points+=5;applyExp(h,0);got.push(`${REALMS[r.realm].n}의 경지에 올랐다! (포인트 +5)`)}
     else{const exp=expPerHour(h.level)*3;applyExp(h,exp);got.push(`도우미 보상 · 경험치 +${exp}`)}
     h.items.stone+=5;got.push("강화석 +5");
-    if(Math.random()<.5){const it=makeItem(pickOne(["weapon","armor","acc"]),Math.min(6,r.realm),pickOne(["tank","dps","heal"]));got.push(`장비 「${gainItem(h,it)}」`)}
+    if(Math.random()<.5){const it=makeItem(pickOne(["weapon","armor","acc"]),Math.min(6,r.realm),pickOne(SPECS));got.push(`장비 「${gainItem(h,it)}」`)}
     if(Math.random()<.3){h.items.clue++;got.push("비급 단서 +1")}
   }else{const exp=Math.round(expPerHour(h.level));applyExp(h,exp);got.push(`경험치 +${exp} (다시 도전할 수 있다)`)}
   r.party.filter(x=>x.player&&x.id!==myId()).forEach(x=>{const v=addBond(h,x.id,30);got.push(`${josa(x.name,"와")} 인연 +${v}`)});
@@ -2026,7 +2026,7 @@ function coBossTurn(f){
   const nm=x=>x.player?`\u0001${x.name}\u0002`:x.name;
   const tg0=party.find(x=>x.id===om.target);
   log.push({k:"sec",x:`${b.t}합`},{k:"ev2",sub:"omen",x:om.type==="aoe"?B.aoe:om.type==="smash"?fill(B.smash,{t:tg0?nm(tg0):"누군가"}):B.spx});
-  let guard={},taunt=null,pshield=1,weak=1,turn=0;
+  let guard={},taunt=null,pshield=1,weak=1,turn=0;const iron={};
   for(const m of party){if(m.hp<=0)continue;
     if(!m.player){
       if(m.role==="heal"){const low=party.filter(x=>x.hp>0).sort((x,y)=>x.hp/x.max-y.hp/y.max)[0];if(low&&low.hp/low.max<.65){const amt=Math.round(Math.max(m.atk*1.3,20+L*5));low.hp=Math.min(low.max,low.hp+amt);log.push({k:"ev2",sub:"act",x:`${m.name}의 회춘수 · ${nm(low)} +${amt}`});continue}}
@@ -2035,16 +2035,16 @@ function coBossTurn(f){
     const ps=b.p[m.id]=b.p[m.id]||{qi:50,qmax:50,cd:0};if(ps.cd>0)ps.cd--;
     const a=coActOf(m.id),act=a.lr===f.id&&a.lm!=="auto"&&a.lt===b.t&&a.la?a.la:coAuto(f,m,party);
     if(act==="def"){guard[m.id]=true;if(m.role==="tank")taunt=m;const d=deal(m.atk,.3,1,m.crit);turn+=d;b.dealtBy[m.id]=(b.dealtBy[m.id]||0)+d;log.push({k:"ev2",sub:"act",x:`${josa(nm(m),"이")} 자세를 낮추고 막아선다 · 반격 ${d}`})}
-    else if(act==="skill"&&!ps.cd&&ps.qi>=25){ps.qi-=25;ps.cd=2;
-      if(m.sect==="ami"){const parts=party.filter(x=>x.hp>0).map(x=>{const amt=Math.round(Math.max(m.atk*1.1,20+L*5)*(x.player&&x.id!==m.id&&relMutual(m.id,x.id)==="연인"?1.25:1));x.hp=Math.min(x.max,x.hp+amt);return `${nm(x)} +${amt}`});log.push({k:"ev2",sub:"act",x:`${nm(m)}의 회춘수! ${parts.join(" · ")}`})}
-      else{const sp={sorim:[1.25,1],hwasan:[.9,2],mudang:[.9,1],dang:[.6,2]}[m.sect],d=deal(m.atk,sp[0],sp[1],m.crit);turn+=d;b.dealtBy[m.id]=(b.dealtBy[m.id]||0)+d;
-        if(m.sect==="sorim")taunt=m;if(m.sect==="mudang")pshield=.75;if(m.sect==="dang")weak=.8;
-        log.push({k:"ev2",sub:"act",x:`${nm(m)}의 ${SKILL_NAME[m.sect]}!${sp[1]>1?` ${sp[1]}연타`:""} · ${d} 피해`})}}
+    else if(act==="skill"&&!ps.cd&&ps.qi>=25){ps.qi-=25;ps.cd=2;const W=wfx(heroById(m.id));
+      if(m.sect==="ami"){const parts=party.filter(x=>x.hp>0).map(x=>{const amt=Math.round(Math.max(m.atk*1.1,20+L*5)*(W==="ami"?1.15:1)*(x.player&&x.id!==m.id&&relMutual(m.id,x.id)==="연인"?1.25:1));x.hp=Math.min(x.max,x.hp+amt);return `${nm(x)} +${amt}`});log.push({k:"ev2",sub:"act",x:`${nm(m)}의 회춘수! ${parts.join(" · ")}`})}
+      else{const sp=WSP(m.sect,W),d=deal(m.atk,sp[0],sp[1],m.crit);turn+=d;b.dealtBy[m.id]=(b.dealtBy[m.id]||0)+d;
+        if(m.sect==="sorim"){taunt=m;if(W==="sorim")iron[m.id]=true}if(m.sect==="mudang")pshield=Math.min(pshield,W==="mudang"?.7:.75);if(m.sect==="dang")weak=.8;
+        log.push({k:"ev2",sub:"act",x:`${nm(m)}의 ${SKILL_NAME[m.sect]}!${sp[1]>1?` ${sp[1]}연타`:""} · ${d} 피해${wTag(W)}${wHeal(W,party,nm)}`})}}
     else{const d=deal(m.atk,roleMul(m.role),1,m.crit);turn+=d;b.dealtBy[m.id]=(b.dealtBy[m.id]||0)+d;log.push({k:"ev2",sub:"act",x:`${nm(m)}의 공격 · ${d?`${d} 피해`:"빗나갔다"}`})}
   }
   const pl=party.filter(x=>x.player&&x.hp>0);if(pl.length>=2&&Math.random()<.3){const sh=[...pl].sort(()=>Math.random()-.5),[x,y]=sh;const pool=COMP.fight[relMutual(x.id,y.id)]||COMP.fight.지인;log.push({k:"comp",x:fill(pickOne(pool),{c:nm(x)})})}
   const bp=bAtk*(b.rage?1.5:1)*weak;b.rage=false;
-  const take=(x,base)=>{if(x.player&&Math.random()*100<x.eva)return -1;let d=Math.max(1,Math.round(base*100/(100+x.def)*(.9+Math.random()*.2)*pshield));if(guard[x.id])d=Math.round(d*.4);x.hp=Math.max(0,x.hp-d);return d};
+  const take=(x,base)=>{if(x.player&&Math.random()*100<x.eva)return -1;let d=Math.max(1,Math.round(base*100/(100+x.def)*(.9+Math.random()*.2)*pshield));if(guard[x.id])d=Math.round(d*.4);if(iron[x.id])d=Math.round(d*.8);x.hp=Math.max(0,x.hp-d);return d};
   if(b.t===1&&hasMod(f,"ambush"))log.push({k:"ev2",sub:"hit",x:`${josa(B.n,"이")} 함정에 걸려 비틀거린다. 이번 합은 공격하지 못했다.`});
   else if(om.type==="aoe"){const parts=party.filter(x=>x.hp>0).map(x=>{const d=take(x,bp*.6);return `${nm(x)} ${d<0?"회피":d}${x.hp<=0?"(쓰러짐)":""}`});log.push({k:"ev2",sub:"hit",x:`광역 공격! ${parts.join(" · ")}`})}
   else if(om.type==="smash"){let tg=party.find(x=>x.id===om.target);if(taunt&&taunt.hp>0&&taunt!==tg){log.push({k:"ev2",sub:"act",x:`${josa(nm(taunt),"이")} 강타를 대신 받아낸다!`});tg=taunt}
@@ -2120,10 +2120,20 @@ function coLairView(r){
 const SLOTS={weapon:"무기",armor:"의복",acc:"장신구"};
 const GRADE=["무명","청강","한철","현철","운철","천잠","만년한철"];
 const W_ATK=[10,20,40,70,110,160,220], A_DEF=[5,10,20,35,55,80,110], ACC=[3,5,8,12,17,23,30];
-const SPEC={tank:{n:"탱커 특화",atk:.8,def:1.3},dps:{n:"딜러 특화",atk:1.3,def:.8},heal:{n:"힐러 특화",atk:.9,def:1,nei:.5}};
-const NOUN={weapon:{tank:"선장",dps:"장검",heal:"철선"},armor:{tank:"갑의",dps:"경장",heal:"도포"},acc:{nei:"옥패",wai:"완갑",shen:"요대"}};
-const SECT_ITEM={sorim:{n:"금강선장",spec:"tank",fx:"나한권이 보스 시선을 더 강하게 끈다"},hwasan:{n:"매화검",spec:"dps",fx:"매화검법 연타 +1"},
-  ami:{n:"자운불진",spec:"heal",fx:"회춘수 회복량 +15%"},mudang:{n:"태극검",spec:"tank",fx:"태극권 보호막 +20%"},dang:{n:"만천화우통",spec:"dps",fx:"비도술 타수 +1"}};
+const SPEC={tank:{n:"탱커 특화",atk:.8,def:1.3},dps:{n:"딜러 특화",atk:1.3,def:.8},heal:{n:"힐러 특화",atk:.9,def:1,nei:.5},bal:{n:"균형형",atk:1.05,def:1.05,nei:.25}};
+const SPECS=["tank","dps","heal","bal"];
+const NOUN={weapon:{tank:"선장",dps:"장검",heal:"철선",bal:"고금"},armor:{tank:"갑의",dps:"경장",heal:"도포",bal:"무복"},acc:{nei:"옥패",wai:"완갑",shen:"요대"}};
+const SECT_ITEM={sorim:{n:"금강선장",spec:"tank",fx:"나한권으로 시선을 끈 합에 받는 피해 -20%"},hwasan:{n:"매화검",spec:"dps",fx:"매화검법 연타 +1"},
+  ami:{n:"자운불진",spec:"heal",fx:"회춘수 회복량 +15%"},mudang:{n:"태극검",spec:"tank",fx:"태극권 보호막 25% → 30%"},dang:{n:"만천화우통",spec:"dps",fx:"비도술 타수 +1"}};
+/* 두 역할을 하는 문파의 두 번째 전용 무기 */
+const SECT_ALT={mudang:{n:"진무옥소",spec:"heal",fx:"옥퉁소 가락이 기혈을 다스린다 · 태극권을 쓸 때 파티 전원 체력 5% 회복"},
+  dang:{n:"회혼금침",spec:"heal",fx:"독 대신 약을 묻힌 금침 · 비도술을 쓸 때 파티 전원 체력 5% 회복"}};
+const sectItemOf=it=>it?.sect?(it.alt?SECT_ALT[it.sect]:SECT_ITEM[it.sect]):null;
+/* 전용 무기 효과 (소굴·관문 전투. 논검에는 넣지 않는다) */
+const wfx=hero=>{const w=hero?.gear?.weapon;return w?.sect&&hero&&w.sect===hero.sect?(w.alt?w.sect+"2":w.sect):null};
+function WSP(sect,W){const sp={sorim:[1.25,1],hwasan:[.9,2],mudang:[.9,1],dang:[.6,2]}[sect].slice();if(W==="hwasan"||W==="dang")sp[1]++;return sp}
+function wHeal(W,list,nm){if(W!=="mudang2"&&W!=="dang2")return "";const parts=list.filter(x=>x.hp>0).map(x=>{const a=Math.max(1,Math.round(x.max*.05));x.hp=Math.min(x.max,x.hp+a);return `${nm(x)} +${a}`});return ` · ${W==="mudang2"?"옥퉁소 가락":"금침"}으로 회복 ${parts.join(" · ")}`}
+const wTag=W=>W==="sorim"?" · 금강선장: 금강불괴":W==="hwasan"?" · 매화검: 한 수 더":W==="dang"?" · 만천화우통: 한 발 더":W==="mudang"?" · 태극검: 막이 두터워진다":"";
 const SECT_SPEC={sorim:"tank",hwasan:"dps",ami:"heal",mudang:"tank",dang:"dps"};
 const ENH=[90,80,70,50,40,30,15,10,5,3];
 const enhChance=it=>Math.min(100,Math.round((ENH[it.plus]*Math.pow(.9,it.grade)+(it.fails||0))*10)/10);
@@ -2133,7 +2143,7 @@ const FAILT=["쩌억— 불길한 소리. 강화석만 재가 되어 흩어졌�
 let gsel="weapon", gmsg=null, gconfirm=null;
 function makeItem(slot,grade,spec,opt={}){
   const it={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),slot,grade,plus:0,fails:0};
-  if(opt.sect){const S=SECT_ITEM[opt.sect];Object.assign(it,{slot:"weapon",spec:S.spec,sect:opt.sect,name:S.n});return it}
+  if(opt.sect){const alt=SECT_ALT[opt.sect]&&(opt.alt??Math.random()<.5),S=alt?SECT_ALT[opt.sect]:SECT_ITEM[opt.sect];Object.assign(it,{slot:"weapon",spec:S.spec,sect:opt.sect,name:S.n});if(alt)it.alt=true;return it}
   if(slot==="acc"){it.stat=opt.stat||pickOne(["nei","wai","shen"]);it.name=`${GRADE[grade]} ${NOUN.acc[it.stat]}`}
   else{it.spec=spec;it.name=`${GRADE[grade]} ${NOUN[slot][spec]}`}
   return it;
@@ -2156,7 +2166,7 @@ function gainItem(h,it){if(h.bag.length>=20){const n=it.grade+1;h.items.stone+=n
 function rollDrop(h,tier){
   if(Math.random()*100>=[25,12,5][tier]) return null;
   if(tier===0&&Math.random()<.15) return makeItem("weapon",h.realm,null,{sect:Math.random()<.5?h.sect:pickOne(Object.keys(SECTS))});
-  const slot=pickOne(["weapon","armor","acc"]);return makeItem(slot,h.realm,pickOne(["tank","dps","heal"]));
+  const slot=pickOne(["weapon","armor","acc"]);return makeItem(slot,h.realm,pickOne(SPECS));
 }
 function enhance(slot){
   const h=structuredClone(me),it=h.gear[slot];if(!it)return;
@@ -2201,7 +2211,7 @@ function gearTab(){
       <div class="row"><button class="btn ${lack?"":"sealb"}" id="enhBtn" type="button" ${lack?"disabled":""}>망치를 든다 · 강화 시도</button>
         <button class="btn ghost" id="unequipBtn" type="button">벗기</button></div>
       ${lack?`<p class="note" style="margin:0">강화석은 사건 해결, 길 위의 만남, 장비 녹이기로 모은다.</p>`:""}
-      ${it.sect?`<p class="note" style="margin:0">전용 효과: ${SECT_ITEM[it.sect].fx} (${it.sect===h.sect?"레이드 전투에서 적용 예정":`${SECTS[it.sect].n} 문하만 효과를 받는다`})</p>`:""}</div>`}
+      ${it.sect?`<p class="note" style="margin:0">전용 효과: ${sectItemOf(it).fx} (${it.sect===h.sect?"소굴·관문 전투에서 적용 · 논검 제외":`${SECTS[it.sect].n} 문하만 효과를 받는다`})</p>`:""}</div>`}
   const bag=h.bag.length?h.bag.map((x,i)=>{const cur=h.gear[x.slot],inh=cur&&cur.plus>1&&Math.floor(cur.plus/2)>x.plus;
     return `<div class="itemrow"><div><b>${esc(x.name)}${x.plus?` <em>+${x.plus}</em>`:""}</b><div class="gs">${SLOTS[x.slot]} · ${gradeLine(x)}</div>
       <div class="gst">${statLine(x)} · 지금 것보다 ${diffLine(x)}</div></div>
@@ -2799,7 +2809,7 @@ function bind(){
   bindMail(); bindAlarm(); bindDuel(); bindNotice();
   on("#horseBtn",()=>{const h=structuredClone(me);h.horse=h.horse?null:{n:"적토",t:Date.now()};save(h);toast(h.horse?"말을 얻었습니다.":"말을 놓아주었습니다.")});
   on("#stoneBtn",()=>{const h=structuredClone(me);h.items.stone+=20;save(h)});
-  on("#dropBtn",()=>{const h=structuredClone(me);const it=Math.random()<.2?makeItem("weapon",h.realm,null,{sect:h.sect}):makeItem(pickOne(["weapon","armor","acc"]),h.realm,pickOne(["tank","dps","heal"]));toast("얻음: "+gainItem(h,it));save(h)});
+  on("#dropBtn",()=>{const h=structuredClone(me);const it=Math.random()<.2?makeItem("weapon",h.realm,null,{sect:h.sect}):makeItem(pickOne(["weapon","armor","acc"]),h.realm,pickOne(SPECS));toast("얻음: "+gainItem(h,it));save(h)});
   document.querySelectorAll("[data-gsel]").forEach(b=>b.addEventListener("click",()=>{gsel=b.dataset.gsel;render()}));
   on("#enhBtn",()=>enhance(gsel)); on("#unequipBtn",()=>unequip(gsel));
   document.querySelectorAll("[data-eq]").forEach(b=>b.addEventListener("click",()=>equip(+b.dataset.eq,false)));
