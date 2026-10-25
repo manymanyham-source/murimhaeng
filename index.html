@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261025222253">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261025224124">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -112,6 +112,10 @@ section{margin-top:30px}
 .notice .pin{font-size:11px;color:#fff;background:var(--seal);padding:1px 6px;border-radius:2px;margin-right:6px;vertical-align:2px;font-weight:normal}
 .notice.new .mailh b::after{content:"새";font-size:10px;color:var(--seal);border:1px solid var(--seal);border-radius:2px;padding:0 4px;margin-left:6px;vertical-align:2px;font-weight:normal}
 .notice .sig{text-align:right;font-family:var(--f-brush)}
+.sectmv{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;margin-top:6px}
+.smv{display:flex;gap:10px;align-items:flex-start;text-align:left;padding:10px 12px;border:1px solid var(--line);background:none;font:inherit;color:var(--ink);border-radius:2px;cursor:pointer}
+.smv:hover:not([disabled]){border-color:var(--ink-3)}.smv[disabled]{opacity:.5;cursor:default}
+.smv span{display:grid;gap:2px}.smv b{font-family:var(--f-brush);font-size:17px;font-weight:normal}.smv em{font-style:normal;font-size:12px;color:var(--ink-2)}.smv small{font-size:11px;color:var(--ink-3);line-height:1.45}.smv small.ban{color:var(--seal)}
 .mailnew{display:block;width:100%;margin:10px 0 0;padding:9px 12px;border:1px solid var(--seal);color:var(--seal);background:none;font:inherit;font-size:14px;text-align:left;border-radius:2px;cursor:pointer}
 .mailf label.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink);grid-column:1/-1}
 .chip{position:relative}
@@ -1488,9 +1492,10 @@ function sectTabSection(){
   const post=h.post?`<p class="note"><b>${SECTS[cur].n} ${h.post==="elder"?"장로":headN(cur)}</b>의 자리에 있다.</p>`:`<p class="note">장로: 화경 + 본문 우호도 동지(1000) · ${headN(cur)}: 현경 + 장로 + 천마 토벌. 조건이 되면 문파 어른이 직접 찾아온다.</p>`;
   const offerBox=offer?`<div class="wall"><p><b>${offer.by}</b>이(가) 찾아왔다.</p><p>${esc(offer.say)}</p><div class="row"><button class="btn sealb" id="postYes" type="button">${offer.n} 자리를 받는다</button><button class="btn ghost" id="postNo" type="button">사양한다</button></div></div>`:"";
   const opts=Object.keys(SECTS).filter(k=>k!==cur);
-  const move=sectConfirm&&sectPick?`<div class="wall"><p><b>${SECTS[cur].n}</b>을(를) 떠나 <b>${SECTS[sectPick].n}</b>로 옮긴다. ${SECTS[cur].n} 우호도가 70% 줄고, 7일 동안 다시 들어갈 수 없다.${h.post?" 직위도 잃는다.":""}</p>
+  const move=sectConfirm&&sectPick?`<div class="wall"><div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px">${emblem(sectPick,"sm")}<div style="flex:1;min-width:0"><b>${SECTS[sectPick].n}</b> · ${SECTS[sectPick].role}<br><span class="note" style="margin:0">${esc(SECTS[sectPick].desc)} 주력 ${SECTS[sectPick].main.map(m=>STATS[m].n).join("+")} · 설 수 있는 자리: ${SECT_ROLES[sectPick].map(r=>ROLE_N[r]).join(", ")}</span></div></div><p><b>${SECTS[cur].n}</b>을(를) 떠나 <b>${SECTS[sectPick].n}</b>로 옮긴다. ${SECTS[cur].n} 우호도가 70% 줄고, 7일 동안 다시 들어갈 수 없다.${h.post?" 직위도 잃는다.":""}</p>
       <div class="row"><button class="btn sealb" id="sectYes" type="button">파문을 감수하고 옮긴다</button><button class="btn ghost" id="sectNo" type="button">그만둔다</button></div></div>`
-    :`<div class="row"><span class="note" style="margin:0">문파 옮기기:</span>${opts.map(k=>`<button class="btn sm ghost" type="button" data-sect="${k}">${SECTS[k].n}</button>`).join("")}</div>`;
+    :`<div class="label" style="margin-top:14px">문파 옮기기</div><div class="sectmv">${opts.map(k=>{const S=SECTS[k],until=(h.leftSects?.[k]||0)+7*86400e3,ban=Date.now()<until;
+        return `<button class="smv" type="button" data-sect="${k}" ${ban?"disabled":""}>${emblem(k,"sm")}<span><b>${S.n}</b><em>${S.role} · 주력 ${S.main.map(m=>STATS[m].n).join("+")}</em><small>${SKILL_NAME[k]} — ${esc(S.sk[0][2])}</small>${ban?`<small class="ban">${fmtDays(until-Date.now())} 뒤에 다시 들어갈 수 있다</small>`:""}</span></button>`}).join("")}</div>`;
   return `<section><div class="label">문파 우호도</div>${offerBox}<div class="favs">${rows}</div>${post}
     <p class="note">우호도는 그 문파 근처의 사건 해결(+20), 문파에 선물(강호 탭에서, +10~25), 그 문파 NPC와 함께 이긴 싸움(+15)으로 오른다.</p>${move}</section>`;
 }
