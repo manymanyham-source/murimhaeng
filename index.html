@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261026223035">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261026223407">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -247,7 +247,7 @@ details.tools .row{margin-top:10px}
 .tab{background:none;border:0;padding:10px 14px;font-family:var(--f-brush);font-size:18px;color:var(--ink-3);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;letter-spacing:.06em}
 .tab[aria-selected="true"]{color:var(--ink);border-color:var(--ink)}
 .tab .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--seal);margin-left:6px;vertical-align:middle}
-.mapbox{overflow-x:auto;margin-inline:-4px}
+.mapbox{overflow-x:auto;overflow-y:hidden;margin-inline:-4px}
 .map{display:block;width:100%;min-width:340px;height:auto}
 .map .river{fill:none;stroke:var(--ink-3);stroke-width:1.2;opacity:.45}
 .map .rname{fill:var(--ink-3);font-size:10px;font-family:var(--f-body);letter-spacing:.2em;opacity:.8}
@@ -3097,8 +3097,8 @@ function mapSvg(){
   return `<div class="mapbox"><svg class="map" viewBox="0 0 400 304" role="img" aria-label="중원 지도">
     <path class="river" d="M20,58 C80,52 120,74 175,82 S290,70 395,58"/><text class="rname" x="196" y="74">황하</text>
     <path class="river" d="M70,248 C130,236 180,250 240,242 S330,252 395,236"/><text class="rname" x="300" y="262">장강</text>
-    ${roads}${nodes}${markSvg}${mates}${me2}</svg>
-    <div class="mklegend"><span><i class="mk-boss">討</i>이번 토벌 · ${bossFor(periodNow()).n}</span>${invOn()&&sNow()<invasion.end?`<span><i class="mk-inv">魔</i>마교 침공</span>`:""}${caravan().here?`<span><i class="mk-cv">商</i>떠돌이 상단</span>`:""}</div></div>`;
+    ${roads}${nodes}${markSvg}${mates}${me2}</svg></div>
+    <div class="mklegend"><span><i class="mk-boss">討</i>이번 토벌 · ${bossFor(periodNow()).n}</span>${invOn()&&sNow()<invasion.end?`<span><i class="mk-inv">魔</i>마교 침공</span>`:""}${caravan().here?`<span><i class="mk-cv">商</i>떠돌이 상단</span>`:""}</div>`;
 }
 function worldTab(){
   const h=me,a=activity(h),now=Date.now();
