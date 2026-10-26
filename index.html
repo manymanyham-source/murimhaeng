@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261026213653">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261026214218">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -667,13 +667,15 @@ function misDone(h,region,d,p){if(h.dn?.[region+"|"+d]===p)return true;return h.
 const dcFor=r=>10+2*r;
 const TIER=["대성공","성공","미흡"];
 const ITEMS={stone:["강화석","장비 강화 재료"],herb:["약초","선물 · 회복"],wine:["화주","선물"],trinket:["장신구","선물"],clue:["비급 단서","모으면 비급"],
+  zhuye:["죽엽청","선물 · 맑은 술"],nuer:["여아홍","선물 · 귀한 술"],hyang:["향낭","선물 · 향주머니"],binyeo:["옥비녀","선물 · 귀한 장신구"],
+  longjing:["용정차","마시면 다음 이동 시간 -20%"],puer:["보이차","마시면 다음 수련 경험치 +15%"],
   mandu:["만두","먹으면 다음 사건 현장 조사 판정 +2"],dongpo:["동파육","먹으면 다음 소굴·관문 싸움이 끝날 때까지 공격 +15%"],samgye:["삼계탕","먹으면 다음 소굴·관문 싸움이 끝날 때까지 체력 +20%"]};
 /* 음식: 객잔에서 사서 행낭에서 먹는다. 먹은 효과는 h.buff 에 남고, 쓰이면 사라진다 */
-const FOOD={mandu:{k:"scene",t:"든든하다. 다음 사건 현장 조사 판정 +2"},dongpo:{k:"atk",t:"힘이 넘친다. 다음 소굴·관문 싸움이 끝날 때까지 공격 +15%"},samgye:{k:"hp",t:"몸이 뜨끈하다. 다음 소굴·관문 싸움이 끝날 때까지 체력 +20%"}};
+const FOOD={longjing:{k:"travel",t:"정신이 맑아진다. 다음 이동 시간 -20%",v:"마시기"},puer:{k:"train",t:"속이 편안하다. 다음 수련 경험치 +15%",v:"마시기"},mandu:{k:"scene",t:"든든하다. 다음 사건 현장 조사 판정 +2"},dongpo:{k:"atk",t:"힘이 넘친다. 다음 소굴·관문 싸움이 끝날 때까지 공격 +15%"},samgye:{k:"hp",t:"몸이 뜨끈하다. 다음 소굴·관문 싸움이 끝날 때까지 체력 +20%"}};
 function eatFood(it){const f=FOOD[it],h=structuredClone(me);if(!f||!(h.items[it]>0))return;if(h.buff?.[f.k]){toast("이미 먹은 효과가 남아 있습니다.");return}
-  h.items[it]--;h.buff={...(h.buff||{}),[f.k]:it};bump(h,"eat");addLog(h,`${josa(ITEMS[it][0],"을")} 먹었다. ${f.t}`);save(h);toast(`${ITEMS[it][0]} · ${f.t}`)}
+  h.items[it]--;h.buff={...(h.buff||{}),[f.k]:it};bump(h,"eat");addLog(h,`${josa(ITEMS[it][0],"을")} ${f.v?"마셨다":"먹었다"}. ${f.t}`);save(h);toast(`${ITEMS[it][0]} · ${f.t}`)}
 function useBattleFood(h){if(!h.buff)return "";const used=["atk","hp"].filter(k=>h.buff[k]).map(k=>ITEMS[h.buff[k]][0]);used.length&&(delete h.buff.atk,delete h.buff.hp);return used.length?`${used.join(", ")} 기운이 다했다`:""}
-const GIFTS=["herb","wine","trinket"];
+const GIFTS=["herb","wine","zhuye","hyang","trinket","nuer","binyeo"];
 
 /* ───────── 상태 ───────── */
 let me=null, others=[], uid=null, db=null, mode="local", isOwner=false, ready=false;
@@ -693,7 +695,7 @@ const hrs=x=>x%1?`${Math.floor(x)}시간 ${Math.round(x%1*60)}분`:`${x}시간`;
 
 function normalize(h){
   if(!h) return h;
-  h.loc=h.loc||"henan"; h.items=Object.assign({stone:0,herb:0,wine:0,trinket:0,clue:0,mandu:0,dongpo:0,samgye:0},h.items||{});
+  h.loc=h.loc||"henan"; h.items=Object.assign({stone:0,herb:0,wine:0,trinket:0,clue:0,mandu:0,dongpo:0,samgye:0,zhuye:0,nuer:0,hyang:0,binyeo:0,longjing:0,puer:0},h.items||{});
   h.bag=h.bag||[]; if(!h.gear){const sp=SECT_SPEC[h.sect]||"dps";h.gear={weapon:makeItem("weapon",0,sp),armor:makeItem("armor",0,sp),acc:null};if(h.sect==="akga")h.gear.weapon.name=`${GRADE[0]} 장창`}
   /* 남궁이 잠시 창을 쓰던 때 받은 물건 이름을 검으로 되돌린다 */
   for(const it of [h.gear?.weapon,...(h.bag||[])]){if(!it)continue;if(it.name==="제왕창")it.name="제왕검";if(it.name==="천뢰중창")it.name="천뢰중검";if(h.sect==="namgung"&&it.name==="무명 장창")it.name="무명 장검"}
@@ -741,7 +743,7 @@ const atWall=h=>h.level>=cap(h.realm)&&h.exp>=need(h.level);
 /* 절정부터는 수련만으로 오르는 경험치를 줄인다 (사건·토벌·관문으로 올라가라는 뜻) */
 const TRAIN_EXP=[1,.7,.7,.5,.4,.33,.28];
 const trainRealm=t=>t.rm??Math.min(6,Math.max(0,Math.floor((t.lvl-1)/10)));
-function trainGain(t,f){const m=MULT[t.hours];return {exp:Math.round(expPerHour(t.lvl)*t.hours*m*f*TRAIN_EXP[trainRealm(t)]),stat:t.hours/2*m*f}}
+function trainGain(t,f){const m=MULT[t.hours];return {exp:Math.round(expPerHour(t.lvl)*t.hours*m*f*TRAIN_EXP[trainRealm(t)]*(t.tea?1.15:1)),stat:t.hours/2*m*f}}
 function applyStat(h,k,g){h.frac[k]=(h.frac[k]||0)+g;const w=Math.floor(h.frac[k]+1e-9);h.stats[k]+=w;h.frac[k]-=w;return w}
 const activity=h=>h?.training?"train":h?.travel?"travel":h?.mission?"mission":(h?.lair&&h.lair.phase!=="done")||h?.colair?"lair":null;
 const busyText={train:"수련 중에는",travel:"이동 중에는",mission:"임무 중에는",lair:"소굴 안에서는"};
@@ -1470,12 +1472,12 @@ function gateRoomView(r){
 const BOND_STAGES=[[0,"지인"],[100,"친분"],[300,"각별"],[600,"깊은 인연"]];
 const REL_FX={사제:"함께한 사건·소굴에서 제자 경험치 +25%, 스승은 강화석 +1",친우:"같이 임무하면 보상 +20%",사형제:"관문에서 도울 때 공격·방어 +15%",연인:"서로에게 쓰는 회복 +25%"};
 const COMBO={사제:"사도전승",친우:"의기투합",사형제:"사문합벽",연인:"비익연리"};
-const GIFT_VAL={herb:5,wine:10,trinket:20};
+const GIFT_VAL={herb:5,wine:10,zhuye:15,hyang:18,trinket:20,nuer:25,binyeo:30};
 const FAVOR_STAGES=[[0,"냉담",0],[200,"우호",.1],[500,"신뢰",.2],[1000,"동지",.25]];
 /* 문파 근거지 (지역 → 문파). 문파 쪽에서 보려면 homeOf */
 const homeOf=k=>{const r=Object.keys(REGION_SECTS).find(r=>REGION_SECTS[r].includes(k));return r?REGIONS[r]:null};
 const REGION_SECTS={shandong:["akga"],henan:["sorim"],shaanxi:["hwasan"],hubei:["mudang","jegal"],sichuan:["ami","dang"],anhui:["namgung"],qinghai:["kunlun"]};
-const SECT_GIFT={herb:10,wine:15,trinket:25};
+const SECT_GIFT={herb:10,wine:15,zhuye:18,hyang:20,trinket:25,nuer:30,binyeo:35};
 let giftPick={}, relPick={}, sectPick=null, sectConfirm=false;
 const bondOf=(a,b)=>heroById(a)?.bonds?.[b]||{};
 const bondTotal=(a,b)=>(bondOf(a,b).pts||0)+(bondOf(b,a).pts||0);
@@ -1520,7 +1522,7 @@ function giveGift(to){
   const it=giftPick[to]||"herb",h=structuredClone(me),o=heroById(to);if(!o)return;
   if(h.items[it]<1){toast(`${josa(ITEMS[it][0],"이")} 없습니다.`);return}
   if(giftDayLeft(h)<1){toast("오늘은 더 선물할 수 없습니다. (하루 3번)");return}
-  h.items[it]--;bump(h,"gift");h.giftDay={day:dayKey(),n:3-giftDayLeft(h)+1};
+  h.items[it]--;bump(h,"gift");h.giftKinds=[...new Set([...(h.giftKinds||[]),it])];h.giftDay={day:dayKey(),n:3-giftDayLeft(h)+1};
   const v=addBond(h,to,GIFT_VAL[it]);h.sent=[{id:Date.now().toString(36),to,item:it,t:Date.now()},...(h.sent||[])].slice(0,20);
   addLog(h,`${josa(o.name,"에")}게 ${josa(ITEMS[it][0],"을")} 보냈다. (인연 +${v})`);save(h);toast(`${o.name}에게 ${josa(ITEMS[it][0],"을")} 보냈습니다.`);
 }
@@ -1842,6 +1844,7 @@ const TITLES=[
   {id:"b5",g:"인연",n:"입실제자",hint:"사부를 모신다",ok:h=>anyRel(h,"제자")},
   {id:"b6",g:"인연",n:"깊은 인연",hint:"누군가와 인연 600(깊은 인연)에 닿는다",ok:h=>others.some(o=>o._id&&!String(o._id).startsWith("fake-")&&bondTotal(myId(),o._id)>=600)},
   {id:"b7",g:"인연",n:"사인방",hint:"네 명이 꽉 찬 무리에 든다",ok:h=>myParty().length>=4},
+  {id:"b9",g:"인연",n:"다정다감",hint:"선물할 수 있는 물건을 종류마다 한 번씩 다 보낸다",ok:h=>GIFTS.every(g=>(h.giftKinds||[]).includes(g))},
   {id:"b8",g:"인연",n:"인심 좋은 협객",hint:"선물을 10번 보낸다",ok:h=>cnt(h,"gift")>=10},
   {id:"d1",g:"논검",n:"논검 첫 승",hint:"논검비무에서 처음 이긴다",ok:h=>cnt(h,"duelW")>=1},
   {id:"d10",g:"논검",n:"검론의 달인",hint:"논검비무에서 10번 이긴다",ok:h=>cnt(h,"duelW")>=10},
@@ -2032,11 +2035,11 @@ function bindNotice(){
 const silverTxt=n=>`은자 ${Number(n||0).toLocaleString()}냥`;
 function addSilver(h,n){n=Math.max(0,Math.round(n||0));h.silver=(h.silver||0)+n;if(n)bump(h,"silverIn",n);return n}
 /* 객잔: 어느 지역에서나 선물용 물건을 산다 */
-const INN={mandu:12,dongpo:40,samgye:35,herb:15,wine:25,trinket:40};
+const INN={mandu:12,dongpo:40,samgye:35,longjing:20,puer:20,herb:15,wine:25,zhuye:35,hyang:40,trinket:40,nuer:55,binyeo:65};
 function innBuy(k){const h=structuredClone(me),p=INN[k];if(!p||h.travel)return;if((h.silver||0)<p){toast(`은자가 ${p-(h.silver||0)}냥 모자랍니다.`);return}
   h.silver-=p;h.items[k]++;addLog(h,`객잔에서 ${josa(ITEMS[k][0],"을")} 샀다. (${silverTxt(p)})`);save(h);toast(`${ITEMS[k][0]} +1 · ${silverTxt(h.silver)} 남음`)}
 function innBox(h){if(h.travel)return "";
-  return `<div class="shop"><div class="kicker">${REGIONS[h.loc].n} 객잔 · 가진 돈 ${silverTxt(h.silver)}</div><div class="shopl">${Object.entries(INN).map(([k,p])=>`<button class="shopi" type="button" data-inn="${k}" ${(h.silver||0)<p?"disabled":""}><b>${ITEMS[k][0]}</b><span>${ITEMS[k][1]}</span><em>${p}냥</em></button>`).join("")}</div></div>`}
+  return `<div class="shop"><div class="kicker">${REGIONS[h.loc].n} 객잔 · 가진 돈 ${silverTxt(h.silver)}</div><div class="shopl">${Object.entries(INN).map(([k,p])=>`<button class="shopi" type="button" data-inn="${k}" ${(h.silver||0)<p?"disabled":""}><b>${ITEMS[k][0]}</b><span>${GIFT_VAL[k]?`${ITEMS[k][1]} · 인연 +${GIFT_VAL[k]}`:ITEMS[k][1]}</span><em>${p}냥</em></button>`).join("")}</div></div>`}
 /* 대장간: 일류 전까지 쓰는 기본 무기·의복(무명·청강)을 판다. 청강은 이류부터 */
 const SMITH={0:{weapon:40,armor:30},1:{weapon:120,armor:90}};
 let smithSpec=null;
@@ -2516,7 +2519,7 @@ function create(){
 function startTrain(){
   if(activity(me)){toast(`${busyText[activity(me)]} 수련할 수 없습니다.`);return}
   const now=Date.now(),h=structuredClone(me);
-  h.training={stat:pick.stat,hours:pick.hours,start:now,end:now+pick.hours*3600e3,lvl:h.level,rm:h.realm};
+  h.training={stat:pick.stat,hours:pick.hours,start:now,end:now+pick.hours*3600e3,lvl:h.level,rm:h.realm};if(h.buff?.train){h.training.tea=1;delete h.buff.train}
   addLog(h,`${STATS[pick.stat].train} ${pick.hours}시간을 시작했다.`); confirmCancel=false; save(h);
 }
 function finishTrain(cancel){
@@ -2548,7 +2551,7 @@ function commitAlloc(){
 /* ───────── 행동: 이동 ───────── */
 function startTravel(to,withId){
   const h=structuredClone(me),W=withId&&following(withId)?heroById(withId):null,ride=!h.horse&&W?.horse?W:null;
-  const hrsNeed=hrsFor(h,roadHours(h.loc,to),to,ride||h);
+  let hrsNeed=hrsFor(h,roadHours(h.loc,to),to,ride||h);if(h.buff?.travel){hrsNeed=Math.round(hrsNeed*.8*60)/60;delete h.buff.travel}
   if(activity(h)){toast(`${busyText[activity(h)]} 떠날 수 없습니다.`);return}
   if(!hrsNeed) return;
   const R=REGIONS[to]; if(R.minRealm&&h.realm<R.minRealm){toast(`${R.n}는 ${REALMS[R.minRealm].n} 이상만 들어갈 수 있습니다.`);return}
@@ -3008,9 +3011,9 @@ function selfTab(){
       <ul class="skills">${s.sk.map(k=>`<li><b>${k[0]}</b><span class="tag">${k[1]}</span><span>${k[2]}</span></li>`).join("")}</ul>
     </div></section>
     <section><div class="label">행낭</div>
-      <div class="bag"><div><b>${(h.silver||0).toLocaleString()}</b>은자 <span>· 냥 · 객잔과 떠돌이 상단에서 쓴다</span></div>${h.horse?`<div><b>🐎</b>${esc(h.horse.n)} <span>· 말 · 이동 시간 -30%</span></div>`:""}${Object.entries(ITEMS).map(([k,[n,sub]])=>`<div><b>${h.items[k]||0}</b>${n} <span>· ${sub}</span>${FOOD[k]&&h.items[k]>0?` <button class="btn sm ghost" type="button" data-eat="${k}" ${h.buff?.[FOOD[k].k]?"disabled":""}>먹기</button>`:""}</div>`).join("")}</div>
-      ${h.buff&&Object.keys(h.buff).length?`<p class="note">먹은 음식: ${Object.entries(h.buff).map(([k,it])=>`<b>${ITEMS[it]?.[0]||it}</b> (${k==="scene"?"다음 사건 조사 +2":k==="atk"?"공격 +15%":"체력 +20%"})`).join(" · ")}</p>`:""}
-      <p class="note">강화석은 장비 탭에서 강화에 쓴다. 약초는 소굴에서 회복에, 약초·화주·장신구는 인연 탭에서 동료에게, 강호 탭에서 문파에 선물로 쓴다. 착용하는 장신구는 장비 탭에 있다.</p></section>${titleSection()}${sectTabSection()}`;
+      <div class="bag"><div><b>${(h.silver||0).toLocaleString()}</b>은자 <span>· 냥 · 객잔과 떠돌이 상단에서 쓴다</span></div>${h.horse?`<div><b>🐎</b>${esc(h.horse.n)} <span>· 말 · 이동 시간 -30%</span></div>`:""}${Object.entries(ITEMS).map(([k,[n,sub]])=>`<div><b>${h.items[k]||0}</b>${n} <span>· ${sub}</span>${FOOD[k]&&h.items[k]>0?` <button class="btn sm ghost" type="button" data-eat="${k}" ${h.buff?.[FOOD[k].k]?"disabled":""}>${FOOD[k].v||"먹기"}</button>`:""}</div>`).join("")}</div>
+      ${h.buff&&Object.keys(h.buff).length?`<p class="note">먹고 마신 것: ${Object.entries(h.buff).map(([k,it])=>`<b>${ITEMS[it]?.[0]||it}</b> (${k==="scene"?"다음 사건 조사 +2":k==="atk"?"공격 +15%":k==="hp"?"체력 +20%":k==="travel"?"다음 이동 -20%":"다음 수련 경험치 +15%"})`).join(" · ")}</p>`:""}
+      <p class="note">강화석은 장비 탭에서 강화에 쓴다. 약초는 소굴에서 회복에 쓴다. 약초·술·향낭·장신구·옥비녀는 인연 탭에서 동료에게, 강호 탭에서 문파에 선물로 쓴다. 음식과 차는 먹기·마시기를 누르면 효과가 걸린다. 착용하는 장신구는 장비 탭에 있다.</p></section>${titleSection()}${sectTabSection()}`;
 }
 
 /* 동행 탭 */
