@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261026214218">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261026220840">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -121,6 +121,7 @@ section{margin-top:30px}
 .shopl{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:6px}
 .shopi{display:grid;gap:2px;text-align:left;padding:9px 11px;border:1px solid var(--line);background:var(--paper);font:inherit;color:var(--ink);border-radius:2px;cursor:pointer}
 .shopi b{font-size:14px}.shopi span{font-size:11px;color:var(--ink-3);line-height:1.4}.shopi em{font-style:normal;font-size:13px;color:var(--seal);font-variant-numeric:tabular-nums}
+.shopi em s{color:var(--ink-3);font-size:11px}.disc{color:var(--seal)}
 .shopi[disabled]{opacity:.5;cursor:default}
 .inv{border:1px solid var(--seal);padding:14px 16px;margin-top:8px;background:var(--seal-soft)}
 .inv>.label{color:var(--seal)}
@@ -129,6 +130,25 @@ section{margin-top:30px}
 .invbar span{position:relative;display:block;text-align:center;font-size:12px;line-height:20px;color:var(--ink);font-variant-numeric:tabular-nums}
 .invrank{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px}.invrank .me{color:var(--seal);font-weight:bold}
 .homes{display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0 8px}.homes span{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-2)}.homes .emb{width:22px;height:22px}
+.tb{display:inline-block;font-size:11px;line-height:1;padding:3px 6px 3px;border:1px solid currentColor;border-radius:2px;margin-right:6px;vertical-align:middle;font-weight:normal;letter-spacing:.02em;white-space:nowrap;background:color-mix(in srgb,currentColor 9%,transparent);font-family:var(--f-brush)}
+.tb-r{color:var(--seal)}.tb-g{color:#8A3B2B}.tb-s{color:var(--c-mudang)}.tb-w{color:var(--c-dang)}.tb-l{color:#7C3A8A}.tb-e{color:var(--c-sorim)}.tb-b{color:var(--c-hwasan)}.tb-d{color:var(--c-kunlun)}
+.who .tb{font-size:10px;padding:2px 5px}
+.pfl{background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer;text-align:left}.pfl:hover b{text-decoration:underline}
+.pfbox{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.35);display:grid;place-items:center;padding:20px max(16px,env(safe-area-inset-right,0px)) 20px max(16px,env(safe-area-inset-left,0px))}
+.pfbox[hidden]{display:none}
+.pfcard{position:relative;width:100%;max-width:420px;max-height:88vh;overflow:auto;background:var(--paper);border:1px solid var(--line);padding:20px;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+.pfx{position:absolute;top:10px;right:10px;background:none;border:1px solid var(--line);font:inherit;font-size:12px;padding:3px 9px;color:var(--ink-2);cursor:pointer}
+.pfhead{display:flex;gap:14px;align-items:center}.pfhead h3{margin:4px 0;font-family:var(--f-brush);font-size:24px;font-weight:normal}.pfhead .pfsub{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-2)}.pfhead .emb.sm{width:20px;height:20px}
+.pfrows{display:grid;gap:4px;margin-top:12px}.pfr{display:flex;justify-content:space-between;gap:12px;font-size:13px;border-bottom:1px dashed var(--line);padding:4px 0}.pfr span{color:var(--ink-3)}.pfr b{font-weight:normal;text-align:right}
+.pfnote{margin:8px 0 0;line-height:1.7;font-size:14px}
+.mk rect{fill:var(--paper);stroke:currentColor;stroke-width:1.4}.mk text{font-size:10px;text-anchor:middle;fill:currentColor;font-family:var(--f-brush)}
+.mk-boss{color:var(--seal)}.mk-inv{color:#7C1F2A}.mk-cv{color:var(--c-dang)}
+.mk-inv rect{fill:#7C1F2A}.mk-inv text{fill:#fff}
+.mklegend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--ink-2);margin-top:6px}.mklegend i{font-style:normal;display:inline-grid;place-items:center;width:16px;height:16px;border:1px solid currentColor;border-radius:2px;margin-right:5px;font-size:10px;font-family:var(--f-brush)}
+.mklegend i.mk-inv{background:#7C1F2A;color:#fff;border-color:#7C1F2A}
+.traitl{display:flex;flex-wrap:wrap;gap:6px}
+.trt{font:inherit;font-size:13px;padding:4px 10px;border:1px solid var(--line);background:none;color:var(--ink-2);border-radius:14px;cursor:pointer}
+.trt.on{border-color:var(--seal);color:var(--seal);background:var(--seal-soft)}.trt.sm{font-size:11px;padding:1px 7px;cursor:default}
 .mailnew{display:block;width:100%;margin:10px 0 0;padding:9px 12px;border:1px solid var(--seal);color:var(--seal);background:none;font:inherit;font-size:14px;text-align:left;border-radius:2px;cursor:pointer}
 .mailf label.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink);grid-column:1/-1}
 .chip{position:relative}
@@ -1035,7 +1055,7 @@ function enterLair(){
   if(h.raid.tries.n>=3){toast("오늘은 더 들어갈 수 없습니다.");return}
   h.raid.tries.n++;
   h.lair={period:p,seed:Date.now()%2147483647,start:Date.now(),step:1,phase:"fork",role,hp:{},mods:[],path:[],loot:{exp:0,stone:0,herb:0,items:[]},room:null,boss:null,
-    log:[{k:"sec",x:`${B.n}의 소굴`},{k:"amb",x:`${B.title} ${B.n}의 소굴 어귀에 섰다. 안쪽 어딘가에서 ${B.n}의 기척이 느껴진다.`}]};
+    log:[{k:"sec",x:`${B.n}의 소굴`},{k:"amb",x:`${B.title} ${B.n}의 소굴 어귀에 섰다. 안쪽 어딘가에서 ${B.n}의 기척이 느껴진다.`},...(invHere(B.region)?[{k:"comp",x:"소굴 벽마다 천마신교의 붉은 깃발이 걸려 있다. 마교가 이곳까지 손을 뻗었다."}]:[])]};
   retreatConfirm=false;addLog(h,`${B.n}의 소굴에 들어섰다.`);save(h);
 }
 function pickFork(i){
@@ -1062,11 +1082,11 @@ function roomCore(h,run,opt){
   const party=()=>lairParty(h,run);
   if(t==="minion"){
     if(opt==="sneak"&&r.ok){log.push({k:"amb",x:"숨소리 하나 내지 않고 졸개들 뒤를 지나쳤다."})}
-    else{const win=miniFight(h,run,.6,opt==="sneak",log,"졸개들");if(opt==="sneak")addMod(run,"atkUp",log);
+    else{const iv=invHere(bossFor(run.period).region),win=miniFight(h,run,.6,opt==="sneak",log,iv?"마교 졸개들":"졸개들");if(iv&&win){const ip=addInv(h,20);if(ip)log.push({k:"end",x:`마교 졸개들을 쓸어냈다 · 침공 기여 +${ip}`})}if(opt==="sneak")addMod(run,"atkUp",log);
       if(win){run.loot.exp+=Math.round(ep*.25);if(Math.random()<.5)run.loot.stone++;log.push({k:"amb",x:"졸개들이 바닥에 널브러졌다."})}}
   }else if(t==="captain"){
     if(opt==="talk"&&r.ok){addMod(run,"spSeal",log);log.push({k:"amb",x:"\"…두목 밑에서 개처럼 구르는 것도 지겨웠소.\" 부두목이 언월도를 내려놓고 뒷문으로 사라진다."})}
-    else{const win=miniFight(h,run,1,opt==="talk",log,"부두목");
+    else{const iv=invHere(bossFor(run.period).region),win=miniFight(h,run,1,opt==="talk",log,iv?"마교 백부장":"부두목");if(iv&&win){const ip=addInv(h,40);if(ip)log.push({k:"end",x:`마교 백부장을 쓰러뜨렸다 · 침공 기여 +${ip}`})}
       if(win){addMod(run,"spSeal",log);run.loot.exp+=Math.round(ep*.5);run.loot.stone+=2}else{addMod(run,"atkUp",log);log.push({k:"amb",x:"부두목이 피를 흘리며 보스 쪽으로 달아났다."})}}
   }else if(t==="armory"){
     if(r.ok){addMod(run,"atkDown",log);if(opt==="steal"){run.loot.stone+=2;log.push({k:"amb",x:"애병에 박힌 강화석도 빼냈다."})}}
@@ -1133,6 +1153,7 @@ function bossTurn(action){
         log.push({k:"ev2",sub:"act",x:`${nmx(mm)}의 ${nmS}!${spec[1]>1?` ${spec[1]}연타`:""} · ${d} 피해${s==="sorim"?" · 보스의 시선이 쏠린다":s==="mudang"?" · 파티에 태극의 막이 둘러진다":s==="dang"?" · 보스의 손끝이 저린다":s==="namgung"?" · 검을 세운 채 버틴다":s==="akga"?" · 창끝이 적진을 꿰뚫는다":s==="kunlun"?" · 보스의 허점이 드러났다":s==="jegal"?" · 화살비가 쏟아진다":""}${wTag(W)}${wHeal(W,party,nmx)}`})}}
     else{const d=deal(mm.atk,roleMul(run.role),1,mm.crit);turn+=d;log.push({k:"ev2",sub:"act",x:`${nmx(mm)}의 공격 · ${d?`${d} 피해`:"빗나갔다"}`})}
   }else log.push({k:"amb",x:`${nmjx(mm,"은")} 쓰러져 있다.`});
+  traitBattleLine(party,nmx,log);
   if(Math.random()<.3){const n=pickOne(party.filter(x=>!x.isMe&&x.hp>0)||[null]);if(n&&NPC_SAY[n.name])log.push({k:"comp",x:`${n.name}: ${pickOne(NPC_SAY[n.name])}`})}
   for(const a of party){if(a.isMe||a.hp<=0)continue;
     if(a.role==="heal"){const low=party.filter(x=>x.hp>0).sort((x,y)=>x.hp/x.max-y.hp/y.max)[0];if(low&&low.hp/low.max<.65){const amt=Math.round(Math.max(a.atk*1.3,20+L*5));low.hp=Math.min(low.max,low.hp+amt);log.push({k:"ev2",sub:"act",x:`${a.name}의 회춘수 · ${nmx(low)} +${amt}`});continue}}
@@ -1358,6 +1379,7 @@ function resolveGate(room){
   /* 범위 공격: 졸개와 보스를 함께 맞힌다 */
   const hitAll=d=>{if(n.minions>0){n.minions=Math.max(0,n.minions-d);if(n.minions===0)log.push({k:"ev2",sub:"act",x:"새끼 요괴들이 모두 쓰러졌다!"})}n.bossHp=Math.max(0,n.bossHp-d);actDmg+=d;return d};
   const hitBoss=d=>{if(n.minions>0){const half=Math.round(d/2);n.minions=Math.max(0,n.minions-half);d-=half;if(n.minions===0)log.push({k:"ev2",sub:"act",x:"새끼 요괴들이 모두 쓰러졌다!"})}n.bossHp=Math.max(0,n.bossHp-d);actDmg+=d;return d};
+  traitBattleLine(P,gnm,log);
   if(Math.random()<.35){const np=alive().filter(x=>!x.player);const s=np.length?pickOne(np):null;if(s&&NPC_SAY[s.name])log.push({k:"comp",x:`${s.name}: ${pickOne(NPC_SAY[s.name])}`})}
   const sides={},skillers=[];
   for(const m of P){if(m.hp<=0)continue;const act=acts[m.id];if(m.cd>0)m.cd--;
@@ -1609,7 +1631,7 @@ function bondTab(){
     :others.map(o=>{const id=o._id,tot=bondTotal(myId(),id),st=stageOf(tot),nx=BOND_STAGES.find(x=>x[0]>tot),rel=relWith(id),A=bondOf(myId(),id),B=bondOf(id,myId());
       const s=SECTS[o.sect]||SECTS.sorim,canRel=tot>=300,inv=B.want&&B.want!=="지인"&&!relMatch(B.want,A.want)&&relNorm(B.want)!==rel,lbl=relLabel(id);
       const inP=following(id),called=me.party===myId()&&(me.partyInv||[]).includes(id)&&!inP,canCall=(!me.party||me.party===myId())&&!inP;
-      return `<div class="bond"><div class="bh">${face(o._id,o.sect,"md")}<div><b>${titled(o)}${esc(o.name)}</b><span>${s.n} · ${REALMS[o.realm]?.n||""} Lv.${o.level} · ${mateAct(o)}</span></div>
+      return `<div class="bond"><div class="bh">${face(o._id,o.sect,"md")}<div><button type="button" class="pfl" data-pf="${id}">${titled(o)}<b>${esc(o.name)}</b></button><span>${s.n} · ${REALMS[o.realm]?.n||""} Lv.${o.level} · ${mateAct(o)}</span></div>
           <span class="relb ${rel!=="지인"?"on":""}">${lbl}</span></div>
         <div class="bbar"><span>인연 ${st[1]} · ${tot}${nx?` / ${nx[0]} (${nx[1]})`:""}</span><div class="hpb"><i style="width:${Math.min(100,nx?(tot-st[0])/(nx[0]-st[0])*100:100)}%"></i></div></div>
         ${rel!=="지인"?`<p class="note" style="margin:4px 0 0">${rel==="사제"?`사제(${lbl==="사부"?"내가 제자":"내가 스승"})`:rel}의 효과: ${REL_FX[rel]}${tot>=600?` · 합격기 「${COMBO[rel]}」 (관문에서 둘이 같은 막에 무공을 쓰면 발동)`:` · 600에서 합격기`}</p>`:""}
@@ -1851,7 +1873,11 @@ const TITLES=[
   {id:"d30",g:"논검",n:"검을 논하는 자",hint:"논검비무를 30번 겨룬다",ok:h=>cnt(h,"duelW")+cnt(h,"duelL")+cnt(h,"duelD")>=30}];
 const TITLE_BY=Object.fromEntries(TITLES.map(t=>[t.id,t]));
 const titleOf=h=>{const t=h?.title&&h.titles?.[h.title]&&TITLE_BY[h.title];return t?(t.show?t.show(h):t.n):""};
-const titled=h=>{const t=titleOf(h);return t?`<span class="ttl">〔${esc(t)}〕</span>`:""};
+/* 칭호 배지: 칭호 갈래마다 다른 색 상자 */
+const TB_CLS={경지:"tb-r",관문:"tb-g",문파:"tb-s",강호:"tb-w",토벌:"tb-l",장비:"tb-e",인연:"tb-b",논검:"tb-d"};
+function titleBadge(h){const t=h?.title&&h.titles?.[h.title]&&TITLE_BY[h.title];if(!t)return "";return `<span class="tb ${TB_CLS[t.g]||""}">${esc(t.show?t.show(h):t.n)}</span>`}
+window.titleBadge=titleBadge;
+const titled=h=>titleBadge(h);
 /* 저장할 때마다 새로 해낸 일을 확인한다. 처음 확인하는 사람은 지금까지의 행적으로 한꺼번에 받는다 */
 function checkTitles(h){
   if(!h||!h.sect)return;const first=!h.titles;h.titles=h.titles||{};const now=Date.now(),got=[];
@@ -1942,6 +1968,7 @@ function duelRound(f){
     if(p.poison>0&&p.hp>0){p.hp=Math.max(0,p.hp-8);p.poison--;log.push({k:"ev2",sub:"hit",x:`${nm(id)} 독 -8`})}
     p.qi=Math.min(p.qmax,p.qi+10)});
   if(act[f.a]==="def"&&act[f.b]==="def")ids.forEach(id=>P[id].qi=Math.min(P[id].qmax,P[id].qi+15));
+  {const tx=ids.filter(id=>traitsOf(heroById(id)).length);if(tx.length&&Math.random()<.3){const id=pickOne(tx),tr=pickOne(traitsOf(heroById(id)));log.push({k:"comp",x:fill(pickOne(TRAITS[tr].duel),{a:nm(id)})})}}
   if(f.round>=2&&Math.random()<.35){const x=pickOne(ids),rel=relDir(x,x===f.a?f.b:f.a),pool=DUEL_TALK[rel]||DUEL_TALK.지인;log.push({k:"comp",x:fill(pickOne(pool),{a:nm(x)})})}
   log.push({k:"amb",x:`${P[f.a].name} ${P[f.a].hp} · ${P[f.b].name} ${P[f.b].hp}`});
   const ko=ids.filter(id=>P[id].hp<=0);
@@ -2036,10 +2063,14 @@ const silverTxt=n=>`은자 ${Number(n||0).toLocaleString()}냥`;
 function addSilver(h,n){n=Math.max(0,Math.round(n||0));h.silver=(h.silver||0)+n;if(n)bump(h,"silverIn",n);return n}
 /* 객잔: 어느 지역에서나 선물용 물건을 산다 */
 const INN={mandu:12,dongpo:40,samgye:35,longjing:20,puer:20,herb:15,wine:25,zhuye:35,hyang:40,trinket:40,nuer:55,binyeo:65};
-function innBuy(k){const h=structuredClone(me),p=INN[k];if(!p||h.travel)return;if((h.silver||0)<p){toast(`은자가 ${p-(h.silver||0)}냥 모자랍니다.`);return}
+/* 내 문파 근거지의 객잔은 15% 싸게 판다 */
+const atHome=h=>!h.travel&&(REGION_SECTS[h.loc]||[]).includes(h.sect);
+const innPrice=(h,k)=>atHome(h)?Math.round(INN[k]*.85):INN[k];
+function innBuy(k){const h=structuredClone(me),p=INN[k]&&innPrice(h,k);if(!p||h.travel)return;if((h.silver||0)<p){toast(`은자가 ${p-(h.silver||0)}냥 모자랍니다.`);return}
   h.silver-=p;h.items[k]++;addLog(h,`객잔에서 ${josa(ITEMS[k][0],"을")} 샀다. (${silverTxt(p)})`);save(h);toast(`${ITEMS[k][0]} +1 · ${silverTxt(h.silver)} 남음`)}
 function innBox(h){if(h.travel)return "";
-  return `<div class="shop"><div class="kicker">${REGIONS[h.loc].n} 객잔 · 가진 돈 ${silverTxt(h.silver)}</div><div class="shopl">${Object.entries(INN).map(([k,p])=>`<button class="shopi" type="button" data-inn="${k}" ${(h.silver||0)<p?"disabled":""}><b>${ITEMS[k][0]}</b><span>${GIFT_VAL[k]?`${ITEMS[k][1]} · 인연 +${GIFT_VAL[k]}`:ITEMS[k][1]}</span><em>${p}냥</em></button>`).join("")}</div></div>`}
+  const home=atHome(h);
+  return `<div class="shop"><div class="kicker">${REGIONS[h.loc].n} 객잔 · 가진 돈 ${silverTxt(h.silver)}${home?` · <span class="disc">${SECTS[h.sect].n} 사람이라 15% 싸게</span>`:""}</div><div class="shopl">${Object.keys(INN).map(k=>[k,innPrice(h,k)]).map(([k,p])=>`<button class="shopi" type="button" data-inn="${k}" ${(h.silver||0)<p?"disabled":""}><b>${ITEMS[k][0]}</b><span>${GIFT_VAL[k]?`${ITEMS[k][1]} · 인연 +${GIFT_VAL[k]}`:ITEMS[k][1]}</span><em>${home?`<s>${INN[k]}</s> `:""}${p}냥</em></button>`).join("")}</div></div>`}
 /* 대장간: 일류 전까지 쓰는 기본 무기·의복(무명·청강)을 판다. 청강은 이류부터 */
 const SMITH={0:{weapon:40,armor:30},1:{weapon:120,armor:90}};
 let smithSpec=null;
@@ -2094,6 +2125,13 @@ function maybeGiyeon(h,chance){if(Math.random()>=chance)return "";const g=pickOn
   addLog(h,`기연! 「${g.n}」 ${txt}`);setTimeout(()=>toast(`기연! 「${g.n}」 — 행적을 확인해 보세요.`),400);return ` · 기연 「${g.n}」`}
 function bindEcon(){
   document.querySelectorAll("[data-inn]").forEach(b=>b.addEventListener("click",()=>innBuy(b.dataset.inn)));
+  document.querySelectorAll("[data-pf]").forEach(b=>b.addEventListener("click",()=>openProfile(b.dataset.pf)));
+  document.querySelectorAll("[data-bio]").forEach(i=>i.addEventListener("input",()=>{bioDraft=bioDraft||{};bioDraft[i.dataset.bio]=i.value}));
+  on("#bioSave",saveBio);
+  document.querySelectorAll("[data-trait]").forEach(btn=>btn.addEventListener("click",()=>{bioDraft=bioDraft||{traits:[...traitsOf(me)]};const t=bioDraft.traits=bioDraft.traits||[],k=btn.dataset.trait;
+    if(t.includes(k))t.splice(t.indexOf(k),1);else{if(t.length>=TRAIT_MAX){toast(`성격은 ${TRAIT_MAX}개까지 고를 수 있어요.`);return}t.push(k)}render()}));on("#renameBtn",renameHero);
+  document.querySelectorAll("[data-rename]").forEach(i=>i.addEventListener("input",()=>renameDraft=i.value));
+  if(profileId)paintProfile();
   document.querySelectorAll("[data-eat]").forEach(b=>b.addEventListener("click",()=>eatFood(b.dataset.eat)));
   document.querySelectorAll("[data-smith]").forEach(b=>b.addEventListener("click",()=>smithBuy(b.dataset.smith)));
   document.querySelectorAll("[data-smsp]").forEach(b=>b.addEventListener("click",()=>{smithSpec=b.dataset.smsp;render()}));
@@ -2112,6 +2150,11 @@ const invList=()=>allHeroes().filter(h=>h&&invPts(h)>0&&!(h._id&&String(h._id).s
 const invTotal=()=>invList().reduce((a,x)=>a+x.pts,0);
 function invDown(){return !!invasion&&invTotal()>=invasion.hp}
 function addInv(h,pts){if(!invActive())return 0;pts=Math.max(1,Math.round(pts));h.inv=h.inv?.id===invasion.id?h.inv:{id:invasion.id,pts:0};h.inv.pts+=pts;return pts}
+/* 침공 중인 지역에서는 탐문과 소굴에 마교도가 섞여 나온다 */
+const invHere=(region,t=sNow())=>!!invasion&&invasion.status==="on"&&region===invasion.region&&t>=invasion.start&&t<invasion.end;
+const INV_FEED_FOES=["천마신교 순찰대원","혈교 첨병","붉은 두건의 광신도","마교 궁수","마교의 사냥개를 끄는 자","천마의 이름을 외치는 사도"];
+const INV_AMB=["마을 어귀에 천마신교의 붉은 깃발이 꽂혀 있다. 사람들이 눈을 피한다.","멀리서 마교도들의 북소리가 둥, 둥 울린다.","불탄 초가 앞에서 아이 하나가 울고 있다. 마교가 지나간 자리다.",
+  "검은 옷의 무리가 지붕 위를 스쳐 지나갔다. 피 냄새가 남는다.","객잔 주인이 문을 반만 열고 속삭인다. \"밤에는 나다니지 마시오. 그놈들이 돌아다니오.\"","길가 장승에 붉은 손바닥 자국이 찍혀 있다. 천마의 표식이다."];
 const INV_PATROL=3,INV_FOES=["마교 순찰대","혈교 첨병","천마신교 독수(毒手)","마교 궁수대","붉은 두건의 광신도"];
 function invPatrol(){const h=structuredClone(me);if(!invActive())return;if(h.travel||h.loc!==invasion.region){toast(`${REGIONS[invasion.region].n}에 있어야 합니다.`);return}
   if(activity(h)){toast(`${busyText[activity(h)]} 싸울 수 없습니다.`);return}
@@ -2130,7 +2173,7 @@ function invBox(h){if(!invOn())return "";const mine=invPts(h),over=sNow()>=invas
   return `<section class="inv"><div class="label">마교 침공 · ${R.n}</div>
     <p>${over?(invDown()?`<b>마교를 물리쳤다!</b> 강호가 힘을 모아 ${josa(R.n,"을")} 지켜 냈다.`:`침공이 끝났다. 마교는 ${josa(R.n,"을")} 휩쓸고 물러갔다.`):`천마신교의 무리가 <b>${R.n}</b>에 쳐들어왔다. <span data-suntil="${invasion.end}"></span> 안에 모두의 힘으로 몰아내야 한다.`}</p>
     <div class="invbar"><i style="width:${Math.min(100,left/invasion.hp*100)}%"></i><span>마교의 기세 ${left.toLocaleString()} / ${invasion.hp.toLocaleString()}</span></div>
-    <p class="note">기여 쌓는 법: ${R.n} 사건 해결(쉬움 60 · 보통 100 · 어려움 200), 어디서든 소굴 보스전 +80, 관문 돌파 +200, ${R.n}에서 순찰대 토벌(하루 ${INV_PATROL}번).</p>
+    <p class="note">기여 쌓는 법: ${R.n} 사건 해결(쉬움 60 · 보통 100 · 어려움 200, 탐문 중 마교도를 쓰러뜨리면 한 명당 +15), 어디서든 소굴 보스전 +80, 관문 돌파 +200, ${R.n}에서 순찰대 토벌(하루 ${INV_PATROL}번).</p>
     <div class="invrank">${list.slice(0,5).map((x,i)=>`<span class="${x.id===myId()?"me":""}">${i+1}. ${esc(x.name)} ${x.pts.toLocaleString()}</span>`).join("")||`<span>아직 아무도 싸우지 않았다.</span>`}</div>
     <div class="row" style="margin-top:10px"><span class="note" style="margin:0">내 기여 <b>${mine.toLocaleString()}</b></span>
     ${claimable?`<button class="btn sealb" type="button" id="invClaim">${invDown()?"격퇴 보상 받기":"위로 보상 받기"}</button>`
@@ -2154,6 +2197,122 @@ function bindInv(){on("#invPatrol",invPatrol);on("#invClaim",invClaim);on("#invS
   on("#invGo",()=>{dest=invasion.region;tab="world";render()});
   document.querySelectorAll("[data-invd]").forEach(i=>i.addEventListener("change",()=>invDraft[i.dataset.invd]=i.value))}
 
+
+/* ───────── 성격: 인물 설정에서 두 개까지 고른다. 탐문·전투·논검 문구에 가끔 섞여 나온다 (능력치와는 무관) ─────────
+   talk: 탐문 중 대화·행동 / fight: 탐문 중 싸움 / idle: 빈 시간 / comp: 동행일 때 그 사람 모습({c}) / battle: 소굴·관문 전투({a}) / duel: 논검({a}) */
+const TRAITS={
+ 호쾌:{talk:["{me|이} 주막 사람들에게 술을 한 순배 돌리자 입이 술술 풀렸다.","{me|이} 껄껄 웃으며 어깨를 두드리자 상대도 경계를 풀었다."],fight:["{me|이} \"덤벼라, 한꺼번에!\" 하고 웃으며 뛰어들었다.","{me|이} 싸움이 끝나자 쓰러진 상대에게 손을 내밀었다."],
+   idle:["{me|이} 길가 노점의 국수를 사람들에게 한 그릇씩 돌렸다.","{me|은} 장터 씨름판에 끼어들어 판을 뒤집어 놓았다."],comp:["{c|이} \"하하, 이 정도야 뭐!\" 하며 앞장선다.","{c|이} 낯선 사람과도 금세 형님 아우를 튼다."],
+   battle:["{a|이} \"오늘 술은 내가 산다!\" 하고 외치며 돌진한다.","{a|이} 피를 닦으며 껄껄 웃는다."],duel:["{a|이} \"좋다, 이 맛에 검을 잡지!\" 하고 웃는다."]},
+ 냉정:{talk:["{me|은} 감정 없는 눈으로 상대의 말을 끝까지 들었다. 거짓이 한 군데 걸렸다.","{me|은} 울먹이는 증인에게도 같은 질문을 세 번 했다."],fight:["{me|은} 표정 하나 바꾸지 않고 상대의 빈틈만 찔렀다.","{me|은} 싸움이 끝나자 말없이 칼날의 피를 털었다."],
+   idle:["{me|은} 들은 이야기를 순서대로 정리하며 걸었다.","{me|은} 소란스러운 장터를 지나면서도 걸음 속도가 변하지 않았다."],comp:["{c|이} \"감정은 나중에.\" 하고 짧게 말한다.","{c|이} 흥분한 사람들 사이에서 혼자 차분하다."],
+   battle:["{a|은} 숨 한 번 흐트러지지 않고 보스의 다음 수를 읽는다.","{a|이} \"서두르지 마라.\" 하고 낮게 말한다."],duel:["{a|은} 상대의 눈만 보고 있다. 표정이 없다."]},
+ 다정:{talk:["{me|이} 겁먹은 아이 앞에 쪼그려 앉아 눈높이를 맞추자 아이가 입을 열었다.","{me|이} 노파의 짐을 들어 주자 노파가 조용히 귀띔해 주었다."],fight:["{me|은} 싸우면서도 휘말린 행인을 먼저 피신시켰다.","{me|이} 쓰러진 상대의 상처를 동여매 주었다."],
+   idle:["{me|이} 길 잃은 강아지에게 만두 반쪽을 나눠 주었다.","{me|은} 지나가던 짐꾼의 어깨를 잠시 주물러 주었다."],comp:["{c|이} 내 소매에 묻은 흙을 말없이 털어 준다.","{c|이} \"힘들면 쉬어 가요.\" 하며 물통을 내민다."],
+   battle:["{a|이} 다친 동료 앞을 가로막으며 \"내 뒤로!\" 하고 외친다.","{a|이} 싸우는 와중에도 동료의 숨소리를 살핀다."],duel:["{a|이} \"다치지 않게 할게.\" 하고 미소 짓는다."]},
+ 장난꾸러기:{talk:["{me|이} 점소이의 신발 끈을 몰래 묶어 놓고는 시치미를 뚝 뗐다. 그래도 들을 건 다 들었다.","{me|이} 엉뚱한 소문을 하나 흘리자 진짜 범인이 먼저 움찔했다."],fight:["{me|이} 상대의 허리띠를 끊어 버렸다. 바지가 흘러내리자 싸움이 끝났다.","{me|이} 혀를 쏙 내밀고 도망치는 척하다 뒤로 돌아 한 대 먹였다."],
+   idle:["{me|이} 지나가는 사람 갓 위에 나뭇잎을 몰래 올려 두었다.","{me|은} 객잔 간판 글자 하나를 뒤집어 걸어 놓고 낄낄댔다."],comp:["{c|이} 내 등에 몰래 쪽지를 붙였다. '만두 사 주세요'.","{c|이} 길가 허수아비에게 내 이름을 붙여 놓았다."],
+   battle:["{a|이} 보스 뒤로 돌아가 꼬리를 잡아당긴다!","{a|이} \"메롱!\" 하고 약을 올리며 시선을 끈다."],duel:["{a|이} 상대 앞에서 칼을 빙글빙글 돌린다. 진지함이 없다."]},
+ 소심:{talk:["{me|이} 골목 끝 그림자에 흠칫 놀라 칼자루를 움켜쥐었다. …고양이였다.","{me|이} 말을 걸기 전에 세 번이나 헛기침을 했다."],fight:["{me|이} 눈을 질끈 감고 휘두른 칼이 정확히 들어갔다.","{me|이} \"오, 오지 마세요!\" 하면서도 물러서지는 않았다."],
+   idle:["{me|은} 객잔 구석 자리에 등을 붙이고 앉아서야 마음이 놓였다.","{me|이} 등 뒤의 발소리에 몇 번이나 뒤를 돌아보았다."],comp:["{c|이} 내 뒤에 바짝 붙어 걷는다.","{c|이} \"저, 저기… 저쪽 좀 이상하지 않아요?\" 하고 속삭인다."],
+   battle:["{a|이} 떨리는 손으로도 끝까지 자리를 지킨다.","{a|이} \"무, 무섭지 않아…!\" 하고 중얼거린다."],duel:["{a|이} 검을 쥔 손이 떨린다. 그런데 눈은 피하지 않는다."]},
+ 오만:{talk:["{me|이} \"내가 누군지 알면 말을 하게 될걸.\" 하자 상대가 정말로 입을 열었다.","{me|은} 관원을 내려다보며 장부를 내놓으라 했다. 관원이 투덜대며 내놓았다."],fight:["{me|이} 한 손을 뒷짐 진 채 싸웠다.","{me|이} \"이게 다인가?\" 하고 코웃음 쳤다."],
+   idle:["{me|은} 객잔에서 제일 좋은 자리가 아니면 앉지 않았다.","{me|은} 장터 무사들의 겨루기를 보고 혀를 찼다."],comp:["{c|이} \"이런 일은 나 혼자로도 충분한데.\" 하며 앞서 간다.","{c|이} 소문을 듣고는 \"하찮군.\" 하고 콧방귀를 뀐다."],
+   battle:["{a|이} \"이 정도 짐승에게 무릎 꿇을 내가 아니다.\" 하고 오만하게 웃는다.","{a|이} 보스를 내려다보듯 검을 겨눈다."],duel:["{a|이} \"한 수 양보하지.\" 하고 턱을 든다."]},
+ 과묵:{talk:["{me|은} 아무 말 없이 상대를 바라보기만 했다. 상대가 먼저 털어놓았다.","{me|은} 고개를 한 번 끄덕였을 뿐이다. 그걸로 충분했다."],fight:["{me|은} 기합 한 번 없이 상대를 쓰러뜨렸다.","{me|은} 싸움이 끝나도 한마디도 하지 않았다."],
+   idle:["{me|은} 해 질 녘까지 말 한마디 없이 걸었다.","{me|은} 주막에서 차 한 잔을 앞에 두고 오래 앉아 있었다."],comp:["{c|은} 말이 없다. 대신 필요한 걸 먼저 건네준다.","{c|이} 손짓 하나로 갈 길을 가리킨다."],
+   battle:["{a|은} 아무 말 없이 다음 수를 준비한다.","{a|이} 짧게 한마디 한다. \"간다.\""],duel:["{a|은} 끝까지 말이 없다. 검이 대신 말한다."]},
+ 수다쟁이:{talk:["{me|이} 쉬지 않고 떠들자 상대가 질려서 아는 걸 다 털어놓았다.","{me|은} 국밥집 아주머니와 한 시진을 수다 떨다 결정적인 이름 하나를 건졌다."],fight:["{me|은} 싸우면서도 입을 쉬지 않았다. 상대가 정신이 없어 보였다.","{me|이} \"아 잠깐만, 그 얘기 마저 하고\" 하며 한 대를 먹였다."],
+   idle:["{me|은} 길에서 만난 행상과 고향 이야기를 끝도 없이 나눴다.","{me|이} 혼잣말로 오늘 일을 처음부터 다시 정리했다. 소리 내서."],comp:["{c|이} 쉬지 않고 떠든다. 반쯤은 쓸모 있는 이야기다.","{c|이} \"그래서 내가 그때 뭐라 그랬냐면…\" 하고 또 시작한다."],
+   battle:["{a|이} 싸우면서 보스에게 말을 건다. 보스가 당황한 것 같다.","{a|이} \"야, 이거 끝나면 내 얘기 좀 들어 봐!\""],duel:["{a|이} 겨루는 내내 떠든다. 상대가 집중을 못 한다."]},
+ 대식가:{talk:["{me|이} 만두 열 개를 시키자 주인이 반가워하며 이것저것 알려 주었다.","{me|은} 국수를 세 그릇째 비우며 옆 상의 이야기를 들었다."],fight:["{me|이} \"밥 먹다 말았잖아!\" 하며 화를 냈다. 상대가 불쌍했다.","{me|은} 싸움이 끝나자마자 배부터 만졌다."],
+   idle:["{me|은} 장터를 지나며 군것질을 다섯 번 했다.","{me|이} 어디선가 고기 굽는 냄새를 맡고 한참 서 있었다."],comp:["{c|이} 내 몫의 만두까지 노리고 있다.","{c|이} \"일단 먹고 생각하자.\" 하며 주막으로 향한다."],
+   battle:["{a|이} \"이거 끝나면 고기다!\" 하고 기운을 낸다.","{a|의} 배에서 우렁찬 소리가 난다. 보스가 움찔한 것 같다."],duel:["{a|이} \"진 사람이 저녁 사기다.\" 하고 웃는다."]},
+ 술꾼:{talk:["{me|이} 주정뱅이들 틈에 섞여 술잔을 기울이자 아무도 경계하지 않았다.","{me|은} 술값 대신 이야기를 받기로 했다. 꽤 좋은 거래였다."],fight:["{me|은} 비틀거리는 걸음으로 상대의 칼을 다 흘려냈다. 취권이었다.","{me|이} 호리병을 한 모금 마시고 칼을 다시 고쳐 잡았다."],
+   idle:["{me|은} 객잔마다 그 집 술맛을 꼭 보고 지나갔다.","{me|은} 호리병이 비자 아쉬운 듯 흔들어 보았다."],comp:["{c|이} 호리병을 건넨다. \"한 모금만.\"","{c|이} 술 냄새를 풍기며 콧노래를 부른다."],
+   battle:["{a|이} 한 모금 마시고 더 매섭게 몰아친다.","{a|이} 비틀거리는 듯하더니 보스의 공격을 흘려낸다."],duel:["{a|이} 호리병을 내려놓고 \"한 판 하고 마저 마시지.\" 한다."]},
+ 정의파:{talk:["{me|이} 행패 부리는 관리를 그냥 지나치지 못했다. 덕분에 증인이 생겼다.","{me|은} \"억울한 일은 내가 듣겠소.\" 하고 장터 한가운데 섰다."],fight:["{me|이} \"약한 자를 괴롭히는 놈은 용서 못 한다!\" 하고 외쳤다.","{me|은} 쓰러진 상대에게서 빼앗은 물건을 주인에게 돌려주었다."],
+   idle:["{me|은} 저울을 속이는 상인을 보고 그냥 지나치지 못했다.","{me|이} 길가 아이들 싸움을 말리고 화해까지 시켰다."],comp:["{c|이} \"이건 그냥 넘어갈 일이 아니야.\" 하며 주먹을 쥔다.","{c|이} 불의를 보면 나보다 먼저 뛰어든다."],
+   battle:["{a|이} \"강호의 이름으로!\" 하고 외친다.","{a|이} 무고한 이들을 생각하며 이를 악문다."],duel:["{a|이} \"정정당당하게 겨루자.\" 하고 포권한다."]},
+ 계산적:{talk:["{me|은} 은자 몇 냥으로 필요한 정보를 정확히 샀다. 남는 장사였다.","{me|은} 증언들 사이의 숫자가 안 맞는 걸 찾아냈다."],fight:["{me|은} 이길 수 있는 각도가 나올 때까지 기다렸다가 한 번에 끝냈다.","{me|은} 싸우기 전에 퇴로부터 확인했다."],
+   idle:["{me|은} 오늘 쓴 은자와 번 은자를 머릿속으로 맞춰 보았다.","{me|은} 이 사건의 품삯이 얼마나 될지 계산하며 걸었다."],comp:["{c|이} \"이건 손해 보는 장사야.\" 하며 다른 길을 고른다.","{c|이} 주판알 튕기듯 손가락을 까딱인다."],
+   battle:["{a|이} \"세 합 뒤에 빈틈이 난다.\" 하고 정확히 짚는다.","{a|은} 남은 기력을 셈하며 아껴 쓴다."],duel:["{a|은} 상대의 버릇을 하나하나 세고 있다."]},
+ 낙천:{talk:["{me|이} \"어떻게든 되겠지!\" 하고 웃자 굳어 있던 사람들도 따라 웃었다.","{me|은} 허탕을 쳐도 \"다음 집은 알겠지.\" 하며 콧노래를 불렀다."],fight:["{me|은} 얻어맞고도 \"하하, 아프네!\" 하며 일어섰다.","{me|이} 싸움 중에도 휘파람을 불었다."],
+   idle:["{me|은} 비가 오자 \"덕분에 덜 덥네.\" 하고 웃었다.","{me|은} 길을 잃고도 경치가 좋다며 즐거워했다."],comp:["{c|이} \"괜찮아, 괜찮아!\" 하며 등을 두드린다.","{c|이} 무슨 일이 있어도 웃는 얼굴이다."],
+   battle:["{a|이} \"이길 거야, 분명히!\" 하고 웃는다.","{a|이} 쓰러질 듯하다가도 웃으며 일어선다."],duel:["{a|이} \"져도 재밌잖아!\" 하고 웃는다."]},
+ 고집:{talk:["{me|은} 다들 아니라는 쪽을 끝까지 파고들었다. 거기에 답이 있었다.","{me|은} 문전박대를 당하고도 세 번이나 다시 찾아갔다."],fight:["{me|은} 물러서라는 말을 끝까지 듣지 않았다. 결국 이겼다.","{me|이} 같은 초식만 고집스럽게 반복해 기어이 뚫어냈다."],
+   idle:["{me|은} 지름길이 있다는 말을 듣고도 원래 길로만 갔다.","{me|은} 객잔 주인이 권하는 요리를 끝내 거절했다."],comp:["{c|이} \"내 말이 맞다니까.\" 하고 우긴다.","{c|은} 한번 정한 길은 바꾸지 않는다."],
+   battle:["{a|은} 밀려도 한 걸음도 물러서지 않는다.","{a|이} \"안 물러나!\" 하고 버틴다."],duel:["{a|은} 같은 수를 고집한다. 그게 오히려 무섭다."]},
+ 허당:{talk:["{me|이} 멋지게 문을 열고 들어가다 문턱에 걸려 넘어졌다. 덕분에 다들 경계를 풀었다.","{me|은} 증인의 이름을 세 번 틀리게 불렀다. 그래도 증인은 웃으며 말해 주었다."],fight:["{me|이} 칼을 뽑다가 칼집째 뽑혔다. 그래도 칼집으로 이겼다.","{me|은} 멋지게 공중제비를 돌았는데 착지가 엉덩방아였다."],
+   idle:["{me|은} 만두를 사고 은자를 두고 왔다.","{me|이} 같은 골목을 세 번째 지나는 걸 뒤늦게 깨달았다."],comp:["{c|이} 멋진 척하다 돌부리에 걸려 넘어질 뻔했다.","{c|이} 길을 안다고 큰소리치더니 반대로 걷고 있다."],
+   battle:["{a|이} 멋진 자세를 잡다 미끄러졌다. 그 덕에 보스의 공격이 빗나갔다!","{a|이} \"됐다!\" 하고 외쳤는데 엉뚱한 데를 때렸다."],duel:["{a|이} 포권을 하다 칼을 떨어뜨렸다."]},
+ 의심:{talk:["{me|은} 친절하게 구는 객잔 주인부터 의심했다. 촉이 맞았다.","{me|은} 같은 이야기를 세 사람에게 따로 확인했다."],fight:["{me|은} 쓰러진 상대가 정말 기절했는지 칼끝으로 찔러 보았다.","{me|은} 항복하는 상대의 손부터 살폈다. 소매에 암기가 있었다."],
+   idle:["{me|은} 먹기 전에 만두 속을 갈라 보았다.","{me|은} 따라오는 발소리가 없는지 일부러 돌아서 걸었다."],comp:["{c|이} \"저 사람, 눈빛이 이상하지 않아?\" 하고 속삭인다.","{c|은} 공짜로 주는 차도 의심스럽게 냄새부터 맡는다."],
+   battle:["{a|이} \"함정이다, 조심해!\" 하고 외친다.","{a|은} 보스의 허점조차 의심하며 한 박자 늦게 들어간다."],duel:["{a|은} 상대의 웃음 뒤에 뭐가 있는지 살핀다."]},
+ 풍류:{talk:["{me|이} 시 한 수를 읊자 서생들이 반색하며 이야기를 털어놓았다.","{me|은} 기루의 가객과 노래를 주고받다 단서를 얻었다."],fight:["{me|은} 칼끝으로 꽃잎을 베어 내며 싸웠다. 보는 이들이 넋을 잃었다.","{me|이} 싸움이 끝나자 부채를 펴 땀을 식혔다."],
+   idle:["{me|은} 다리 위에서 한참 강물을 바라보다 시를 한 수 지었다.","{me|은} 주막 벽에 붓으로 몇 글자 남기고 나왔다."],comp:["{c|이} 경치 좋은 곳마다 걸음을 멈춘다.","{c|이} 퉁소를 꺼내 한 가락 분다."],
+   battle:["{a|이} 춤추듯 검을 휘두른다.","{a|이} \"꽃이 지듯 베어 주마.\" 하고 읊조린다."],duel:["{a|이} 검으로 허공에 글자를 쓰듯 겨룬다."]},
+ 무모:{talk:["{me|은} 수상한 집 대문을 그냥 두드렸다. 놀랍게도 통했다.","{me|은} 산적 소굴이라는 말을 듣자마자 혼자 걸어 들어갔다."],fight:["{me|은} 셋이 덤비자 오히려 웃으며 가운데로 뛰어들었다.","{me|이} 피하지 않고 맞받아쳤다. 아팠지만 이겼다."],
+   idle:["{me|은} 건너면 안 된다는 낡은 다리를 그냥 건넜다.","{me|이} 절벽 끝에 서서 아래를 내려다보았다. 신났다."],comp:["{c|이} \"생각은 나중에!\" 하며 먼저 뛰어든다.","{c|은} 위험하다는 말에 오히려 눈이 반짝인다."],
+   battle:["{a|이} 보스의 정면으로 그대로 뛰어든다!","{a|은} 막는 법을 모르는 것처럼 싸운다."],duel:["{a|이} 방어 따위는 생각도 안 한다는 얼굴이다."]},
+ 학구파:{talk:["{me|은} 사건 기록을 처음부터 끝까지 다시 읽고 빠진 날짜 하나를 찾아냈다.","{me|이} 고서의 한 구절을 떠올리자 수수께끼가 풀렸다."],fight:["{me|은} 상대의 초식을 보고 어느 문파의 것인지 바로 알아챘다.","{me|은} 싸움이 끝나자 상대의 초식을 수첩에 적었다."],
+   idle:["{me|은} 서점에 들러 비급 비슷한 책을 한참 뒤적였다.","{me|은} 걸으면서도 손가락으로 허공에 글자를 써 가며 외웠다."],comp:["{c|이} \"그건 책에 나와 있어.\" 하며 설명을 시작한다.","{c|이} 비석의 글씨를 한참 들여다본다."],
+   battle:["{a|이} \"이 짐승은 책에서 읽었어, 약점은 왼쪽이야!\"","{a|은} 싸우면서도 보스의 움직임을 기록한다."],duel:["{a|은} 상대의 초식을 하나하나 분석하고 있다."]},
+ 길치:{talk:["{me|은} 엉뚱한 마을에 들어갔다가 우연히 목격자를 만났다.","{me|이} 길을 묻다가 묻는 김에 단서도 물었다."],fight:["{me|은} 길을 잃고 들어간 골목에서 상대와 마주쳤다. 운이 좋았다.","{me|이} 도망치는 상대를 쫓다가 오히려 앞질러 버렸다. 길을 잘못 들어서."],
+   idle:["{me|은} 같은 장승을 세 번째 지나쳤다.","{me|이} 지도를 거꾸로 들고 한참 고민했다."],comp:["{c|이} \"이쪽 맞지?\" 하며 정반대로 간다.","{c|이} 지도를 빙글빙글 돌려 본다."],
+   battle:["{a|이} 엉뚱한 방향으로 달려가 보스의 등 뒤를 잡았다!","{a|이} \"여기가 어디야?\" 하면서도 칼은 정확하다."],duel:["{a|이} 겨루다 말고 \"근데 여기서 객잔은 어느 쪽이야?\" 하고 묻는다."]}};
+const TRAIT_KEYS=Object.keys(TRAITS),TRAIT_MAX=2;
+const traitsOf=h=>(h?.bio?.traits||[]).filter(k=>TRAITS[k]).slice(0,TRAIT_MAX);
+/* 전투에서 가끔: 살아 있는 플레이어 중 성격이 있는 사람의 한마디 */
+function traitBattleLine(list,nmf,log,chance=.25){if(Math.random()>=chance)return;const c=list.filter(x=>x.hp>0&&(x.isMe||x.player)).map(x=>({x,t:traitsOf(x.isMe?me:heroById(x.id))})).filter(o=>o.t.length);if(!c.length)return;
+  const o=pickOne(c),tr=pickOne(o.t),x=fill(pickOne(TRAITS[tr].battle),{a:nmf(o.x)});if(log.slice(-30).some(l=>l.x===x))return;log.push({k:"comp",x})}
+
+
+/* ───────── 인물 보기: 대화창·인연에서 이름이나 사진을 누르면 뜨는 카드 ───────── */
+let profileId=null;
+function openProfile(id){profileId=id;paintProfile()}
+window.openProfile=openProfile;
+function paintProfile(){
+  let el=document.getElementById("profileBox");if(!el){el=document.createElement("div");el.id="profileBox";el.className="pfbox";el.setAttribute("role","dialog");el.setAttribute("aria-modal","true");document.body.appendChild(el);
+    el.addEventListener("click",e=>{if(e.target===el){profileId=null;paintProfile()}})}
+  const o=profileId?heroById(profileId):null;if(!o){el.hidden=true;return}
+  const mine=profileId===myId(),S=SECTS[o.sect]||SECTS.sorim,bio=o.bio||{},rel=mine?null:relLabel(profileId),tot=mine?0:bondTotal(myId(),profileId);
+  const row=(k,v)=>v?`<div class="pfr"><span>${k}</span><b>${v}</b></div>`:"";
+  el.hidden=false;el.innerHTML=`<div class="pfcard"><button type="button" class="pfx" aria-label="닫기">닫기</button>
+    <div class="pfhead">${face(profileId,o.sect,"big")}<div>${titleBadge(o)}<h3>${esc(o.name)}</h3><span class="pfsub">${emblem(o.sect,"sm")} ${S.n} · ${REALMS[o.realm]?.n||""} Lv.${o.level}${o.post?` · ${o.post==="elder"?"장로":headN(o.sect)}`:""}</span></div></div>
+    <div class="pfrows">${row("지금",mine?(activity(o)?busyText[activity(o)].replace(/에는$/,"")+" 중":REGIONS[o.loc]?.n):mateAct(o))}
+      ${row("관계",!mine&&rel!=="지인"?`${rel} · 인연 ${tot}`:(!mine?`인연 ${tot}`:""))}${row("무리",!mine&&following(profileId)?"같은 무리":"")}
+      ${row("예전 이름",(o.oldNames||[]).length?o.oldNames.map(esc).join(", "):"")}${row("논검",`${cnt(o,"duelW")}승 ${cnt(o,"duelL")}패`)}${row("칭호",`${Object.keys(o.titles||{}).filter(k=>TITLE_BY[k]).length}개`)}</div>
+    <div class="label" style="margin-top:14px">인물 설정</div>
+    ${bio.origin||bio.age||bio.note||traitsOf(o).length?`<div class="pfrows">${row("출신",esc(bio.origin||""))}${row("나이",esc(bio.age||""))}${row("성격",traitsOf(o).map(k=>`<span class="trt on sm">${k}</span>`).join(" "))}</div>${bio.note?`<p class="pfnote">${esc(bio.note).replace(/\n/g,"<br>")}</p>`:""}`
+      :`<p class="note">${mine?"아직 적어 둔 설정이 없다. 인물 탭에서 출신, 나이, 특이사항을 적을 수 있다.":"아직 적어 둔 설정이 없다."}</p>`}
+    <div class="row" style="margin-top:12px">${mine?`<button class="btn sm" type="button" data-pfgo="self">인물 탭에서 고치기</button>`:`<button class="btn sm" type="button" data-pfgo="mates">인연 탭에서 보기</button>${mode==="db"&&!myDuel()&&duelDayN(me)<DUEL_DAY?`<button class="btn sm ghost" type="button" data-pfduel="${profileId}">논검 청하기</button>`:""}`}</div></div>`;
+  el.querySelector(".pfx").onclick=()=>{profileId=null;paintProfile()};
+  el.querySelectorAll("[data-pfgo]").forEach(b=>b.onclick=()=>{tab=b.dataset.pfgo;profileId=null;paintProfile();try{const cb=document.querySelector(".chat-box");if(cb&&innerWidth<700)cb.hidden=true}catch(e){}render()});
+  el.querySelectorAll("[data-pfduel]").forEach(b=>b.onclick=()=>{duelInvite(b.dataset.pfduel);profileId=null;paintProfile()});
+}
+addEventListener("keydown",e=>{if(e.key==="Escape"&&profileId){profileId=null;paintProfile()}});
+/* 이름 바꾸기: 48시간에 한 번. 예전 이름은 인물 카드에 남는다 */
+const RENAME_GAP=48*3600e3;
+const ro=w=>{const c=String(w).charCodeAt(String(w).length-1),j=c>=0xAC00&&c<=0xD7A3?(c-0xAC00)%28:0;return w+(j&&j!==8?"으로":"로")};let renameDraft="";
+function renameHero(){const h=structuredClone(me),n=String(renameDraft||"").trim().replace(/\s+/g," ");
+  if(!n){toast("새 이름을 적어 주세요.");return}if(n.length>12){toast("이름은 12자까지입니다.");return}if(n===h.name){toast("지금 이름과 같습니다.");return}
+  const left=(h.renameT||0)+RENAME_GAP-Date.now();if(left>0){toast(`${fmtLeft(left)} 뒤에 다시 바꿀 수 있습니다.`);return}
+  if(others.some(o=>o._id&&!String(o._id).startsWith("fake-")&&o.name===n)){toast("이미 강호에 같은 이름이 있습니다.");return}
+  const old=h.name;h.oldNames=[old,...(h.oldNames||[]).filter(x=>x!==old)].slice(0,5);h.name=n;h.renameT=Date.now();renameDraft="";
+  addLog(h,`이름을 ${old}에서 ${ro(n)} 바꿨다.`);save(h);toast(`이제 강호에서 ${ro(n)} 불립니다.`)}
+let bioDraft=null;
+function bioSection(){const b=bioDraft||(bioDraft={origin:me.bio?.origin||"",age:me.bio?.age||"",note:me.bio?.note||"",traits:[...traitsOf(me)]});b.traits=b.traits||[];
+  const rl=(me.renameT||0)+RENAME_GAP-Date.now();
+  return `<section><div class="label">이름 바꾸기</div><div class="mailf"><div class="row" style="align-items:flex-end"><label style="flex:1;min-width:0">새 이름 (12자까지)<input data-rename maxlength="12" value="${esc(renameDraft)}" placeholder="${esc(me.name)}"></label>
+      <button class="btn sm solid" type="button" id="renameBtn" ${rl>0?"disabled":""}>바꾸기</button></div>
+      <p class="note" style="margin:0">${rl>0?`<span data-until="${(me.renameT||0)+RENAME_GAP}"></span> 뒤에 다시 바꿀 수 있다.`:"이름은 48시간에 한 번 바꿀 수 있다. 예전 이름은 인물 카드에 남는다."}</p></div></section>
+  <section><div class="label">인물 설정</div><p class="note" style="margin-top:0">다른 사람이 대화창이나 인연에서 내 이름을 누르면 보이는 설정이다.</p>
+    <div class="mailf"><div class="mailg" style="grid-template-columns:2fr 1fr"><label>출신 · 가문<input data-bio="origin" maxlength="40" value="${esc(b.origin)}" placeholder="예: 낙양 객잔집 막내"></label><label>나이<input data-bio="age" maxlength="12" value="${esc(b.age)}" placeholder="예: 스물"></label></div>
+    <div><div class="label" style="margin:4px 0 6px">성격 · 두 개까지 (탐문·전투·논검 문구에 가끔 섞여 나온다)</div><div class="traitl">${TRAIT_KEYS.map(k=>`<button type="button" class="trt ${b.traits.includes(k)?"on":""}" data-trait="${k}">${k}</button>`).join("")}</div></div>
+    <label>특이사항<textarea data-bio="note" rows="3" maxlength="300" placeholder="예: 술을 못 마신다. 매화를 보면 걸음을 멈춘다.">${esc(b.note)}</textarea></label>
+    <div class="row"><button class="btn sm solid" type="button" id="bioSave">설정 저장</button><button class="btn sm ghost" type="button" data-pf="${myId()}">내 인물 카드 보기</button></div></div></section>`}
+function saveBio(){const h=structuredClone(me),b=bioDraft||{};h.bio={origin:String(b.origin||"").trim().slice(0,40),age:String(b.age||"").trim().slice(0,12),note:String(b.note||"").trim().slice(0,300),traits:(b.traits||[]).filter(k=>TRAITS[k]).slice(0,TRAIT_MAX)};save(h);toast("인물 설정을 저장했습니다.")}
 
 /* ───────── 프로필 사진: 128×128로 줄여 avatars/내 번호 에 글자로 저장 ───────── */
 let avatars={};
@@ -2221,7 +2380,7 @@ function coInvite(){
   const p=periodNow(),B=bossFor(p),id=myId().replace(/[^A-Za-z0-9_-]/g,"")+"-"+Date.now().toString(36),role=raidRole&&SECT_ROLES[me.sect].includes(raidRole)?raidRole:SECT_ROLES[me.sect][0];
   const h=structuredClone(me);takeTry(h,role);h.colair=id;
   LS.set(id,{id,coop:true,period:p,status:"invite",invitees:mates.map(o=>o._id),members:[myId()],roles:{[myId()]:role},seed:Date.now()%2147483647,start:Date.now(),step:1,phase:"fork",hp:{},mods:[],path:[],
-    loot:{exp:0,stone:0,herb:0,items:[]},room:null,boss:null,log:[{k:"sec",x:`${B.n}의 소굴`},{k:"amb",x:`${josa(h.name,"이")} 무리를 이끌고 ${B.title} ${B.n}의 소굴 어귀에 섰다.`}]});
+    loot:{exp:0,stone:0,herb:0,items:[]},room:null,boss:null,log:[{k:"sec",x:`${B.n}의 소굴`},{k:"amb",x:`${josa(h.name,"이")} 무리를 이끌고 ${B.title} ${B.n}의 소굴 어귀에 섰다.`},...(invHere(B.region)?[{k:"comp",x:"소굴 벽마다 천마신교의 붉은 깃발이 걸려 있다. 마교가 이곳까지 손을 뻗었다."}]:[])]});
   addLog(h,`무리에게 ${B.n}의 소굴에 함께 들어가자고 했다.`);save(h);
 }
 /* 무리 중 누가 이미 연 소굴(초대 중이거나 진행 중) */
@@ -2319,6 +2478,7 @@ function coBossTurn(f){
         log.push({k:"ev2",sub:"act",x:`${nm(m)}의 ${SKILL_NAME[m.sect]}!${sp[1]>1?` ${sp[1]}연타`:""} · ${d} 피해${m.sect==="namgung"?" · 검을 세운 채 버틴다":m.sect==="akga"?" · 창끝이 적진을 꿰뚫는다":m.sect==="kunlun"?" · 보스의 허점이 드러났다":m.sect==="jegal"?" · 화살비가 쏟아진다":""}${wTag(W)}${wHeal(W,party,nm)}`})}}
     else{const d=deal(m.atk,roleMul(m.role),1,m.crit);turn+=d;b.dealtBy[m.id]=(b.dealtBy[m.id]||0)+d;log.push({k:"ev2",sub:"act",x:`${nm(m)}의 공격 · ${d?`${d} 피해`:"빗나갔다"}`})}
   }
+  traitBattleLine(party,nm,log);
   const pl=party.filter(x=>x.player&&x.hp>0);if(pl.length>=2&&Math.random()<.3){const sh=[...pl].sort(()=>Math.random()-.5),[x,y]=sh;const pool=COMP.fight[relDir(x.id,y.id)]||COMP.fight.지인;log.push({k:"comp",x:fill(pickOne(pool),{c:nm(x)})})}
   const bp=bAtk*(b.rage?1.5:1)*weak;b.rage=false;
   const take=(x,base)=>{if(x.player&&Math.random()*100<x.eva)return -1;let d=Math.max(1,Math.round(base*100/(100+x.def)*(.9+Math.random()*.2)*pshield));if(guard[x.id])d=Math.round(d*.4);if(iron[x.id])d=Math.round(d*iron[x.id]);d=Math.round(d*tankMul(x));x.hp=Math.max(0,x.hp-d);return d};
@@ -2578,7 +2738,7 @@ function startMission(diff){
   if(activity(h)){toast(`${busyText[activity(h)]} 임무를 맡을 수 없습니다.`);return}
   if(misDone(h,h.loc,diff,p)){toast("이 사건은 이미 해결했습니다.");return}
   const idx=incidentSlots(h.loc,p)[diff],inc=INC[h.loc][idx],now=Date.now(),d=missionHours(h.realm,diff);
-  h.mission={region:h.loc,period:p,idx,diff,start:now,end:now+d*3600e3,phase:"wait",step:0,clues:0,rolls:[],fight:null};
+  h.mission={region:h.loc,period:p,idx,diff,tr:traitsOf(h),start:now,end:now+d*3600e3,phase:"wait",step:0,clues:0,rolls:[],fight:null};
   addLog(h,`「${inc.t}」 사건을 맡아 탐문을 시작했다.`); save(h);
 }
 /* 탐문 중 일어나는 일들: 임무 시작 시각으로 정해져서 새로고침해도 같다 */
@@ -2648,21 +2808,23 @@ function feedFor(h,m,comp){
   const R=seeded(m.start%2147483647),P=a=>a[Math.floor(R()*a.length)],n=4+Math.min(3,h.realm),dur=m.end-m.start,out=[],dc=dcFor(h.realm)-2;
   const A=seeded(m.start%2147483647+7),PA=a=>a[Math.floor(A()*a.length)];
   const C=seeded(m.start%2147483647+13),PC=a=>a[Math.floor(C()*a.length)];
-  const nm={me:h.name};
+  const nm={me:h.name},invM=invHere(m.region,m.start),myTr=m.tr||traitsOf(h),T=seeded(m.start%2147483647+57),compTr=comp?.id?traitsOf(heroById(comp.id)):[];
   { const opens=["{me|은} {r|의} 마을 어귀에 들어섰다. 사람들의 눈길이 낯선 무인에게 쏠린다.","{me|은} 객잔 한구석에 자리를 잡고 귀를 기울였다.","{me|은} 소문이 시작된 곳부터 차근차근 짚어 보기로 했다.","길가 찻집에 앉으니 사건 이야기가 절로 들려온다. {me|은} 찻잔을 들며 귀를 연다."];
     out.push({t:m.start,kind:"amb",text:fill(opens[Math.floor(seeded(m.start%2147483647+29)()*opens.length)],{me:h.name,r:REGIONS[m.region].n})}); }
   for(let i=0;i<n;i++){
     const t=m.start+dur*(i+.5+R()*.4)/(n+.3),x=R(),stat=P(["nei","wai","shen"]),roll=1+Math.floor(R()*20),ok=roll+Math.floor(h.stats[stat]/10)>=dc;
     const n1=P(FEED.npc);let n2=P(FEED.npc);if(n2===n1)n2="거지 노인";
-    if(A()<.55) out.push({t:t-dur*.03,kind:"amb",text:A()<.75?PA(ambFor(t)):fill(PA(FEED.mono),nm)});
+    if(A()<.55){const a1=A()<.75;out.push({t:t-dur*.03,kind:"amb",text:invM&&A()<.6?PA(INV_AMB):a1?PA(ambFor(t)):fill(PA(FEED.mono),nm)})}
     let e;
     if(x<.34) e={t,kind:"talk",ok,stat,text:fill(P(FEED.talk),{n:n1}).replace(/\{n\|에\}/,n1+"에"),res:P(ok?FEED.ok:FEED.no)};
     else if(x<.6) e={t,kind:"act",ok,stat,text:fill(P(FEED.act),{n:n1,m:n2}),res:P(ok?FEED.ok:FEED.no)};
-    else if(x<.8){const f=P(FEED.foe),win=R()<.7+Math.min(.2,h.level/200);e={t,kind:"fight",ok:win,text:fill(P(FEED.meet),{f}),res:P(win?FEED.win:FEED.lose),stone:win&&R()<.4?1:0}}
+    else if(x<.8){const f0=P(FEED.foe),f=invM?INV_FEED_FOES[Math.floor(C()*INV_FEED_FOES.length)]:f0,win=R()<.7+Math.min(.2,h.level/200);e={t,kind:"fight",ok:win,text:fill(P(FEED.meet),{f}),res:P(win?FEED.win:FEED.lose),stone:win&&R()<.4?1:0,inv:invM}}
     else{const it=P(["herb","stone","herb","wine","trinket"]);e={t,kind:"find",ok:true,item:it,text:`${P(FEED.spot)}에서 ${josa(ITEMS[it][0],"을")} 발견했다.`,res:""}}
     e.text=e.text.replace(/\{(\S+?)\|에\}/g,"$1에");
     out.push(e);
-    if(comp&&C()<.75){const pool=COMP[e.kind==="fight"?"fight":e.kind==="find"?"find":"talk"][comp.rel]||COMP.talk.지인;
+    if(myTr.length&&T()<.3){const tr=myTr[Math.floor(T()*myTr.length)],pool=TRAITS[tr][e.kind==="fight"?"fight":"talk"];out.push({t:e.t+dur*.004,kind:"amb",text:fill(pool[Math.floor(T()*pool.length)],{me:h.name})})}
+    if(comp&&compTr.length&&T()<.45){const tr=compTr[Math.floor(T()*compTr.length)],pool=TRAITS[tr].comp;out.push({t:e.t+dur*.012,kind:"comp",text:fill(pool[Math.floor(T()*pool.length)],{c:"\u0001"+comp.name+"\u0002"})})}
+    else if(comp&&C()<.75){const pool=COMP[e.kind==="fight"?"fight":e.kind==="find"?"find":"talk"][comp.rel]||COMP.talk.지인;
       out.push({t:t+dur*.01,kind:"comp",text:fill(PC(pool),{c:"\u0001"+comp.name+"\u0002"})})}
   }
   /* 사이사이 빈 시간을 채우는 소식: 5분마다 한 줄 (보상에는 영향 없음) */
@@ -2671,7 +2833,7 @@ function feedFor(h,m,comp){
     if(out.some(e=>Math.abs(e.t-t)<GAP/2))continue;
     const tt=t+Math.floor((I()-.5)*60e3);
     if(comp&&I()<.25){const pool=COMP.talk[comp.rel]||COMP.talk.지인;out.push({t:tt,kind:"comp",text:fill(PI(pool),{c:"\u0001"+comp.name+"\u0002"})});continue}
-    let line,k=0;do{line=PI(I()<.7?FEED.idle:FEED.mono);k++}while(used.has(line)&&k<6);used.add(line);
+    let line,k=0;do{line=myTr.length&&T()<.35?PI(TRAITS[myTr[Math.floor(T()*myTr.length)]].idle):PI(I()<.7?FEED.idle:FEED.mono);k++}while(used.has(line)&&k<6);used.add(line);
     out.push({t:tt,kind:"amb",text:fill(line,{me:h.name})});
   }
   return out.sort((a,b)=>a.t-b.t);
@@ -2704,6 +2866,7 @@ function enterScene(){
     if(e.kind==="fight"&&e.ok){exp+=Math.round(expPerHour(h.level)*.15);stones+=e.stone}
     if((e.kind==="talk"||e.kind==="act")&&e.ok)exp+=Math.round(expPerHour(h.level)*.05)}
   h.items.stone+=stones;if(stones)got.push(`강화석 ${stones}`);
+  {const iw=f.filter(e=>e.kind==="fight"&&e.ok&&e.inv).length;if(iw){const ip=addInv(h,15*iw);if(ip)got.push(`마교도 ${iw}명 격퇴 · 침공 기여 +${ip}`)}}
   const ups=applyExp(h,exp);m.bonus=feedBonus(f)+(comp?1:0);if(h.buff?.scene){m.bonus+=2;m.mandu=1;delete h.buff.scene}m.phase="scene";
   addLog(h,`탐문을 마쳤다. 경험치 +${exp}${got.length?", "+got.join(", "):""} · 조사 판정 +${m.bonus}`);
   save(h);toast(ups?`탐문 중에 레벨이 올랐습니다! Lv.${h.level}`:`탐문 성과로 조사 판정 +${m.bonus}`);
@@ -2916,10 +3079,17 @@ function mapSvg(){
   let me2="";
   if(h.travel){const A=REGIONS[h.travel.from],B=REGIONS[h.travel.to];
     me2=`<g id="traveler"><rect class="here" x="-8" y="-8" width="16" height="16" rx="2" transform="rotate(-6)"/><text class="heret" y="3">我</text></g>`;}
+  /* 지도 표식: 이번 토벌 보스, 마교 침공, 떠돌이 상단 */
+  const marks={};const addM=(r,ch,cls,lab)=>{(marks[r]=marks[r]||[]).push({ch,cls,lab})};
+  {const B=bossFor(periodNow());addM(B.region,"討","mk-boss",`토벌 · ${B.n}`)}
+  if(invOn()&&sNow()<invasion.end)addM(invasion.region,"魔","mk-inv","마교 침공");
+  {const c=caravan();if(c.here)addM(c.region,"商","mk-cv","떠돌이 상단")}
+  const markSvg=Object.entries(marks).map(([r,list])=>{const R=REGIONS[r];return list.map((m,i)=>`<g class="mk ${m.cls}" transform="translate(${R.x+13+i*15} ${R.y-22})"><title>${m.lab}</title><rect x="-7" y="-7" width="14" height="14" rx="2"/><text y="3.6">${m.ch}</text></g>`).join("")}).join("");
   return `<div class="mapbox"><svg class="map" viewBox="0 0 400 304" role="img" aria-label="중원 지도">
     <path class="river" d="M20,58 C80,52 120,74 175,82 S290,70 395,58"/><text class="rname" x="196" y="74">황하</text>
     <path class="river" d="M70,248 C130,236 180,250 240,242 S330,252 395,236"/><text class="rname" x="300" y="262">장강</text>
-    ${roads}${nodes}${mates}${me2}</svg></div>`;
+    ${roads}${nodes}${markSvg}${mates}${me2}</svg>
+    <div class="mklegend"><span><i class="mk-boss">討</i>이번 토벌 · ${bossFor(periodNow()).n}</span>${invOn()&&sNow()<invasion.end?`<span><i class="mk-inv">魔</i>마교 침공</span>`:""}${caravan().here?`<span><i class="mk-cv">商</i>떠돌이 상단</span>`:""}</div></div>`;
 }
 function worldTab(){
   const h=me,a=activity(h),now=Date.now();
@@ -3013,7 +3183,7 @@ function selfTab(){
     <section><div class="label">행낭</div>
       <div class="bag"><div><b>${(h.silver||0).toLocaleString()}</b>은자 <span>· 냥 · 객잔과 떠돌이 상단에서 쓴다</span></div>${h.horse?`<div><b>🐎</b>${esc(h.horse.n)} <span>· 말 · 이동 시간 -30%</span></div>`:""}${Object.entries(ITEMS).map(([k,[n,sub]])=>`<div><b>${h.items[k]||0}</b>${n} <span>· ${sub}</span>${FOOD[k]&&h.items[k]>0?` <button class="btn sm ghost" type="button" data-eat="${k}" ${h.buff?.[FOOD[k].k]?"disabled":""}>${FOOD[k].v||"먹기"}</button>`:""}</div>`).join("")}</div>
       ${h.buff&&Object.keys(h.buff).length?`<p class="note">먹고 마신 것: ${Object.entries(h.buff).map(([k,it])=>`<b>${ITEMS[it]?.[0]||it}</b> (${k==="scene"?"다음 사건 조사 +2":k==="atk"?"공격 +15%":k==="hp"?"체력 +20%":k==="travel"?"다음 이동 -20%":"다음 수련 경험치 +15%"})`).join(" · ")}</p>`:""}
-      <p class="note">강화석은 장비 탭에서 강화에 쓴다. 약초는 소굴에서 회복에 쓴다. 약초·술·향낭·장신구·옥비녀는 인연 탭에서 동료에게, 강호 탭에서 문파에 선물로 쓴다. 음식과 차는 먹기·마시기를 누르면 효과가 걸린다. 착용하는 장신구는 장비 탭에 있다.</p></section>${titleSection()}${sectTabSection()}`;
+      <p class="note">강화석은 장비 탭에서 강화에 쓴다. 약초는 소굴에서 회복에 쓴다. 약초·술·향낭·장신구·옥비녀는 인연 탭에서 동료에게, 강호 탭에서 문파에 선물로 쓴다. 음식과 차는 먹기·마시기를 누르면 효과가 걸린다. 착용하는 장신구는 장비 탭에 있다.</p></section>${bioSection()}${titleSection()}${sectTabSection()}`;
 }
 
 /* 동행 탭 */
@@ -3432,7 +3602,7 @@ addEventListener("murim-ready",()=>{
   .chat .sub button{background:none;border:1px solid var(--line);font-size:12px;padding:2px 8px;color:var(--ink-2)}
   .chat .msgs{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;overscroll-behavior:contain}
   .chat .m{font-size:14px;line-height:1.55;word-break:break-word;display:flex;gap:8px;align-items:flex-start}.chat .m>div{min-width:0}
-  .chat .m .who{font-weight:700;margin-right:6px}.chat .m .cav{width:26px;height:26px;flex:none;border-radius:50%;object-fit:cover;border:1px solid var(--line);margin-top:1px}.chat .m .tm{font-size:11px;color:var(--ink-3);margin-left:6px;font-variant-numeric:tabular-nums}
+  .chat .m .who{font-weight:700;margin-right:6px;cursor:pointer}.chat .m .who:hover{text-decoration:underline}.chat .m .cav{cursor:pointer}.chat .m .cav{width:26px;height:26px;flex:none;border-radius:50%;object-fit:cover;border:1px solid var(--line);margin-top:1px}.chat .m .tm{font-size:11px;color:var(--ink-3);margin-left:6px;font-variant-numeric:tabular-nums}
   .chat .m.mine .who{color:var(--seal)}
   .chat .empty2{color:var(--ink-3);font-size:13px;text-align:center;margin:auto}
   .chat form{display:flex;gap:6px;padding:8px;border-top:1px solid var(--line)}
@@ -3475,11 +3645,13 @@ addEventListener("murim-ready",()=>{
       body=`<div class="ppl">${ps.length?ps.map(o=>`<button type="button" data-dm="${o._id}">${o.name}<span>${unread(keyOf("dm",o._id))?"<b>새 귓속말</b>":((msgs[keyOf("dm",o._id)]||[]).slice(-1)[0]?.text||"").slice(0,18)}</span></button>`).join(""):`<p class="empty2" style="padding:20px">아직 귓속말을 나눌 사람이 없다.</p>`}</div>`}
     else{if(tab==="dm"){const o=peers().find(x=>x._id===dmWith);sub=`<div class="sub"><span>${o?(typeof josa==="function"?josa(o.name,"와"):o.name):"?"} 귓속말</span><button type="button" id="dmBack">목록</button></div>`}
       const list=k?msgs[k]||[]:[];
-      body=`<div class="msgs" id="chatMsgs">${list.length?list.map(m=>{const d=new Date(m.t);return `<div class="m ${m.from===uid?"mine":""}"><img class="cav" alt="" hidden><div><span class="who"></span><span class="tx"></span><span class="tm">${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}</span></div></div>`}).join(""):`<p class="empty2">${k?"아직 아무 말도 없다. 먼저 말을 걸어 보자.":""}</p>`}</div>`}
+      body=`<div class="msgs" id="chatMsgs">${list.length?list.map(m=>{const d=new Date(m.t);return `<div class="m ${m.from===uid?"mine":""}"><img class="cav" alt="" hidden><div><span class="cb"></span><span class="who"></span><span class="tx"></span><span class="tm">${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}</span></div></div>`}).join(""):`<p class="empty2">${k?"아직 아무 말도 없다. 먼저 말을 걸어 보자.":""}</p>`}</div>`}
     const form=canSend?`<form id="chatForm"><input id="chatIn" maxlength="200" autocomplete="off" placeholder="${tab==="dm"?"귓속말":"말하기"} (200자까지)" aria-label="보낼 말"><button type="submit">보내기</button></form>`:"";
     const keepDraft=$c("#chatIn")?.value||"";const hadFocus=document.activeElement?.id==="chatIn";
     box.innerHTML=tabs+sub+body+form;
-    const list=k?msgs[k]||[]:[];box.querySelectorAll(".m").forEach((el,i)=>{el.querySelector(".who").textContent=list[i].name||"?";el.querySelector(".tx").textContent=list[i].text;const a=typeof avatars!=="undefined"&&avatars[list[i].from];if(typeof okImg==="function"&&okImg(a)){const im=el.querySelector(".cav");im.src=a;im.hidden=false}});
+    const list=k?msgs[k]||[]:[];box.querySelectorAll(".m").forEach((el,i)=>{el.querySelector(".who").textContent=list[i].name||"?";
+      try{const H=typeof heroById==="function"?heroById(list[i].from):null;el.querySelector(".cb").innerHTML=H&&typeof titleBadge==="function"?titleBadge(H):""}catch(e){}
+      const op=()=>{if(typeof openProfile==="function")openProfile(list[i].from)};el.querySelector(".who").onclick=op;el.querySelector(".cav").onclick=op;el.querySelector(".tx").textContent=list[i].text;const a=typeof avatars!=="undefined"&&avatars[list[i].from];if(typeof okImg==="function"&&okImg(a)){const im=el.querySelector(".cav");im.src=a;im.hidden=false}});
     const ml=$c("#chatMsgs");if(ml)ml.scrollTop=ml.scrollHeight;
     if($c("#chatIn")){$c("#chatIn").value=keepDraft;if(hadFocus)$c("#chatIn").focus()}
     box.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{tab=b.dataset.t;if(tab!=="dm")dmWith=null;paint()});
