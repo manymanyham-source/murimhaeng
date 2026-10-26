@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261026204043">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261026204943">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -488,7 +488,11 @@ const ROADS=[["henan","shaanxi",2],["henan","hubei",2],["henan","shandong",2],["
 /* 말: 사건 보상으로 드물게 얻는다. 가진 사람은 이동 시간 -30% */
 const HORSE_CUT=.3,HORSE_RATE=[.08,.05,.03];
 const HORSES=["적토","오추","청총","백설","흑풍","황표","절영","비연"];
-const hrsFor=(h,x)=>h?.horse?Math.round(x*(1-HORSE_CUT)*60)/60:x;
+/* 이미 가 본 곳으로 가는 길은 익숙해서 15% 빠르다 (말과 따로 겹친다). to 를 주면 적용 */
+const FAMILIAR_CUT=.15;
+const knows=(h,to)=>!!to&&((h?.visited||[]).includes(to));
+const hrsFor=(h,x,to,rider)=>{let m=1;if((rider||h)?.horse)m*=1-HORSE_CUT;if(knows(h,to))m*=1-FAMILIAR_CUT;return Math.round(x*m*60)/60};
+function speedTags(h,to,rider){return [(rider||h)?.horse?"말 -30%":"",knows(h,to)?"익숙한 길 -15%":""].filter(Boolean)}
 const hrsTxt=x=>{const H=Math.floor(x),M=Math.round((x-H)*60);return M?(H?`${H}시간 ${M}분`:`${M}분`):`${H}시간`};
 const roadHours=(a,b)=>{const r=ROADS.find(r=>(r[0]===a&&r[1]===b)||(r[0]===b&&r[1]===a));return r?r[2]:0};
 function route(a,b){ // 가장 빠른 길 (다익스트라)
@@ -682,7 +686,7 @@ function normalize(h){
   if(!h) return h;
   h.loc=h.loc||"henan"; h.items=Object.assign({stone:0,herb:0,wine:0,trinket:0,clue:0},h.items||{});
   h.bag=h.bag||[]; if(!h.gear){const sp=SECT_SPEC[h.sect]||"dps";h.gear={weapon:makeItem("weapon",0,sp),armor:makeItem("armor",0,sp),acc:null};if(h.sect==="namgung")h.gear.weapon.name=`${GRADE[0]} 장창`}
-  h.bonds=h.bonds||{}; h.favor=h.favor||{}; h.silver=h.silver||0;
+  h.bonds=h.bonds||{}; h.favor=h.favor||{}; h.silver=h.silver||0; if(h.loc&&!(h.visited||[]).includes(h.loc))h.visited=[...(h.visited||[]),h.loc];
   /* 내가 직접 찍은 능력치 기록 (문파를 옮길 때 되돌려 주려고). 기록이 없던 사람은 찍은 총량을 넘친 만큼 비율로 나눠 추정한다 */
   if(!h.alloc&&h.stats){const total=Math.max(0,3*((h.level||1)-1)+5*(h.realm||0)-(h.points||0)),ex={},keys=["nei","wai","shen"];keys.forEach(k=>ex[k]=Math.max(0,(h.stats[k]||10)-10));
     const sum=keys.reduce((a,k)=>a+ex[k],0)||1,al={};let left=total;keys.forEach(k=>{al[k]=Math.min(ex[k],Math.floor(total*ex[k]/sum));left-=al[k]});
@@ -2499,12 +2503,12 @@ function commitAlloc(){
 /* ───────── 행동: 이동 ───────── */
 function startTravel(to,withId){
   const h=structuredClone(me),W=withId&&following(withId)?heroById(withId):null,ride=!h.horse&&W?.horse?W:null;
-  const hrsNeed=ride?hrsFor(ride,roadHours(h.loc,to)):hrsFor(h,roadHours(h.loc,to));
+  const hrsNeed=hrsFor(h,roadHours(h.loc,to),to,ride||h);
   if(activity(h)){toast(`${busyText[activity(h)]} 떠날 수 없습니다.`);return}
   if(!hrsNeed) return;
   const R=REGIONS[to]; if(R.minRealm&&h.realm<R.minRealm){toast(`${R.n}는 ${REALMS[R.minRealm].n} 이상만 들어갈 수 있습니다.`);return}
   const now=Date.now(); h.travel={from:h.loc,to,start:now,end:now+hrsNeed*3600e3};
-  addLog(h,`${REGIONS[h.loc].n}을 떠나 ${R.n}로 향한다.${h.horse?` (${josa(h.horse.n,"을")} 타고)`:ride?` (${josa(ride.name,"의")} 말 ${ride.horse.n}에 함께 올라)`:""}`); dest=null; save(h);
+  addLog(h,`${REGIONS[h.loc].n}을 떠나 ${R.n}로 향한다.${knows(h,to)?" 눈에 익은 길이다.":""}${h.horse?` (${josa(h.horse.n,"을")} 타고)`:ride?` (${josa(ride.name,"의")} 말 ${ride.horse.n}에 함께 올라)`:""}`); dest=null; save(h);
 }
 function arrive(){
   const h=structuredClone(me),t=h.travel; if(!t||Date.now()<t.end) return;
@@ -2881,10 +2885,10 @@ function worldTab(){
   const focus=dest||(h.travel?h.travel.to:h.loc),R=REGIONS[focus];
   let regionBox=`<div class="region"><div><h3>${R.n}</h3><div class="place">${R.place}</div></div><p>${R.note}</p>`;
   if(!h.travel&&dest&&dest!==h.loc){
-    const direct=hrsFor(h,roadHours(h.loc,dest)),lock=R.minRealm&&h.realm<R.minRealm;
+    const direct=hrsFor(h,roadHours(h.loc,dest),dest),tg=speedTags(h,dest),lock=R.minRealm&&h.realm<R.minRealm;
     if(lock) regionBox+=`<p class="note">${REALMS[R.minRealm].n} 이상만 들어갈 수 있다.</p>`;
-    else if(direct) regionBox+=`<div class="row" style="margin-top:6px"><button class="btn solid" id="goBtn" type="button" ${a?"disabled":""}>${R.n}로 떠나기 · ${hrsTxt(direct)}${h.horse?" (말 -30%)":""}</button>${realMates().length?`<button class="btn ghost" type="button" data-callgo="${dest}">무리에게 같이 가자고 하기</button>`:""}${a?`<span class="note" style="margin:0">${busyText[a]} 떠날 수 없다.</span>`:""}</div>`;
-    else{const rt=route(h.loc,dest);regionBox+=`<p class="note">바로 가는 길이 없다. ${rt.path.map(p=>REGIONS[p].n).join(" → ")} (모두 ${hrsTxt(hrsFor(h,rt.hours))}) 순으로 한 곳씩 이동해야 한다.</p>`}
+    else if(direct) regionBox+=`<div class="row" style="margin-top:6px"><button class="btn solid" id="goBtn" type="button" ${a?"disabled":""}>${R.n}로 떠나기 · ${hrsTxt(direct)}${tg.length?` (${tg.join(", ")})`:""}</button>${realMates().length?`<button class="btn ghost" type="button" data-callgo="${dest}">무리에게 같이 가자고 하기</button>`:""}${a?`<span class="note" style="margin:0">${busyText[a]} 떠날 수 없다.</span>`:""}</div>`;
+    else{const rt=route(h.loc,dest);regionBox+=`<p class="note">바로 가는 길이 없다. ${rt.path.map(p=>REGIONS[p].n).join(" → ")} (모두 ${hrsTxt(hrsFor(h,rt.hours))}${h.horse?", 말 적용":""}) 순으로 한 곳씩 이동해야 한다.</p>`}
   }
   regionBox+=(focus===h.loc?regionSectBox(focus)+innBox(h):"")+`</div>`;
   return `${invBox(h)}<section><div class="label">지도</div>${mapSvg()}
