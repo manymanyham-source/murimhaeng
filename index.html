@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261026224402">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261026225249">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -3613,7 +3613,7 @@ window.FIREBASE_CONFIG = {
   }
 })();
 
-/* ───────── 브금: 백그라운드 재생 (두 곡을 이어 붙인 bgm.mp3 하나를 계속 반복) ───────── */
+/* ───────── 브금: 백그라운드 재생 (네 곡을 이어 붙인 bgm.mp3 하나를 계속 반복) ───────── */
 (function(){
   const st=document.createElement("style");st.textContent=`
   .bgm-btn{position:fixed;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:35;display:flex;align-items:center;gap:8px;
@@ -3629,7 +3629,7 @@ window.FIREBASE_CONFIG = {
   au.addEventListener("error",()=>{on=false;label("브금 파일을 못 찾았어요")});
   btn.addEventListener("click",async()=>{
     if(on){au.pause();on=false;label();return}
-    if(!au.src){au.src="bgm.mp3";if("mediaSession" in navigator)navigator.mediaSession.metadata=new MediaMetadata({title:"무림행 브금",artist:"Ancient Bamboo Harmony · Soft Pads & Bamboo Flute"})}
+    if(!au.src){au.src="bgm.mp3?v=4";if("mediaSession" in navigator)navigator.mediaSession.metadata=new MediaMetadata({title:"무림행 브금",artist:"Ancient Bamboo Harmony · Soft Pads & Bamboo Flute · Whisper of Empty Mountains"})}
     try{await au.play();on=true;label()}catch(e){on=false;label("다시 눌러 주세요")}
   });
   if("mediaSession" in navigator){
