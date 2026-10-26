@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261026012931">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261026202207">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -614,6 +614,10 @@ function normalize(h){
   h.loc=h.loc||"henan"; h.items=Object.assign({stone:0,herb:0,wine:0,trinket:0,clue:0},h.items||{});
   h.bag=h.bag||[]; if(!h.gear){const sp=SECT_SPEC[h.sect]||"dps";h.gear={weapon:makeItem("weapon",0,sp),armor:makeItem("armor",0,sp),acc:null};if(h.sect==="namgung")h.gear.weapon.name=`${GRADE[0]} 장창`}
   h.bonds=h.bonds||{}; h.favor=h.favor||{};
+  /* 내가 직접 찍은 능력치 기록 (문파를 옮길 때 되돌려 주려고). 기록이 없던 사람은 찍은 총량을 넘친 만큼 비율로 나눠 추정한다 */
+  if(!h.alloc&&h.stats){const total=Math.max(0,3*((h.level||1)-1)+5*(h.realm||0)-(h.points||0)),ex={},keys=["nei","wai","shen"];keys.forEach(k=>ex[k]=Math.max(0,(h.stats[k]||10)-10));
+    const sum=keys.reduce((a,k)=>a+ex[k],0)||1,al={};let left=total;keys.forEach(k=>{al[k]=Math.min(ex[k],Math.floor(total*ex[k]/sum));left-=al[k]});
+    for(const k of keys){if(left<=0)break;const room=ex[k]-al[k],add=Math.min(room,left);al[k]+=add;left-=add}h.alloc=al}
   /* 내 문파 우호도는 50에서 시작 (이미 있던 사람은 한 번 +50) */
   if(!h.favorInit&&h.sect){h.favor[h.sect]=(h.favor[h.sect]||0)+50;h.favorInit=1} h.done=h.done||{}; h.training=h.training||null; h.travel=h.travel||null; h.mission=h.mission||null; h.log=h.log||[];
   return h;
@@ -1474,7 +1478,7 @@ function changeSect(to){
   const h=structuredClone(me),from=h.sect;if(!SECTS[to]||to===from)return;
   if(activity(h)){toast(`${busyText[activity(h)]} 문파를 옮길 수 없습니다.`);return}
   const until=(h.leftSects?.[to]||0)+7*86400e3;if(Date.now()<until){toast(`${SECTS[to].n}는 ${fmtDays(until-Date.now())} 뒤에 다시 들어갈 수 있습니다.`);return}
-  h.favor=h.favor||{};h.favor[from]=Math.round((h.favor[from]||0)*.3);h.leftSects={...(h.leftSects||{}),[from]:Date.now()};h.sect=to;h.favor[to]=Math.max(h.favor[to]||0,50);h.post=null;
+  h.favor=h.favor||{};h.favor[from]=Math.round((h.favor[from]||0)*.3);h.leftSects={...(h.leftSects||{}),[from]:Date.now()};h.sect=to;h.respec=1;h.favor[to]=Math.max(h.favor[to]||0,50);h.post=null;
   addLog(h,`${josa(SECTS[from].n,"을")} 떠나 ${SECTS[to].n}의 문하가 되었다. ${SECTS[from].n} 우호도가 크게 떨어졌다.`);sectConfirm=false;sectPick=null;save(h);toast(`${SECTS[to].n}에 입문했습니다.`);
 }
 /* 직위 제안 */
@@ -2294,9 +2298,13 @@ function promote(){
   h.realm++; h.points+=5; applyExp(h,0);
   addLog(h,`${next.n}의 경지에 올랐다.`); save(h); toast(`${next.n}에 올랐습니다! 보너스 포인트 +5`);
 }
+/* 문파를 옮기면 한 번, 직접 찍은 능력치를 모두 되돌려 다시 찍을 수 있다 (수련으로 오른 몫은 그대로) */
+function respecStats(){const h=structuredClone(me);if(!h.respec)return;const a=h.alloc||{},keys=["nei","wai","shen"];let n=0;
+  keys.forEach(k=>{const v=Math.min(a[k]||0,Math.max(0,h.stats[k]-1));h.stats[k]-=v;n+=v});h.points+=n;h.alloc={nei:0,wai:0,shen:0};h.respec=0;alloc={nei:0,wai:0,shen:0};
+  addLog(h,`찍어 두었던 능력치 ${n}점을 거두었다. 새 문파에 맞게 다시 찍을 수 있다.`);save(h);toast(`능력치 ${n}점이 돌아왔습니다. 다시 찍어 주세요.`)}
 function commitAlloc(){
   const h=structuredClone(me),used=alloc.nei+alloc.wai+alloc.shen; if(!used) return;
-  for(const k in alloc) h.stats[k]+=alloc[k];
+  h.alloc=h.alloc||{nei:0,wai:0,shen:0};for(const k in alloc){h.stats[k]+=alloc[k];h.alloc[k]=(h.alloc[k]||0)+alloc[k]}
   h.points-=used; addLog(h,`능력치를 다듬었다 (${Object.keys(alloc).filter(k=>alloc[k]).map(k=>`${STATS[k].n}+${alloc[k]}`).join(", ")}).`);
   alloc={nei:0,wai:0,shen:0}; save(h);
 }
@@ -2585,7 +2593,7 @@ function heroView(){
   const h=me,s=SECTS[h.sect],r=REALMS[h.realm],next=REALMS[h.realm+1],wall=atWall(h);
   const pct=Math.min(100,h.exp/need(h.level)*100);
   const tabs=[["train","수련"],["world","강호"],["raid","토벌"],["gate","관문"],["self","인물"],["gear","장비"],["alarm","알림"],["mates","인연"],["mail","우편"],["notice","공지"]];
-  const dot={notice:mode==="db"&&noticeUnread()>0,alarm:mode==="db"&&alarmUnread()>0,mail:mode==="db"&&mailUnread()>0,train:h.training&&Date.now()>=h.training.end,world:(h.travel&&Date.now()>=h.travel.end)||(h.mission&&(h.mission.phase==="scene"||Date.now()>=h.mission.end)),self:h.points>0||!!postOffer(h),mates:giftsToMe().some(g=>g.t>(h.seenGift||0))||others.some(o=>{const B=bondOf(o._id,myId()),A=bondOf(myId(),o._id);return (B.want&&B.want!=="지인"&&!relMatch(B.want,A.want)&&relNorm(B.want)!==relMutual(myId(),o._id))||false})||partyCallsForMe().length>0||duelInvitesForMe().length>0||(()=>{const d=myDuel();return !!d&&(d.status==="done"||(d.status==="fight"&&!duelActOf(d,myId())))})(),gate:(()=>{const r=myRoom();if(r&&r.status==="fight"){const m=r.party.find(x=>x.id===myId());return !!(m&&m.hp>0&&!playerReady(r,m))}if(r&&(r.status==="win"||r.status==="fail")&&!h.gateDone?.[r.id])return true;return atWall(h)&&!!GATES[h.realm+1]?.ready&&!r})(),raid:(()=>{const st=raidState(periodNow());if(coInvitesForMe().length&&!h.colair)return true;if(h.colair)return true;if(h.lair&&h.lair.phase!=="done")return true;return st.down&&h.raid?.period===periodNow()&&!h.raid.claimed})()};
+  const dot={notice:mode==="db"&&noticeUnread()>0,alarm:mode==="db"&&alarmUnread()>0,mail:mode==="db"&&mailUnread()>0,train:h.training&&Date.now()>=h.training.end,world:(h.travel&&Date.now()>=h.travel.end)||(h.mission&&(h.mission.phase==="scene"||Date.now()>=h.mission.end)),self:h.points>0||!!h.respec||!!postOffer(h),mates:giftsToMe().some(g=>g.t>(h.seenGift||0))||others.some(o=>{const B=bondOf(o._id,myId()),A=bondOf(myId(),o._id);return (B.want&&B.want!=="지인"&&!relMatch(B.want,A.want)&&relNorm(B.want)!==relMutual(myId(),o._id))||false})||partyCallsForMe().length>0||duelInvitesForMe().length>0||(()=>{const d=myDuel();return !!d&&(d.status==="done"||(d.status==="fight"&&!duelActOf(d,myId())))})(),gate:(()=>{const r=myRoom();if(r&&r.status==="fight"){const m=r.party.find(x=>x.id===myId());return !!(m&&m.hp>0&&!playerReady(r,m))}if(r&&(r.status==="win"||r.status==="fail")&&!h.gateDone?.[r.id])return true;return atWall(h)&&!!GATES[h.realm+1]?.ready&&!r})(),raid:(()=>{const st=raidState(periodNow());if(coInvitesForMe().length&&!h.colair)return true;if(h.colair)return true;if(h.lair&&h.lair.phase!=="done")return true;return st.down&&h.raid?.period===periodNow()&&!h.raid.claimed})()};
   return `<div>
   <section style="margin-top:8px">
     <div class="who"><button type="button" class="facebtn" data-go="self" aria-label="프로필 사진 바꾸기">${face(myId(),h.sect,"big")}</button>
@@ -2739,6 +2747,8 @@ function selfTab(){
       <label class="btn sm" for="avatarIn" style="cursor:pointer">사진 고르기</label><input id="avatarIn" type="file" accept="image/*" hidden>
       ${avatars[myId()]?`<button class="btn sm ghost" type="button" id="avatarDel">지우기</button>`:""}
       <span class="note" style="margin:0">정사각형으로 잘려서 작게 저장된다. 대화창, 인연, 파티에서 보인다.</span></div></section>
+  ${h.respec?`<section><div class="wall"><p>문파를 옮겼다. 직접 찍어 둔 능력치 <b>${["nei","wai","shen"].reduce((x,k)=>x+(h.alloc?.[k]||0),0)}점</b>(${["nei","wai","shen"].map(k=>`${STATS[k].n} ${h.alloc?.[k]||0}`).join(" · ")})을 한 번 무료로 되돌려 <b>${SECTS[h.sect].n}</b>에 맞게 다시 찍을 수 있다. 수련으로 오른 몫은 그대로 남는다.</p>
+    <div class="row"><button class="btn sealb" type="button" id="respecBtn">되돌리고 다시 찍기</button><button class="btn ghost" type="button" id="respecNo">이대로 둔다</button></div></div></section>`:""}
   <section class="grid2">
     <div><div class="label">능력치</div>
       ${h.points?`<div class="points">남은 포인트 <b>${left}</b></div>`:""}
@@ -2852,6 +2862,7 @@ function bind(){
   on("#toBossBtn",()=>{dest=bossFor(periodNow()).region;tab="world";try{localStorage.setItem("murim-tab",tab)}catch(e){};render()});
   document.querySelectorAll('input[name="rrole"]').forEach(i=>i.addEventListener("change",()=>{raidRole=i.value;render()}));
   bindMail(); bindAlarm(); bindDuel(); bindNotice();
+  on("#respecBtn",respecStats); on("#respecNo",()=>{const h=structuredClone(me);h.respec=0;save(h)});
   on("#horseBtn",()=>{const h=structuredClone(me);h.horse=h.horse?null:{n:"적토",t:Date.now()};save(h);toast(h.horse?"말을 얻었습니다.":"말을 놓아주었습니다.")});
   on("#stoneBtn",()=>{const h=structuredClone(me);h.items.stone+=20;save(h)});
   on("#dropBtn",()=>{const h=structuredClone(me);const it=Math.random()<.2?makeItem("weapon",h.realm,null,{sect:h.sect}):makeItem(pickOne(["weapon","armor","acc"]),h.realm,pickOne(SPECS));toast("얻음: "+gainItem(h,it));save(h)});
