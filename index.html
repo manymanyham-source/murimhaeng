@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261026212352">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261026213049">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -128,6 +128,7 @@ section{margin-top:30px}
 .invbar i{position:absolute;inset:0 auto 0 0;background:var(--seal);opacity:.8}
 .invbar span{position:relative;display:block;text-align:center;font-size:12px;line-height:20px;color:var(--ink);font-variant-numeric:tabular-nums}
 .invrank{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px}.invrank .me{color:var(--seal);font-weight:bold}
+.homes{display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0 8px}.homes span{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-2)}.homes .emb{width:22px;height:22px}
 .mailnew{display:block;width:100%;margin:10px 0 0;padding:9px 12px;border:1px solid var(--seal);color:var(--seal);background:none;font:inherit;font-size:14px;text-align:left;border-radius:2px;cursor:pointer}
 .mailf label.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink);grid-column:1/-1}
 .chip{position:relative}
@@ -476,9 +477,9 @@ const REGIONS={
   xiyu:{n:"서역",place:"천산 · 사막",x:52,y:78,minRealm:3,note:"마교의 본거지. 절정 이상만 발을 들일 수 있다."},
   shaanxi:{n:"섬서",place:"화산 · 장안",x:150,y:108,note:"화산파의 땅. 검에 얽힌 소문과 비급 단서가 돈다."},
   henan:{n:"하남",place:"숭산 소림사 · 낙양",x:240,y:118,note:"강호의 한가운데. 소림이 가까워 초보 임무가 많다."},
-  shandong:{n:"산동",place:"태산 · 항구",x:338,y:92,note:"상인과 배가 오가는 곳. 장비 재료가 흔하다."},
+  shandong:{n:"산동",place:"태산 · 제남 악가장 · 항구",x:338,y:92,note:"산동악가의 본거지. 상인과 배가 오가고 장비 재료가 흔하다."},
   sichuan:{n:"사천",place:"아미산 · 성도 당가타",x:118,y:206,note:"아미파와 당가의 땅. 독과 약초가 많다."},
-  hubei:{n:"호북",place:"무당산 · 깊은 산림",x:228,y:196,note:"무당파의 땅. 산속 짐승 소문이 끊이지 않는다."},
+  hubei:{n:"호북",place:"무당산 · 양양 제갈세가",x:228,y:196,note:"무당파와 제갈세가의 땅. 산속 짐승 소문이 끊이지 않고, 양양성에는 제갈의 진법이 깔려 있다."},
   jiangnan:{n:"강남",place:"항주 · 장강 수로",x:334,y:214,note:"물길을 따라 사파 세력이 움직인다."},
   qinghai:{n:"청해",place:"곤륜산 · 서녕",x:44,y:168,note:"곤륜파가 깃든 설산. 서역으로 가는 길목이라 마교의 그림자가 짙다."},
   anhui:{n:"안휘",place:"합비 남궁세가 · 황산",x:296,y:160,note:"남궁세가의 본거지. 황산의 운해 아래 상단이 오간다."},
@@ -1462,6 +1463,8 @@ const REL_FX={사제:"함께한 사건·소굴에서 제자 경험치 +25%, 스�
 const COMBO={사제:"사도전승",친우:"의기투합",사형제:"사문합벽",연인:"비익연리"};
 const GIFT_VAL={herb:5,wine:10,trinket:20};
 const FAVOR_STAGES=[[0,"냉담",0],[200,"우호",.1],[500,"신뢰",.2],[1000,"동지",.25]];
+/* 문파 근거지 (지역 → 문파). 문파 쪽에서 보려면 homeOf */
+const homeOf=k=>{const r=Object.keys(REGION_SECTS).find(r=>REGION_SECTS[r].includes(k));return r?REGIONS[r]:null};
 const REGION_SECTS={shandong:["akga"],henan:["sorim"],shaanxi:["hwasan"],hubei:["mudang","jegal"],sichuan:["ami","dang"],anhui:["namgung"],qinghai:["kunlun"]};
 const SECT_GIFT={herb:10,wine:15,trinket:25};
 let giftPick={}, relPick={}, sectPick=null, sectConfirm=false;
@@ -1584,7 +1587,7 @@ function sectTabSection(){
   const move=sectConfirm&&sectPick?`<div class="wall"><div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px">${emblem(sectPick,"sm")}<div style="flex:1;min-width:0"><b>${SECTS[sectPick].n}</b> · ${SECTS[sectPick].role}<br><span class="note" style="margin:0">${esc(SECTS[sectPick].desc)} 주력 ${SECTS[sectPick].main.map(m=>STATS[m].n).join("+")} · 설 수 있는 자리: ${SECT_ROLES[sectPick].map(r=>ROLE_N[r]).join(", ")}</span></div></div><p><b>${SECTS[cur].n}</b>을(를) 떠나 <b>${SECTS[sectPick].n}</b>로 옮긴다. ${SECTS[cur].n} 우호도가 70% 줄고, 7일 동안 다시 들어갈 수 없다.${h.post?" 직위도 잃는다.":""}</p>
       <div class="row"><button class="btn sealb" id="sectYes" type="button">파문을 감수하고 옮긴다</button><button class="btn ghost" id="sectNo" type="button">그만둔다</button></div></div>`
     :`<div class="label" style="margin-top:14px">문파 옮기기</div><div class="sectmv">${opts.map(k=>{const S=SECTS[k],until=(h.leftSects?.[k]||0)+7*86400e3,ban=Date.now()<until;
-        return `<button class="smv" type="button" data-sect="${k}" ${ban?"disabled":""}>${emblem(k,"sm")}<span><b>${S.n}</b><em>${S.role} · 주력 ${S.main.map(m=>STATS[m].n).join("+")}</em><small>${SKILL_NAME[k]} — ${esc(S.sk[0][2])}</small>${ban?`<small class="ban">${fmtDays(until-Date.now())} 뒤에 다시 들어갈 수 있다</small>`:""}</span></button>`}).join("")}</div>`;
+        return `<button class="smv" type="button" data-sect="${k}" ${ban?"disabled":""}>${emblem(k,"sm")}<span><b>${S.n}</b><em>${S.role} · 주력 ${S.main.map(m=>STATS[m].n).join("+")}${homeOf(k)?` · 근거지 ${homeOf(k).n}`:""}</em><small>${SKILL_NAME[k]} — ${esc(S.sk[0][2])}</small>${ban?`<small class="ban">${fmtDays(until-Date.now())} 뒤에 다시 들어갈 수 있다</small>`:""}</span></button>`}).join("")}</div>`;
   return `<section><div class="label">문파 우호도</div>${offerBox}<div class="favs">${rows}</div>${post}
     <p class="note">우호도는 그 문파 근처의 사건 해결(+20), 문파에 선물(강호 탭에서, +10~25), 그 문파 NPC와 함께 이긴 싸움(+15)으로 오른다.</p>${move}</section>`;
 }
@@ -2809,7 +2812,7 @@ function introView(){
         <div class="box">${emblem(k,"md")}
           <div><h3>${s.n}</h3><div class="role">${s.role} · 주력 ${s.main.map(m=>STATS[m].n).join("+")}</div></div>
           <p>${s.desc}</p>
-          <div class="sk">시작 무공 · ${s.sk.map(x=>x[0]).join(", ")} &nbsp;|&nbsp; 기본 장비 · ${SPEC[SECT_SPEC[k]].n} 무기와 의복</div></div></label>`).join("")}</div>
+          <div class="sk">근거지 · ${homeOf(k)?`${homeOf(k).n} (${homeOf(k).place})`:"-"} &nbsp;|&nbsp; 시작 무공 · ${s.sk.map(x=>x[0]).join(", ")} &nbsp;|&nbsp; 기본 장비 · ${SPEC[SECT_SPEC[k]].n} 무기와 의복</div></div></label>`).join("")}</div>
     <div class="row" style="margin-top:22px"><button class="btn solid" id="createBtn" type="button">입문하기</button></div>
   </section></div>`;
 }
@@ -2913,7 +2916,7 @@ function worldTab(){
         :confirmAbort?`<button class="btn sealb" id="abYes" type="button">돌아가기</button><button class="btn ghost" id="abNo" type="button">계속 가기</button>`
         :`<button class="btn ghost" id="abBtn" type="button">발길 돌리기</button>`}</div></div>`}
   const focus=dest||(h.travel?h.travel.to:h.loc),R=REGIONS[focus];
-  let regionBox=`<div class="region"><div><h3>${R.n}</h3><div class="place">${R.place}</div></div><p>${R.note}</p>`;
+  let regionBox=`<div class="region"><div><h3>${R.n}</h3><div class="place">${R.place}</div></div><p>${R.note}</p>${(REGION_SECTS[focus]||[]).length?`<div class="homes">${REGION_SECTS[focus].map(k=>`<span>${emblem(k,"sm")}${SECTS[k].n}의 근거지</span>`).join("")}</div>`:""}`;
   if(!h.travel&&dest&&dest!==h.loc){
     const direct=hrsFor(h,roadHours(h.loc,dest),dest),tg=speedTags(h,dest),lock=R.minRealm&&h.realm<R.minRealm;
     if(lock) regionBox+=`<p class="note">${REALMS[R.minRealm].n} 이상만 들어갈 수 있다.</p>`;
