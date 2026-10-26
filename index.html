@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261026210514">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261026212352">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -2024,6 +2024,20 @@ function innBuy(k){const h=structuredClone(me),p=INN[k];if(!p||h.travel)return;i
   h.silver-=p;h.items[k]++;addLog(h,`객잔에서 ${josa(ITEMS[k][0],"을")} 샀다. (${silverTxt(p)})`);save(h);toast(`${ITEMS[k][0]} +1 · ${silverTxt(h.silver)} 남음`)}
 function innBox(h){if(h.travel)return "";
   return `<div class="shop"><div class="kicker">${REGIONS[h.loc].n} 객잔 · 가진 돈 ${silverTxt(h.silver)}</div><div class="shopl">${Object.entries(INN).map(([k,p])=>`<button class="shopi" type="button" data-inn="${k}" ${(h.silver||0)<p?"disabled":""}><b>${ITEMS[k][0]}</b><span>${ITEMS[k][1]}</span><em>${p}냥</em></button>`).join("")}</div></div>`}
+/* 대장간: 일류 전까지 쓰는 기본 무기·의복(무명·청강)을 판다. 청강은 이류부터 */
+const SMITH={0:{weapon:40,armor:30},1:{weapon:120,armor:90}};
+let smithSpec=null;
+function smithBuy(key){const [slot,g,spec]=key.split("|"),grade=+g,h=structuredClone(me),p=SMITH[grade]?.[slot];if(!p||h.travel)return;
+  if(grade>h.realm){toast(`${GRADE[grade]} 장비는 ${REALMS[grade].n}부터 살 수 있습니다.`);return}
+  if(h.bag.length>=20){toast("행낭이 가득 찼습니다. 장비를 정리해 주세요.");return}
+  if((h.silver||0)<p){toast(`은자가 ${p-(h.silver||0)}냥 모자랍니다.`);return}
+  h.silver-=p;const it=makeItem(slot,grade,spec);if(h.sect==="akga"&&slot==="weapon"&&spec==="dps")it.name=`${GRADE[grade]} 장창`;gainItem(h,it);
+  addLog(h,`대장간에서 ${josa(it.name,"을")} 샀다. (${silverTxt(p)})`);save(h);toast(`${it.name} · 장비 탭 행낭에 넣었습니다.`)}
+function smithBox(h){if(h.travel)return "";const sp=smithSpec||SECT_SPEC[h.sect]||"dps";
+  const cell=(slot,g)=>{const it=makeItem(slot,g,sp),p=SMITH[g][slot],lock=g>h.realm;return `<button class="shopi" type="button" data-smith="${slot}|${g}|${sp}" ${lock||(h.silver||0)<p?"disabled":""}><b>${it.name}</b><span>${statLine(it)}${lock?` · ${REALMS[g].n}부터`:""}</span><em>${p}냥</em></button>`};
+  return `<div class="shop"><div class="kicker">${REGIONS[h.loc].n} 대장간 · 일류 전까지 쓰는 기본 장비</div>
+    <div class="chips" style="margin:6px 0">${SPECS.map(k=>`<button type="button" class="btn sm ${k===sp?"sealb":"ghost"}" data-smsp="${k}">${SPEC[k].n}</button>`).join("")}</div>
+    <div class="shopl">${cell("weapon",0)}${cell("armor",0)}${cell("weapon",1)}${cell("armor",1)}</div></div>`}
 /* 떠돌이 상단: 8시간마다 다른 지역에 나타나 5시간 머문다. 사람마다 상단 한 번에 살 수 있는 수가 정해져 있다 */
 const CV_WIN=8*3600e3,CV_STAY=5*3600e3;
 const cvWin=(t=Date.now())=>Math.floor((t+KST)/CV_WIN);
@@ -2064,6 +2078,8 @@ function maybeGiyeon(h,chance){if(Math.random()>=chance)return "";const g=pickOn
   addLog(h,`기연! 「${g.n}」 ${txt}`);setTimeout(()=>toast(`기연! 「${g.n}」 — 행적을 확인해 보세요.`),400);return ` · 기연 「${g.n}」`}
 function bindEcon(){
   document.querySelectorAll("[data-inn]").forEach(b=>b.addEventListener("click",()=>innBuy(b.dataset.inn)));
+  document.querySelectorAll("[data-smith]").forEach(b=>b.addEventListener("click",()=>smithBuy(b.dataset.smith)));
+  document.querySelectorAll("[data-smsp]").forEach(b=>b.addEventListener("click",()=>{smithSpec=b.dataset.smsp;render()}));
   document.querySelectorAll("[data-cv]").forEach(b=>b.addEventListener("click",()=>cvBuy(b.dataset.cv)));
 }
 
@@ -2904,7 +2920,7 @@ function worldTab(){
     else if(direct) regionBox+=`<div class="row" style="margin-top:6px"><button class="btn solid" id="goBtn" type="button" ${a?"disabled":""}>${R.n}로 떠나기 · ${hrsTxt(direct)}${tg.length?` (${tg.join(", ")})`:""}</button>${realMates().length?`<button class="btn ghost" type="button" data-callgo="${dest}">무리에게 같이 가자고 하기</button>`:""}${a?`<span class="note" style="margin:0">${busyText[a]} 떠날 수 없다.</span>`:""}</div>`;
     else{const rt=route(h.loc,dest);regionBox+=`<p class="note">바로 가는 길이 없다. ${rt.path.map(p=>REGIONS[p].n).join(" → ")} (모두 ${hrsTxt(hrsFor(h,rt.hours))}${h.horse?", 말 적용":""}) 순으로 한 곳씩 이동해야 한다.</p>`}
   }
-  regionBox+=(focus===h.loc?regionSectBox(focus)+innBox(h):"")+`</div>`;
+  regionBox+=(focus===h.loc?regionSectBox(focus)+innBox(h)+smithBox(h):"")+`</div>`;
   return `${invBox(h)}<section><div class="label">지도</div>${mapSvg()}
     <p class="note">지역을 누르면 정보가 보이고, 이어진 곳이면 바로 떠날 수 있다.</p>${regionBox}${caravanBox(h)}</section>
     ${travelBox?`<section style="margin-top:20px">${travelBox}</section>`:""}
