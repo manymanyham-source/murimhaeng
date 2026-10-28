@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261028175145">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261028220726">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -125,6 +125,7 @@ section{margin-top:30px}
 .rt{font-family:var(--f-body);font-size:11px;padding:0 5px;border:1px solid currentColor;border-radius:2px;vertical-align:2px;margin-right:2px}
 .rt.r1,.gopt.r1{color:var(--c-dang)}.rt.r2,.gopt.r2{color:var(--c-mudang)}.rt.r3,.gopt.r3{color:var(--c-sorim)}.rt.r3{font-weight:700}
 .gopt{display:block;font-size:12px;margin-top:2px}.rr{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0;border-bottom:1px dashed var(--line)}.rr .gopt{margin:0}
+.foldh .label{margin:0;flex:1}.foldh i{font-style:normal;font-size:12px;color:var(--ink-3);white-space:nowrap}.foldb[hidden]{display:none}
 .shopi.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
 .shopi b{font-size:14px}.shopi span{font-size:11px;color:var(--ink-3);line-height:1.4}.shopi em{font-style:normal;font-size:13px;color:var(--seal);font-variant-numeric:tabular-nums}
 .shopi em s{color:var(--ink-3);font-size:11px}.disc{color:var(--seal)}
@@ -1496,12 +1497,16 @@ function resolveGate(room){
   else{n.act=a+1;n.omen=gateOmen(n);n.deadline=sNow()+GATE_WAIT;{const NA=GA(n.realm)[n.act];if(NA.say&&Math.random()<.6)log.push({k:"comp",x:`${G.sn}: ${NA.say}`})}}
   n.log=log.slice(-160);return n;
 }
+/* 도우미로 이긴 적 있는 관문: 벽에 닿으면 다시 싸우지 않고 바로 오른다 */
+function promoteByWin(){const h=structuredClone(me),nr=h.realm+1;if(!atWall(h)||!REALMS[nr]?.gate||!(h.gateWins?.[nr]>0))return;
+  h.realm=nr;h.points+=5;applyExp(h,0);const got=[`${REALMS[nr].n}의 경지에 올랐다! (포인트 +5)`];(ADV[h.sect]||[]).filter(x=>x.r===nr).forEach(x=>got.push(`새 무공 「${x.n}」을 깨쳤다`));
+  addLog(h,`${GATES[nr].title}에서 이긴 기억을 되새겨 벽을 넘었다. ${got.join(", ")}`);save(h);toast(got.join(" · "))}
 function claimGate(){
   const r=myRoom();if(!r||(r.status!=="win"&&r.status!=="fail"))return;const h=structuredClone(me);h.gateDone=h.gateDone||{};if(h.gateDone[r.id])return;
   const G=GATES[r.realm],got=[];
   if(r.status==="win"){
     h.gateWins={...(h.gateWins||{}),[r.realm]:(h.gateWins?.[r.realm]||0)+1};if(r.owner!==myId())bump(h,"gateHelp");
-    if(r.owner===myId()&&h.realm===r.realm-1&&atWall(h)){h.realm=r.realm;h.points+=5;applyExp(h,0);got.push(`${REALMS[r.realm].n}의 경지에 올랐다! (포인트 +5)`);(ADV[h.sect]||[]).filter(x=>x.r===r.realm).forEach(x=>got.push(`새 무공 「${x.n}」을 깨쳤다 · ${x.d}`))}
+    if(h.realm===r.realm-1&&atWall(h)){h.realm=r.realm;h.points+=5;applyExp(h,0);got.push(`${REALMS[r.realm].n}의 경지에 올랐다! (포인트 +5)`);(ADV[h.sect]||[]).filter(x=>x.r===r.realm).forEach(x=>got.push(`새 무공 「${x.n}」을 깨쳤다 · ${x.d}`))}
     else{const exp=expPerHour(h.level)*3;applyExp(h,exp);got.push(`도우미 보상 · 경험치 +${exp}`)}
     h.items.stone+=5;got.push("강화석 +5");got.push(silverTxt(addSilver(h,r.owner===myId()?150:100)));{const ip=addInv(h,200);if(ip)got.push(`마교 침공 기여 +${ip}`)}
     if(Math.random()<.5){const it=rarify(h,makeItem(pickOne(["weapon","armor","acc"]),Math.min(6,r.realm),pickOne(SPECS)),"gate");got.push(`장비 「${gainItem(h,it)}」`)}
@@ -1517,10 +1522,11 @@ function claimGate(){
 function gateTab(){
   const r=myRoom();if(r&&r.status!=="closed")return gateRoomView(r);
   const h=me,nr=h.realm+1,G=GATES[nr],canOpen=atWall(h)&&REALMS[nr]?.gate&&G?.ready,now=Date.now();
-  const open=Object.values(gateRooms).filter(x=>(x.status==="lobby"||x.status==="fight")&&now-(x.updated||0)<6*3600e3);
-  const table=`<div class="gates">${[3,4,5,6].map(k=>{const g=GATES[k],done=h.realm>=k;return `<div class="gt ${done?"done":""}"><span class="kicker">${g.title}</span><b>${g.boss}</b><span>${REGIONS[g.region].n} · ${done?"돌파함":g.ready?"도전 가능":"준비 중"}</span></div>`}).join("")}</div>`;
+  const open=Object.values(gateRooms).filter(x=>(x.status==="lobby"||(x.status==="fight"&&(!x.deadline||sNow()-x.deadline<10*60e3)))&&now-(x.updated||0)<6*3600e3&&!h.gateDone?.[x.id]);
+  const table=`<div class="gates">${[3,4,5,6].map(k=>{const g=GATES[k],done=h.realm>=k,won=!done&&h.gateWins?.[k];return `<div class="gt ${done||won?"done":""}"><span class="kicker">${g.title}</span><b>${g.boss}</b><span>${REGIONS[g.region].n} · ${done?"돌파함":won?`도우미로 ${h.gateWins[k]}번 이김`:g.ready?"도전 가능":"준비 중"}</span></div>`}).join("")}</div>`;
   let mine;
-  if(canOpen) mine=`<div class="wall"><p><b>${G.title}</b>이 열렸다. ${REGIONS[G.region].n}에서 <b>${G.boss}</b>${josa(G.boss,"을").slice(G.boss.length)} 쓰러뜨리면 ${REALMS[nr].n}에 오른다. 혼자 열어도 NPC 셋이 함께하고, 다른 사람이 도우미로 합류할 수 있다.</p>
+  if(canOpen&&h.gateWins?.[nr]>0) mine=`<div class="wall"><p>이미 <b>${G.title}</b>에서 ${josa(G.boss,"을")} 쓰러뜨린 적이 있다. 다시 싸우지 않고 ${REALMS[nr].n}에 오를 수 있다.</p><button class="btn sealb" id="promoteWinBtn" type="button">${REALMS[nr].n}에 오른다</button></div>`;
+  else if(canOpen) mine=`<div class="wall"><p><b>${G.title}</b>이 열렸다. ${REGIONS[G.region].n}에서 <b>${G.boss}</b>${josa(G.boss,"을").slice(G.boss.length)} 쓰러뜨리면 ${REALMS[nr].n}에 오른다. 혼자 열어도 NPC 셋이 함께하고, 다른 사람이 도우미로 합류할 수 있다.</p>
     ${h.loc===G.region?`<button class="btn sealb" id="openGateBtn" type="button" ${activity(h)?"disabled":""}>관문을 연다</button>`:`<p class="note" style="margin:0">${REGIONS[G.region].n}에 있어야 열 수 있다.</p><button class="btn" type="button" id="toGateBtn" data-region="${G.region}">지도에서 ${REGIONS[G.region].n} 보기</button>`}</div>`;
   else if(atWall(h)&&REALMS[nr]?.gate) mine=`<p class="note">${G.title}은 아직 준비 중이다.</p>`;
   else{const c=cap(h.realm),ng=GATES[nr],atCap=h.level>=c;
@@ -2140,6 +2146,10 @@ function addSilver(h,n){n=Math.max(0,Math.round(n||0));h.silver=(h.silver||0)+n;
 /* 객잔·대장간은 접었다 펼 수 있다 (이 기기에 기억) */
 let shopOpen={};try{shopOpen=JSON.parse(localStorage.getItem("murim-shop")||"{}")}catch(e){}
 function toggleShop(k){shopOpen[k]=!shopOpen[k];try{localStorage.setItem("murim-shop",JSON.stringify(shopOpen))}catch(e){}render()}
+/* 인물 탭 접기: 기본은 펼침, 접으면 기억한다 */
+const foldOpen=k=>shopOpen["f_"+k]!==false;
+const foldHead=(k,label)=>`<button type="button" class="shoph foldh" data-fold="${k}" aria-expanded="${foldOpen(k)}"><span class="label">${label}</span><i>${foldOpen(k)?"접기 ▴":"펼치기 ▾"}</i></button>`;
+function toggleFold(k){shopOpen["f_"+k]=!foldOpen(k);try{localStorage.setItem("murim-shop",JSON.stringify(shopOpen))}catch(e){}render()}
 const shopHead=(k,label)=>`<button type="button" class="shoph" data-shop="${k}" aria-expanded="${!!shopOpen[k]}"><span class="kicker">${label}</span><i>${shopOpen[k]?"접기 ▴":"펼치기 ▾"}</i></button>`;
 /* 객잔: 어느 지역에서나 선물용 물건을 산다 */
 const INN={mandu:12,dongpo:40,samgye:35,longjing:20,puer:20,herb:15,wine:25,zhuye:35,hyang:40,trinket:40,nuer:55,binyeo:65};
@@ -2793,12 +2803,12 @@ function bigupBox(h){const slots=bigupSlots(h),mine=bigupOf(h),c=h.items?.clue||
   const opts=Object.keys(SKILL_NAME).filter(k=>k!==h.sect&&!mine.includes(k));
   const learned=mine.map(k=>`<li><b>${SKILL_NAME[k]}</b><span class="tag">비급</span><span>${SECTS[k].n} · ${bigupSkill(k).d}${bigupForget===k?` <button class="btn sm sealb" type="button" data-bgforgetok="${k}">정말 잊는다</button><button class="btn sm ghost" type="button" data-bgforget="">그만</button>`:` <button class="btn sm ghost" type="button" data-bgforget="${k}">잊기</button>`}</span></li>`).join("");
   const can=c>=BIGUP_COST&&mine.length<slots;
-  return `<div class="label" style="margin-top:18px">비급 · ${mine.length}/${slots}칸 · 단서 ${c}/${BIGUP_COST}</div>
+  return `<div style="margin-top:18px">${foldHead("bigup",`비급 · ${mine.length}/${slots}칸 · 단서 ${c}/${BIGUP_COST}`)}</div><div class="foldb" ${foldOpen("bigup")?"":"hidden"}>
     ${learned?`<ul class="skills">${learned}</ul>`:""}
     ${mine.length>=slots?`<p class="note">칸이 다 찼다. 새로 익히려면 하나를 잊거나 경지를 올려 칸을 늘려야 한다.</p>`
       :`<p class="note">단서 ${BIGUP_COST}개를 모으면 다른 문파의 무공을 하나 골라 익힌다. 위력은 본문 무공의 80%. 소굴과 관문에서 쓴다.</p>
       <div class="bgopts">${opts.map(k=>`<button class="opt ${bigupPick===k?"chosen":""}" type="button" data-bgpick="${k}" ${can?"":"disabled"}><b>${SKILL_NAME[k]}</b><span>${SECTS[k].n} · ${bigupSkill(k).d}</span></button>`).join("")}</div>
-      ${can&&bigupPick?`<div class="row" style="margin-top:8px"><button class="btn sealb" type="button" id="bgLearn">단서 ${BIGUP_COST}개로 「${SKILL_NAME[bigupPick]}」 익히기</button></div>`:""}`}`}
+      ${can&&bigupPick?`<div class="row" style="margin-top:8px"><button class="btn sealb" type="button" id="bgLearn">단서 ${BIGUP_COST}개로 「${SKILL_NAME[bigupPick]}」 익히기</button></div>`:""}`}</div>`}
 function bigupLearn(){const k=bigupPick,h=structuredClone(me);if(!k||k===h.sect||!SKILL_NAME[k])return;h.bigup=bigupOf(h);
   if(h.items.clue<BIGUP_COST||h.bigup.length>=bigupSlots(h)||h.bigup.includes(k))return;
   h.items.clue-=BIGUP_COST;h.bigup.push(k);bigupPick=null;addLog(h,`비급을 풀어 ${SECTS[k].n}의 「${SKILL_NAME[k]}」을 익혔다.`);save(h);toast(`「${SKILL_NAME[k]}」을 익혔다!`)}
@@ -3549,10 +3559,10 @@ function selfTab(){
       <div class="label" style="margin-top:22px">익힌 무공</div>
       <ul class="skills">${s.sk.map(k=>`<li><b>${k[0]}</b><span class="tag">${k[1]}</span><span>${k[2]}</span></li>`).join("")}${(ADV[h.sect]||[]).map(k=>`<li class="${k.r>h.realm?"lock":""}"><b>${k.n}</b><span class="tag">${k.p?"패시브":"액티브"}</span><span>${k.d}${k.cd?` · 재사용 ${k.cd}합`:k.once?" · 싸움마다 한 번":""}${k.r>h.realm?` · <em>${REALMS[k.r].n}에 깨친다</em>`:""}</span></li>`).join("")}</ul>${bigupBox(h)}
     </div></section>
-    <section><div class="label">행낭</div>
+    <section>${foldHead("bag","행낭")}<div class="foldb" ${foldOpen("bag")?"":"hidden"}>
       <div class="bag"><div><b>${(h.silver||0).toLocaleString()}</b>은자 <span>· 냥 · 객잔과 떠돌이 상단에서 쓴다</span></div>${h.horse?`<div><b>🐎</b>${esc(h.horse.n)} <span>· 말 · 이동 시간 -30%</span></div>`:""}${Object.entries(ITEMS).map(([k,[n,sub]])=>`<div><b>${h.items[k]||0}</b>${n} <span>· ${sub}</span>${FOOD[k]&&h.items[k]>0?` <button class="btn sm ghost" type="button" data-eat="${k}" ${h.buff?.[FOOD[k].k]?"disabled":""}>${FOOD[k].v||"먹기"}</button>`:""}</div>`).join("")}</div>
       ${h.buff&&Object.keys(h.buff).length?`<p class="note">먹고 마신 것: ${Object.entries(h.buff).map(([k,it])=>`<b>${ITEMS[it]?.[0]||it}</b> (${k==="scene"?"다음 사건 조사 +2":k==="atk"?"공격 +15%":k==="hp"?"체력 +20%":k==="travel"?"다음 이동 -20%":"다음 수련 경험치 +15%"})`).join(" · ")}</p>`:""}
-      <p class="note">강화석은 장비 탭에서 강화에 쓴다. 약초는 소굴에서 회복에 쓴다. 약초·술·향낭·장신구·옥비녀는 인연 탭에서 동료에게, 강호 탭에서 문파에 선물로 쓴다. 음식과 차는 먹기·마시기를 누르면 효과가 걸린다. 착용하는 장신구는 장비 탭에 있다.</p></section>${bioSection()}${titleSection()}${sectTabSection()}`;
+      <p class="note">강화석은 장비 탭에서 강화에 쓴다. 약초는 소굴에서 회복에 쓴다. 약초·술·향낭·장신구·옥비녀는 인연 탭에서 동료에게, 강호 탭에서 문파에 선물로 쓴다. 음식과 차는 먹기·마시기를 누르면 효과가 걸린다. 착용하는 장신구는 장비 탭에 있다.</p></div></section>${bioSection()}${titleSection()}${sectTabSection()}`;
 }
 
 /* 동행 탭 */
@@ -3629,11 +3639,12 @@ function bind(){
   document.querySelectorAll("[data-bgforget]").forEach(b=>b.addEventListener("click",()=>{bigupForget=b.dataset.bgforget||null;render()}));
   document.querySelectorAll("[data-bgforgetok]").forEach(b=>b.addEventListener("click",()=>bigupDrop(b.dataset.bgforgetok)));
   on("#bgLearn",bigupLearn);
+  document.querySelectorAll("[data-fold]").forEach(b=>b.addEventListener("click",()=>toggleFold(b.dataset.fold)));
   document.querySelectorAll("[data-reroll]").forEach(b=>b.addEventListener("click",()=>rerollOpt(gsel,+b.dataset.reroll)));
   document.querySelectorAll("[data-job]").forEach(b=>b.addEventListener("click",()=>{jobPick.k=b.dataset.job;render()}));
   document.querySelectorAll("[data-jobh]").forEach(b=>b.addEventListener("click",()=>{jobPick.h=+b.dataset.jobh;render()}));
   on("#jobGo",startJob);on("#jobDone",()=>finishJob(false));on("#jobStop",()=>{jobStopAsk=true;render()});on("#jobStopNo",()=>{jobStopAsk=false;render()});on("#jobStopOk",()=>finishJob(true));
-  on("#openGateBtn",openGate); on("#startGateBtn",startGate); on("#claimGateBtn",claimGate);
+  on("#openGateBtn",openGate);on("#promoteWinBtn",promoteByWin); on("#startGateBtn",startGate); on("#claimGateBtn",claimGate);
   on("#leaveGateBtn",leaveGate);
   on("#toGateBtn",e=>{dest=e.currentTarget.dataset.region;tab="world";try{localStorage.setItem("murim-tab",tab)}catch(err){};render()});
   document.querySelectorAll("[data-join]").forEach(b=>b.addEventListener("click",()=>joinGate(b.dataset.join)));
