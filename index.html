@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261028174448">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261028175145">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1237,7 +1237,7 @@ function lairView(){
       ${auto?`<p class="note">자동으로 싸우는 중… 언제든 '직접 고르기'로 바꿀 수 있다. (화면을 떠나면 자동 전투도 잠시 멈춘다)</p>`
         :`<div class="acts3"><button class="opt" type="button" data-act="atk"><b>공격</b><span>${ROLE_N[run.role]}의 기본 공격</span></button>
           <button class="opt" type="button" data-act="def"><b>방어</b><span>받는 피해 60% 감소${run.role==="tank"?" · 강타를 대신 받음":""}</span></button>
-          <button class="opt" type="button" data-act="skill" ${b.cd||b.qi<25?"disabled":""}><b>무공</b><span>${SKILL_ACT[h.sect]} · 기력 25${b.cd?` · ${b.cd}합 뒤 가능`:""}</span></button>${advBtns(h,b.fx,"me",b,(k,t,sub,dis)=>`<button class="opt" type="button" data-act="${k}" ${dis?"disabled":""}><b>${t}</b><span>${sub}</span></button>`,"합")}</div>${advPassNote(h,b.fx,"me")}`}`}
+          <button class="opt" type="button" data-act="skill" ${b.cd||b.qi<25?"disabled":""}><b>${SKILL_NAME[h.sect]}</b><span>${SKILL_ACT[h.sect].split(" · ").slice(1).join(" · ")} · 기력 25${b.cd?` · ${b.cd}합 뒤 가능`:""}</span></button>${advBtns(h,b.fx,"me",b,(k,t,sub,dis)=>`<button class="opt" type="button" data-act="${k}" ${dis?"disabled":""}><b>${t}</b><span>${sub}</span></button>`,"합")}</div>${advPassNote(h,b.fx,"me")}`}`}
   else{const s=run.summary||{};ctl=`<div class="wall"><p>${s.why==="boss"?`${B.n}에게 <b>${(s.dealt||0).toLocaleString()}</b> 피해를 입히고 나왔다.`:s.why==="retreat"?"무사히 돌아 나왔다.":"쓰러져 실려 나왔다."}</p><button class="btn" type="button" id="leaveBtn">소굴에서 나온다</button></div>`}
   return `<div class="label" style="margin-top:18px">${B.n}의 소굴 · ${run.phase==="boss"?"보스방":run.phase==="done"?"탐험 끝":`갈림길 ${run.step}/4`}</div>${bars}
     <div class="label" style="margin-top:14px">보스 상태</div>${mods}<p class="note">챙긴 것: ${lootTxt}</p>${feed}<div style="margin-top:14px">${ctl}</div>`;
@@ -1520,10 +1520,13 @@ function gateTab(){
   const open=Object.values(gateRooms).filter(x=>(x.status==="lobby"||x.status==="fight")&&now-(x.updated||0)<6*3600e3);
   const table=`<div class="gates">${[3,4,5,6].map(k=>{const g=GATES[k],done=h.realm>=k;return `<div class="gt ${done?"done":""}"><span class="kicker">${g.title}</span><b>${g.boss}</b><span>${REGIONS[g.region].n} · ${done?"돌파함":g.ready?"도전 가능":"준비 중"}</span></div>`}).join("")}</div>`;
   let mine;
-  if(canOpen) mine=`<div class="wall"><p><b>${G.title}</b>이 열렸다. ${REGIONS[G.region].n}에서 <b>${G.boss}</b>를 쓰러뜨리면 ${REALMS[nr].n}에 오른다. 혼자 열어도 NPC 셋이 함께하고, 다른 사람이 도우미로 합류할 수 있다.</p>
+  if(canOpen) mine=`<div class="wall"><p><b>${G.title}</b>이 열렸다. ${REGIONS[G.region].n}에서 <b>${G.boss}</b>${josa(G.boss,"을").slice(G.boss.length)} 쓰러뜨리면 ${REALMS[nr].n}에 오른다. 혼자 열어도 NPC 셋이 함께하고, 다른 사람이 도우미로 합류할 수 있다.</p>
     ${h.loc===G.region?`<button class="btn sealb" id="openGateBtn" type="button" ${activity(h)?"disabled":""}>관문을 연다</button>`:`<p class="note" style="margin:0">${REGIONS[G.region].n}에 있어야 열 수 있다.</p><button class="btn" type="button" id="toGateBtn" data-region="${G.region}">지도에서 ${REGIONS[G.region].n} 보기</button>`}</div>`;
   else if(atWall(h)&&REALMS[nr]?.gate) mine=`<p class="note">${G.title}은 아직 준비 중이다.</p>`;
-  else mine=`<p class="note">관문은 일류 Lv.30에서 경지의 벽에 닿으면 열 수 있다. 지금은 다른 사람의 관문에 도우미로 합류할 수 있다. 도우미는 승급 대신 보상을 받는다.</p>`;
+  else{const c=cap(h.realm),ng=GATES[nr],atCap=h.level>=c;
+    mine=ng&&REALMS[nr]?.gate?`<p class="note">${atCap?`Lv.${c} 경험치를 끝까지 채우면 (지금 ${h.exp.toLocaleString()} / ${need(h.level).toLocaleString()}) <b>${ng.title}</b>이 열린다.`:`${REALMS[h.realm].n}의 끝인 Lv.${c}에 올라 경험치를 끝까지 채우면 <b>${ng.title}</b>이 열린다.`} ${REGIONS[ng.region].n}에서 <b>${ng.boss}</b>${josa(ng.boss,"이").slice(ng.boss.length)} 기다린다.</p>
+      <p class="note">그 전에도 다른 사람의 관문에 도우미로 합류할 수 있다. 도우미는 승급 대신 보상을 받는다.</p>`
+      :`<p class="note">관문은 일류 Lv.30에서 경지의 벽에 닿으면 열 수 있다. 지금은 다른 사람의 관문에 도우미로 합류할 수 있다. 도우미는 승급 대신 보상을 받는다.</p>`}
   const list=open.length?open.map(x=>{const g=GATES[x.realm],cnt=roomMembers(x).length;return `<div class="itemrow"><div><b>${g.boss}</b><div class="gs">${esc(x.ownerName)}의 ${g.title} · ${REGIONS[g.region].n} · ${x.status==="lobby"?`모집 중 ${cnt}/4`:`${x.act}막 싸우는 중`}</div></div>
     <div class="acts">${x.status==="lobby"&&cnt<4?`<button class="btn sm" type="button" data-join="${x.id}">도우미로 합류</button>`:""}</div></div>`}).join(""):`<p class="empty">지금 열린 관문이 없다.</p>`;
   return `<section><div class="label">경지의 관문</div>${table}${mine}</section><section><div class="label">열린 관문</div><div class="items">${list}</div></section>`;
@@ -1551,9 +1554,9 @@ function gateRoomView(r){
       <div class="row" style="justify-content:space-between;margin:10px 0"><span class="note" style="margin:0">기력 ${me2.qi}/${me2.qmax} · <span data-suntil="${r.deadline}"></span> 뒤 자동 진행</span>
         <span class="seg"><button type="button" class="${auto?"":"on"}" data-gmode="manual">직접 고르기</button><button type="button" class="${auto?"on":""}" data-gmode="auto">자동</button></span></div>
       ${auto?`<p class="note">자동으로 싸우는 중. 언제든 직접 고르기로 바꿀 수 있다.</p>`:`<div class="acts3">${GA(r.realm)[r.act]?.t==="slide"?btn("left","왼쪽","왼쪽으로 피한다")+btn("right","오른쪽","오른쪽으로 피한다")
-        :btn("atk","공격",`${ROLE_N[me2.role]}의 기본 공격`)+btn("def","방어",`받는 피해 60% 감소${me2.role==="tank"?" · 탱커는 시선을 끈다":""}`)+(GA(r.realm)[r.act]?.t==="seal"?"":btn("skill","무공",`${SKILL_ACT[me2.sect]} · 기력 25${me2.cd?` · ${me2.cd}막 뒤 가능`:""}`,me2.cd||me2.qi<25)+advBtns(me,r.fx,myId(),me2,btn,"막"))}</div>${GA(r.realm)[r.act]?.t==="slide"?"":GA(r.realm)[r.act]?.t==="seal"?`<p class="note" style="margin:8px 0 0">이번 막은 무공이 봉인되어 공격과 방어만 고를 수 있다.</p>`:advPassNote(me,r.fx,myId())}
+        :btn("atk","공격",`${ROLE_N[me2.role]}의 기본 공격`)+btn("def","방어",`받는 피해 60% 감소${me2.role==="tank"?" · 탱커는 시선을 끈다":""}`)+(GA(r.realm)[r.act]?.t==="seal"?"":btn("skill",SKILL_NAME[me2.sect],`${SKILL_ACT[me2.sect].split(" · ").slice(1).join(" · ")} · 기력 25${me2.cd?` · ${me2.cd}막 뒤 가능`:""}`,me2.cd||me2.qi<25)+advBtns(me,r.fx,myId(),me2,btn,"막"))}</div>${GA(r.realm)[r.act]?.t==="slide"?"":GA(r.realm)[r.act]?.t==="seal"?`<p class="note" style="margin:8px 0 0">이번 막은 무공이 봉인되어 공격과 방어만 고를 수 있다.</p>`:advPassNote(me,r.fx,myId())}
         ${chosen?`<p class="note">다른 사람이 고르기 전까지 바꿀 수 있다.</p>`:""}`}`}}
-  else{const done=me.gateDone?.[r.id];ctl=`<div class="wall"><p>${r.status==="win"?`<b>${G.boss}</b>를 쓰러뜨렸다!${isOwner2?` ${REALMS[r.realm].n}의 문이 열렸다.`:""}`:`관문을 넘지 못했다. 다시 열어 도전할 수 있다.`}</p>
+  else{const done=me.gateDone?.[r.id];ctl=`<div class="wall"><p>${r.status==="win"?`<b>${G.boss}</b>${josa(G.boss,"을").slice(G.boss.length)} 쓰러뜨렸다!${isOwner2?` ${REALMS[r.realm].n}의 문이 열렸다.`:""}`:`관문을 넘지 못했다. 다시 열어 도전할 수 있다.`}</p>
       ${!done&&me2?`<button class="btn sealb" id="claimGateBtn" type="button">결과 거두기</button>`:""}${done||!me2?`<button class="btn ghost" id="leaveGateBtn" type="button">관문에서 나온다</button>`:""}</div>`}
   return `<section><div class="case"><div class="kicker">${G.title} · ${REGIONS[G.region].n}</div><h3>${G.boss}</h3>
     <div class="bar seal-c"><i style="width:${(r.bossHp/r.bossMax*100).toFixed(1)}%"></i></div>
@@ -2709,7 +2712,7 @@ function coLairView(r){
       <div class="row" style="justify-content:space-between;margin:10px 0"><span class="note" style="margin:0">기력 ${ps.qi}/${ps.qmax} · <span data-suntil="${b.deadline}"></span> 뒤 자동 진행</span>
       <span class="seg"><button type="button" class="${auto?"":"on"}" data-comode="manual">직접 고르기</button><button type="button" class="${auto?"on":""}" data-comode="auto">자동</button></span></div>
       ${!mm||mm.hp<=0?`<p class="note">쓰러져 있다. 동행의 싸움을 지켜본다.</p>`:auto?`<p class="note">자동으로 싸우는 중. 모두 고르면 바로 다음 합으로 넘어간다.</p>`
-        :`<div class="acts3">${btn("atk","공격",`${ROLE_N[mm.role]}의 기본 공격`)}${btn("def","방어",`받는 피해 60% 감소${mm.role==="tank"?" · 강타를 대신 받음":""}`)}${btn("skill","무공",`${SKILL_ACT[mm.sect]} · 기력 25${ps.cd?` · ${ps.cd}합 뒤 가능`:""}`,ps.cd||ps.qi<25)}${advBtns(me,b.fx,myId(),ps,btn,"합")}</div>${advPassNote(me,b.fx,myId())}`}`}
+        :`<div class="acts3">${btn("atk","공격",`${ROLE_N[mm.role]}의 기본 공격`)}${btn("def","방어",`받는 피해 60% 감소${mm.role==="tank"?" · 강타를 대신 받음":""}`)}${btn("skill",SKILL_NAME[mm.sect],`${SKILL_ACT[mm.sect].split(" · ").slice(1).join(" · ")} · 기력 25${ps.cd?` · ${ps.cd}합 뒤 가능`:""}`,ps.cd||ps.qi<25)}${advBtns(me,b.fx,myId(),ps,btn,"합")}</div>${advPassNote(me,b.fx,myId())}`}`}
   else{const mine=r.boss?.dealtBy?.[myId()]||0;
     ctl=`<div class="wall"><p>${r.why==="boss"?`무리가 ${B.n}에게 피해를 입혔다. 내 몫은 <b>${mine.toLocaleString()}</b>.`:r.why==="retreat"?"함께 무사히 돌아 나왔다.":"쓰러져 실려 나왔다."} 챙긴 것은 모두 똑같이 받는다.</p><button class="btn sealb" type="button" id="coClaim">챙겨서 소굴에서 나온다</button></div>`}
   return `<div class="label" style="margin-top:18px">${B.n}의 소굴 · 동행과 함께 · ${r.phase==="boss"?"보스방":r.phase==="done"?"탐험 끝":`갈림길 ${r.step}/4`}</div>${bars}
@@ -2913,7 +2916,7 @@ function advAuto(fx,m,P,q){const h=heroOfM(m);if(!h||!q||m.hp<=0)return null;fx=
 /* 전투 화면의 경지 무공 버튼과 늘 깃든 무공 안내 */
 function advBtns(h,fx,mid,q,btn,unit){fx=fx||{};return advOpen(h).filter(s=>!s.p).map(s=>{const cd=fx.cds?.[mid]?.[s.k]||0,used=s.once&&fx.used?.[mid]?.[s.k];
   return btn("adv:"+s.k,s.foreign?`${s.n} <small>비급</small>`:s.n,`${s.d} · 기력 ${s.qi}${used?" · 이번 싸움에 이미 썼다":cd?` · ${cd}${unit} 뒤 가능`:s.once?" · 싸움마다 한 번":""}`,used||cd>0||!q||q.qi<s.qi)}).join("")}
-function advPassNote(h,fx,mid){const ps=advOpen(h).filter(s=>s.p),st=advOpen(h).some(s=>s.k==="manhwa")?`매화향 ${fx?.stack?.[mid]||0}겹`:"";if(!ps.length&&!st)return "";
+function advPassNote(h,fx,mid){const ps=[...(SECTS[h.sect]?.sk||[]).filter(x=>x[1]==="패시브").map(x=>({n:x[0]})),...advOpen(h).filter(s=>s.p)],st=advOpen(h).some(s=>s.k==="manhwa")?`쌓인 매화향 ${fx?.stack?.[mid]||0}겹`:"";if(!ps.length&&!st)return "";
   return `<p class="note" style="margin:8px 0 0">${[ps.length?`늘 깃든 무공: ${ps.map(s=>`<b>${s.n}</b>`).join(" · ")}`:"",st].filter(Boolean).join(" · ")}</p>`}
 const SECT_SPEC={sorim:"tank",hwasan:"dps",ami:"heal",mudang:"tank",dang:"dps",namgung:"dps",akga:"dps",kunlun:"bal",jegal:"dps"};
 const ENH=[90,80,70,50,40,30,15,10,5,3];
@@ -3373,7 +3376,7 @@ function heroView(){
     <div class="barnote"><span>경험치 ${h.exp.toLocaleString()} / ${need(h.level).toLocaleString()}</span>
       <span>${wall?"경지의 벽에 닿았다":`다음 레벨까지 ${(need(h.level)-h.exp).toLocaleString()}`}</span></div>
     ${wall&&next?`<div class="wall">${next.gate
-      ?`<p><b>${next.n}</b>의 벽은 홀로 넘을 수 없다. 관문 보스 <b>${next.boss}</b>를 쓰러뜨려야 한다.</p><button class="btn sealb" type="button" data-go="gate">관문으로 가기</button>`
+      ?`<p><b>${next.n}</b>의 벽은 홀로 넘을 수 없다. 관문 보스 <b>${next.boss}</b>${josa(next.boss,"을").slice(next.boss.length)} 쓰러뜨려야 한다.</p><button class="btn sealb" type="button" data-go="gate">관문으로 가기</button>`
       :`<p>몸 안의 기운이 가득 찼다. <b>${next.n}</b>의 경지로 오를 수 있다.</p><button class="btn sealb" id="promoteBtn" type="button">${next.n}로 승급하기 · 포인트 +5</button>`}</div>`:""}
     ${bannerView()}
   </section>
