@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261028173038">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261028174448">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -497,7 +497,8 @@ const SECTS={
 const headN=k=>SECTS[k]?.clan?"가주":"장문인";
 const STATS={nei:{n:"내공",train:"운기조식",d:"1당 기력 +5 · 기공·회복·독 무공이 강해짐"},wai:{n:"외공",train:"근골 단련",d:"1당 체력 +10, 방어력 +1 · 권각·검 무공이 강해짐"},shen:{n:"신법",train:"경공 수련",d:"1당 회피 +0.3%, 치명타 +0.1% · 먼저 움직이고 연타가 늘어남"}};
 const HOURS=[1,3,5,8], MULT={1:1.0,3:1.1,5:1.2,8:1.3};
-const need=l=>l<=30?l*40:l*80;
+/* 필요 경험치: 일류까지 ×40, 절정 ×80, 초절정부터 급격히 무거워진다 (×200 · ×350 · ×500) */
+const need=l=>l<=30?l*40:l<=40?l*80:l<=50?l*200:l<=60?l*350:l*500;
 const cap=r=>(r+1)*10;
 const expPerHour=l=>l*10+50;
 
@@ -1285,20 +1286,61 @@ function bestOf(stats,extra,dc){let m=-1;stats.forEach(st=>{if(st){const c=chanc
    방(gates/<id>)은 막을 처리한 사람만 쓴다. 각자의 선택은 자기 문서(gateacts/<내 id>)에만 쓴다.
    모두 고르거나 90초가 지나면, 누구든 먼저 잠금을 얻은 사람이 그 막을 처리한다. */
 const GATES={
-  3:{boss:"혈안산군",title:"절정의 관문",region:"hubei",hp:3000,def:100,aoe:100,smash:320,ready:true,
-     lore:"무당산 깊은 숲, 사람 손에 길러진 거대한 호랑이 요괴. 붉은 눈이 밤마다 마을을 내려다본다."},
-  4:{boss:"흑사련주 진무악",title:"초절정의 관문",region:"jiangnan",ready:false,lore:"요괴를 키운 배후. 마교의 돈을 받고 일하는 사파 연합의 우두머리."},
-  5:{boss:"혈영마군 사도현",title:"화경의 관문",region:"shaanxi",ready:false,lore:"사파를 부리던 마교 간부. 정파 문파에 첩자를 심어두었다."},
-  6:{boss:"천마 혁련천",title:"현경의 관문",region:"xiyu",ready:false,lore:"모든 사건의 끝. 강호 전체를 노린다."}};
-const GACT=[null,
-  {n:"노려보기",omen:"혈안산군의 붉은 눈이 {t|을} 노려본다. 다음 일격은 저 사람에게 떨어진다.",say:"크르르르…"},
-  {n:"할퀴기",omen:"혈안산군이 앞발을 높이 치켜든다. 모두를 쓸어버릴 기세다.",say:"쿠아앙!"},
-  {n:"산사태",omen:"혈안산군이 바위를 걷어찬다. 산이 울리며 비탈이 무너지려 한다! 왼쪽과 오른쪽, 어느 쪽으로 피할까?",say:"우르르르—"},
-  {n:"포효",omen:"혈안산군이 숨을 깊이 들이마신다. 이번 막에 합쳐서 350 피해를 주지 못하면 포효가 모두를 덮친다.",say:"…"},
-  {n:"광폭화",omen:"혈안산군의 털이 곤두선다. 체력이 절반 아래라면 이제부터 더 사나워진다.",say:"크아아아!"},
-  {n:"새끼 요괴",omen:"덤불 속에서 새끼 요괴 둘이 튀어나온다! 공격의 절반이 새끼들에게 막히고, 살아 있는 동안 매 막 물어뜯는다.",say:"끼잉, 끼잉!"},
-  {n:"독기",omen:"혈안산군의 입에서 검푸른 김이 흘러나온다. 누군가 이 짐승에게 약을 먹여 키운 흔적이다.",say:"쿨럭…"},
-  {n:"도주",omen:"혈안산군이 숲 쪽을 힐끔거린다. 이번 막에 쓰러뜨리지 못하면 달아난다!",say:"…"}];
+  3:{boss:"혈안산군",sn:"혈안산군",title:"절정의 관문",region:"hubei",hp:3000,def:100,aoe:100,smash:320,roar:{need:350,dmg:900},adds:{hp:600,bite:40,n:"새끼 요괴"},psn:40,ready:true,hitN:"앞발 휘두르기",
+     lore:"무당산 깊은 숲, 사람 손에 길러진 거대한 호랑이 요괴. 붉은 눈이 밤마다 마을을 내려다본다.",
+     win:"혈안산군이 마지막 숨을 몰아쉬며 쓰러졌다. 목에 감긴 낡은 가죽 끈에는 검은 뱀이 새겨져 있었다.",
+     lose:"모두 쓰러졌다. 혈안산군은 유유히 숲으로 사라졌다.",flee:"혈안산군이 상처 입은 몸을 끌고 숲 깊이 달아났다. 다음엔 놓치지 않는다.",slideHit:"비탈이 무너졌다!"},
+  4:{boss:"흑사련주 진무악",sn:"진무악",title:"초절정의 관문",region:"jiangnan",hp:4600,def:115,aoe:125,smash:390,roar:{need:500,dmg:1150},adds:{hp:850,bite:50,n:"흑사련 무사"},psn:50,refl:.25,ready:true,hitN:"흑사장 연타",
+     lore:"요괴를 키운 배후. 마교의 돈을 받고 일하는 사파 연합의 우두머리. 강남 물길 위의 누선에서 손님을 기다린다.",
+     win:"진무악이 무릎을 꿇었다. 품에서 떨어진 서찰에는 붉은 마교의 인장이 찍혀 있었다.",
+     lose:"모두 쓰러졌다. 진무악의 웃음소리가 강남의 물길 위로 멀어져 갔다.",flee:"진무악이 연막 속으로 사라졌다. 흑사련의 배가 강 건너로 미끄러져 갔다.",slideHit:"독침이 쏟아졌다!"},
+  5:{boss:"혈영마군 사도현",sn:"사도현",title:"화경의 관문",region:"shaanxi",hp:6200,def:130,aoe:170,smash:520,roar:{need:700,dmg:1500},adds:{hp:1100,bite:70,n:"혈영 분신"},psn:70,drain:.6,ready:true,hitN:"혈영장",
+     lore:"사파를 부리던 마교 간부. 정파 문파에 첩자를 심어두었다. 화산 아래 버려진 사당에서 피 냄새가 난다.",
+     win:"사도현의 몸이 핏빛 안개로 흩어졌다. 남은 것은 천마신교 장로의 영패 하나뿐이었다.",
+     lose:"모두 쓰러졌다. 사도현이 핏빛 안개 속에서 낮게 웃었다.",flee:"사도현의 몸이 핏빛 안개로 흩어져 서쪽 하늘로 날아갔다.",slideHit:"핏물이 솟구쳤다!"},
+  6:{boss:"천마 혁련천",sn:"천마",title:"현경의 관문",region:"xiyu",hp:8400,def:145,aoe:215,smash:640,roar:{need:900,dmg:2000},adds:{hp:1500,bite:90,n:"마령"},psn:90,refl:.3,drain:.6,ready:true,hitN:"천마수",
+     lore:"모든 사건의 끝. 천산 꼭대기 천마신교의 총단에서 강호 전체를 내려다본다.",
+     win:"천마가 쓰러졌다. 천마신교의 깃발이 서역의 모래바람 속에 꺾였다. 강호에 오랜만의 아침이 온다.",
+     lose:"모두 쓰러졌다. 천마는 돌아보지도 않고 총단 안으로 걸어 들어갔다.",flee:"천마가 모래바람 속으로 사라졌다. 강호의 그림자가 다시 짙어진다.",slideHit:"하늘과 땅이 무너졌다!"}};
+/* 막의 종류: mark 한 명 일격 · sweep 광역 · slide 좌우 피하기 · roar 피해 시험 · rage 광폭 · adds 졸개 · poison 독 · seal 무공 봉인 · drain 흡혈 · reflect 반탄 · flee 마지막 막 */
+const GACTS={
+  3:[null,
+  {t:"mark",n:"노려보기",omen:"혈안산군의 붉은 눈이 {t|을} 노려본다. 다음 일격은 저 사람에게 떨어진다.",say:"크르르르…"},
+  {t:"sweep",n:"할퀴기",hitN:"할퀴기",omen:"혈안산군이 앞발을 높이 치켜든다. 모두를 쓸어버릴 기세다.",say:"쿠아앙!"},
+  {t:"slide",n:"산사태",omen:"혈안산군이 바위를 걷어찬다. 산이 울리며 비탈이 무너지려 한다! 왼쪽과 오른쪽, 어느 쪽으로 피할까?",say:"우르르르—"},
+  {t:"roar",n:"포효",omen:"혈안산군이 숨을 깊이 들이마신다. 이번 막에 합쳐서 {need} 피해를 주지 못하면 포효가 모두를 덮친다.",say:"…"},
+  {t:"rage",n:"광폭화",omen:"혈안산군의 털이 곤두선다. 체력이 절반 아래라면 이제부터 더 사나워진다.",say:"크아아아!"},
+  {t:"adds",n:"새끼 요괴",omen:"덤불 속에서 새끼 요괴 둘이 튀어나온다! 공격의 절반이 새끼들에게 막히고, 살아 있는 동안 매 막 물어뜯는다.",say:"끼잉, 끼잉!"},
+  {t:"poison",n:"독기",omen:"혈안산군의 입에서 검푸른 김이 흘러나온다. 누군가 이 짐승에게 약을 먹여 키운 흔적이다.",say:"쿨럭…"},
+  {t:"flee",n:"도주",omen:"혈안산군이 숲 쪽을 힐끔거린다. 이번 막에 쓰러뜨리지 못하면 달아난다!",say:"…"}],
+  4:[null,
+  {t:"mark",n:"흑사장",omen:"진무악의 손바닥이 먹물처럼 검게 물든다. 흑사장이 {t|을} 노린다.",say:"흐흐, 정파 애송이들이 겁도 없이."},
+  {t:"adds",n:"흑사련 무사",omen:"흑사련 무사들이 갑판 위로 몰려든다! 공격의 절반이 무사들에게 막히고, 살아 있는 동안 매 막 칼을 휘두른다.",say:"얘들아, 손님 대접해라!"},
+  {t:"slide",n:"연막",omen:"진무악이 연막탄을 터뜨린다! 연기 속에서 독침이 쏟아질 것이다. 왼쪽과 오른쪽, 어느 쪽으로 피할까?",say:"보이지도 않을 거다."},
+  {t:"reflect",n:"흑사반탄공",omen:"진무악이 검은 기운을 온몸에 두른다. 이번 막에 공격하면 준 피해의 일부가 되돌아온다. 막아서는 사람은 다치지 않는다.",say:"어디 한번 쳐 봐라."},
+  {t:"poison",n:"독침",omen:"진무악의 소매에서 푸른 독침이 번뜩인다. 맞으면 세 막 동안 독이 퍼진다.",say:"이 독은 당가도 못 푼다."},
+  {t:"rage",n:"광폭",omen:"진무악의 눈이 뒤집힌다. 체력이 절반 아래라면 이제부터 더 사나워진다.",say:"이놈들이!"},
+  {t:"roar",n:"사자후",omen:"진무악이 단전의 내공을 끌어올린다. 이번 막에 합쳐서 {need} 피해를 주지 못하면 사자후가 모두를 덮친다.",say:"하아아압!"},
+  {t:"flee",n:"도주",omen:"진무악이 뱃전의 퇴로를 살핀다. 이번 막에 쓰러뜨리지 못하면 강물 위로 달아난다!",say:"오늘은 여기까지다."}],
+  5:[null,
+  {t:"mark",n:"혈영조",omen:"사도현의 손톱이 핏빛으로 길어진다. {t|의} 심장을 노린다.",say:"맛있는 피 냄새가 나는군."},
+  {t:"sweep",n:"혈우",hitN:"혈우",omen:"하늘에서 핏방울이 비처럼 쏟아진다. 모두를 덮칠 기세다.",say:"피의 비를 맞아라."},
+  {t:"adds",n:"혈영 분신",omen:"사도현의 그림자가 셋으로 갈라진다! 분신이 공격의 절반을 막고, 살아 있는 동안 매 막 파고든다.",say:"어느 것이 나일까?"},
+  {t:"seal",n:"봉혈수",omen:"사도현이 기묘한 수인을 맺는다. 이번 막에는 혈도가 막혀 무공을 쓸 수 없다. 공격과 방어만 할 수 있다.",say:"내력이 흐르지 않을 것이다."},
+  {t:"drain",n:"흡혈대법",omen:"사도현이 입맛을 다신다. 이번 막에 흘린 피만큼 그가 체력을 되찾는다. 막아서 피해를 줄여라.",say:"네 피를 다오."},
+  {t:"slide",n:"혈해",omen:"땅이 갈라지며 핏물이 솟구치려 한다! 왼쪽과 오른쪽, 어느 쪽으로 피할까?",say:"피바다에 빠져라."},
+  {t:"rage",n:"혈마광폭",omen:"사도현의 혈관이 검붉게 부풀어 오른다. 체력이 절반 아래라면 이제부터 더 사나워진다.",say:"크하하하!"},
+  {t:"flee",n:"혈영둔",omen:"사도현의 몸이 핏빛 안개로 흩어지려 한다. 이번 막에 쓰러뜨리지 못하면 달아난다!",say:"천마께서 기다리신다."}],
+  6:[null,
+  {t:"mark",n:"천마지",omen:"천마가 손가락 하나를 든다. {t|을} 향한 일지가 공간을 꿰뚫는다.",say:"하찮구나."},
+  {t:"adds",n:"마령",omen:"천마의 등 뒤로 검은 마령들이 기어 나온다! 공격의 절반이 마령에게 막히고, 살아 있는 동안 매 막 영혼을 갉아먹는다.",say:"내 그림자들과 놀아라."},
+  {t:"seal",n:"천마해체",omen:"천마의 기세가 전장을 짓누른다. 이번 막에는 내력이 흩어져 무공을 쓸 수 없다. 공격과 방어만 할 수 있다.",say:"무릎을 꿇어라."},
+  {t:"roar",n:"천마군림보",omen:"천마가 한 걸음 내딛는다. 이번 막에 합쳐서 {need} 피해로 그 기세를 꺾지 못하면 모두가 짓밟힌다.",say:"천하가 내 발아래다."},
+  {t:"drain",n:"흡성대법",omen:"천마가 손바닥을 펼친다. 이번 막에 흘린 피와 내력만큼 그가 체력을 되찾는다. 막아서 피해를 줄여라.",say:"너희의 공력, 잘 쓰마."},
+  {t:"reflect",n:"호신강기",omen:"천마의 몸을 감싼 강기가 번뜩인다. 이번 막에 공격하면 준 피해의 일부가 되돌아온다. 막아서는 사람은 다치지 않는다.",say:"그 검으로 나를 벨 수 있겠느냐."},
+  {t:"slide",n:"천지붕괴",omen:"하늘과 땅이 동시에 무너지려 한다! 왼쪽과 오른쪽, 어느 쪽으로 피할까?",say:"사라져라."},
+  {t:"flee",n:"천마멸세",omen:"천마가 모든 내력을 끌어모은다. 이번 막에 쓰러뜨리지 못하면 천마는 다시 어둠으로 돌아간다!",say:"이것이 천마의 끝이라 생각하느냐."}]};
+const GA=r=>GACTS[r]||GACTS[3];
 const GREL={guard:{지인:["{a|이} 외친다. \"{b}, 피해요!\""],친우:["{a|이} 소리친다. \"{b}! 내 뒤로 와!\""],사형제:["{a|이} 외친다. \"물러서라, 내가 받는다!\""],연인:["{a|이} 망설임 없이 {b|의} 앞을 가로막는다."],사부:["{a|이} 외친다. \"내 뒤에 서라, 아직 네 차례가 아니다!\""],제자:["{a|이} 외친다. \"사부님, 이번엔 제가 막겠습니다!\""]},
   down:{지인:["{a|이} 쓰러진 {b|을} 돌아본다."],친우:["\"{b}!\" {a|의} 목소리가 떨린다."],사형제:["{a|이} 이를 악문다. \"사문의 이름으로, 이 빚은 갚는다.\""],연인:["{a|이} {b|의} 이름을 부르며 달려간다."],사부:["{a|이} 쓰러진 {b|을} 보고 이를 악문다. \"가르친 대로만 버텨라.\""],제자:["\"사부님!\" {a|의} 목소리가 떨린다. \"제가 끝까지 지키겠습니다.\""]},
   skill:{지인:["{a|와} {b|이} 눈빛을 주고받는다."],친우:["\"지금이다!\" {a|와} {b|의} 호흡이 딱 맞는다."],사형제:["\"사형, 지금입니다!\" 같은 사문의 초식이 겹친다."],연인:["{a|와} {b|이} 등을 맞댄다. 말이 필요 없다."],사부:["\"보아라, 이것이 그 초식이다!\" {a|와} {b|의} 검로가 한 줄로 겹친다."],제자:["\"사부님, 배운 대로 갑니다!\" {a|와} {b|의} 초식이 맞물린다."]}};
@@ -1333,10 +1375,10 @@ function buildGateParty(room){
 }
 const gnm=m=>m.player?`\u0001${m.name}\u0002`:m.name;
 function gateOmen(room){
-  const a=room.act,alive=room.party.filter(x=>x.hp>0);let target=null;
-  if(a===1){const pl=alive.filter(x=>x.player);target=(pl.length&&Math.random()<.7?pickOne(pl):pickOne(alive)).id}
+  const a=room.act,alive=room.party.filter(x=>x.hp>0),A=GA(room.realm)[a];let target=null;
+  if(A.t==="mark"){const pl=alive.filter(x=>x.player);target=(pl.length&&Math.random()<.7?pickOne(pl):pickOne(alive)).id}
   const t=room.party.find(x=>x.id===target);
-  return {target,text:fill(GACT[a].omen,{t:t?gnm(t):""})};
+  return {target,text:fill(A.omen,{t:t?gnm(t):"",need:GATES[room.realm].roar.need})};
 }
 function openGate(){
   const h=me,nr=h.realm+1,G=GATES[nr];
@@ -1360,7 +1402,7 @@ function leaveGate(){const r=myRoom();gateLeaveConfirm=false;
 function startGate(){
   const r=myRoom();if(!r||r.owner!==myId()||r.status!=="lobby")return;const G=GATES[r.realm],n=structuredClone(r);
   n.party=buildGateParty(r);n.status="fight";n.act=1;n.bossHp=G.hp;n.bossMax=G.hp;n.rage=false;n.minions=0;n.poison={};
-  n.log=[{k:"sec",x:`${G.title} · ${G.boss}`},{k:"amb",x:G.lore},{k:"comp",x:`혈안산군: ${GACT[1].say}`}];
+  n.log=[{k:"sec",x:`${G.title} · ${G.boss}`},{k:"amb",x:G.lore},{k:"comp",x:`${G.sn}: ${GA(r.realm)[1].say}`}];
   n.omen=gateOmen(n);n.deadline=sNow()+GATE_WAIT;GS.setRoom(r.id,n);
   GS.setAct({...myAct(),act:1,action:null});
 }
@@ -1376,10 +1418,12 @@ function maybeResolve(){
       if(!fresh||fresh.status!=="fight"||fresh.act!==r.act)return;await GS.setRoom(r.id,resolveGate(fresh))}
     finally{setTimeout(()=>{gateResolving=false},400)}})();
 }
-function gateAuto(room,m){
-  if(room.act===3)return Math.random()<.5?"left":"right";
+function gateAuto(room,m){const T=GA(room.realm)[room.act]?.t;
+  if(T==="slide")return Math.random()<.5?"left":"right";
+  if(T==="seal")return m.hp/m.max<.4?"def":"atk";
+  if(T==="reflect")return m.hp/m.max<.6||m.role==="tank"?"def":"atk";
   const hurt=room.party.some(x=>x.hp>0&&x.hp/x.max<.6);
-  if(room.act===1&&room.omen.target===m.id)return "def";
+  if(T==="mark"&&room.omen.target===m.id)return "def";
   if(m.hp/m.max<.35)return "def";
   {const ak=advAuto(room.fx,m,room.party,m);if(ak)return ak}
   if(!m.cd&&m.qi>=25&&(m.sect!=="ami"||hurt))return "skill";
@@ -1387,32 +1431,35 @@ function gateAuto(room,m){
 }
 function relLine(room,kind,a,b,log){if(!a||!b||a.id===b.id)return;const pool=GREL[kind][relDir(a.id,b.id)]||GREL[kind].지인;log.push({k:"comp",x:fill(pickOne(pool),{a:gnm(a),b:gnm(b)})})}
 function resolveGate(room){
-  const n=structuredClone(room),G=GATES[n.realm],a=n.act,log=n.log,P=n.party,alive=()=>P.filter(x=>x.hp>0);
+  const n=structuredClone(room),G=GATES[n.realm],a=n.act,A=GA(n.realm)[a],T=A.t,log=n.log,P=n.party,alive=()=>P.filter(x=>x.hp>0);
   const acts={};for(const m of P)if(m.hp>0){const ad=m.player?(m.id===myId()?myAct():gateActs[m.id]||{}):{};
     acts[m.id]=m.player&&ad.room===n.id&&ad.mode!=="auto"&&ad.act===a&&ad.action?ad.action:gateAuto(n,m)}
-  log.push({k:"sec",x:`${a}막 · ${GACT[a].n}`},{k:"ev2",sub:"omen",x:n.omen.text});
+  log.push({k:"sec",x:`${a}막 · ${A.n}`},{k:"ev2",sub:"omen",x:n.omen.text});
   if(n.vuln)n.vuln--;
-  if(a===6){n.minions=600;log.push({k:"ev2",sub:"hit",x:"새끼 요괴 둘이 앞을 가로막았다. (새끼 체력 600)"})}
+  if(T==="adds"){n.minions=G.adds.hp;log.push({k:"ev2",sub:"hit",x:`${G.adds.n}들이 앞을 가로막았다. (${G.adds.n} 체력 ${G.adds.hp.toLocaleString()})`})}
+  if(T==="seal")log.push({k:"ev2",sub:"hit",x:"혈도가 막혔다. 이번 막에는 아무도 무공을 쓸 수 없다."});
   let actDmg=0,taunt=null;const guard={},iron={},pshield={v:1};let weak=1;
   const deal=(atk,mult,hits,crit)=>{let s=0;for(let i=0;i<hits;i++){let d=Math.max(1,Math.round(atk*mult*100/(100+G.def)*(.9+Math.random()*.2)*(n.vuln>0?(n.vulnM||1.15):1)));if(Math.random()*100<crit)d=Math.round(d*1.5);s+=d}return s};
   /* 범위 공격: 졸개와 보스를 함께 맞힌다 */
-  const hitAll=d=>{if(n.minions>0){n.minions=Math.max(0,n.minions-d);if(n.minions===0)log.push({k:"ev2",sub:"act",x:"새끼 요괴들이 모두 쓰러졌다!"})}n.bossHp=Math.max(0,n.bossHp-d);actDmg+=d;return d};
-  const hitBoss=d=>{if(n.minions>0){const half=Math.round(d/2);n.minions=Math.max(0,n.minions-half);d-=half;if(n.minions===0)log.push({k:"ev2",sub:"act",x:"새끼 요괴들이 모두 쓰러졌다!"})}n.bossHp=Math.max(0,n.bossHp-d);actDmg+=d;return d};
+  const hitAll=d=>{if(n.minions>0){n.minions=Math.max(0,n.minions-d);if(n.minions===0)log.push({k:"ev2",sub:"act",x:`${G.adds.n}들이 모두 쓰러졌다!`})}n.bossHp=Math.max(0,n.bossHp-d);actDmg+=d;return d};
+  const hitBoss=d=>{if(n.minions>0){const half=Math.round(d/2);n.minions=Math.max(0,n.minions-half);d-=half;if(n.minions===0)log.push({k:"ev2",sub:"act",x:`${G.adds.n}들이 모두 쓰러졌다!`})}n.bossHp=Math.max(0,n.bossHp-d);actDmg+=d;return d};
   const C={fx:fxOf(n),P,log,nm:gnm,deal,hit:(m,d)=>hitBoss(d),hitAll:(m,d)=>hitAll(d),vuln:(t,mu)=>{n.vulnM=Math.max(n.vuln>0?(n.vulnM||1.15):1,mu);n.vuln=Math.max(n.vuln||0,t)},qiOf:m=>m.player?m:null,prog:()=>1-n.bossHp/n.bossMax};advStart(C);
   traitBattleLine(P,gnm,log);
   if(Math.random()<.35){const np=alive().filter(x=>!x.player);const s=np.length?pickOne(np):null;if(s&&NPC_SAY[s.name])log.push({k:"comp",x:`${s.name}: ${pickOne(NPC_SAY[s.name])}`})}
-  const sides={},skillers=[];
-  for(const m of P){if(m.hp<=0)continue;const act=acts[m.id];if(m.cd>0)m.cd--;
-    if(a===3){sides[m.id]=act==="left"||act==="right"?act:(Math.random()<.5?"left":"right");continue}
+  const sides={},skillers=[],dealtBy={};
+  for(const m of P){if(m.hp<=0)continue;let act=acts[m.id];if(m.cd>0)m.cd--;const d0=actDmg;
+    if(T==="seal"&&(act==="skill"||String(act).startsWith("adv:")))act="atk";
+    if(T==="slide"){sides[m.id]=act==="left"||act==="right"?act:(Math.random()<.5?"left":"right");continue}
     if(m.role==="heal"&&!m.player){const low=alive().sort((x,y)=>x.hp/x.max-y.hp/y.max)[0];if(low.hp/low.max<.65){const amt=Math.round(Math.max(m.atk*1.3,60));low.hp=Math.min(low.max,low.hp+amt);log.push({k:"ev2",sub:"act",x:`${m.name}의 회춘수 · ${gnm(low)} +${amt}`});continue}}
     if(String(act).startsWith("adv:")&&advUse(C,m,act.slice(4))){}
     else if(act==="def"){guard[m.id]=true;if(m.role==="tank")taunt=m;const d=hitBoss(deal(m.atk,.3,1,m.crit));log.push({k:"ev2",sub:"act",x:`${josa(gnm(m),"이")} 자세를 낮추고 막아선다 · 반격 ${d}`})}
     else if(act==="skill"&&!m.cd&&m.qi>=25){m.qi-=25;m.cd=2;advNote(C,m);const W=m.player?wfx(heroById(m.id)):null;
       if(m.sect==="ami"){const parts=alive().map(x=>{const amt=Math.round(Math.max(m.atk*1.1,60)*(W==="ami"?1.15:1)*ghl(m)*(m.player&&x.player&&x.id!==m.id&&relMutual(m.id,x.id)==="연인"?1.25:1));x.hp=Math.min(x.max,x.hp+amt);return `${gnm(x)} +${amt}`});log.push({k:"ev2",sub:"act",x:`${gnm(m)}의 회춘수! ${parts.join(" · ")}`});skillers.push({m,d:0})}
       else{const sp=WSP(m.sect,W),raw=deal(m.atk,sp[0]*gsk(m),sp[1],m.crit),d=m.sect==="jegal"?hitAll(raw):hitBoss(raw);if(m.sect==="sorim"||((m.sect==="namgung"||m.sect==="akga")&&m.role==="tank"))taunt=m;if(ironOf(m.sect,W)<1)iron[m.id]=ironOf(m.sect,W);if(m.sect==="kunlun"){n.vuln=2+(advHasM(m,"unmu")?1:0);n.vulnM=Math.max(n.vuln&&n.vulnM?n.vulnM:0,vulnOf(W))}if(m.sect==="mudang")pshield.v=Math.min(pshield.v,W==="mudang"?.7:.75);if(m.sect==="dang")weak=.8;
-        log.push({k:"ev2",sub:"act",x:`${gnm(m)}의 ${SKILL_NAME[m.sect]}!${sp[1]>1?` ${sp[1]}연타`:""} · ${d} 피해${m.sect==="namgung"?" · 검을 세운 채 버틴다":m.sect==="akga"?" · 창끝이 적진을 꿰뚫는다":m.sect==="kunlun"?" · 보스의 허점이 드러났다":m.sect==="jegal"?" · 화살비가 쏟아진다":""}${m.sect==="jegal"&&n.minions>=0&&a===6?" (졸개까지)":""}${wTag(W)}${wHeal(W,alive(),gnm)}`});skillers.push({m,d})}
+        log.push({k:"ev2",sub:"act",x:`${gnm(m)}의 ${SKILL_NAME[m.sect]}!${sp[1]>1?` ${sp[1]}연타`:""} · ${d} 피해${m.sect==="namgung"?" · 검을 세운 채 버틴다":m.sect==="akga"?" · 창끝이 적진을 꿰뚫는다":m.sect==="kunlun"?" · 보스의 허점이 드러났다":m.sect==="jegal"?" · 화살비가 쏟아진다":""}${m.sect==="jegal"&&n.minions>0?" (졸개까지)":""}${wTag(W)}${wHeal(W,alive(),gnm)}`});skillers.push({m,d})}
       const mate=alive().find(x=>x.player&&x.id!==m.id);if(m.player&&mate&&Math.random()<.5)relLine(n,"skill",m,mate,log)}
     else{const d=hitBoss(deal(m.atk,roleMul(m.role),1,m.crit));if(m.role==="tank"&&!taunt&&!m.player&&Math.random()<.6)taunt=m;log.push({k:"ev2",sub:"act",x:`${m.role==="tank"&&!m.player?`${josa(m.name,"이")} 앞을 막아서며 친다`:`${gnm(m)}의 공격`} · ${d} 피해`})}
+    if(act!=="def")dealtBy[m.id]=actDmg-d0;
   }
   for(let i=0;i<skillers.length;i++)for(let j=i+1;j<skillers.length;j++){const A=skillers[i],B=skillers[j];if(!A.m.player||!B.m.player)continue;const rel=relMutual(A.m.id,B.m.id);
     if(rel!=="지인"&&bondTotal(A.m.id,B.m.id)>=600){const d=hitBoss(Math.round((A.d+B.d)*.5+(A.m.atk+B.m.atk)*.5));log.push({k:"ev2",sub:"act",x:`합격기 「${COMBO[rel]}」! ${josa(gnm(A.m),"와")} ${gnm(B.m)}의 초식이 하나로 겹친다 · ${d} 피해`})}}
@@ -1421,29 +1468,32 @@ function resolveGate(room){
   const take=(m,base,noGuard,kind)=>{if(m.player&&Math.random()*100<m.eva)return -1;let d=Math.max(1,Math.round(base*bMul*100/(100+m.def)*(.9+Math.random()*.2)*pshield.v));if(guard[m.id]&&!noGuard)d=Math.round(d*.4);if(iron[m.id])d=Math.round(d*iron[m.id]);d=Math.round(d*tankMul(m));d=advTake(C,m,d,kind);if(d<0)return d;m.hp=Math.max(0,m.hp-d);return d};
   const downs=[];const mark=m=>{if(m.hp<=0)downs.push(m)};
   if(n.bossHp>0){
-    if(a===1){let t=P.find(x=>x.id===n.omen.target);if(AP.taunt&&t!==AP.taunt){log.push({k:"ev2",sub:"act",x:`${josa(gnm(AP.taunt),"이")} 일격을 대신 받아낸다!`});t=AP.taunt}if(t&&t.hp>0){const d=take(t,G.smash,false,"smash");mark(t);log.push({k:"ev2",sub:"hit",x:d<0?`${josa(gnm(t),"이")} 몸을 틀어 일격을 흘려냈다!`:`일격! ${gnm(t)} ${d} 피해${t.hp<=0?" — 쓰러졌다!":""}`});
+    if(T==="mark"){let t=P.find(x=>x.id===n.omen.target);if(AP.taunt&&t!==AP.taunt){log.push({k:"ev2",sub:"act",x:`${josa(gnm(AP.taunt),"이")} 일격을 대신 받아낸다!`});t=AP.taunt}if(t&&t.hp>0){const d=take(t,G.smash,false,"smash");mark(t);log.push({k:"ev2",sub:"hit",x:d<0?`${josa(gnm(t),"이")} 몸을 틀어 일격을 흘려냈다!`:`일격! ${gnm(t)} ${d} 피해${t.hp<=0?" — 쓰러졌다!":""}`});
       const g=alive().find(x=>x.player&&x.id!==t.id);if(t.player&&g)relLine(n,"guard",g,t,log)}}
-    else if(a===3){const fall=Math.random()<.5?"left":"right",hitL=[];for(const m of alive()){if(sides[m.id]===fall){const d=take(m,G.smash*1.1,true);mark(m);hitL.push(`${gnm(m)} ${d<0?"회피":d}`)}}
+    else if(T==="slide"){const fall=Math.random()<.5?"left":"right",hitL=[];for(const m of alive()){if(sides[m.id]===fall){const d=take(m,G.smash*1.1,true);mark(m);hitL.push(`${gnm(m)} ${d<0?"회피":d}`)}}
       log.push({k:"ev2",sub:"act",x:`왼쪽: ${P.filter(x=>sides[x.id]==="left").map(gnm).join(", ")||"없음"} / 오른쪽: ${P.filter(x=>sides[x.id]==="right").map(gnm).join(", ")||"없음"}`});
-      log.push({k:"ev2",sub:"hit",x:`${fall==="left"?"왼쪽":"오른쪽"} 비탈이 무너졌다! ${hitL.length?hitL.join(" · "):"아무도 휘말리지 않았다."}`})}
-    else if(a===4){if(actDmg<350){const al=alive(),each=Math.round(900*bMul/al.length);al.forEach(m=>{m.hp=Math.max(0,m.hp-each);mark(m)});log.push({k:"ev2",sub:"hit",x:`피해 ${actDmg}로 모자랐다. 포효가 모두를 덮친다! 각자 ${each} 피해 (900을 ${al.length}명이 나눠 받음)`})}
-      else log.push({k:"ev2",sub:"act",x:`${actDmg} 피해! 기세에 눌린 혈안산군의 포효가 흩어졌다.`})}
+      log.push({k:"ev2",sub:"hit",x:`${fall==="left"?"왼쪽":"오른쪽"}에 ${G.slideHit} ${hitL.length?hitL.join(" · "):"아무도 휘말리지 않았다."}`})}
+    else if(T==="roar"){const nd=G.roar.need,dm=G.roar.dmg;if(actDmg<nd){const al=alive(),each=Math.round(dm*bMul/al.length);al.forEach(m=>{m.hp=Math.max(0,m.hp-each);mark(m)});log.push({k:"ev2",sub:"hit",x:`피해 ${actDmg}로 모자랐다. ${A.n}${josa(A.n,"이").slice(A.n.length)} 모두를 덮친다! 각자 ${each} 피해 (${dm}을 ${al.length}명이 나눠 받음)`})}
+      else log.push({k:"ev2",sub:"act",x:`${actDmg} 피해! 기세에 눌린 ${G.sn}의 ${A.n}${josa(A.n,"이").slice(A.n.length)} 흩어졌다.`})}
     else{
-      if(a===5&&n.bossHp<=n.bossMax/2&&!n.rage){n.rage=true;log.push({k:"ev2",sub:"hit",x:"혈안산군이 광폭해졌다! 이제부터 공격이 1.3배로 거세진다."})}
-      if(a===7){const v=alive().sort(()=>Math.random()-.5).slice(0,2);v.forEach(x=>n.poison[x.id]=3);log.push({k:"ev2",sub:"hit",x:`${v.map(gnm).join(", ")}에게 독기가 스며들었다. (3막 동안)`})}
-      const parts=alive().map(m=>{const d=take(m,G.aoe);mark(m);return `${gnm(m)} ${d<0?"회피":d}${m.hp<=0?"(쓰러짐)":""}`});
-      log.push({k:"ev2",sub:"hit",x:`${a===2?"할퀴기":"앞발 휘두르기"}! ${parts.join(" · ")}`})}
-    if(n.minions>0){const bites=[];for(let i=0;i<2;i++){const al=alive();if(!al.length)break;const t=pickOne(al),d=Math.max(1,Math.round(40*100/(100+t.def)));t.hp=Math.max(0,t.hp-d);mark(t);bites.push(`${gnm(t)} ${d}`)}if(bites.length)log.push({k:"ev2",sub:"hit",x:`새끼 요괴가 물어뜯었다 · ${bites.join(" · ")}`})}
-    for(const id in n.poison){const m=P.find(x=>x.id===id);if(m&&m.hp>0&&n.poison[id]>0){const d=40;m.hp=Math.max(0,m.hp-d);n.poison[id]--;mark(m);log.push({k:"ev2",sub:"hit",x:`${gnm(m)} 독 피해 ${d}${m.hp<=0?" — 쓰러졌다!":""}`})}}
+      if(T==="rage"&&n.bossHp<=n.bossMax/2&&!n.rage){n.rage=true;log.push({k:"ev2",sub:"hit",x:`${josa(G.sn,"이")} 광폭해졌다! 이제부터 공격이 1.3배로 거세진다.`})}
+      if(T==="poison"){const v=alive().sort(()=>Math.random()-.5).slice(0,2);v.forEach(x=>n.poison[x.id]=3);log.push({k:"ev2",sub:"hit",x:`${v.map(gnm).join(", ")}에게 독기가 스며들었다. (3막 동안)`})}
+      if(T==="reflect"){const back=[];for(const m of alive()){const dd=dealtBy[m.id]||0;if(dd>0&&acts[m.id]!=="def"){const v=Math.max(1,Math.round(dd*(G.refl||.25)));m.hp=Math.max(0,m.hp-v);mark(m);back.push(`${gnm(m)} -${v}${m.hp<=0?"(쓰러짐)":""}`)}}
+        log.push({k:"ev2",sub:"hit",x:back.length?`${A.n}! 준 피해가 되돌아왔다 · ${back.join(" · ")}`:`${A.n}! 아무도 되돌려 맞지 않았다.`})}
+      let taken=0;const parts=alive().map(m=>{const d=take(m,G.aoe);if(d>0)taken+=d;mark(m);return `${gnm(m)} ${d<0?"회피":d}${m.hp<=0?"(쓰러짐)":""}`});
+      log.push({k:"ev2",sub:"hit",x:`${A.hitN||G.hitN}! ${parts.join(" · ")}`});
+      if(T==="drain"&&taken>0&&n.bossHp>0){const hv=Math.round(taken*(G.drain||.6)),b0=n.bossHp;n.bossHp=Math.min(n.bossMax,n.bossHp+hv);log.push({k:"ev2",sub:"hit",x:`${josa(G.sn,"이")} 흘린 피를 빨아들였다 · 체력 +${n.bossHp-b0}`})}}
+    if(n.minions>0){const bites=[];for(let i=0;i<2;i++){const al=alive();if(!al.length)break;const t=pickOne(al),d=Math.max(1,Math.round(G.adds.bite*100/(100+t.def)));t.hp=Math.max(0,t.hp-d);mark(t);bites.push(`${gnm(t)} ${d}`)}if(bites.length)log.push({k:"ev2",sub:"hit",x:`${josa(G.adds.n,"이")} 덤벼들었다 · ${bites.join(" · ")}`})}
+    for(const id in n.poison){const m=P.find(x=>x.id===id);if(m&&m.hp>0&&n.poison[id]>0){const d=G.psn;m.hp=Math.max(0,m.hp-d);n.poison[id]--;mark(m);log.push({k:"ev2",sub:"hit",x:`${gnm(m)} 독 피해 ${d}${m.hp<=0?" — 쓰러졌다!":""}`})}}
   }
   downs.filter(d=>d.player).forEach(d=>{const g=alive().find(x=>x.player);if(g)relLine(n,"down",g,d,log)});
   P.forEach(m=>{m.qi=Math.min(m.qmax,m.qi+10)});
   advEnd(C);
-  log.push({k:"amb",x:`이번 막 피해 ${actDmg} · 혈안산군 남은 체력 ${n.bossHp.toLocaleString()}/${n.bossMax.toLocaleString()}`});
-  if(n.bossHp<=0){n.status="win";log.push({k:"sec",x:"관문 돌파"},{k:"end",x:"혈안산군이 마지막 숨을 몰아쉬며 쓰러졌다. 목에 감긴 낡은 가죽 끈에는 검은 뱀이 새겨져 있었다."})}
-  else if(!P.some(x=>x.player&&x.hp>0)){n.status="fail";log.push({k:"sec",x:"패배"},{k:"end",x:"모두 쓰러졌다. 혈안산군은 유유히 숲으로 사라졌다."})}
-  else if(a>=8){n.status="fail";log.push({k:"sec",x:"놓침"},{k:"end",x:"혈안산군이 상처 입은 몸을 끌고 숲 깊이 달아났다. 다음엔 놓치지 않는다."})}
-  else{n.act=a+1;n.omen=gateOmen(n);n.deadline=sNow()+GATE_WAIT;if(GACT[n.act].say&&Math.random()<.6)log.push({k:"comp",x:`혈안산군: ${GACT[n.act].say}`})}
+  log.push({k:"amb",x:`이번 막 피해 ${actDmg} · ${G.sn} 남은 체력 ${n.bossHp.toLocaleString()}/${n.bossMax.toLocaleString()}`});
+  if(n.bossHp<=0){n.status="win";log.push({k:"sec",x:"관문 돌파"},{k:"end",x:G.win})}
+  else if(!P.some(x=>x.player&&x.hp>0)){n.status="fail";log.push({k:"sec",x:"패배"},{k:"end",x:G.lose})}
+  else if(a>=8){n.status="fail";log.push({k:"sec",x:"놓침"},{k:"end",x:G.flee})}
+  else{n.act=a+1;n.omen=gateOmen(n);n.deadline=sNow()+GATE_WAIT;{const NA=GA(n.realm)[n.act];if(NA.say&&Math.random()<.6)log.push({k:"comp",x:`${G.sn}: ${NA.say}`})}}
   n.log=log.slice(-160);return n;
 }
 function claimGate(){
@@ -1490,7 +1540,7 @@ function gateRoomView(r){
       <div class="row" style="margin-top:10px">${isOwner2?`<button class="btn sealb" id="startGateBtn" type="button">싸움을 시작한다</button>`:`<span class="note" style="margin:0">${josa(esc(r.ownerName),"이")} 시작하기를 기다리는 중…</span>`}
       <button class="btn ghost" id="leaveGateBtn" type="button">${isOwner2?"관문 닫기":"빠지기"}</button></div></div></section>`}
   const P=r.party,me2=P.find(x=>x.id===myId()),feed=`<div class="feedwrap" style="margin:14px -18px 0"><ul class="feed" id="gateFeed">${r.log.map(battleLine).join("")}</ul></div>`;
-  const dots=`<div class="acts8">${GACT.slice(1).map((g,i)=>`<span class="${i+1<r.act||r.status!=="fight"?"past":i+1===r.act?"now":""}">${i+1}<em>${g.n}</em></span>`).join("")}</div>`;
+  const dots=`<div class="acts8">${GA(r.realm).slice(1).map((g,i)=>`<span class="${i+1<r.act||r.status!=="fight"?"past":i+1===r.act?"now":""}">${i+1}<em>${g.n}</em></span>`).join("")}</div>`;
   const bars=`<div class="lparty">${P.map(x=>`<div class="lp ${x.hp<=0?"dead":""}">${x.player?face(x.id,x.sect,"sm"):emblem(x.sect,"sm")}<div><b>${esc(x.name)}${x.id===myId()?" (나)":x.player?"":" · NPC"}</b><span>${ROLE_N[x.role]} · ${x.hp}/${x.max}${r.status==="fight"&&x.player&&x.hp>0?` · ${playerReady(r,x)?"골랐다":"고르는 중"}`:""}</span><div class="hpb"><i style="width:${x.hp/x.max*100}%"></i></div></div></div>`).join("")}</div>`;
   let ctl="";
   if(r.status==="fight"){
@@ -1500,8 +1550,8 @@ function gateRoomView(r){
       ctl=`<div class="omen">◆ ${r.act}막 · ${esc(r.omen.text).replace(/\u0001(.*?)\u0002/g,"<b>$1</b>")}</div>
       <div class="row" style="justify-content:space-between;margin:10px 0"><span class="note" style="margin:0">기력 ${me2.qi}/${me2.qmax} · <span data-suntil="${r.deadline}"></span> 뒤 자동 진행</span>
         <span class="seg"><button type="button" class="${auto?"":"on"}" data-gmode="manual">직접 고르기</button><button type="button" class="${auto?"on":""}" data-gmode="auto">자동</button></span></div>
-      ${auto?`<p class="note">자동으로 싸우는 중. 언제든 직접 고르기로 바꿀 수 있다.</p>`:`<div class="acts3">${r.act===3?btn("left","왼쪽","왼쪽 비탈로 피한다")+btn("right","오른쪽","오른쪽 비탈로 피한다")
-        :btn("atk","공격",`${ROLE_N[me2.role]}의 기본 공격`)+btn("def","방어",`받는 피해 60% 감소${me2.role==="tank"?" · 탱커는 시선을 끈다":""}`)+btn("skill","무공",`${SKILL_ACT[me2.sect]} · 기력 25${me2.cd?` · ${me2.cd}막 뒤 가능`:""}`,me2.cd||me2.qi<25)+advBtns(me,r.fx,myId(),me2,btn,"막")}</div>${r.act===3?"":advPassNote(me,r.fx,myId())}
+      ${auto?`<p class="note">자동으로 싸우는 중. 언제든 직접 고르기로 바꿀 수 있다.</p>`:`<div class="acts3">${GA(r.realm)[r.act]?.t==="slide"?btn("left","왼쪽","왼쪽으로 피한다")+btn("right","오른쪽","오른쪽으로 피한다")
+        :btn("atk","공격",`${ROLE_N[me2.role]}의 기본 공격`)+btn("def","방어",`받는 피해 60% 감소${me2.role==="tank"?" · 탱커는 시선을 끈다":""}`)+(GA(r.realm)[r.act]?.t==="seal"?"":btn("skill","무공",`${SKILL_ACT[me2.sect]} · 기력 25${me2.cd?` · ${me2.cd}막 뒤 가능`:""}`,me2.cd||me2.qi<25)+advBtns(me,r.fx,myId(),me2,btn,"막"))}</div>${GA(r.realm)[r.act]?.t==="slide"?"":GA(r.realm)[r.act]?.t==="seal"?`<p class="note" style="margin:8px 0 0">이번 막은 무공이 봉인되어 공격과 방어만 고를 수 있다.</p>`:advPassNote(me,r.fx,myId())}
         ${chosen?`<p class="note">다른 사람이 고르기 전까지 바꿀 수 있다.</p>`:""}`}`}}
   else{const done=me.gateDone?.[r.id];ctl=`<div class="wall"><p>${r.status==="win"?`<b>${G.boss}</b>를 쓰러뜨렸다!${isOwner2?` ${REALMS[r.realm].n}의 문이 열렸다.`:""}`:`관문을 넘지 못했다. 다시 열어 도전할 수 있다.`}</p>
       ${!done&&me2?`<button class="btn sealb" id="claimGateBtn" type="button">결과 거두기</button>`:""}${done||!me2?`<button class="btn ghost" id="leaveGateBtn" type="button">관문에서 나온다</button>`:""}</div>`}
