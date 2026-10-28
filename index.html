@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261028220726">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261029001003">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1387,6 +1387,7 @@ function openGate(){
   if(activity(h)){toast(`${busyText[activity(h)]} 관문을 열 수 없습니다.`);return}
   if(h.loc!==G.region){toast(`${REGIONS[G.region].n}에 있어야 관문을 열 수 있습니다.`);return}
   const id=myId().replace(/[^A-Za-z0-9_-]/g,"")+"-"+Date.now().toString(36);
+  Object.values(gateRooms).filter(x=>x.owner===myId()&&x.status==="lobby").forEach(x=>{const c=structuredClone(x);c.status="closed";GS.setRoom(x.id,c)});
   GS.setRoom(id,{id,realm:nr,owner:myId(),ownerName:h.name,status:"lobby",created:Date.now()});
   GS.setAct({room:id,joined:true,role:SECT_ROLES[h.sect][0],mode:"manual",act:0,action:null});
 }
@@ -1522,7 +1523,9 @@ function claimGate(){
 function gateTab(){
   const r=myRoom();if(r&&r.status!=="closed")return gateRoomView(r);
   const h=me,nr=h.realm+1,G=GATES[nr],canOpen=atWall(h)&&REALMS[nr]?.gate&&G?.ready,now=Date.now();
-  const open=Object.values(gateRooms).filter(x=>(x.status==="lobby"||(x.status==="fight"&&(!x.deadline||sNow()-x.deadline<10*60e3)))&&now-(x.updated||0)<6*3600e3&&!h.gateDone?.[x.id]);
+  /* 모집 중인 방은 연 사람이 아직 그 방에 있고, 아직 그 경지에 오르지 않았을 때만 보인다 */
+  const lobbyLive=x=>{const oa=x.owner===myId()?myAct():gateActs[x.owner],ow=heroById(x.owner);return oa?.room===x.id&&(!ow||ow.realm<x.realm)};
+  const open=Object.values(gateRooms).filter(x=>((x.status==="lobby"&&lobbyLive(x))||(x.status==="fight"&&(!x.deadline||sNow()-x.deadline<10*60e3)))&&now-(x.updated||0)<6*3600e3&&!h.gateDone?.[x.id]);
   const table=`<div class="gates">${[3,4,5,6].map(k=>{const g=GATES[k],done=h.realm>=k,won=!done&&h.gateWins?.[k];return `<div class="gt ${done||won?"done":""}"><span class="kicker">${g.title}</span><b>${g.boss}</b><span>${REGIONS[g.region].n} · ${done?"돌파함":won?`도우미로 ${h.gateWins[k]}번 이김`:g.ready?"도전 가능":"준비 중"}</span></div>`}).join("")}</div>`;
   let mine;
   if(canOpen&&h.gateWins?.[nr]>0) mine=`<div class="wall"><p>이미 <b>${G.title}</b>에서 ${josa(G.boss,"을")} 쓰러뜨린 적이 있다. 다시 싸우지 않고 ${REALMS[nr].n}에 오를 수 있다.</p><button class="btn sealb" id="promoteWinBtn" type="button">${REALMS[nr].n}에 오른다</button></div>`;
