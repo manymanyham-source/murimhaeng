@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261027225355">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261028173038">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -122,6 +122,10 @@ section{margin-top:30px}
 .shoph{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;background:none;border:0;padding:4px 0;font:inherit;color:var(--ink);cursor:pointer;text-align:left}.shoph .kicker{margin:0}.shoph i{font-style:normal;font-size:12px;color:var(--ink-3);white-space:nowrap}
 .shopl{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:6px}
 .shopi{display:grid;gap:2px;text-align:left;padding:9px 11px;border:1px solid var(--line);background:var(--paper);font:inherit;color:var(--ink);border-radius:2px;cursor:pointer}
+.rt{font-family:var(--f-body);font-size:11px;padding:0 5px;border:1px solid currentColor;border-radius:2px;vertical-align:2px;margin-right:2px}
+.rt.r1,.gopt.r1{color:var(--c-dang)}.rt.r2,.gopt.r2{color:var(--c-mudang)}.rt.r3,.gopt.r3{color:var(--c-sorim)}.rt.r3{font-weight:700}
+.gopt{display:block;font-size:12px;margin-top:2px}.rr{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0;border-bottom:1px dashed var(--line)}.rr .gopt{margin:0}
+.shopi.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
 .shopi b{font-size:14px}.shopi span{font-size:11px;color:var(--ink-3);line-height:1.4}.shopi em{font-style:normal;font-size:13px;color:var(--seal);font-variant-numeric:tabular-nums}
 .shopi em s{color:var(--ink-3);font-size:11px}.disc{color:var(--seal)}
 .shopi[disabled]{opacity:.5;cursor:default}
@@ -756,8 +760,9 @@ function derived(h){
   /* 공격: 주력 능력치를 합쳐서 (몇 개로 나눠 찍든 같게). 체력: 레벨 기본치 + 외공 */
   const g=gearSum(h), s=effStats(h), main=SECTS[h.sect].main, mainVal=main.reduce((a,k)=>a+s[k],0)-10*(main.length-1);
   const bA=h.buff?.atk?1.15:1,bH=h.buff?.hp?1.2:1;
-  return {hp:Math.round((100+(h.level||1)*10+s.wai*8)*bH), qi:50+s.nei*5, atk:Math.round((Math.round(mainVal*2)+g.atk)*bA), def:s.wai+g.def,
-    eva:Math.min(40,s.shen*.3), crit:5+s.shen*.1};
+  const go=k=>gearOpt(h,k);
+  return {hp:Math.round((100+(h.level||1)*10+s.wai*8)*bH*(1+go("hp")/100)), qi:50+s.nei*5+go("qi"), atk:Math.round((Math.round(mainVal*2)+g.atk)*bA*(1+go("atk")/100)), def:Math.round((s.wai+g.def)*(1+go("def")/100)),
+    eva:Math.min(40,s.shen*.3+go("eva")), crit:5+s.shen*.1+go("crit")};
 }
 function applyExp(h,exp){
   h.exp+=exp; const c=cap(h.realm); let ups=0;
@@ -771,8 +776,8 @@ const TRAIN_EXP=[1,.7,.7,.5,.4,.33,.28];
 const trainRealm=t=>t.rm??Math.min(6,Math.max(0,Math.floor((t.lvl-1)/10)));
 function trainGain(t,f){const m=MULT[t.hours];return {exp:Math.round(expPerHour(t.lvl)*t.hours*m*f*TRAIN_EXP[trainRealm(t)]*(t.tea?1.15:1)),stat:t.hours/2*m*f}}
 function applyStat(h,k,g){h.frac[k]=(h.frac[k]||0)+g;const w=Math.floor(h.frac[k]+1e-9);h.stats[k]+=w;h.frac[k]-=w;return w}
-const activity=h=>h?.training?"train":h?.travel?"travel":h?.mission?"mission":(h?.lair&&h.lair.phase!=="done")||h?.colair?"lair":null;
-const busyText={train:"수련 중에는",travel:"이동 중에는",mission:"임무 중에는",lair:"소굴 안에서는"};
+const activity=h=>h?.job?"job":h?.training?"train":h?.travel?"travel":h?.mission?"mission":(h?.lair&&h.lair.phase!=="done")||h?.colair?"lair":null;
+const busyText={job:"일하는 중에는",train:"수련 중에는",travel:"이동 중에는",mission:"임무 중에는",lair:"소굴 안에서는"};
 
 /* ───────── 문파 문양 (직접 그린 SVG) ───────── */
 function emblem(k,cls=""){
@@ -1102,7 +1107,7 @@ function roomCore(h,run,opt){
     else hurtParty(run,party(),.2,log,"벽에서 화살이 쏟아졌다!");
   }else if(t==="treasure"){
     if(r.ok){const n=2+Math.floor(Math.random()*2);run.loot.stone+=n;let msg=`궤짝 안에서 강화석 ${n}개`;
-      if(Math.random()<.4){const it=makeItem(pickOne(["weapon","armor","acc"]),h.realm,pickOne(SPECS));run.loot.items.push(it);msg+=`와 ${josa(it.name,"을")}`}else msg+="를";
+      if(Math.random()<.4){const it=rarify(h,makeItem(pickOne(["weapon","armor","acc"]),h.realm,pickOne(SPECS)),"lair");run.loot.items.push(it);msg+=`와 ${josa(rarName(it),"을")}`}else msg+="를";
       log.push({k:"end",x:msg+" 찾았다."})}
     else{run.loot.stone++;log.push({k:"amb",x:"궤짝이 부서지며 안의 것들도 대부분 깨졌다. 강화석 하나만 건졌다."})}
   }else if(t==="rest"){
@@ -1156,8 +1161,8 @@ function bossTurn(action){
     if(String(action).startsWith("adv:")&&advUse(C,mm,action.slice(4))){}
     else if(action==="def"){guard=true;if(run.role==="tank")taunt=mm;const d=deal(mm.atk,.3,1,mm.crit);turn+=d;log.push({k:"ev2",sub:"act",x:`${nmjx(mm,"이")} 자세를 낮추고 막아선다${run.role==="tank"?" · 보스의 시선을 끈다":""} · 반격 ${d}`})}
     else if(action==="skill"&&!b.cd&&b.qi>=25){b.qi-=25;b.cd=2;advNote(C,mm);const s=h.sect,nmS=SKILL_NAME[s];
-      if(s==="ami"){const parts=[];party.filter(x=>x.hp>0).forEach(x=>{const a=Math.round(Math.max(mm.atk*1.1,20+L*5)*(W==="ami"?1.15:1));x.hp=Math.min(x.max,x.hp+a);parts.push(`${nmx(x)} +${a}`)});log.push({k:"ev2",sub:"act",x:`${nmx(mm)}의 회춘수!${W==="ami"?" (자운불진)":""} ${parts.join(" · ")}`})}
-      else{const spec=WSP(s,W),d=deal(mm.atk,spec[0],spec[1],mm.crit);turn+=d;
+      if(s==="ami"){const parts=[];party.filter(x=>x.hp>0).forEach(x=>{const a=Math.round(Math.max(mm.atk*1.1,20+L*5)*(W==="ami"?1.15:1)*ghl(mm));x.hp=Math.min(x.max,x.hp+a);parts.push(`${nmx(x)} +${a}`)});log.push({k:"ev2",sub:"act",x:`${nmx(mm)}의 회춘수!${W==="ami"?" (자운불진)":""} ${parts.join(" · ")}`})}
+      else{const spec=WSP(s,W),d=deal(mm.atk,spec[0]*gsk(mm),spec[1],mm.crit);turn+=d;
         if(s==="sorim"||((s==="namgung"||s==="akga")&&run.role==="tank"))taunt=mm;iron=Math.min(iron,ironOf(s,W));if(s==="kunlun"){b.vuln=2+(advHasM(mm,"unmu")?1:0);b.vulnM=vulnOf(W)}if(s==="mudang")pshield=W==="mudang"?.7:.75;if(s==="dang")weak=.8;
         log.push({k:"ev2",sub:"act",x:`${nmx(mm)}의 ${nmS}!${spec[1]>1?` ${spec[1]}연타`:""} · ${d} 피해${s==="sorim"?" · 보스의 시선이 쏠린다":s==="mudang"?" · 파티에 태극의 막이 둘러진다":s==="dang"?" · 보스의 손끝이 저린다":s==="namgung"?" · 검을 세운 채 버틴다":s==="akga"?" · 창끝이 적진을 꿰뚫는다":s==="kunlun"?" · 보스의 허점이 드러났다":s==="jegal"?" · 화살비가 쏟아진다":""}${wTag(W)}${wHeal(W,party,nmx)}`})}}
     else{const d=deal(mm.atk,roleMul(run.role),1,mm.crit);turn+=d;log.push({k:"ev2",sub:"act",x:`${nmx(mm)}의 공격 · ${d?`${d} 피해`:"빗나갔다"}`})}
@@ -1403,8 +1408,8 @@ function resolveGate(room){
     if(String(act).startsWith("adv:")&&advUse(C,m,act.slice(4))){}
     else if(act==="def"){guard[m.id]=true;if(m.role==="tank")taunt=m;const d=hitBoss(deal(m.atk,.3,1,m.crit));log.push({k:"ev2",sub:"act",x:`${josa(gnm(m),"이")} 자세를 낮추고 막아선다 · 반격 ${d}`})}
     else if(act==="skill"&&!m.cd&&m.qi>=25){m.qi-=25;m.cd=2;advNote(C,m);const W=m.player?wfx(heroById(m.id)):null;
-      if(m.sect==="ami"){const parts=alive().map(x=>{const amt=Math.round(Math.max(m.atk*1.1,60)*(W==="ami"?1.15:1)*(m.player&&x.player&&x.id!==m.id&&relMutual(m.id,x.id)==="연인"?1.25:1));x.hp=Math.min(x.max,x.hp+amt);return `${gnm(x)} +${amt}`});log.push({k:"ev2",sub:"act",x:`${gnm(m)}의 회춘수! ${parts.join(" · ")}`});skillers.push({m,d:0})}
-      else{const sp=WSP(m.sect,W),raw=deal(m.atk,sp[0],sp[1],m.crit),d=m.sect==="jegal"?hitAll(raw):hitBoss(raw);if(m.sect==="sorim"||((m.sect==="namgung"||m.sect==="akga")&&m.role==="tank"))taunt=m;if(ironOf(m.sect,W)<1)iron[m.id]=ironOf(m.sect,W);if(m.sect==="kunlun"){n.vuln=2+(advHasM(m,"unmu")?1:0);n.vulnM=Math.max(n.vuln&&n.vulnM?n.vulnM:0,vulnOf(W))}if(m.sect==="mudang")pshield.v=Math.min(pshield.v,W==="mudang"?.7:.75);if(m.sect==="dang")weak=.8;
+      if(m.sect==="ami"){const parts=alive().map(x=>{const amt=Math.round(Math.max(m.atk*1.1,60)*(W==="ami"?1.15:1)*ghl(m)*(m.player&&x.player&&x.id!==m.id&&relMutual(m.id,x.id)==="연인"?1.25:1));x.hp=Math.min(x.max,x.hp+amt);return `${gnm(x)} +${amt}`});log.push({k:"ev2",sub:"act",x:`${gnm(m)}의 회춘수! ${parts.join(" · ")}`});skillers.push({m,d:0})}
+      else{const sp=WSP(m.sect,W),raw=deal(m.atk,sp[0]*gsk(m),sp[1],m.crit),d=m.sect==="jegal"?hitAll(raw):hitBoss(raw);if(m.sect==="sorim"||((m.sect==="namgung"||m.sect==="akga")&&m.role==="tank"))taunt=m;if(ironOf(m.sect,W)<1)iron[m.id]=ironOf(m.sect,W);if(m.sect==="kunlun"){n.vuln=2+(advHasM(m,"unmu")?1:0);n.vulnM=Math.max(n.vuln&&n.vulnM?n.vulnM:0,vulnOf(W))}if(m.sect==="mudang")pshield.v=Math.min(pshield.v,W==="mudang"?.7:.75);if(m.sect==="dang")weak=.8;
         log.push({k:"ev2",sub:"act",x:`${gnm(m)}의 ${SKILL_NAME[m.sect]}!${sp[1]>1?` ${sp[1]}연타`:""} · ${d} 피해${m.sect==="namgung"?" · 검을 세운 채 버틴다":m.sect==="akga"?" · 창끝이 적진을 꿰뚫는다":m.sect==="kunlun"?" · 보스의 허점이 드러났다":m.sect==="jegal"?" · 화살비가 쏟아진다":""}${m.sect==="jegal"&&n.minions>=0&&a===6?" (졸개까지)":""}${wTag(W)}${wHeal(W,alive(),gnm)}`});skillers.push({m,d})}
       const mate=alive().find(x=>x.player&&x.id!==m.id);if(m.player&&mate&&Math.random()<.5)relLine(n,"skill",m,mate,log)}
     else{const d=hitBoss(deal(m.atk,roleMul(m.role),1,m.crit));if(m.role==="tank"&&!taunt&&!m.player&&Math.random()<.6)taunt=m;log.push({k:"ev2",sub:"act",x:`${m.role==="tank"&&!m.player?`${josa(m.name,"이")} 앞을 막아서며 친다`:`${gnm(m)}의 공격`} · ${d} 피해`})}
@@ -1449,7 +1454,7 @@ function claimGate(){
     if(r.owner===myId()&&h.realm===r.realm-1&&atWall(h)){h.realm=r.realm;h.points+=5;applyExp(h,0);got.push(`${REALMS[r.realm].n}의 경지에 올랐다! (포인트 +5)`);(ADV[h.sect]||[]).filter(x=>x.r===r.realm).forEach(x=>got.push(`새 무공 「${x.n}」을 깨쳤다 · ${x.d}`))}
     else{const exp=expPerHour(h.level)*3;applyExp(h,exp);got.push(`도우미 보상 · 경험치 +${exp}`)}
     h.items.stone+=5;got.push("강화석 +5");got.push(silverTxt(addSilver(h,r.owner===myId()?150:100)));{const ip=addInv(h,200);if(ip)got.push(`마교 침공 기여 +${ip}`)}
-    if(Math.random()<.5){const it=makeItem(pickOne(["weapon","armor","acc"]),Math.min(6,r.realm),pickOne(SPECS));got.push(`장비 「${gainItem(h,it)}」`)}
+    if(Math.random()<.5){const it=rarify(h,makeItem(pickOne(["weapon","armor","acc"]),Math.min(6,r.realm),pickOne(SPECS)),"gate");got.push(`장비 「${gainItem(h,it)}」`)}
     if(Math.random()<.3){h.items.clue++;got.push("비급 단서 +1")}
   }else{const exp=Math.round(expPerHour(h.level));applyExp(h,exp);got.push(`경험치 +${exp} (다시 도전할 수 있다)`)}
   r.party.filter(x=>x.player&&x.id!==myId()).forEach(x=>{const v=addBond(h,x.id,30);got.push(`${josa(x.name,"와")} 인연 +${v}`)});
@@ -2093,6 +2098,36 @@ function innBuy(k){const h=structuredClone(me),p=INN[k]&&innPrice(h,k);if(!p||h.
 function innBox(h){if(h.travel)return "";
   const home=atHome(h);
   return `<div class="shop">${shopHead("inn",`${REGIONS[h.loc].n} 객잔 · 가진 돈 ${silverTxt(h.silver)}${home?` · <span class="disc">${SECTS[h.sect].n} 사람이라 15% 싸게</span>`:""}`)}${!shopOpen.inn?"</div>":""}${shopOpen.inn?`<div class="shopl">${Object.keys(INN).map(k=>[k,innPrice(h,k)]).map(([k,p])=>`<button class="shopi" type="button" data-inn="${k}" ${(h.silver||0)<p?"disabled":""}><b>${ITEMS[k][0]}</b><span>${GIFT_VAL[k]?`${ITEMS[k][1]} · 인연 +${GIFT_VAL[k]}`:ITEMS[k][1]}</span><em>${home?`<s>${INN[k]}</s> `:""}${p}냥</em></button>`).join("")}</div></div>`:""}`}
+/* 아르바이트: 하루 한 번, 1·3·5시간 일하고 은자를 받는다. 오래 할수록 시간당 조금 더 준다 */
+const JOBS={inn:{n:"객잔 점소이",d:"손님상을 나르고 마당을 쓴다",bonus:"만두 1개",lines:["술 취한 표사 둘이 싸움을 벌이려다 {me|을} 보고 조용히 자리에 앉았다.","주방장이 남은 만두를 슬쩍 싸 주었다. \"내일도 와.\"","손님이 {me|의} 무공을 알아보고 수고비를 얹어 주었다.","탁자 열두 개를 닦고 나니 손바닥이 반질반질해졌다."]},
+  guard:{n:"표국 짐꾼",d:"표물을 싣고 내린다 · 일삯 10% 더",bonus:"일삯 +10%",lines:["표두가 {me|의} 팔 힘을 보고 표사 자리를 권했다. 정중히 사양했다.","짐짝 하나가 유난히 무거웠다. 안에 뭐가 들었는지는 묻지 않기로 했다.","수레 바퀴가 빠졌지만 {me|이} 한 손으로 들어 올려 끼웠다.","표국 마당에서 무릎을 꿇고 수레를 고치느라 하루가 갔다."]},
+  herb:{n:"약방 심부름",d:"약재를 다듬고 달인다",bonus:"약초 1개",lines:["의원이 맥 짚는 법을 조금 가르쳐 주었다.","약탕기를 지키다 깜빡 졸아 하나를 태웠다. 의원이 못 본 척해 주었다.","약재 냄새가 옷에 배어 하루 종일 쌉싸름했다.","남은 약초 한 줌을 품삯과 함께 받았다."]}};
+const JOB_H=[1,3,5],JOB_MUL={1:1,3:1.1,5:1.2};
+const jobPay=(h,k,hr)=>Math.round((10+h.level*.3)*hr*JOB_MUL[hr]*(k==="guard"?1.1:1));
+let jobPick={k:"inn",h:3},jobStopAsk=false;
+function startJob(){const h=structuredClone(me),k=jobPick.k,hr=jobPick.h;if(!JOBS[k]||!JOB_H.includes(hr))return;
+  if(activity(h)){toast(`${busyText[activity(h)]} 일할 수 없습니다.`);return}
+  if(h.jobDay===dayKey()){toast("오늘은 이미 일했다. 자정에 다시 일거리가 생긴다.");return}
+  const now=Date.now();h.job={k,hours:hr,start:now,end:now+hr*3600e3,loc:h.loc,pay:jobPay(h,k,hr)};h.jobDay=dayKey();
+  addLog(h,`${REGIONS[h.loc].n}에서 ${JOBS[k].n} 일을 ${hr}시간 맡았다.`);jobStopAsk=false;save(h)}
+function finishJob(stop){const h=structuredClone(me),j=h.job;if(!j)return;const J=JOBS[j.k],done=Date.now()>=j.end;
+  const f=done?1:Math.min(1,(Date.now()-j.start)/(j.end-j.start))*.5,pay=Math.round(j.pay*f),got=[silverTxt(addSilver(h,pay))];
+  if(done&&j.k==="inn"){h.items.mandu=(h.items.mandu||0)+1;got.push("만두 +1")}
+  if(done&&j.k==="herb"){h.items.herb=(h.items.herb||0)+1;got.push("약초 +1")}
+  h.job=null;jobStopAsk=false;
+  addLog(h,done?`${J.n} 일을 마쳤다. ${fill(pickOne(J.lines),{me:h.name})} (${got.join(", ")})`:`${J.n} 일을 중간에 그만두었다. 일한 만큼의 절반만 받았다. (${got.join(", ")})`);
+  save(h);toast(done?`일삯을 받았다 · ${got.join(" · ")}`:`절반만 받았다 · ${got[0]}`)}
+function jobBox(h){if(h.travel)return "";const j=h.job,today=h.jobDay===dayKey()&&!j;
+  const head=shopHead("job",`${REGIONS[h.loc].n} 일거리${j?` · ${JOBS[j.k].n} 하는 중`:today?" · 오늘은 다 했다":" · 하루 한 번"}`);
+  if(!shopOpen.job&&!j)return `<div class="shop">${head}</div>`;
+  if(j){const done=Date.now()>=j.end;return `<div class="shop">${head}<div class="wall" style="margin-top:8px"><p><b>${JOBS[j.k].n}</b> · ${REGIONS[j.loc].n} · ${j.hours}시간 · 일삯 ${silverTxt(j.pay)}<br><span class="note">${done?"일을 다 마쳤다.":`<span data-until="${j.end}"></span> 남음`}</span></p>
+    <div class="row">${done?`<button class="btn sealb" type="button" id="jobDone">일삯 받기</button>`:jobStopAsk?`<button class="btn sm sealb" type="button" id="jobStopOk">그만두고 절반만 받기</button><button class="btn sm ghost" type="button" id="jobStopNo">계속 일한다</button>`:`<button class="btn sm ghost" type="button" id="jobStop">그만두기</button>`}</div></div></div>`}
+  if(today)return `<div class="shop">${head}<p class="note" style="margin-top:8px">오늘은 이미 일했다. 자정에 새 일거리가 들어온다.</p></div>`;
+  const busy=activity(h);
+  return `<div class="shop">${head}<div class="shopl">${Object.entries(JOBS).map(([k,J])=>`<button class="shopi ${jobPick.k===k?"on":""}" type="button" data-job="${k}"><b>${J.n}</b><span>${J.d}${k!=="guard"?` · 끝까지 하면 ${J.bonus}`:""}</span><em>${silverTxt(jobPay(h,k,jobPick.h))}</em></button>`).join("")}</div>
+    <div class="row" style="margin-top:8px"><span class="seg">${JOB_H.map(x=>`<button type="button" class="${jobPick.h===x?"on":""}" data-jobh="${x}">${x}시간</button>`).join("")}</span>
+    <button class="btn sealb" type="button" id="jobGo" ${busy?"disabled":""}>${busy?`${busyText[busy]} 못 한다`:`${JOBS[jobPick.k].n} ${jobPick.h}시간 · ${silverTxt(jobPay(h,jobPick.k,jobPick.h))}`}</button></div>
+    <p class="note">일하는 동안은 수련·임무·이동을 할 수 없다. 중간에 그만두면 일한 만큼의 절반만 받는다.</p></div>`}
 /* 대장간: 일류 전까지 쓰는 기본 무기·의복(무명·청강)을 판다. 청강은 이류부터 */
 const SMITH={0:{weapon:40,armor:30},1:{weapon:120,armor:90}};
 let smithSpec=null;
@@ -2189,7 +2224,8 @@ function invPatrol(){const h=structuredClone(me);if(!invActive())return;if(h.tra
 function invClaim(){if(!invasion)return;const h=structuredClone(me),mine=invPts(h);if(!mine||h.invClaimed===invasion.id)return;
   const won=invDown(),list=invList(),rank=list.findIndex(x=>x.id===myId());const got=[];
   if(won){const bonus=[200,120,80][rank]||0;got.push(silverTxt(addSilver(h,200+bonus)));h.items.stone+=8;got.push("강화석 +8");const x=expPerHour(h.level)*4;applyExp(h,x);got.push(`경험치 +${x}`);
-    bump(h,"invWin");if(rank===0)bump(h,"invTop");if(rank>=0&&rank<3)got.push(`기여 ${rank+1}위`)}
+    bump(h,"invWin");if(rank===0)bump(h,"invTop");if(rank>=0&&rank<3)got.push(`기여 ${rank+1}위`);
+    {const x=Math.random(),rar=rank===0?(x<.3?3:2):rank>0&&rank<3?(x<.15?3:2):(x<.2?2:1),it=setRar(makeItem(pickOne(["weapon","armor","acc"]),Math.min(6,h.realm),pickOne(SPECS)),rar);got.push(`공로 장비 「${gainItem(h,it)}」`)}}
   else{got.push(silverTxt(addSilver(h,40)));h.items.stone+=2;got.push("강화석 +2")}
   h.invClaimed=invasion.id;addLog(h,`마교 침공 ${won?"격퇴":"종료"} · 내 기여 ${mine} · ${got.join(", ")}`);save(h);toast(won?"마교를 물리쳤습니다! 보상을 받았습니다.":"침공이 끝났습니다. 위로 보상을 받았습니다.")}
 function invBox(h){if(!invOn())return "";const mine=invPts(h),over=sNow()>=invasion.end||invDown(),claimable=over&&mine>0&&h.invClaimed!==invasion.id;
@@ -2545,8 +2581,8 @@ function coBossTurn(f){
     if(String(act).startsWith("adv:")&&advUse(C,m,act.slice(4))){}
     else if(act==="def"){guard[m.id]=true;if(m.role==="tank")taunt=m;const d=deal(m.atk,.3,1,m.crit);turn+=d;b.dealtBy[m.id]=(b.dealtBy[m.id]||0)+d;log.push({k:"ev2",sub:"act",x:`${josa(nm(m),"이")} 자세를 낮추고 막아선다 · 반격 ${d}`})}
     else if(act==="skill"&&!ps.cd&&ps.qi>=25){ps.qi-=25;ps.cd=2;advNote(C,m);const W=wfx(heroById(m.id));
-      if(m.sect==="ami"){const parts=party.filter(x=>x.hp>0).map(x=>{const amt=Math.round(Math.max(m.atk*1.1,20+L*5)*(W==="ami"?1.15:1)*(x.player&&x.id!==m.id&&relMutual(m.id,x.id)==="연인"?1.25:1));x.hp=Math.min(x.max,x.hp+amt);return `${nm(x)} +${amt}`});log.push({k:"ev2",sub:"act",x:`${nm(m)}의 회춘수! ${parts.join(" · ")}`})}
-      else{const sp=WSP(m.sect,W),d=deal(m.atk,sp[0],sp[1],m.crit);turn+=d;b.dealtBy[m.id]=(b.dealtBy[m.id]||0)+d;
+      if(m.sect==="ami"){const parts=party.filter(x=>x.hp>0).map(x=>{const amt=Math.round(Math.max(m.atk*1.1,20+L*5)*(W==="ami"?1.15:1)*ghl(m)*(x.player&&x.id!==m.id&&relMutual(m.id,x.id)==="연인"?1.25:1));x.hp=Math.min(x.max,x.hp+amt);return `${nm(x)} +${amt}`});log.push({k:"ev2",sub:"act",x:`${nm(m)}의 회춘수! ${parts.join(" · ")}`})}
+      else{const sp=WSP(m.sect,W),d=deal(m.atk,sp[0]*gsk(m),sp[1],m.crit);turn+=d;b.dealtBy[m.id]=(b.dealtBy[m.id]||0)+d;
         if(m.sect==="sorim"||((m.sect==="namgung"||m.sect==="akga")&&m.role==="tank"))taunt=m;if(ironOf(m.sect,W)<1)iron[m.id]=ironOf(m.sect,W);if(m.sect==="kunlun"){b.vuln=2+(advHasM(m,"unmu")?1:0);b.vulnM=Math.max(b.vulnM&&b.vuln?b.vulnM:0,vulnOf(W))}if(m.sect==="mudang")pshield=Math.min(pshield,W==="mudang"?.7:.75);if(m.sect==="dang")weak=.8;
         log.push({k:"ev2",sub:"act",x:`${nm(m)}의 ${SKILL_NAME[m.sect]}!${sp[1]>1?` ${sp[1]}연타`:""} · ${d} 피해${m.sect==="namgung"?" · 검을 세운 채 버틴다":m.sect==="akga"?" · 창끝이 적진을 꿰뚫는다":m.sect==="kunlun"?" · 보스의 허점이 드러났다":m.sect==="jegal"?" · 화살비가 쏟아진다":""}${wTag(W)}${wHeal(W,party,nm)}`})}}
     else{const d=deal(m.atk,roleMul(m.role),1,m.crit);turn+=d;b.dealtBy[m.id]=(b.dealtBy[m.id]||0)+d;log.push({k:"ev2",sub:"act",x:`${nm(m)}의 공격 · ${d?`${d} 피해`:"빗나갔다"}`})}
@@ -2723,8 +2759,8 @@ const fxAdd=(fx,k,v,t,extra)=>{fx.t[k]={v,t,...(extra||{})}};
 /* 합이 시작될 때: 재사용 대기, 늘 깃든 무공의 공격 보정 */
 function advStart(c){const fx=c.fx,P=c.P;fx.turn=(fx.turn||0)+1;fx.now={sk:{},adv:{},hurt:{},refl:{}};
   const downs=P.filter(x=>x.hp<=0).length,wise=advHasAny(P,"waryong");
-  for(const m of P){if(m.hp<=0||!heroOfM(m))continue;const id=m.id,cd=fx.cds[id]||{},extra=(wise?1:0)+(advHasM(m,"geomsim")?1:0);
-    for(const k in cd)cd[k]=Math.max(0,cd[k]-1-extra);
+  for(const m of P){if(m.hp<=0||!heroOfM(m))continue;const id=m.id,cd=fx.cds[id]||{},extra=(wise?1:0)+(advHasM(m,"geomsim")?1:0),gcd=gearOpt(heroOfM(m),"cdr")<0?1:0;
+    for(const k in cd)cd[k]=Math.max(0,cd[k]-1-extra-gcd);
     const q=c.qiOf(m);if(q&&extra&&q.cd>0)q.cd=Math.max(0,q.cd-extra);
     let mul=1,cr=0;const a=fxOn(fx,"atk:"+id);if(a)mul*=a.v;if(fxOn(fx,"dbl:"+id)){mul*=2;delete fx.t["dbl:"+id]}
     if(advHasM(m,"changgung")&&m.hp>=m.max/2)mul*=1.1;
@@ -2739,9 +2775,9 @@ function advUse(c,m,k){const h=heroOfM(m),s=advOpen(h).find(x=>x.k===k&&!x.p);if
   if(!q||q.qi<s.qi||(fx.cds[id]?.[k]||0)>0||(s.once&&fx.used[id]?.[k]))return false;
   q.qi-=s.qi;if(s.cd)(fx.cds[id]=fx.cds[id]||{})[k]=s.cd;if(s.once)(fx.used[id]=fx.used[id]||{})[k]=1;fx.now.sk[id]=1;fx.now.adv[id]=k;
   const L=c.log,N=c.nm,al=c.P.filter(x=>x.hp>0),say=t=>L.push({k:"ev2",sub:"act",x:`${N(m)}의 ${s.n}! ${t}`});
-  const pw=s.foreign?.8:1,heal=(x,a)=>{const b=x.hp;x.hp=Math.min(x.max,x.hp+Math.max(0,Math.round(a*pw)));return x.hp-b};
+  const pw=s.foreign?.8:1,hb=ghl(m),heal=(x,a)=>{const b=x.hp;x.hp=Math.min(x.max,x.hp+Math.max(0,Math.round(a*pw*hb)));return x.hp-b};
   const healL=(list,f)=>list.map(x=>[x,heal(x,f(x))]).filter(e=>e[1]>0).map(([x,v])=>`${N(x)} +${v}`).join(" · ")||"모두 멀쩡하다";
-  const hit=(mult,hits,all)=>{const raw=c.deal(m.atk,mult*pw,hits,m.crit);return all?c.hitAll(m,raw):c.hit(m,raw)};
+  const hit=(mult,hits,all)=>{const raw=c.deal(m.atk,mult*pw*gsk(m),hits,m.crit);return all?c.hitAll(m,raw):c.hit(m,raw)};
   if(s.foreign){const fs=s.sect,tag="(비급)";
     switch(fs){
       case "sorim":{const d=hit(1.25,1);fxAdd(fx,"taunt",0,1,{id});say(`${tag} ${d} 피해 · 보스의 시선이 쏠린다`);break}
@@ -2811,7 +2847,7 @@ function advEnd(c){const fx=c.fx,P=c.P,L=c.log,N=c.nm,al=()=>P.filter(x=>x.hp>0)
   const hot=fxOn(fx,"hot");if(hot){const t=healAll(hot.v);if(t)L.push({k:"ev2",sub:"act",x:`감로 · ${t}`})}
   const ug=P.find(x=>advHasM(x,"ungi")&&fx.now.sk[x.id]);if(ug){const t=healAll(.05);if(t)L.push({k:"ev2",sub:"act",x:`${N(ug)}의 운기상통 · ${t}`})}
   P.forEach(x=>{if(advHasM(x,"yeokgeun")&&x.hp<x.max){const b=x.hp;x.hp=Math.min(x.max,x.hp+Math.round(x.max*.06));L.push({k:"ev2",sub:"act",x:`${N(x)}의 역근경 · 체력 +${x.hp-b}`})}});
-  const ss=advHasAny(P,"seolsan");P.forEach(x=>{if(x.hp<=0||!heroOfM(x))return;const q=c.qiOf(x);if(!q)return;const g=(ss?3:0)+(advHasM(x,"geomsim")?5:0);if(g)q.qi=Math.min(q.qmax,q.qi+g)});
+  const ss=advHasAny(P,"seolsan");P.forEach(x=>{if(x.hp<=0||!heroOfM(x))return;const q=c.qiOf(x);if(!q)return;const g=(ss?3:0)+(advHasM(x,"geomsim")?5:0)+gearOpt(heroOfM(x),"regen");if(g)q.qi=Math.min(q.qmax,q.qi+g)});
   P.forEach(x=>{if(advHasM(x,"manhwa")&&fx.now.adv[x.id]!=="manhwa")fx.stack[x.id]=Math.min(5,(fx.stack[x.id]||0)+1)});
   P.forEach(x=>{if(x._b){x.atk=x._b[0];x.crit=x._b[1];delete x._b}});
   fx.last=fx.now.hurt;
@@ -2836,6 +2872,28 @@ const enhCost=it=>(it.plus+1)*2;
 const SUCC=["망치가 내려칠 때마다 불꽃이 튄다. 담금질한 쇠가 푸르게 울었다.","{i|에} 새 기운이 스며든다. 손에 착 감긴다.","쩡! 맑은 소리와 함께 {i|의} 결이 한층 단단해졌다."];
 const FAILT=["쩌억— 불길한 소리. 강화석만 재가 되어 흩어졌다.","기운이 엇나가 튕겨 나왔다. {i|은} 그대로다.","담금질 물이 끓어 넘쳤다. 이번엔 실패다."];
 let gsel="weapon", gmsg=null, gconfirm=null, gmsgSeq=0, gmsgShown=0;
+/* ───────── 장비 등급: 절정부터 소굴·관문·어려움 탐문에서 등급 장비가 나온다 ───────── */
+const RAR=[{n:"일반"},{n:"고급"},{n:"희귀"},{n:"전설"}];
+const GOPT={atk:{n:"공격",u:"%",r:[0,[3,5],[5,8],[8,12]]},hp:{n:"체력",u:"%",r:[0,[4,6],[6,10],[10,15]]},def:{n:"방어",u:"%",r:[0,[5,8],[8,12],[12,18]]},
+  crit:{n:"치명타",u:"%",r:[0,[2,3],[3,5],[5,8]]},eva:{n:"회피",u:"%",r:[0,[1,2],[2,4],[4,6]]},qi:{n:"기력",u:"",r:[0,[5,10],[10,20],[20,30]]},
+  skill:{n:"무공 피해",u:"%",r:[0,[4,6],[6,10],[10,15]]},regen:{n:"매 합 기력",u:"",r:[0,[2,3],[3,4],[4,6]]},heal:{n:"회복량",u:"%",r:[0,[5,8],[8,12],[12,18]]},
+  cdr:{n:"경지 무공 재사용",u:"합",leg:1}};
+const RAR_ODDS={lair:[.2,.05,.01],hard:[.2,.05,.01],gate:[.3,.1,.03]};
+const REROLL_COST=[0,40,80,160];
+function rollOpt(rar,skip){const keys=Object.keys(GOPT).filter(k=>!skip.includes(k)&&(!GOPT[k].leg||rar>=3));const k=pickOne(keys),G=GOPT[k];
+  if(G.leg)return {k,v:-1};const [lo,hi]=G.r[rar];return {k,v:lo+Math.floor(Math.random()*(hi-lo+1))}}
+function setRar(it,rar){it.rar=rar;it.opts=[];for(let i=0;i<rar;i++)it.opts.push(rollOpt(rar,it.opts.map(o=>o.k)));return it}
+function rarify(h,it,src){if(!it||it.sect||(h.realm||0)<3)return it;const [a,b,c]=RAR_ODDS[src]||RAR_ODDS.lair,r=Math.random();return setRar(it,r<c?3:r<c+b?2:r<c+b+a?1:0)}
+const optTxt=o=>{const G=GOPT[o.k];return G.leg?`${G.n} ${o.v}${G.u}`:`${G.n} +${o.v}${G.u}`};
+const optLine=it=>(it?.opts||[]).map(optTxt).join(" · ");
+const rarTag=it=>it?.rar?`<span class="rt r${it.rar}">${RAR[it.rar].n}</span> `:"";
+const rarName=it=>`${it.rar?`[${RAR[it.rar].n}] `:""}${it.name}`;
+function gearOpt(h,k){let v=0;for(const s in SLOTS)for(const o of (h?.gear?.[s]?.opts||[]))if(o.k===k)v+=o.v;return v}
+const gsk=m=>1+gearOpt(heroOfM(m),"skill")/100, ghl=m=>1+gearOpt(heroOfM(m),"heal")/100;
+function rerollOpt(slot,i){const h=structuredClone(me),it=h.gear[slot];if(!it?.opts?.[i])return;const cost=REROLL_COST[it.rar]||0;
+  if((h.silver||0)<cost){toast(`은자가 ${cost-(h.silver||0)}냥 모자랍니다.`);return}
+  h.silver-=cost;const old=optTxt(it.opts[i]);it.opts[i]=rollOpt(it.rar,it.opts.filter((_,j)=>j!==i).map(o=>o.k));
+  addLog(h,`${it.name}의 기운을 다시 다듬었다. ${old} → ${optTxt(it.opts[i])} (${silverTxt(cost)})`);save(h);toast(`${old} → ${optTxt(it.opts[i])}`)}
 function makeItem(slot,grade,spec,opt={}){
   const it={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),slot,grade,plus:0,fails:0};
   if(opt.sect){const alt=SECT_ALT[opt.sect]&&(opt.alt??Math.random()<.5),S=alt?SECT_ALT[opt.sect]:SECT_ITEM[opt.sect];Object.assign(it,{slot:"weapon",spec:S.spec,sect:opt.sect,name:S.n});if(alt)it.alt=true;return it}
@@ -2857,7 +2915,7 @@ function statLine(it){const s=itemStats(it);return [s.atk?`공격 +${s.atk}`:"",
 const gradeLine=it=>`${REALMS[it.grade].n}급 · ${it.slot==="acc"?STATS[it.stat].n+" 장신구":SPEC[it.spec].n}${it.sect?` · ${SECTS[it.sect].n} 전용`:""}`;
 function gearSum(h){const o={atk:0,def:0,nei:0,wai:0,shen:0};for(const k in SLOTS){const s=itemStats(h.gear?.[k]);for(const x in s)o[x]+=s[x]}return o}
 function effStats(h){const g=gearSum(h);return {nei:h.stats.nei+g.nei,wai:h.stats.wai+g.wai,shen:h.stats.shen+g.shen}}
-function gainItem(h,it){if(h.bag.length>=20){const n=it.grade+1;h.items.stone+=n;return `${it.name} (행낭이 가득 차 강화석 ${n}개로 녹임)`}h.bag.push(it);return it.name}
+function gainItem(h,it){if(h.bag.length>=20){const n=it.grade+1+(it.rar||0)*2;h.items.stone+=n;return `${rarName(it)} (행낭이 가득 차 강화석 ${n}개로 녹임)`}h.bag.push(it);return rarName(it)}
 function rollDrop(h,tier){
   if(Math.random()*100>=[25,12,5][tier]) return null;
   if(tier===0&&Math.random()<.15) return makeItem("weapon",h.realm,null,{sect:Math.random()<.5?h.sect:pickOne(Object.keys(SECTS))});
@@ -2890,7 +2948,7 @@ function diffLine(it){
 function gearTab(){
   const h=me,d=derived(h),it=h.gear[gsel];
   const card=k=>{const x=h.gear[k];return `<button class="gslot ${gsel===k?"on":""}" type="button" data-gsel="${k}"><span class="sl">${SLOTS[k]}</span>
-    ${x?`<b>${esc(x.name)}${x.plus?` <em>+${x.plus}</em>`:""}</b><span class="gs">${gradeLine(x)}</span><span class="gst">${statLine(x)}</span>`
+    ${x?`<b>${rarTag(x)}${esc(x.name)}${x.plus?` <em>+${x.plus}</em>`:""}</b><span class="gs">${gradeLine(x)}</span><span class="gst">${statLine(x)}</span>${x.opts?.length?`<span class="gopt r${x.rar}">${optLine(x)}</span>`:""}`
       :`<b class="none">비어 있음</b><span class="gs">사건과 보스에서 얻는다</span>`}</button>`};
   let forge;
   if(!it) forge=`<div class="forge"><p class="note" style="margin:0">${SLOTS[gsel]} 칸이 비어 있다. 행낭의 장비를 장착하면 여기서 강화할 수 있다.</p></div>`;
@@ -2907,8 +2965,12 @@ function gearTab(){
         <button class="btn ghost" id="unequipBtn" type="button">벗기</button></div>
       ${lack?`<p class="note" style="margin:0">강화석은 사건 해결, 길 위의 만남, 장비 녹이기로 모은다.</p>`:""}
       ${it.sect?`<p class="note" style="margin:0">전용 효과: ${sectItemOf(it).fx} (${it.sect===h.sect?"소굴·관문 전투에서 적용 · 논검 제외":`${SECTS[it.sect].n} 문하만 효과를 받는다`})</p>`:""}</div>`}
+  if(it?.opts?.length){const cost=REROLL_COST[it.rar];forge+=`<div class="forge"><div class="kicker">기운 다듬기 · ${RAR[it.rar].n} ${esc(it.name)}</div>
+    <p class="note" style="margin:0 0 8px">한 줄씩 은자를 내고 다시 굴린다. 한 줄에 ${silverTxt(cost)}. 다른 줄과 같은 옵션은 나오지 않는다.</p>
+    <div class="rrl">${it.opts.map((o,i)=>`<div class="rr"><span class="gopt r${it.rar}">${optTxt(o)}</span><button class="btn sm" type="button" data-reroll="${i}" ${(h.silver||0)<cost?"disabled":""}>다시 · ${cost}냥</button></div>`).join("")}</div>
+    <p class="note" style="margin:6px 0 0">가진 돈 ${silverTxt(h.silver||0)}</p></div>`}
   const bag=h.bag.length?h.bag.map((x,i)=>{const cur=h.gear[x.slot],inh=cur&&cur.plus>1&&Math.floor(cur.plus/2)>x.plus;
-    return `<div class="itemrow"><div><b>${esc(x.name)}${x.plus?` <em>+${x.plus}</em>`:""}</b><div class="gs">${SLOTS[x.slot]} · ${gradeLine(x)}</div>
+    return `<div class="itemrow"><div><b>${rarTag(x)}${esc(x.name)}${x.plus?` <em>+${x.plus}</em>`:""}</b>${x.opts?.length?`<div class="gopt r${x.rar}">${optLine(x)}</div>`:""}<div class="gs">${SLOTS[x.slot]} · ${gradeLine(x)}</div>
       <div class="gst">${statLine(x)} · 지금 것보다 ${diffLine(x)}</div></div>
       <div class="acts">${gconfirm===i?`<button class="btn sm sealb" type="button" data-salv="${i}">녹여서 강화석 ${x.grade+1+Math.floor(x.plus/2)}개</button><button class="btn sm ghost" type="button" data-salvno>그만두기</button>`
         :`<button class="btn sm" type="button" data-eq="${i}">장착</button>${inh?`<button class="btn sm sealb" type="button" data-eqi="${i}">계승하며 장착 · +${Math.floor(cur.plus/2)}</button>`:""}<button class="btn sm ghost" type="button" data-salvq="${i}">녹이기</button>`}</div></div>`}).join("")
@@ -3159,6 +3221,7 @@ function rollMissionLoot(h,m){
   if(r.t===0&&Math.random()<.1)L.clue=true;
   L.drop=rollDrop(h,r.t);
   if(misDiff(m)===2&&!L.drop)L.drop=rollDrop(h,r.t);
+  if(misDiff(m)===2&&L.drop)rarify(h,L.drop,"hard");
   if(misDiff(m)===2&&!L.clue&&Math.random()<.1)L.clue=true;
   if(!h.horse&&Math.random()<HORSE_RATE[r.t]*DIFF[misDiff(m)].horse)L.horse=pickOne(HORSES);
   return L;
@@ -3282,6 +3345,7 @@ function heroView(){
 function bannerView(){
   const h=me,a=activity(h); if(!a) return "";
   const now=Date.now();
+  if(a==="job"){const j=h.job,done=now>=j.end;return `<div class="banner ${done?"done":""}"><span><b>${JOBS[j.k].n}</b> <span class="t">${done?"· 일을 마쳤다":`· <span data-until="${j.end}"></span> 남음`}</span></span>${tab!=="world"?`<button class="btn ghost" data-go="world" type="button">${done?"일삯 받으러":"보기"}</button>`:""}</div>`}
   if(a==="train"){const t=h.training,done=now>=t.end;return `<div class="banner ${done?"done":""}"><span><b>${STATS[t.stat].train}</b> <span class="t">${done?"· 끝났다":`· <span data-until="${t.end}"></span> 남음`}</span></span>${tab!=="train"?`<button class="btn ghost" data-go="train" type="button">${done?"거두러 가기":"보기"}</button>`:""}</div>`}
   if(a==="travel"){const t=h.travel,done=now>=t.end;return `<div class="banner ${done?"done":""}"><span><b>${REGIONS[t.to].n}</b>로 가는 길 <span class="t">${done?"· 도착했다":`· <span data-until="${t.end}"></span> 남음`}</span></span>${tab!=="world"?`<button class="btn ghost" data-go="world" type="button">${done?"도착하기":"보기"}</button>`:""}</div>`}
   if(a==="lair"&&h.colair&&!h.lair){const r=lairRuns[h.colair];return `<div class="banner done"><span><b>동행과 함께 소굴</b> <span class="t">· ${!r?"불러오는 중":r.status==="invite"?"동행을 기다리는 중":r.phase==="boss"?"보스방에서 싸우는 중":r.phase==="done"?"탐험 끝":"탐험 중"}</span></span>${tab!=="raid"?`<button class="btn ghost" data-go="raid" type="button">돌아가기</button>`:""}</div>`}
@@ -3360,7 +3424,7 @@ function worldTab(){
     else if(direct) regionBox+=`<div class="row" style="margin-top:6px"><button class="btn solid" id="goBtn" type="button" ${a?"disabled":""}>${R.n}로 떠나기 · ${hrsTxt(direct)}${tg.length?` (${tg.join(", ")})`:""}</button>${realMates().length?`<button class="btn ghost" type="button" data-callgo="${dest}">무리에게 같이 가자고 하기</button>`:""}${a?`<span class="note" style="margin:0">${busyText[a]} 떠날 수 없다.</span>`:""}</div>`;
     else{const rt=route(h.loc,dest);regionBox+=`<p class="note">바로 가는 길이 없다. ${rt.path.map(p=>REGIONS[p].n).join(" → ")} (모두 ${hrsTxt(hrsFor(h,rt.hours))}${h.horse?", 말 적용":""}) 순으로 한 곳씩 이동해야 한다.</p>`}
   }
-  regionBox+=(focus===h.loc?regionSectBox(focus)+innBox(h)+smithBox(h):"")+`</div>`;
+  regionBox+=(focus===h.loc?regionSectBox(focus)+jobBox(h)+innBox(h)+smithBox(h):"")+`</div>`;
   return `${invBox(h)}<section><div class="label">지도</div>${mapSvg()}
     <p class="note">지역을 누르면 정보가 보이고, 이어진 곳이면 바로 떠날 수 있다.</p>${regionBox}${caravanBox(h)}</section>
     ${travelBox?`<section style="margin-top:20px">${travelBox}</section>`:""}
@@ -3512,6 +3576,10 @@ function bind(){
   document.querySelectorAll("[data-bgforget]").forEach(b=>b.addEventListener("click",()=>{bigupForget=b.dataset.bgforget||null;render()}));
   document.querySelectorAll("[data-bgforgetok]").forEach(b=>b.addEventListener("click",()=>bigupDrop(b.dataset.bgforgetok)));
   on("#bgLearn",bigupLearn);
+  document.querySelectorAll("[data-reroll]").forEach(b=>b.addEventListener("click",()=>rerollOpt(gsel,+b.dataset.reroll)));
+  document.querySelectorAll("[data-job]").forEach(b=>b.addEventListener("click",()=>{jobPick.k=b.dataset.job;render()}));
+  document.querySelectorAll("[data-jobh]").forEach(b=>b.addEventListener("click",()=>{jobPick.h=+b.dataset.jobh;render()}));
+  on("#jobGo",startJob);on("#jobDone",()=>finishJob(false));on("#jobStop",()=>{jobStopAsk=true;render()});on("#jobStopNo",()=>{jobStopAsk=false;render()});on("#jobStopOk",()=>finishJob(true));
   on("#openGateBtn",openGate); on("#startGateBtn",startGate); on("#claimGateBtn",claimGate);
   on("#leaveGateBtn",leaveGate);
   on("#toGateBtn",e=>{dest=e.currentTarget.dataset.region;tab="world";try{localStorage.setItem("murim-tab",tab)}catch(err){};render()});
