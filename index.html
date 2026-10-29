@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261029001003">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261029215435">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -126,6 +126,7 @@ section{margin-top:30px}
 .rt.r1,.gopt.r1{color:var(--c-dang)}.rt.r2,.gopt.r2{color:var(--c-mudang)}.rt.r3,.gopt.r3{color:var(--c-sorim)}.rt.r3{font-weight:700}
 .gopt{display:block;font-size:12px;margin-top:2px}.rr{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0;border-bottom:1px dashed var(--line)}.rr .gopt{margin:0}
 .foldh .label{margin:0;flex:1}.foldh i{font-style:normal;font-size:12px;color:var(--ink-3);white-space:nowrap}.foldb[hidden]{display:none}
+.npcsel{margin-top:4px;font:inherit;font-size:12px;padding:3px 6px;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:2px;max-width:100%}
 .shopi.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
 .shopi b{font-size:14px}.shopi span{font-size:11px;color:var(--ink-3);line-height:1.4}.shopi em{font-style:normal;font-size:13px;color:var(--seal);font-variant-numeric:tabular-nums}
 .shopi em s{color:var(--ink-3);font-size:11px}.disc{color:var(--seal)}
@@ -917,6 +918,12 @@ const NPC_SAY={혜원:["\"으아, 저 덩치 좀 보세요!\"","\"제, 제가 �
 const ROLE_N={tank:"탱커",dps:"딜러",heal:"힐러"};
 const SECT_ROLES={sorim:["tank"],hwasan:["dps"],ami:["heal"],mudang:["tank","heal"],dang:["heal","dps"],namgung:["dps","tank"],akga:["dps","tank"],kunlun:["dps"],jegal:["dps"]};
 const NPC_SECT={tank:["sorim","mudang"],dps:["hwasan","dang"],heal:["ami"]};
+/* NPC 문파 고르기: 역할마다 그 역할을 맡을 수 있는 문파 중에서 고른다 (우호도가 높을수록 NPC가 세다) */
+const ROLE_OPTS=r=>Object.keys(SECT_ROLES).filter(k=>SECT_ROLES[k].includes(r));
+function npcSectsFor(h,need){const taken=[],cnt={};return need.map(r=>{const i=cnt[r]=(cnt[r]||0)+1,pref=h?.npcPick?.[r]?.[i-1];
+  const k=[pref,...NPC_SECT[r],...ROLE_OPTS(r)].find(x=>x&&SECT_ROLES[x]?.includes(r)&&!taken.includes(x))||NPC_SECT[r][0];taken.push(k);return k})}
+function setNpcPick(r,i,k){if(!SECT_ROLES[k]?.includes(r))return;const h=structuredClone(me);h.npcPick=h.npcPick||{};const a=(h.npcPick[r]||[]).slice();a[i]=k;h.npcPick[r]=a;
+  for(const rr in h.npcPick)if(rr!==r)h.npcPick[rr]=(h.npcPick[rr]||[]).map(x=>x===k?null:x);save(h)}
 const npcTier=r=>r<=1?0:r===2?1:r<=4?2:3;
 const TIER_N=["제자","일대제자","장로","장문인"];
 const dayKey=()=>Math.floor((Date.now()+KST)/86400e3);
@@ -926,9 +933,9 @@ function partyFor(h,role){
   const need=["tank","dps","dps","heal"],mine=role||SECT_ROLES[h.sect][0];need.splice(need.indexOf(mine),1);
   const d=derived(h),tier=npcTier(h.realm),mul=[.8,.9,1,1.1][tier],used={};
   const me={id:"me",name:h.name,role:mine,sect:h.sect,hp:d.hp,max:d.hp,atk:d.atk,def:d.def,eva:d.eva,crit:d.crit,isMe:true};
-  const npcs=need.map(r=>{const opts=NPC_SECT[r],k=used[r]?opts[(opts.indexOf(used[r])+1)%opts.length]:opts[0];used[r]=k;
+  const ks=npcSectsFor(h,need),slot={};const npcs=need.map((r,ni)=>{const k=ks[ni],si=slot[r]=(slot[r]===undefined?0:slot[r]+1);
     const fm=mul*(1+favorStage(favorOf(h,k))[2]);
-    return {id:k+r,name:NPCS[k][tier],role:r,sect:k,hp:Math.round(d.hp*fm),max:Math.round(d.hp*fm),atk:Math.round(d.atk*fm),def:Math.round(d.def*fm),eva:5,crit:5}});
+    return {id:k+r,slot:si,name:NPCS[k][tier],role:r,sect:k,hp:Math.round(d.hp*fm),max:Math.round(d.hp*fm),atk:Math.round(d.atk*fm),def:Math.round(d.def*fm),eva:5,crit:5}});
   return [me,...npcs].sort((a,b)=>["tank","dps","heal"].indexOf(a.role)-["tank","dps","heal"].indexOf(b.role));
 }
 function simulate(h,role,B,quiet,rnd=Math.random){
@@ -1257,7 +1264,9 @@ function raidTab(){
   else if(!here) body=`<p class="note">${REGIONS[B.region].n}에 있어야 소굴에 들어갈 수 있다. 지금 위치는 ${h.travel?"길 위":REGIONS[h.loc].n}.</p><button class="btn" type="button" id="toBossBtn">지도에서 ${REGIONS[B.region].n} 보기</button>`;
   else{const party=partyFor(h,role);
     body=`<div class="label" style="margin-top:18px">함께 들어갈 파티 · 내 경지에 맞춰 ${TIER_N[npcTier(h.realm)]}들이 돕는다</div>
-    <div class="party">${party.map(x=>`<div class="pm2">${x.isMe?face(myId(),x.sect,"sm"):emblem(x.sect,"sm")}<div><b>${esc(x.name)}${x.isMe?" (나)":""}</b><span>${ROLE_N[x.role]} · 체력 ${x.max} · 공격 ${x.atk}</span></div></div>`).join("")}</div>
+    <div class="party">${party.map(x=>`<div class="pm2">${x.isMe?face(myId(),x.sect,"sm"):emblem(x.sect,"sm")}<div><b>${esc(x.name)}${x.isMe?" (나)":""}</b><span>${ROLE_N[x.role]} · 체력 ${x.max} · 공격 ${x.atk}</span>
+      ${x.isMe?"":`<select class="npcsel" data-nrole="${x.role}" data-nslot="${x.slot}" aria-label="${ROLE_N[x.role]} NPC 문파">${ROLE_OPTS(x.role).filter(k=>k===x.sect||!party.some(y=>!y.isMe&&y.sect===k)).map(k=>{const st=favorStage(favorOf(h,k));return `<option value="${k}" ${k===x.sect?"selected":""}>${SECTS[k].n} · ${st[1]}${st[2]?` +${Math.round(st[2]*100)}%`:""}</option>`}).join("")}</select>`}</div></div>`).join("")}</div>
+    <p class="note">NPC 문파는 고를 수 있다. 그 문파와 우호도가 높을수록 NPC의 체력과 공격이 오른다. 고른 문파는 무리와 함께 들어갈 때나 관문을 열 때도 그대로 쓴다.</p>
     <p class="note">소굴에는 갈림길 네 번과 보스방이 있다. 방에서 한 선택이 보스를 약하게도, 강하게도 만든다. 체력은 방에서 방으로 이어지고, 갈림길에서 약초를 쓰거나 돌아 나올 수 있다.</p>
     ${roles.length>1?`<div class="chips" style="margin:10px 0">${roles.map(r=>`<label class="chip"><input type="radio" name="rrole" value="${r}" id="rr-${r}" ${role===r?"checked":""}><span>${ROLE_N[r]}로 서기</span></label>`).join("")}</div>`:""}
     ${(()=>{const ms=realMates();if(!ms.length)return "";const op=partyOpenRun();
@@ -1369,7 +1378,7 @@ function buildGateParty(room){
   players.forEach(p=>{if(p.id!==room.owner&&relMutual(p.id,room.owner)==="사형제"){p.atk=Math.round(p.atk*1.15);p.def=Math.round(p.def*1.15);p.sahyung=true}});
   const need=["tank","dps","dps","heal"];players.forEach(p=>{const i=need.indexOf(p.role);if(i>=0)need.splice(i,1);else need.pop()});
   const top=players.reduce((a,p)=>Math.max(a,p.realm),0),tier=npcTier(top),mul=[.8,.9,1,1.1][tier],ref=players.reduce((a,p)=>p.atk>a.atk?p:a,players[0]),used={};
-  const npcs=need.slice(0,4-players.length).map(r=>{const opts=NPC_SECT[r],k=used[r]?opts[(opts.indexOf(used[r])+1)%opts.length]:opts[0];used[r]=k;
+  const nd=need.slice(0,4-players.length),ks=npcSectsFor(heroById(room.owner),nd);const npcs=nd.map((r,ni)=>{const k=ks[ni];
     const fm=mul*(1+favorStage(favorOf(heroById(room.owner),k))[2]);
     return {id:"npc-"+k+r,name:NPCS[k][tier],sect:k,role:r,hp:Math.round(ref.max*fm),max:Math.round(ref.max*fm),atk:Math.round(ref.atk*fm),def:Math.round(ref.def*fm),eva:5,crit:5,qi:100,qmax:100,cd:0,player:false}});
   return [...players,...npcs].sort((a,b)=>["tank","dps","heal"].indexOf(a.role)-["tank","dps","heal"].indexOf(b.role));
@@ -2530,7 +2539,7 @@ function coParty(run){
     return {id,name:h.name,sect:h.sect,role,hp:d.hp,max:d.hp,atk:d.atk,def:d.def,eva:d.eva,crit:d.crit,isMe:id===myId(),player:true,realm:h.realm}}).filter(Boolean);
   const need=["tank","dps","dps","heal"];ps.forEach(p=>{const i=need.indexOf(p.role);if(i>=0)need.splice(i,1);else need.pop()});
   const top=ps.reduce((a,p)=>Math.max(a,p.realm),0),tier=npcTier(top),mul=[.8,.9,1,1.1][tier],ref=ps.reduce((a,p)=>p.atk>a.atk?p:a,ps[0]),lead=heroById(run.members[0]),used={};
-  const npcs=ref?need.slice(0,4-ps.length).map(r=>{const opts=NPC_SECT[r],k=used[r]?opts[(opts.indexOf(used[r])+1)%opts.length]:opts[0];used[r]=k;const fm=mul*(1+favorStage(favorOf(lead,k))[2]);
+  const nd=need.slice(0,4-ps.length),ks=npcSectsFor(lead,nd);const npcs=ref?nd.map((r,ni)=>{const k=ks[ni];const fm=mul*(1+favorStage(favorOf(lead,k))[2]);
     return {id:k+r,name:NPCS[k][tier],role:r,sect:k,hp:Math.round(ref.max*fm),max:Math.round(ref.max*fm),atk:Math.round(ref.atk*fm),def:Math.round(ref.def*fm),eva:5,crit:5}}):[];
   const all=[...ps,...npcs].sort((a,b)=>["tank","dps","heal"].indexOf(a.role)-["tank","dps","heal"].indexOf(b.role));
   all.forEach(x=>{if(run.hp[x.id]!==undefined)x.hp=Math.min(x.max,run.hp[x.id])});return all;
@@ -3664,6 +3673,7 @@ function bind(){
   document.querySelectorAll("[data-mode]").forEach(b=>b.addEventListener("click",()=>setMode(b.dataset.mode)));
   on("#herbBtn",useHerb); on("#retBtn",()=>{retreatConfirm=true;render()}); on("#retNo",()=>{retreatConfirm=false;render()}); on("#retYes",retreat); on("#leaveBtn",leaveLair);
   on("#toBossBtn",()=>{dest=bossFor(periodNow()).region;tab="world";try{localStorage.setItem("murim-tab",tab)}catch(e){};render()});
+  document.querySelectorAll(".npcsel").forEach(el=>el.addEventListener("change",()=>setNpcPick(el.dataset.nrole,+el.dataset.nslot,el.value)));
   document.querySelectorAll('input[name="rrole"]').forEach(i=>i.addEventListener("change",()=>{raidRole=i.value;render()}));
   bindMail(); bindAlarm(); bindDuel(); bindNotice(); bindEcon(); bindInv();
   on("#respecBtn",respecStats); on("#respecNo",()=>{const h=structuredClone(me);h.respec=0;save(h)});
