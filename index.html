@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261030125305">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261031000152">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -3972,15 +3972,51 @@ window.FIREBASE_CONFIG = {
         <p class="note">코드 하나로 한 사람만 가입할 수 있다. 만든 코드를 친구에게 직접 전해 주자.</p>
         <div class="mapbox"><table><tr><th>코드</th><th>상태</th><th>메모</th></tr>${invRows||"<tr><td colspan=3>아직 없음</td></tr>"}</table></div></section>
       <section><div class="label">강호의 사람들</div><div class="mapbox"><table><tr><th>아이디</th><th>캐릭터</th><th>계정 번호</th></tr>${userRows}</table></div></section>
-      <section><div class="label">캐릭터 옮기기</div><p class="note">비밀번호를 잊은 사람은 새 초대코드로 새 아이디를 만들게 한 뒤, 옛 계정의 캐릭터를 새 계정으로 옮겨 준다.</p>
-        <div class="row"><select id="adFrom">${users.docs.map(d=>`<option value="${d.id}">${d.data().id} · ${hname[d.id]||"캐릭터 없음"}</option>`).join("")}</select> → <select id="adTo">${users.docs.map(d=>`<option value="${d.id}">${d.data().id}</option>`).join("")}</select>
-        <button class="btn" type="button" id="adMove">옮기기</button></div><p class="ga-err" id="adMsg"></p></section>`;
+      <section><div class="label">비밀번호를 잊은 사람 · 캐릭터 옮기기</div>
+        <ol class="note" style="padding-left:18px;margin:0 0 10px">
+          <li>Firebase 콘솔 → Authentication → 사용자에서 <code>아이디@murimhaeng.game</code> 계정을 찾아 <b>계정 삭제</b>. (같은 아이디를 다시 쓰려면 꼭 지워야 한다)</li>
+          <li>여기서 새 초대코드를 만들어 그 사람에게 준다.</li>
+          <li>그 사람이 <b>같은 아이디</b>와 새 비밀번호, 새 초대코드로 다시 가입한다. (캐릭터 만들기 화면이 나오면 만들지 말고 기다리게 한다)</li>
+          <li>아래에서 옛 계정 → 새 계정을 골라 옮긴다. 캐릭터, 일지, 다른 사람들과의 인연·사제·무리·우편이 모두 새 계정으로 이어지고, 옛 계정 기록은 지워진다.</li>
+        </ol>
+        <div class="row"><select id="adFrom">${users.docs.filter(d=>hname[d.id]).map(d=>`<option value="${d.id}">옛: ${d.data().id} · ${hname[d.id]}</option>`).join("")}</select> → <select id="adTo">${users.docs.filter(d=>!hname[d.id]).sort((a,b)=>(b.data().created||0)-(a.data().created||0)).map(d=>`<option value="${d.id}">새: ${d.data().id} · 캐릭터 없음${d.data().created?` · ${new Date(d.data().created).toLocaleDateString("ko-KR")} 가입`:""}</option>`).join("")||`<option value="">캐릭터 없는 새 계정이 없다</option>`}</select>
+        <button class="btn" type="button" id="adMove">옮기기</button></div><p class="ga-err" id="adMsg"></p>
+        <p class="note">프로필 사진과 1:1 대화 기록은 옮겨지지 않는다. 사진은 새로 올리게 하자.</p></section>
+      <section><div class="label">캐릭터 지우기</div><p class="note">고른 사람의 캐릭터·일지·사진·가입 기록을 지우고, 다른 사람 캐릭터에 남은 인연·사제·무리 기록에서도 뺀다. 되돌릴 수 없다. 로그인 계정 자체는 Firebase 콘솔 → Authentication에서 따로 지운다.</p>
+        <div class="row"><select id="adDel">${users.docs.filter(d=>!d.data().admin).map(d=>`<option value="${d.id}">${d.data().id} · ${hname[d.id]||"캐릭터 없음"}</option>`).join("")}</select>
+        <button class="btn" type="button" id="adDelBtn">지우기</button></div><p class="ga-err" id="adDelMsg"></p></section>`;
     $s("#adClose").onclick=()=>admin.hidden=true;
     $s("#adMake").onclick=async()=>{const code=`MURIM-${rnd(4)}`;await fs.doc("invites/"+code).set({used:false,usedBy:null,created:Date.now(),note:$s("#adNote").value.trim().slice(0,40)});openAdmin()};
-    $s("#adMove").onclick=async()=>{const f=$s("#adFrom").value,t=$s("#adTo").value;if(f===t)return $s("#adMsg").textContent="같은 계정이에요.";
-      const s=await fs.doc("heroes/"+f).get();if(!s.exists)return $s("#adMsg").textContent="옮길 캐릭터가 없어요.";
-      await fs.doc("heroes/"+t).set(s.data());await fs.doc("heroes/"+f).delete();
-      const j=await fs.doc("journals/"+f).get();if(j.exists){await fs.doc("journals/"+t).set(j.data());await fs.doc("journals/"+f).delete()}$s("#adMsg").textContent="옮겼어요.";openAdmin()};
+    let delAsk=null;
+    $s("#adDelBtn").onclick=async()=>{const u=$s("#adDel").value,msg=x=>$s("#adDelMsg").textContent=x;if(!u)return;
+      const nm=$s("#adDel").selectedOptions[0]?.textContent||u;
+      if(delAsk!==u){delAsk=u;$s("#adDelBtn").textContent="정말 지운다";return msg(`「${nm}」을 정말 지울까요? 한 번 더 누르면 지워져요.`)}
+      $s("#adDelBtn").disabled=true;msg("지우는 중…");
+      /* 다른 사람 기록에서 이 계정 번호를 뺀다: 열쇠는 지우고, 값은 비우고, 목록에서는 뺀다 */
+      const scrub=o=>Array.isArray(o)?o.filter(x=>x!==u).map(scrub):o&&typeof o==="object"?Object.fromEntries(Object.entries(o).filter(([k])=>k!==u).map(([k,v])=>[k,v===u?null:scrub(v)])):o;
+      try{let n=0;const all=await fs.collection("heroes").get();
+        for(const d of all.docs){if(d.id===u)continue;if(JSON.stringify(d.data()).includes(u)){await fs.doc("heroes/"+d.id).set(scrub(d.data()));n++}}
+        for(const c of ["heroes","journals","avatars","users"]){try{await fs.doc(c+"/"+u).delete()}catch(e){}}
+        msg(`지웠어요. 다른 사람 캐릭터 ${n}명의 기록에서도 뺐어요.`);setTimeout(openAdmin,1200)}
+      catch(e){msg("지우다가 막혔어요: "+(e.message||e));$s("#adDelBtn").disabled=false}};
+    $s("#adMove").onclick=async()=>{const f=$s("#adFrom").value,t=$s("#adTo").value,msg=x=>$s("#adMsg").textContent=x;
+      if(!f||!t)return msg("옛 계정과 새 계정을 골라 주세요.");if(f===t)return msg("같은 계정이에요.");
+      const tt=await fs.doc("heroes/"+t).get();if(tt.exists)return msg("새 계정에 이미 캐릭터가 있어요. 덮어쓰지 않았어요.");
+      const s=await fs.doc("heroes/"+f).get();if(!s.exists)return msg("옮길 캐릭터가 없어요.");
+      $s("#adMove").disabled=true;msg("옮기는 중…");
+      /* 계정 번호를 통째로 바꿔 쓴다: 다른 사람 캐릭터에 남은 인연·사제·무리·호출 기록까지 새 번호로 */
+      const swap=o=>JSON.parse(JSON.stringify(o).split(f).join(t));
+      try{
+        await fs.doc("heroes/"+t).set(swap(s.data()));
+        const j=await fs.doc("journals/"+f).get();if(j.exists){await fs.doc("journals/"+t).set(swap(j.data()));await fs.doc("journals/"+f).delete()}
+        let n=0;const all=await fs.collection("heroes").get();
+        for(const d of all.docs){if(d.id===t||d.id===f)continue;const raw=JSON.stringify(d.data());if(raw.includes(f)){await fs.doc("heroes/"+d.id).set(swap(d.data()));n++}}
+        const mails=await fs.collection("mail").get();for(const d of mails.docs){if(JSON.stringify(d.data()).includes(f))await fs.doc("mail/"+d.id).set(swap(d.data()))}
+        await fs.doc("heroes/"+f).delete();
+        try{await fs.doc("users/"+f).delete()}catch(e){}
+        try{await fs.doc("avatars/"+f).delete()}catch(e){}
+        msg(`옮겼어요. 다른 사람 캐릭터 ${n}명의 인연 기록도 새 계정으로 이었어요.`);setTimeout(openAdmin,1200);
+      }catch(e){msg("옮기다가 막혔어요: "+(e.message||e));$s("#adMove").disabled=false}};
   }
 })();
 
