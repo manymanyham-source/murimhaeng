@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261029215435">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261030125305">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -526,9 +526,18 @@ const HORSES=["적토","오추","청총","백설","흑풍","황표","절영","�
 /* 이미 가 본 곳으로 가는 길은 익숙해서 15% 빠르다 (말과 따로 겹친다). to 를 주면 적용 */
 const FAMILIAR_CUT=.15;
 const knows=(h,to)=>!!to&&((h?.visited||[]).includes(to));
-const hrsFor=(h,x,to,rider)=>{let m=1;if((rider||h)?.horse)m*=1-HORSE_CUT;if(knows(h,to))m*=1-FAMILIAR_CUT;return Math.round(x*m*60)/60};
-function speedTags(h,to,rider){return [(rider||h)?.horse?"말 -30%":"",knows(h,to)?"익숙한 길 -15%":"",h?.buff?.travel?"용정차 -20%":""].filter(Boolean)}
-const teaHrs=(h,x)=>h?.buff?.travel?Math.round(x*.8*60)/60:x;
+/* 말 등급: 마방에서 은자로 올린다 */
+const HORSE_T=[{n:"말",cut:.3},{n:"준마",cut:.4,cost:800},{n:"천리마",cut:.5,cost:2000}];
+const HORSE_BUY=600;
+const horseT=hr=>hr?HORSE_T[Math.min(2,hr.tier||0)]:null;
+/* 경공: 경지가 오를수록 발이 빨라진다 */
+const KG_CUT=[0,.03,.06,.1,.13,.16,.2];
+const kgCut=h=>KG_CUT[Math.min(6,h?.realm||0)]||0;
+/* 표국 마차: 은자를 내면 다음 이동 한 번 -40% */
+const CART_COST=80,CART_CUT=.4;
+const hrsFor=(h,x,to,rider)=>{let m=1;const ht=horseT((rider||h)?.horse);if(ht)m*=1-ht.cut;m*=1-kgCut(rider||h);if(knows(h,to))m*=1-FAMILIAR_CUT;return Math.round(x*m*60)/60};
+function speedTags(h,to,rider){const ht=horseT((rider||h)?.horse),kg=kgCut(rider||h);return [ht?`${ht.n} -${Math.round(ht.cut*100)}%`:"",kg?`경공 -${Math.round(kg*100)}%`:"",knows(h,to)?"익숙한 길 -15%":"",h?.buff?.travel?"용정차 -20%":"",h?.buff?.cart?`표국 마차 -${CART_CUT*100}%`:""].filter(Boolean)}
+const teaHrs=(h,x)=>{let m=1;if(h?.buff?.travel)m*=.8;if(h?.buff?.cart)m*=1-CART_CUT;return Math.round(x*m*60)/60};
 const hrsTxt=x=>{const H=Math.floor(x),M=Math.round((x-H)*60);return M?(H?`${H}시간 ${M}분`:`${M}분`):`${H}시간`};
 const roadHours=(a,b)=>{const r=ROADS.find(r=>(r[0]===a&&r[1]===b)||(r[0]===b&&r[1]===a));return r?r[2]:0};
 function route(a,b){ // 가장 빠른 길 (다익스트라)
@@ -2203,6 +2212,22 @@ function jobBox(h){if(h.travel)return "";const j=h.job,today=h.jobDay===dayKey()
     <div class="row" style="margin-top:8px"><span class="seg">${JOB_H.map(x=>`<button type="button" class="${jobPick.h===x?"on":""}" data-jobh="${x}">${x}시간</button>`).join("")}</span>
     <button class="btn sealb" type="button" id="jobGo" ${busy?"disabled":""}>${busy?`${busyText[busy]} 못 한다`:`${JOBS[jobPick.k].n} ${jobPick.h}시간 · ${silverTxt(jobPay(h,jobPick.k,jobPick.h))}`}</button></div>
     <p class="note">일하는 동안은 수련·임무·이동을 할 수 없다. 중간에 그만두면 일한 만큼의 절반만 받는다.</p></div>`}
+/* 마방과 표국: 말을 사고 올리거나, 마차를 빌린다 */
+function stableBuy(kind){const h=structuredClone(me);if(h.travel)return;
+  if(kind==="horse"){if(h.horse)return;if((h.silver||0)<HORSE_BUY){toast(`은자가 ${HORSE_BUY-(h.silver||0)}냥 모자랍니다.`);return}h.silver-=HORSE_BUY;const n=pickOne(HORSES);h.horse={n,t:Date.now(),tier:0};addLog(h,`마방에서 말 「${n}」을 샀다. (${silverTxt(HORSE_BUY)})`);save(h);toast(`말 「${n}」 · 이동 시간 -30%`);return}
+  if(kind==="up"){const t=(h.horse?.tier||0)+1,T=HORSE_T[t];if(!h.horse||!T)return;if((h.silver||0)<T.cost){toast(`은자가 ${T.cost-(h.silver||0)}냥 모자랍니다.`);return}
+    h.silver-=T.cost;h.horse.tier=t;addLog(h,`「${h.horse.n}」을 ${T.n}로 길러 냈다. 이동 시간 -${Math.round(T.cut*100)}% (${silverTxt(T.cost)})`);save(h);toast(`「${h.horse.n}」이 ${T.n}가 되었다!`);return}
+  if(kind==="cart"){if(h.buff?.cart)return;if((h.silver||0)<CART_COST){toast(`은자가 ${CART_COST-(h.silver||0)}냥 모자랍니다.`);return}h.silver-=CART_COST;h.buff=h.buff||{};h.buff.cart=1;addLog(h,`표국 마차를 빌렸다. 다음 이동 -${CART_CUT*100}% (${silverTxt(CART_COST)})`);save(h);toast(`표국 마차 · 다음 이동 -${CART_CUT*100}%`)}}
+function stableBox(h){if(h.travel)return "";const ht=horseT(h.horse),nx=h.horse?HORSE_T[(h.horse.tier||0)+1]:null,kg=kgCut(h);
+  const head=shopHead("stable",`${REGIONS[h.loc].n} 마방·표국 · ${ht?`${esc(h.horse.n)} (${ht.n})`:"말 없음"}${h.buff?.cart?" · 마차 예약됨":""}`);
+  if(!shopOpen.stable)return `<div class="shop">${head}</div>`;
+  const cell=(k,b,sub,price,dis)=>`<button class="shopi" type="button" data-stable="${k}" ${dis?"disabled":""}><b>${b}</b><span>${sub}</span><em>${price}</em></button>`;
+  return `<div class="shop">${head}<div class="shopl">
+    ${!h.horse?cell("horse","말 사기","이동 시간 -30% · 탐문·상단에서도 얻는다",silverTxt(HORSE_BUY),(h.silver||0)<HORSE_BUY)
+      :nx?cell("up",`${nx.n}로 기르기`,`${esc(h.horse.n)} · 이동 시간 -${Math.round(ht.cut*100)}% → -${Math.round(nx.cut*100)}%`,silverTxt(nx.cost),(h.silver||0)<nx.cost)
+      :`<div class="shopi" style="cursor:default"><b>천리마</b><span>${esc(h.horse.n)} · 하루에 천 리를 달린다 · 이동 시간 -50%</span></div>`}
+    ${cell("cart","표국 마차",h.buff?.cart?"이미 빌려 두었다 · 다음 이동에 쓴다":`다음 이동 한 번 -${CART_CUT*100}% · 다른 효과와 겹친다`,silverTxt(CART_COST),!!h.buff?.cart||(h.silver||0)<CART_COST)}</div>
+    <p class="note">경공: ${REALMS[h.realm].n}의 발놀림 ${kg?`· 이동 시간 -${Math.round(kg*100)}%`:"· 이류부터 빨라진다"} (경지가 오를수록 빨라진다, 현경 -20%)</p></div>`}
 /* 대장간: 일류 전까지 쓰는 기본 무기·의복(무명·청강)을 판다. 청강은 이류부터 */
 const SMITH={0:{weapon:40,armor:30},1:{weapon:120,armor:90}};
 let smithSpec=null;
@@ -2257,6 +2282,7 @@ function maybeGiyeon(h,chance){if(Math.random()>=chance)return "";const g=pickOn
   h.journal=[{title:`기연 · ${g.n}`,region:h.loc,start:Date.now(),tier:0,label:"기연",lines:[{t:Date.now(),k:"sec",x:"기연(奇緣)"},{t:Date.now(),k:"end",x:txt}]},...(h.journal||[])].slice(0,10);
   addLog(h,`기연! 「${g.n}」 ${txt}`);setTimeout(()=>toast(`기연! 「${g.n}」 — 행적을 확인해 보세요.`),400);return ` · 기연 「${g.n}」`}
 function bindEcon(){
+  document.querySelectorAll("[data-stable]").forEach(b=>b.addEventListener("click",()=>stableBuy(b.dataset.stable)));
   document.querySelectorAll("[data-inn]").forEach(b=>b.addEventListener("click",()=>innBuy(b.dataset.inn)));
   document.querySelectorAll("[data-pf]").forEach(b=>b.addEventListener("click",()=>openProfile(b.dataset.pf)));
   document.querySelectorAll("[data-bio]").forEach(i=>i.addEventListener("input",()=>{bioDraft=bioDraft||{};bioDraft[i.dataset.bio]=i.value}));
@@ -3098,7 +3124,7 @@ function commitAlloc(){
 /* ───────── 행동: 이동 ───────── */
 function startTravel(to,withId){
   const h=structuredClone(me),W=withId&&following(withId)?heroById(withId):null,ride=!h.horse&&W?.horse?W:null;
-  let hrsNeed=hrsFor(h,roadHours(h.loc,to),to,ride||h);if(h.buff?.travel){hrsNeed=Math.round(hrsNeed*.8*60)/60;delete h.buff.travel}
+  let hrsNeed=hrsFor(h,roadHours(h.loc,to),to,ride||h);if(h.buff?.travel){hrsNeed=Math.round(hrsNeed*.8*60)/60;delete h.buff.travel}if(h.buff?.cart){hrsNeed=Math.round(hrsNeed*(1-CART_CUT)*60)/60;delete h.buff.cart}
   if(activity(h)){toast(`${busyText[activity(h)]} 떠날 수 없습니다.`);return}
   if(!hrsNeed) return;
   const R=REGIONS[to]; if(R.minRealm&&h.realm<R.minRealm){toast(`${R.n}는 ${REALMS[R.minRealm].n} 이상만 들어갈 수 있습니다.`);return}
@@ -3497,9 +3523,9 @@ function worldTab(){
     const direct=teaHrs(h,hrsFor(h,roadHours(h.loc,dest),dest)),tg=speedTags(h,dest),lock=R.minRealm&&h.realm<R.minRealm;
     if(lock) regionBox+=`<p class="note">${REALMS[R.minRealm].n} 이상만 들어갈 수 있다.</p>`;
     else if(direct) regionBox+=`<div class="row" style="margin-top:6px"><button class="btn solid" id="goBtn" type="button" ${a?"disabled":""}>${R.n}로 떠나기 · ${hrsTxt(direct)}${tg.length?` (${tg.join(", ")})`:""}</button>${realMates().length?`<button class="btn ghost" type="button" data-callgo="${dest}">무리에게 같이 가자고 하기</button>`:""}${a?`<span class="note" style="margin:0">${busyText[a]} 떠날 수 없다.</span>`:""}</div>`;
-    else{const rt=route(h.loc,dest);regionBox+=`<p class="note">바로 가는 길이 없다. ${rt.path.map(p=>REGIONS[p].n).join(" → ")} (모두 ${hrsTxt(hrsFor(h,rt.hours))}${h.horse?", 말 적용":""}) 순으로 한 곳씩 이동해야 한다.</p>`}
+    else{const rt=route(h.loc,dest);regionBox+=`<p class="note">바로 가는 길이 없다. ${rt.path.map(p=>REGIONS[p].n).join(" → ")} (모두 ${hrsTxt(teaHrs(h,hrsFor(h,rt.hours)))}${speedTags(h,null).length?`, ${speedTags(h,null).join(" · ")}`:""}) 순으로 한 곳씩 이동해야 한다.</p>`}
   }
-  regionBox+=(focus===h.loc?regionSectBox(focus)+jobBox(h)+innBox(h)+smithBox(h):"")+`</div>`;
+  regionBox+=(focus===h.loc?regionSectBox(focus)+jobBox(h)+stableBox(h)+innBox(h)+smithBox(h):"")+`</div>`;
   return `${invBox(h)}<section><div class="label">지도</div>${mapSvg()}
     <p class="note">지역을 누르면 정보가 보이고, 이어진 곳이면 바로 떠날 수 있다.</p>${regionBox}${caravanBox(h)}</section>
     ${travelBox?`<section style="margin-top:20px">${travelBox}</section>`:""}
@@ -3572,8 +3598,8 @@ function selfTab(){
       <ul class="skills">${s.sk.map(k=>`<li><b>${k[0]}</b><span class="tag">${k[1]}</span><span>${k[2]}</span></li>`).join("")}${(ADV[h.sect]||[]).map(k=>`<li class="${k.r>h.realm?"lock":""}"><b>${k.n}</b><span class="tag">${k.p?"패시브":"액티브"}</span><span>${k.d}${k.cd?` · 재사용 ${k.cd}합`:k.once?" · 싸움마다 한 번":""}${k.r>h.realm?` · <em>${REALMS[k.r].n}에 깨친다</em>`:""}</span></li>`).join("")}</ul>${bigupBox(h)}
     </div></section>
     <section>${foldHead("bag","행낭")}<div class="foldb" ${foldOpen("bag")?"":"hidden"}>
-      <div class="bag"><div><b>${(h.silver||0).toLocaleString()}</b>은자 <span>· 냥 · 객잔과 떠돌이 상단에서 쓴다</span></div>${h.horse?`<div><b>🐎</b>${esc(h.horse.n)} <span>· 말 · 이동 시간 -30%</span></div>`:""}${Object.entries(ITEMS).map(([k,[n,sub]])=>`<div><b>${h.items[k]||0}</b>${n} <span>· ${sub}</span>${FOOD[k]&&h.items[k]>0?` <button class="btn sm ghost" type="button" data-eat="${k}" ${h.buff?.[FOOD[k].k]?"disabled":""}>${FOOD[k].v||"먹기"}</button>`:""}</div>`).join("")}</div>
-      ${h.buff&&Object.keys(h.buff).length?`<p class="note">먹고 마신 것: ${Object.entries(h.buff).map(([k,it])=>`<b>${ITEMS[it]?.[0]||it}</b> (${k==="scene"?"다음 사건 조사 +2":k==="atk"?"공격 +15%":k==="hp"?"체력 +20%":k==="travel"?"다음 이동 -20%":"다음 수련 경험치 +15%"})`).join(" · ")}</p>`:""}
+      <div class="bag"><div><b>${(h.silver||0).toLocaleString()}</b>은자 <span>· 냥 · 객잔과 떠돌이 상단에서 쓴다</span></div>${h.horse?`<div><b>🐎</b>${esc(h.horse.n)} <span>· ${horseT(h.horse).n} · 이동 시간 -${Math.round(horseT(h.horse).cut*100)}%</span></div>`:""}${Object.entries(ITEMS).map(([k,[n,sub]])=>`<div><b>${h.items[k]||0}</b>${n} <span>· ${sub}</span>${FOOD[k]&&h.items[k]>0?` <button class="btn sm ghost" type="button" data-eat="${k}" ${h.buff?.[FOOD[k].k]?"disabled":""}>${FOOD[k].v||"먹기"}</button>`:""}</div>`).join("")}</div>
+      ${h.buff&&Object.keys(h.buff).length?`<p class="note">걸려 있는 효과: ${Object.entries(h.buff).map(([k,it])=>k==="cart"?`<b>표국 마차</b> (다음 이동 -${CART_CUT*100}%)`:`<b>${ITEMS[it]?.[0]||it}</b> (${k==="scene"?"다음 사건 조사 +2":k==="atk"?"공격 +15%":k==="hp"?"체력 +20%":k==="travel"?"다음 이동 -20%":"다음 수련 경험치 +15%"})`).join(" · ")}</p>`:""}
       <p class="note">강화석은 장비 탭에서 강화에 쓴다. 약초는 소굴에서 회복에 쓴다. 약초·술·향낭·장신구·옥비녀는 인연 탭에서 동료에게, 강호 탭에서 문파에 선물로 쓴다. 음식과 차는 먹기·마시기를 누르면 효과가 걸린다. 착용하는 장신구는 장비 탭에 있다.</p></div></section>${bioSection()}${titleSection()}${sectTabSection()}`;
 }
 
