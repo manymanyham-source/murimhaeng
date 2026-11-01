@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261031000152">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261102004607">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -127,6 +127,18 @@ section{margin-top:30px}
 .gopt{display:block;font-size:12px;margin-top:2px}.rr{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0;border-bottom:1px dashed var(--line)}.rr .gopt{margin:0}
 .foldh .label{margin:0;flex:1}.foldh i{font-style:normal;font-size:12px;color:var(--ink-3);white-space:nowrap}.foldb[hidden]{display:none}
 .npcsel{margin-top:4px;font:inherit;font-size:12px;padding:3px 6px;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:2px;max-width:100%}
+.qlist{display:grid;gap:8px;margin-top:8px}.qrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);background:var(--paper)}
+.qrow>div{flex:1;min-width:0}.qrow b{display:block}.qrow span{font-size:12px;color:var(--ink-2)}.qrow em{font-style:normal;font-size:12px;color:var(--ink-3)}.qrow.done{opacity:.55}.qrow.week{margin-top:8px;border-color:var(--ink)}
+.qbar{height:4px;background:var(--line);margin-top:6px}.qbar i{display:block;height:100%;background:var(--seal)}
+.hap{border:1px solid var(--seal);background:var(--seal-soft);padding:12px 14px;margin-bottom:10px}.hap p{margin:6px 0 10px}.hapmk,.mklegend i.mk-hap{font-style:normal;display:inline-grid;place-items:center;width:18px;height:18px;background:#B57A12;color:#fff;border-radius:2px;font-size:11px}
+.mk.mk-hap rect{fill:#B57A12;stroke:#B57A12}.mk.mk-hap text{fill:#fff}.hapnext{margin:0 0 4px}
+.fishpond{margin:8px 0;padding:18px 12px;text-align:center;border:1px dashed var(--line);background:linear-gradient(180deg,transparent,var(--seal-soft));font-size:14px}
+.fishpond.wait span{opacity:.7}.fishpond.bite{border-color:var(--seal);background:var(--seal-soft);font-weight:700;animation:bob .35s ease-in-out infinite alternate}
+@keyframes bob{to{transform:translateY(2px)}}@media (prefers-reduced-motion:reduce){.fishpond.bite{animation:none}}
+.manor{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0}.mtile{border:1px dashed var(--line);padding:8px;text-align:center;font-size:12px;color:var(--ink-3)}.mtile b{display:block;font-size:13px}
+.mtile.on{border-style:solid;border-color:var(--ink);color:var(--ink);background:var(--paper)}.mtile.on span{color:var(--seal);letter-spacing:2px}
+.flist{display:grid;gap:8px;margin-top:8px}.frow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line)}.frow>div{flex:1;min-width:0}
+.frow span{display:block;font-size:12px;color:var(--ink-2)}.frow .tag{display:inline;font-size:11px;border:1px solid var(--line);padding:0 5px;color:var(--ink-3)}.fcost i{font-style:normal;margin-right:6px}.fcost i.lack{color:var(--seal)}
 .shopi.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
 .shopi b{font-size:14px}.shopi span{font-size:11px;color:var(--ink-3);line-height:1.4}.shopi em{font-style:normal;font-size:13px;color:var(--seal);font-variant-numeric:tabular-nums}
 .shopi em s{color:var(--ink-3);font-size:11px}.disc{color:var(--seal)}
@@ -527,14 +539,14 @@ const HORSES=["적토","오추","청총","백설","흑풍","황표","절영","�
 const FAMILIAR_CUT=.15;
 const knows=(h,to)=>!!to&&((h?.visited||[]).includes(to));
 /* 말 등급: 마방에서 은자로 올린다 */
-const HORSE_T=[{n:"말",cut:.3},{n:"준마",cut:.4,cost:800},{n:"천리마",cut:.5,cost:2000}];
-const HORSE_BUY=600;
+const HORSE_T0=[{n:"말",cut:.3},{n:"준마",cut:.4,cost:800},{n:"천리마",cut:.5,cost:2000}],HORSE_T=HORSE_T0;
+const HORSE_BUY0=600;
 const horseT=hr=>hr?HORSE_T[Math.min(2,hr.tier||0)]:null;
 /* 경공: 경지가 오를수록 발이 빨라진다 */
 const KG_CUT=[0,.03,.06,.1,.13,.16,.2];
 const kgCut=h=>KG_CUT[Math.min(6,h?.realm||0)]||0;
 /* 표국 마차: 은자를 내면 다음 이동 한 번 -40% */
-const CART_COST=80,CART_CUT=.4;
+const CART_COST0=80,CART_CUT=.4;
 const hrsFor=(h,x,to,rider)=>{let m=1;const ht=horseT((rider||h)?.horse);if(ht)m*=1-ht.cut;m*=1-kgCut(rider||h);if(knows(h,to))m*=1-FAMILIAR_CUT;return Math.round(x*m*60)/60};
 function speedTags(h,to,rider){const ht=horseT((rider||h)?.horse),kg=kgCut(rider||h);return [ht?`${ht.n} -${Math.round(ht.cut*100)}%`:"",kg?`경공 -${Math.round(kg*100)}%`:"",knows(h,to)?"익숙한 길 -15%":"",h?.buff?.travel?"용정차 -20%":"",h?.buff?.cart?`표국 마차 -${CART_CUT*100}%`:""].filter(Boolean)}
 const teaHrs=(h,x)=>{let m=1;if(h?.buff?.travel)m*=.8;if(h?.buff?.cart)m*=1-CART_CUT;return Math.round(x*m*60)/60};
@@ -772,7 +784,7 @@ function derived(h){
   /* 공격: 주력 능력치를 합쳐서 (몇 개로 나눠 찍든 같게). 체력: 레벨 기본치 + 외공 */
   const g=gearSum(h), s=effStats(h), main=SECTS[h.sect].main, mainVal=main.reduce((a,k)=>a+s[k],0)-10*(main.length-1);
   const bA=h.buff?.atk?1.15:1,bH=h.buff?.hp?1.2:1;
-  const go=k=>gearOpt(h,k);
+  const M=manorBonus(h),go=k=>gearOpt(h,k)+(k==="hp"?M.hpP:k==="atk"?M.atkP:k==="def"?M.defP:k==="qi"?M.qi:0);
   return {hp:Math.round((100+(h.level||1)*10+s.wai*8)*bH*(1+go("hp")/100)), qi:50+s.nei*5+go("qi"), atk:Math.round((Math.round(mainVal*2)+g.atk)*bA*(1+go("atk")/100)), def:Math.round((s.wai+g.def)*(1+go("def")/100)),
     eva:Math.min(40,s.shen*.3+go("eva")), crit:5+s.shen*.1+go("crit")};
 }
@@ -786,7 +798,7 @@ const atWall=h=>h.level>=cap(h.realm)&&h.exp>=need(h.level);
 /* 절정부터는 수련만으로 오르는 경험치를 줄인다 (사건·토벌·관문으로 올라가라는 뜻) */
 const TRAIN_EXP=[1,.7,.7,.5,.4,.33,.28];
 const trainRealm=t=>t.rm??Math.min(6,Math.max(0,Math.floor((t.lvl-1)/10)));
-function trainGain(t,f){const m=MULT[t.hours];return {exp:Math.round(expPerHour(t.lvl)*t.hours*m*f*TRAIN_EXP[trainRealm(t)]*(t.tea?1.15:1)),stat:t.hours/2*m*f}}
+function trainGain(t,f){const m=MULT[t.hours];return {exp:Math.round(expPerHour(t.lvl)*t.hours*m*f*TRAIN_EXP[trainRealm(t)]*(t.tea?1.15:1)*(1+(t.mn||0)/100)),stat:t.hours/2*m*f}}
 function applyStat(h,k,g){h.frac[k]=(h.frac[k]||0)+g;const w=Math.floor(h.frac[k]+1e-9);h.stats[k]+=w;h.frac[k]-=w;return w}
 const activity=h=>h?.job?"job":h?.training?"train":h?.travel?"travel":h?.mission?"mission":(h?.lair&&h.lair.phase!=="done")||h?.colair?"lair":null;
 const busyText={job:"일하는 중에는",train:"수련 중에는",travel:"이동 중에는",mission:"임무 중에는",lair:"소굴 안에서는"};
@@ -2176,7 +2188,8 @@ const shopHead=(k,label)=>`<button type="button" class="shoph" data-shop="${k}" 
 const INN={mandu:12,dongpo:40,samgye:35,longjing:20,puer:20,herb:15,wine:25,zhuye:35,hyang:40,trinket:40,nuer:55,binyeo:65};
 /* 내 문파 근거지의 객잔은 15% 싸게 판다 */
 const atHome=h=>!h.travel&&(REGION_SECTS[h.loc]||[]).includes(h.sect);
-const innPrice=(h,k)=>atHome(h)?Math.round(INN[k]*.85):INN[k];
+const mkt=h=>happenHere("market",h?.loc)&&!h?.travel?.7:1;
+const innPrice=(h,k)=>Math.round(INN[k]*(atHome(h)?.85:1)*mkt(h));
 function innBuy(k){const h=structuredClone(me),p=INN[k]&&innPrice(h,k);if(!p||h.travel)return;if((h.silver||0)<p){toast(`은자가 ${p-(h.silver||0)}냥 모자랍니다.`);return}
   h.silver-=p;h.items[k]++;addLog(h,`객잔에서 ${josa(ITEMS[k][0],"을")} 샀다. (${silverTxt(p)})`);save(h);toast(`${ITEMS[k][0]} +1 · ${silverTxt(h.silver)} 남음`)}
 function innBox(h){if(h.travel)return "";
@@ -2198,7 +2211,7 @@ function finishJob(stop){const h=structuredClone(me),j=h.job;if(!j)return;const 
   const f=done?1:Math.min(1,(Date.now()-j.start)/(j.end-j.start))*.5,pay=Math.round(j.pay*f),got=[silverTxt(addSilver(h,pay))];
   if(done&&j.k==="inn"){h.items.mandu=(h.items.mandu||0)+1;got.push("만두 +1")}
   if(done&&j.k==="herb"){h.items.herb=(h.items.herb||0)+1;got.push("약초 +1")}
-  h.job=null;jobStopAsk=false;
+  h.job=null;jobStopAsk=false;if(done)bump(h,"jobH",j.hours);
   addLog(h,done?`${J.n} 일을 마쳤다. ${fill(pickOne(J.lines),{me:h.name})} (${got.join(", ")})`:`${J.n} 일을 중간에 그만두었다. 일한 만큼의 절반만 받았다. (${got.join(", ")})`);
   save(h);toast(done?`일삯을 받았다 · ${got.join(" · ")}`:`절반만 받았다 · ${got[0]}`)}
 function jobBox(h){if(h.travel)return "";const j=h.job,today=h.jobDay===dayKey()&&!j;
@@ -2212,13 +2225,168 @@ function jobBox(h){if(h.travel)return "";const j=h.job,today=h.jobDay===dayKey()
     <div class="row" style="margin-top:8px"><span class="seg">${JOB_H.map(x=>`<button type="button" class="${jobPick.h===x?"on":""}" data-jobh="${x}">${x}시간</button>`).join("")}</span>
     <button class="btn sealb" type="button" id="jobGo" ${busy?"disabled":""}>${busy?`${busyText[busy]} 못 한다`:`${JOBS[jobPick.k].n} ${jobPick.h}시간 · ${silverTxt(jobPay(h,jobPick.k,jobPick.h))}`}</button></div>
     <p class="note">일하는 동안은 수련·임무·이동을 할 수 없다. 중간에 그만두면 일한 만큼의 절반만 받는다.</p></div>`}
+/* ───────── 의뢰판: 날마다 세 건, 주마다 상자 ───────── */
+const QPOOL=[
+  {k:"mis",n:"사건 해결",d:n=>`어느 지역이든 사건을 ${n}건 해결한다`,need:[1,2]},
+  {k:"misHard",n:"험한 사건",d:()=>"어려움 사건을 한 건 해결한다",need:[1,1]},
+  {k:"lair",n:"소굴 토벌",d:n=>`토벌 소굴에 ${n}번 들어간다`,need:[1,2]},
+  {k:"trainH",n:"꾸준한 수련",d:n=>`수련을 끝까지 마쳐 모두 ${n}시간 채운다`,need:[3,8]},
+  {k:"jobH",n:"품팔이",d:n=>`일거리를 끝까지 해서 모두 ${n}시간 채운다`,need:[1,3]},
+  {k:"fish",n:"강태공",d:n=>`물고기를 ${n}마리 낚는다`,need:[2,4]},
+  {k:"trav",n:"유람",d:n=>`다른 지역으로 ${n}번 이동한다`,need:[1,2]},
+  {k:"gift",n:"정 나누기",d:()=>"누군가에게 선물을 한 번 건넨다",need:[1,1]},
+  {k:"enh",n:"담금질",d:n=>`장비 강화를 ${n}번 시도한다`,need:[1,3]},
+  {k:"eat",n:"한 끼",d:()=>"음식이나 차를 한 번 먹는다",need:[1,1]},
+  {k:"craft",n:"장원 손질",d:()=>"장원의 물건을 하나 만들거나 고친다",need:[1,1]}];
+const QWEEK_NEED=10;
+const weekKey=()=>Math.floor((dayKey()+3)/7);
+function rollQuests(h){const seed=(dayKey()*7919+[...String(myId())].reduce((a,c)=>a*31+c.charCodeAt(0)|0,0))>>>0,R=seeded(seed),pool=QPOOL.slice(),out=[];
+  while(out.length<3&&pool.length){const q=pool.splice(Math.floor(R()*pool.length),1)[0];const need=q.need[0]+Math.floor(R()*(q.need[1]-q.need[0]+1));out.push({k:q.k,need,base:cnt(h,q.k),claimed:false})}
+  return {day:dayKey(),list:out}}
+function ensureQuests(h){if(h.quests?.day!==dayKey())h.quests=rollQuests(h);if(h.qweek?.wk!==weekKey())h.qweek={wk:weekKey(),n:0,claimed:false};return h}
+const qProg=(h,q)=>Math.min(q.need,Math.max(0,cnt(h,q.k)-q.base));
+function claimQuest(i){const h=ensureQuests(structuredClone(me)),q=h.quests.list[i];if(!q||q.claimed||qProg(h,q)<q.need)return;
+  q.claimed=true;h.qweek.n++;const got=[silverTxt(addSilver(h,30+h.level))];h.items.stone+=2;got.push("강화석 +2");if(Math.random()<.35){h.items.clue++;got.push("비급 단서 +1")}
+  const x=Math.round(expPerHour(h.level));applyExp(h,x);got.push(`경험치 +${x}`);
+  const Q=QPOOL.find(x=>x.k===q.k);addLog(h,`의뢰 「${Q.n}」를 마쳤다. ${got.join(", ")}`);save(h);toast(`의뢰 완료 · ${got.join(" · ")}`)}
+function claimWeek(){const h=ensureQuests(structuredClone(me));if(h.qweek.claimed||h.qweek.n<QWEEK_NEED)return;h.qweek.claimed=true;
+  const got=[silverTxt(addSilver(h,300)),"강화석 +10","비급 단서 +5"];h.items.stone+=10;h.items.clue+=5;
+  {const it=makeItem(pickOne(["weapon","armor","acc"]),Math.min(6,h.realm),pickOne(SPECS));if(h.realm>=3)setRar(it,Math.random()<.25?2:1);got.push(`장비 「${gainItem(h,it)}」`)}
+  addLog(h,`이번 주 의뢰 ${QWEEK_NEED}건을 모두 마쳐 무림맹의 상자를 받았다. ${got.join(", ")}`);save(h);toast("주간 상자를 열었다!")}
+function questBox(h){h=ensureQuests(structuredClone(h));const head=shopHead("quest",`의뢰판 · 오늘 ${h.quests.list.filter(q=>q.claimed).length}/3 · 이번 주 ${Math.min(h.qweek.n,QWEEK_NEED)}/${QWEEK_NEED}`);
+  if(!shopOpen.quest)return `<section><div class="shop">${head}</div></section>`;
+  const rows=h.quests.list.map((q,i)=>{const Q=QPOOL.find(x=>x.k===q.k),pr=qProg(h,q),ok=pr>=q.need;
+    return `<div class="qrow ${q.claimed?"done":""}"><div><b>${Q.n}</b><span>${Q.d(q.need)}</span><div class="qbar"><i style="width:${pr/q.need*100}%"></i></div></div>
+      ${q.claimed?`<em>받음</em>`:`<button class="btn sm ${ok?"sealb":""}" type="button" data-quest="${i}" ${ok?"":"disabled"}>${ok?"보상 받기":`${pr}/${q.need}`}</button>`}</div>`}).join("");
+  const wk=h.qweek,wok=wk.n>=QWEEK_NEED;
+  return `<section><div class="shop">${head}<div class="qlist">${rows}</div>
+    <div class="qrow week ${wk.claimed?"done":""}"><div><b>무림맹의 주간 상자</b><span>이번 주 의뢰 ${QWEEK_NEED}건 · 은자 300냥, 강화석 10, 비급 단서 5, 장비 하나</span><div class="qbar"><i style="width:${Math.min(1,wk.n/QWEEK_NEED)*100}%"></i></div></div>
+      ${wk.claimed?`<em>받음</em>`:`<button class="btn sm ${wok?"sealb":""}" type="button" id="qWeek" ${wok?"":"disabled"}>${wok?"상자 열기":`${wk.n}/${QWEEK_NEED}`}</button>`}</div>
+    <p class="note">의뢰는 자정마다 세 건씩 새로 붙고, 주간 상자는 월요일에 새로 시작한다. 의뢰가 붙은 뒤에 한 일만 센다.</p></div></section>`}
+
+/* ───────── 강호 돌발 사건: 하루 두 번, 정해진 때 저절로 터진다 (모두에게 똑같이 보인다) ───────── */
+const HAPPEN_T={
+  treasure:{n:"보물지도",ch:"寶",d:r=>`${r}에 옛 고수의 보물지도가 풀렸다. 가장 먼저 그곳에 가서 땅을 판 한 사람이 보물을 차지한다.`},
+  master:{n:"떠돌이 고수",ch:"武",d:r=>`이름 모를 고수가 ${r}의 객잔에 머문다. 그곳에 간 사람은 한 번씩 겨뤄 볼 수 있다.`},
+  fishing:{n:"대풍어",ch:"漁",d:r=>`${r}의 물에 고기가 몰렸다. 그곳에서 낚시하면 두 번 더 던질 수 있고, 귀한 고기가 더 잘 문다.`},
+  market:{n:"장날",ch:"市",d:r=>`${r}에 큰 장이 섰다. 그곳 객잔과 마방이 30% 싸다.`}};
+const HAPPEN_LEN=4*3600e3;
+function happenings(day=dayKey()){const out=[];for(const d of [day-1,day]){const R=seeded(d*104729+17);const regs=Object.keys(REGIONS).filter(k=>!REGIONS[k].minRealm);
+  for(let i=0;i<2;i++){const hr=i===0?9+Math.floor(R()*5):16+Math.floor(R()*6),start=d*86400e3-KST+hr*3600e3+Math.floor(R()*6)*600e3,type=pickOneR(Object.keys(HAPPEN_T),R),region=pickOneR(regs,R);
+    out.push({id:`h${d}-${i}`,type,region,start,end:start+HAPPEN_LEN})}}return out}
+const pickOneR=(a,R)=>a[Math.floor(R()*a.length)];
+const happenNow=()=>{const t=sNow();return happenings().filter(e=>t>=e.start&&t<e.end)};
+const happenHere=(type,region)=>happenNow().find(e=>e.type===type&&e.region===region);
+const happenNext=()=>{const t=sNow();return [...happenings(),...happenings(dayKey()+1)].filter(e=>e.start>t).sort((a,b)=>a.start-b.start)[0]};
+let happenCache={};
+async function happenLoad(id){if(mode!=="db"||happenCache[id]?.loading)return;happenCache[id]={loading:true};try{const s=await db.doc("happen/"+id).get();happenCache[id]={v:s.exists?s.data():null}}catch(e){happenCache[id]={v:null}}render()}
+async function happenDig(id){const e=happenNow().find(x=>x.id===id);if(!e||e.type!=="treasure")return;const h0=me;if(h0.travel||h0.loc!==e.region){toast(`${REGIONS[e.region].n}에 있어야 땅을 팔 수 있다.`);return}
+  let won=false;
+  if(mode==="db"){try{const L=await db.doc("happen/"+id).acquire({holder:uid,ttlMs:6000});if(!L.acquired){toast("누군가 먼저 삽을 들었다. 잠시 뒤 다시.");return}
+      const s=await db.doc("happen/"+id).get();if(s.exists){happenCache[id]={v:s.data()};render();toast(`${josa(s.data().name,"이")} 먼저 찾아냈다!`);return}
+      await db.doc("happen/"+id).set({by:myId(),name:me.name,t:sNow()});happenCache[id]={v:{by:myId(),name:me.name}};won=true}catch(err){toast("땅을 파다 막혔다. 다시 시도해 주세요.");return}}
+  else won=!(me.happen||{})[id];
+  if(!won)return;const h=structuredClone(me);h.happen={...(h.happen||{}),[id]:"treasure"};const got=[silverTxt(addSilver(h,250+h.level*4))];h.items.clue+=3;got.push("비급 단서 +3");
+  {const it=makeItem(pickOne(["weapon","armor","acc"]),Math.min(6,h.realm),pickOne(SPECS));setRar(it,Math.random()<.2?2:1);got.push(`장비 「${gainItem(h,it)}」`)}
+  bump(h,"treasure");addLog(h,`${REGIONS[e.region].n}에서 보물지도 속 보물을 가장 먼저 찾아냈다! ${got.join(", ")}`);save(h);toast(`보물을 찾았다! ${got.join(" · ")}`)}
+function happenDuel(id){const e=happenNow().find(x=>x.id===id),h=structuredClone(me);if(!e||e.type!=="master"||h.happen?.[id])return;if(h.travel||h.loc!==e.region){toast(`${REGIONS[e.region].n}에 있어야 겨룰 수 있다.`);return}
+  const d=derived(h),p=Math.min(.8,.45+(d.crit+d.eva)/200+h.realm*.03),win=Math.random()<p;h.happen={...(h.happen||{}),[id]:win?"win":"lose"};
+  const x=Math.round(expPerHour(h.level)*(win?3:1)),got=[`경험치 +${x}`];applyExp(h,x);if(win){got.push(silverTxt(addSilver(h,80+h.level*2)));h.items.stone+=4;got.push("강화석 +4");bump(h,"masterWin")}
+  const L=win?["고수가 검을 거두며 웃었다. \"좋은 칼이다. 잊지 않겠다.\"","세 합 만에 고수의 소매가 찢어졌다. 고수는 술 한 병을 내밀고 떠났다.","끝내 고수의 무릎을 꿇렸다. 객잔이 떠나갈 듯 환호했다."]:["고수의 손가락 하나에 검이 튕겨 나갔다. \"아직 멀었다. 그래도 눈빛은 좋구나.\"","열 합을 버텼지만 결국 밀려났다. 고수가 한 수를 짚어 주고 떠났다."];
+  addLog(h,`떠돌이 고수와 겨뤘다. ${pickOne(L)} (${got.join(", ")})`);save(h);toast(win?`고수를 꺾었다! ${got.join(" · ")}`:`졌다. 그래도 배운 게 있다 · ${got[0]}`)}
+function happenBox(h){const now=happenNow(),nx=happenNext();
+  if(!now.length)return nx?`<section><p class="note hapnext">다음 강호 소식: ${kstHM(nx.start)}쯤 어딘가에서 무슨 일이 터진다.</p></section>`:"";
+  return `<section>${now.map(e=>{const T=HAPPEN_T[e.type],R=REGIONS[e.region],here=!h.travel&&h.loc===e.region,c=happenCache[e.id];
+    if(e.type==="treasure"&&mode==="db"&&!c)happenLoad(e.id);
+    const taken=e.type==="treasure"&&(c?.v||(mode!=="db"&&h.happen?.[e.id]));
+    let act="";
+    if(e.type==="treasure")act=taken?`<p class="note" style="margin:0">${(()=>{const nm=c?.v?.name||h.name;return `<b>${esc(nm)}</b>${josa(nm,"이").slice(nm.length)}`})()} 먼저 보물을 찾아냈다.</p>`:here?`<button class="btn sealb" type="button" data-hdig="${e.id}">땅을 판다</button>`:`<button class="btn" type="button" data-hgo="${e.region}">지도에서 ${R.n} 보기</button>`;
+    if(e.type==="master")act=h.happen?.[e.id]?`<p class="note" style="margin:0">이미 겨뤘다 · ${h.happen[e.id]==="win"?"이겼다":"졌다"}</p>`:here?`<button class="btn sealb" type="button" data-hduel="${e.id}">고수에게 한 수 청한다</button>`:`<button class="btn" type="button" data-hgo="${e.region}">지도에서 ${R.n} 보기</button>`;
+    if(e.type==="fishing")act=here?`<p class="note" style="margin:0">지금 이곳 물가에서 낚시하면 된다.</p>`:`<button class="btn" type="button" data-hgo="${e.region}">지도에서 ${R.n} 보기</button>`;
+    if(e.type==="market")act=here?`<p class="note" style="margin:0">지금 이곳 객잔과 마방이 30% 싸다.</p>`:`<button class="btn" type="button" data-hgo="${e.region}">지도에서 ${R.n} 보기</button>`;
+    return `<div class="hap"><div class="kicker"><i class="hapmk">${T.ch}</i> 강호 돌발 · ${T.n} · <span data-suntil="${e.end}"></span> 남음</div><p>${T.d(R.n)}</p><div class="row">${act}</div></div>`}).join("")}</section>`}
+const kstHM=t=>{const d=new Date(t+KST);return `${String(d.getUTCHours()).padStart(2,"0")}:${String(d.getUTCMinutes()).padStart(2,"0")}`};
+
+/* ───────── 낚시: 하루 다섯 번 던진다. 입질이 오면 재빨리 챈다 ───────── */
+const FISH={bung:{n:"붕어",p:8,w:30},ing:{n:"잉어",p:15,w:22},me:{n:"메기",p:20,w:14},sso:{n:"쏘가리",p:25,w:10},gold:{n:"금잉어",p:120,w:3,rare:1},scale:{n:"용왕의 비늘",p:400,w:.4,rare:1},
+  boot:{n:"낡은 짚신",p:0,w:8,junk:1},box:{n:"녹슨 함",p:0,w:4,junk:1}};
+const FISH_REGION={jiangnan:"sso",shandong:"jogi",hubei:"me",sichuan:"gang",yunnan:"gang",hebei:"ing",qinghai:"hwang",xiyu:"sand"};
+const FISH_EXTRA={jogi:{n:"참조기",p:30,w:12},gang:{n:"강준치",p:28,w:10},hwang:{n:"황하잉어",p:35,w:9},sand:{n:"모래무지",p:30,w:10}};
+const fishName=k=>(FISH[k]||FISH_EXTRA[k])?.n||k, fishPrice=k=>(FISH[k]||FISH_EXTRA[k])?.p||0;
+const FISH_DAY=5;
+const fishCasts=h=>FISH_DAY+(furnLv(h,"pond")||0)+(happenHere("fishing",h.loc)?2:0);
+const fishUsed=h=>h.fishDay?.day===dayKey()?h.fishDay.n:0;
+let fishState=null,fishTimer=null;
+function fishTable(h){const t=Object.entries(FISH).map(([k,f])=>[k,f.w]),ex=FISH_REGION[h.loc];if(ex&&FISH_EXTRA[ex])t.push([ex,FISH_EXTRA[ex].w]);else if(ex&&FISH[ex])t.find(x=>x[0]===ex)[1]*=2;
+  if(happenHere("fishing",h.loc))t.forEach(x=>{if(FISH[x[0]]?.rare)x[1]*=3});return t}
+function fishRoll(h){const t=fishTable(h),tot=t.reduce((a,x)=>a+x[1],0);let r=Math.random()*tot;for(const [k,w] of t){if((r-=w)<0)return k}return "bung"}
+function fishCast(){const h=me;if(h.travel){toast("길 위에서는 낚시할 수 없다.");return}if(fishUsed(h)>=fishCasts(h)){toast("오늘은 더 던질 수 없다.");return}if(fishState)return;
+  fishState={phase:"wait"};render();clearTimeout(fishTimer);fishTimer=setTimeout(()=>{fishState={phase:"bite",t:Date.now()};render();fishTimer=setTimeout(()=>fishPull(true),1500)},2000+Math.random()*5000)}
+function fishPull(late){clearTimeout(fishTimer);if(!fishState)return;const ph=fishState.phase,h=structuredClone(me);fishState=null;
+  h.fishDay={day:dayKey(),n:fishUsed(h)+1};
+  if(ph!=="bite"||late){const msg=ph==="wait"?"너무 일찍 챘다. 고기가 놀라 달아났다.":"입질을 놓쳤다. 미끼만 사라졌다.";fishLast={ok:false,text:msg};save(h);return}
+  const k=fishRoll(h);let text;
+  if(k==="boot")text="낡은 짚신이 걸려 나왔다… 누가 버린 걸까.";
+  else if(k==="box"){const s=addSilver(h,20+Math.floor(Math.random()*40));h.items.stone+=2;text=`녹슨 함이 걸렸다! 열어 보니 ${silverTxt(s)}과 강화석 2개.`}
+  else{h.fish={...(h.fish||{}),[k]:((h.fish||{})[k]||0)+1};bump(h,"fish");text=`${fishName(k)}${josa(fishName(k),"을").slice(fishName(k).length)} 낚았다!${(FISH[k]||{}).rare?" 귀한 고기다!":""}`}
+  fishLast={ok:true,text,k};addLog(h,`${REGIONS[h.loc].n} 물가에서 낚시 · ${text}`);save(h)}
+let fishLast=null;
+function fishSell(){const h=structuredClone(me),f=h.fish||{};let sum=0,n=0;const keep=new Set(["gold","scale"]);
+  for(const k in f){if(keep.has(k)||!f[k])continue;sum+=fishPrice(k)*f[k];n+=f[k];f[k]=0}if(!n){toast("팔 물고기가 없다. (금잉어와 용왕의 비늘은 장원 재료라 따로 판다)");return}
+  addSilver(h,sum);addLog(h,`객잔에 물고기 ${n}마리를 팔았다. (${silverTxt(sum)})`);save(h);toast(`물고기 ${n}마리 · ${silverTxt(sum)}`)}
+function fishBox(h){if(h.travel)return "";const used=fishUsed(h),max=fishCasts(h),left=Math.max(0,max-used),ex=FISH_REGION[h.loc],bloom=happenHere("fishing",h.loc);
+  const head=shopHead("fish",`${REGIONS[h.loc].n} 물가 · 오늘 ${left}/${max}번${bloom?" · 대풍어!":""}`);
+  if(!shopOpen.fish&&!fishState)return `<div class="shop">${head}</div>`;
+  const f=h.fish||{},bag=Object.entries(f).filter(([,v])=>v>0).map(([k,v])=>`${fishName(k)} ${v}`).join(" · ");
+  const stage=fishState?.phase==="wait"?`<div class="fishpond wait"><span>찌가 고요히 떠 있다…</span></div><button class="btn" type="button" id="fishPull">챈다!</button>`
+    :fishState?.phase==="bite"?`<div class="fishpond bite"><span>찌가 쑥 들어갔다! 입질이다!</span></div><button class="btn sealb" type="button" id="fishPull">챈다!</button>`
+    :`<div class="fishpond"><span>${fishLast?esc(fishLast.text):"물결이 잔잔하다."}</span></div><button class="btn sealb" type="button" id="fishCast" ${left<=0?"disabled":""}>${left>0?"낚싯대를 던진다":"오늘은 다 던졌다"}</button>`;
+  return `<div class="shop">${head}${stage}
+    <p class="note">찌가 쑥 들어가면 1.5초 안에 챈다. 너무 일찍 채도, 늦어도 놓친다.${ex?` 이 지역 특산: ${fishName(ex)}.`:""}</p>
+    <div class="row" style="margin-top:6px"><span class="note" style="margin:0;flex:1">어망: ${bag||"비었다"}</span><button class="btn sm ghost" type="button" id="fishSell">물고기 팔기</button></div></div>`}
+
+/* ───────── 내 장원: 물건을 만들어 두면 능력치가 오른다 ───────── */
+const FURN={
+  dummy:{n:"목인장",d:"나무 인형을 치며 몸을 단련한다",eff:"wai",per:2,u:"외공",cost:{stone:6,silver:120}},
+  shelf:{n:"서가",d:"옛 비급과 경전을 꽂아 둔다",eff:"nei",per:2,u:"내공",cost:{clue:2,silver:150}},
+  bonsai:{n:"매화 분재",d:"가지를 다듬으며 몸놀림을 익힌다",eff:"shen",per:2,u:"신법",cost:{herb:6,silver:100}},
+  tank:{n:"어항",d:"금잉어가 노니는 큰 독",eff:"hpP",per:3,u:"체력 %",cost:{f_gold:1,f_ing:3,silver:80}},
+  censer:{n:"향로",d:"향을 피워 내력을 고른다",eff:"qi",per:10,u:"기력",cost:{hyang:2,silver:120}},
+  rack:{n:"무기 거치대",d:"손때 묻은 병기를 걸어 둔다",eff:"atkP",per:2,u:"공격 %",cost:{stone:12,silver:250}},
+  lantern:{n:"석등",d:"마당을 밝히는 돌 등",eff:"defP",per:3,u:"방어 %",cost:{stone:10,f_sso:2,silver:200}},
+  teatable:{n:"차탁",d:"차를 우리며 깨달음을 곱씹는다",eff:"trainP",per:4,u:"수련 경험치 %",cost:{longjing:2,puer:2,silver:120}},
+  pond:{n:"연못",d:"마당에 판 작은 못. 낚시를 더 자주 한다",eff:"cast",per:1,u:"하루 낚시 횟수",cost:{f_bung:10,f_me:3,silver:300}}};
+const FURN_MAX=3;
+const furnLv=(h,k)=>h?.manor?.[k]||0;
+const furnCost=(k,lv)=>Object.fromEntries(Object.entries(FURN[k].cost).map(([m,v])=>[m,v*Math.pow(2,lv)]));
+const matName=m=>m==="silver"?"은자":m.startsWith("f_")?fishName(m.slice(2)):ITEMS[m]?.[0]||m;
+const matHave=(h,m)=>m==="silver"?(h.silver||0):m.startsWith("f_")?((h.fish||{})[m.slice(2)]||0):(h.items?.[m]||0);
+function manorBonus(h){const o={nei:0,wai:0,shen:0,hpP:0,qi:0,atkP:0,defP:0,trainP:0,cast:0};for(const k in FURN){const lv=furnLv(h,k);if(lv)o[FURN[k].eff]+=FURN[k].per*lv}return o}
+function craftFurn(k){const h=structuredClone(me),lv=furnLv(h,k);if(!FURN[k]||lv>=FURN_MAX)return;const c=furnCost(k,lv);
+  const lack=Object.entries(c).filter(([m,v])=>matHave(h,m)<v).map(([m,v])=>`${matName(m)} ${v-matHave(h,m)}`);if(lack.length){toast(`모자라다: ${lack.join(", ")}`);return}
+  for(const [m,v] of Object.entries(c)){if(m==="silver")h.silver-=v;else if(m.startsWith("f_"))h.fish[m.slice(2)]-=v;else h.items[m]-=v}
+  h.manor={...(h.manor||{}),[k]:lv+1};bump(h,"craft");const F=FURN[k];
+  addLog(h,`장원에 「${F.n}」${lv?`을 ${lv+1}단계로 고쳐 놓았다`:"을 들여놓았다"}. ${F.u} +${F.per*(lv+1)}`);save(h);toast(`「${F.n}」 ${lv+1}단계 · ${F.u} +${F.per*(lv+1)}`)}
+function manorView(h,mine){const tiles=Object.entries(FURN).map(([k,F])=>{const lv=furnLv(h,k);return `<div class="mtile ${lv?"on":""}"><b>${F.n}</b><span>${lv?"●".repeat(lv)+"○".repeat(FURN_MAX-lv):mine?"아직 없다":"—"}</span></div>`}).join("");
+  return `<div class="manor">${tiles}</div>`}
+function manorSection(h){const B=manorBonus(h),parts=Object.entries(FURN).filter(([k])=>furnLv(h,k)).map(([k,F])=>`${F.u} +${F.per*furnLv(h,k)}`);
+  const rows=Object.entries(FURN).map(([k,F])=>{const lv=furnLv(h,k);if(lv>=FURN_MAX)return `<div class="frow"><div><b>${F.n}</b> <span class="tag">${lv}단계 · 다 지었다</span><span>${F.d} · ${F.u} +${F.per*lv}</span></div></div>`;
+    const c=furnCost(k,lv),ok=Object.entries(c).every(([m,v])=>matHave(h,m)>=v);
+    return `<div class="frow"><div><b>${F.n}</b> <span class="tag">${lv?`${lv}단계`:"없음"}</span><span>${F.d} · ${F.u} +${F.per*(lv+1)}${lv?` (지금 +${F.per*lv})`:""}</span>
+      <span class="fcost">${Object.entries(c).map(([m,v])=>`<i class="${matHave(h,m)>=v?"":"lack"}">${matName(m)} ${matHave(h,m)}/${v}</i>`).join(" ")}</span></div>
+      <button class="btn sm ${ok?"sealb":""}" type="button" data-craft="${k}" ${ok?"":"disabled"}>${lv?"고친다":"만든다"}</button></div>`}).join("");
+  return `<section>${foldHead("manor",`내 장원${parts.length?` · ${parts.length}가지 효과`:""}`)}<div class="foldb" ${foldOpen("manor")?"":"hidden"}>
+    ${manorView(h,true)}
+    <p class="note">${parts.length?`장원에서 받는 효과: ${parts.join(" · ")}`:"장원이 비어 있다. 재료를 모아 물건을 들이면 능력치가 오른다."} 물건마다 세 단계까지 고칠 수 있고, 단계가 오를수록 재료가 두 배씩 든다. 다른 사람이 인물 카드에서 내 장원을 구경할 수 있다.</p>
+    <div class="flist">${rows}</div></div></section>`}
+
 /* 마방과 표국: 말을 사고 올리거나, 마차를 빌린다 */
-function stableBuy(kind){const h=structuredClone(me);if(h.travel)return;
+function stableBuy(kind){const h=structuredClone(me);if(h.travel)return;const HORSE_BUY=Math.round(HORSE_BUY0*mkt(h)),CART_COST=Math.round(CART_COST0*mkt(h)),HORSE_T=HORSE_T0.map(t=>t.cost?{...t,cost:Math.round(t.cost*mkt(h))}:t);
   if(kind==="horse"){if(h.horse)return;if((h.silver||0)<HORSE_BUY){toast(`은자가 ${HORSE_BUY-(h.silver||0)}냥 모자랍니다.`);return}h.silver-=HORSE_BUY;const n=pickOne(HORSES);h.horse={n,t:Date.now(),tier:0};addLog(h,`마방에서 말 「${n}」을 샀다. (${silverTxt(HORSE_BUY)})`);save(h);toast(`말 「${n}」 · 이동 시간 -30%`);return}
   if(kind==="up"){const t=(h.horse?.tier||0)+1,T=HORSE_T[t];if(!h.horse||!T)return;if((h.silver||0)<T.cost){toast(`은자가 ${T.cost-(h.silver||0)}냥 모자랍니다.`);return}
     h.silver-=T.cost;h.horse.tier=t;addLog(h,`「${h.horse.n}」을 ${T.n}로 길러 냈다. 이동 시간 -${Math.round(T.cut*100)}% (${silverTxt(T.cost)})`);save(h);toast(`「${h.horse.n}」이 ${T.n}가 되었다!`);return}
   if(kind==="cart"){if(h.buff?.cart)return;if((h.silver||0)<CART_COST){toast(`은자가 ${CART_COST-(h.silver||0)}냥 모자랍니다.`);return}h.silver-=CART_COST;h.buff=h.buff||{};h.buff.cart=1;addLog(h,`표국 마차를 빌렸다. 다음 이동 -${CART_CUT*100}% (${silverTxt(CART_COST)})`);save(h);toast(`표국 마차 · 다음 이동 -${CART_CUT*100}%`)}}
-function stableBox(h){if(h.travel)return "";const ht=horseT(h.horse),nx=h.horse?HORSE_T[(h.horse.tier||0)+1]:null,kg=kgCut(h);
+function stableBox(h){if(h.travel)return "";const HORSE_BUY=Math.round(HORSE_BUY0*mkt(h)),CART_COST=Math.round(CART_COST0*mkt(h)),HORSE_T=HORSE_T0.map(t=>t.cost?{...t,cost:Math.round(t.cost*mkt(h))}:t);const ht=horseT(h.horse),nx=h.horse?HORSE_T[(h.horse.tier||0)+1]:null,kg=kgCut(h);
   const head=shopHead("stable",`${REGIONS[h.loc].n} 마방·표국 · ${ht?`${esc(h.horse.n)} (${ht.n})`:"말 없음"}${h.buff?.cart?" · 마차 예약됨":""}`);
   if(!shopOpen.stable)return `<div class="shop">${head}</div>`;
   const cell=(k,b,sub,price,dis)=>`<button class="shopi" type="button" data-stable="${k}" ${dis?"disabled":""}><b>${b}</b><span>${sub}</span><em>${price}</em></button>`;
@@ -2493,6 +2661,7 @@ function paintProfile(){
     <div class="label" style="margin-top:14px">인물 설정</div>
     ${bio.origin||bio.age||bio.note||traitsOf(o).length?`<div class="pfrows">${row("출신",esc(bio.origin||""))}${row("나이",esc(bio.age||""))}${row("성격",traitsOf(o).map(k=>`<span class="trt on sm">${k}</span>`).join(" "))}</div>${bio.note?`<p class="pfnote">${esc(bio.note).replace(/\n/g,"<br>")}</p>`:""}`
       :`<p class="note">${mine?"아직 적어 둔 설정이 없다. 인물 탭에서 출신, 나이, 특이사항을 적을 수 있다.":"아직 적어 둔 설정이 없다."}</p>`}
+    ${Object.keys(FURN).some(k=>furnLv(o,k))?`<div class="kicker" style="margin-top:12px">장원</div>${manorView(o,false)}`:""}
     <div class="row" style="margin-top:12px">${mine?`<button class="btn sm" type="button" data-pfgo="self">인물 탭에서 고치기</button>`:`<button class="btn sm" type="button" data-pfgo="mates">인연 탭에서 보기</button>${mode==="db"&&!myDuel()&&duelDayN(me)<DUEL_DAY?`<button class="btn sm ghost" type="button" data-pfduel="${profileId}">논검 청하기</button>`:""}`}</div></div>`;
   el.querySelector(".pfx").onclick=()=>{profileId=null;paintProfile()};
   el.querySelectorAll("[data-pfgo]").forEach(b=>b.onclick=()=>{tab=b.dataset.pfgo;profileId=null;paintProfile();try{const cb=document.querySelector(".chat-box");if(cb&&innerWidth<700)cb.hidden=true}catch(e){}render()});
@@ -3015,7 +3184,7 @@ function itemStats(it){
 function statLine(it){const s=itemStats(it);return [s.atk?`공격 +${s.atk}`:"",s.def?`방어 +${s.def}`:"",...["nei","wai","shen"].filter(k=>s[k]).map(k=>`${STATS[k].n} +${s[k]}`)].filter(Boolean).join(" · ")}
 const gradeLine=it=>`${REALMS[it.grade].n}급 · ${it.slot==="acc"?STATS[it.stat].n+" 장신구":SPEC[it.spec].n}${it.sect?` · ${SECTS[it.sect].n} 전용`:""}`;
 function gearSum(h){const o={atk:0,def:0,nei:0,wai:0,shen:0};for(const k in SLOTS){const s=itemStats(h.gear?.[k]);for(const x in s)o[x]+=s[x]}return o}
-function effStats(h){const g=gearSum(h);return {nei:h.stats.nei+g.nei,wai:h.stats.wai+g.wai,shen:h.stats.shen+g.shen}}
+function effStats(h){const g=gearSum(h),M=manorBonus(h);return {nei:h.stats.nei+g.nei+M.nei,wai:h.stats.wai+g.wai+M.wai,shen:h.stats.shen+g.shen+M.shen}}
 function gainItem(h,it){if(h.bag.length>=20){const n=it.grade+1+(it.rar||0)*2;h.items.stone+=n;return `${rarName(it)} (행낭이 가득 차 강화석 ${n}개로 녹임)`}h.bag.push(it);return rarName(it)}
 function rollDrop(h,tier){
   if(Math.random()*100>=[25,12,5][tier]) return null;
@@ -3026,7 +3195,7 @@ function enhance(slot){
   const h=structuredClone(me),it=h.gear[slot];if(!it)return;
   if(it.plus>=10){toast("이미 최고 강화입니다.");return}
   const cost=enhCost(it);if(h.items.stone<cost){toast(`강화석이 ${cost-h.items.stone}개 모자랍니다.`);return}
-  const ch=enhChance(it),before=statLine(it),target=it.plus+1;h.items.stone-=cost;
+  const ch=enhChance(it),before=statLine(it),target=it.plus+1;h.items.stone-=cost;bump(h,"enh");
   if(Math.random()*100<ch){it.plus++;it.fails=0;gmsg={slot,ok:true,text:fill(pickOne(SUCC),{i:it.name}),tag:`+${it.plus} 성공`,sub:`${before} → ${statLine(it)}`};addLog(h,`${it.name} 강화 성공 · +${it.plus}`)}
   else{it.fails=(it.fails||0)+1;gmsg={slot,ok:false,text:fill(pickOne(FAILT),{i:it.name}),tag:`+${target} 실패`,sub:`강화석 ${cost}개 소모 · 다음 확률 +${it.fails}% (실패 보정)`};addLog(h,`${it.name} +${target} 강화 실패 · 강화석 ${cost}개 소모`)}
   gmsg.n=++gmsgSeq; save(h);
@@ -3092,14 +3261,14 @@ function create(){
 function startTrain(){
   if(activity(me)){toast(`${busyText[activity(me)]} 수련할 수 없습니다.`);return}
   const now=Date.now(),h=structuredClone(me);
-  h.training={stat:pick.stat,hours:pick.hours,start:now,end:now+pick.hours*3600e3,lvl:h.level,rm:h.realm};if(h.buff?.train){h.training.tea=1;delete h.buff.train}
+  h.training={stat:pick.stat,hours:pick.hours,start:now,end:now+pick.hours*3600e3,lvl:h.level,rm:h.realm,mn:manorBonus(h).trainP||0};if(h.buff?.train){h.training.tea=1;delete h.buff.train}
   addLog(h,`${STATS[pick.stat].train} ${pick.hours}시간을 시작했다.`); confirmCancel=false; save(h);
 }
 function finishTrain(cancel){
   const h=structuredClone(me),t=h.training; if(!t) return;
   const f=cancel?Math.min(1,(Date.now()-t.start)/(t.end-t.start))*.5:1;
   const g=trainGain(t,f), lv0=h.level, ups=applyExp(h,g.exp), w=applyStat(h,t.stat,g.stat);
-  h.training=null;
+  h.training=null;if(!cancel)bump(h,"trainH",t.hours);
   addLog(h,`${STATS[t.stat].train}${cancel?"을 중도에 그만두었다":"을 마쳤다"}. 경험치 +${g.exp}${w?`, ${STATS[t.stat].n} +${w}`:""}${ups?`, Lv.${lv0}→${h.level}`:""}`);
   confirmCancel=false; save(h);
   toast(ups?`레벨이 올랐습니다! Lv.${h.level} · 능력치 포인트 +${ups*3}`:cancel?"쌓인 기운의 절반만 거두었습니다.":"수련을 마쳤습니다.");
@@ -3501,12 +3670,13 @@ function mapSvg(){
   {const B=bossFor(periodNow());addM(B.region,"討","mk-boss",`토벌 · ${B.n}`)}
   if(invOn()&&sNow()<invasion.end)addM(invasion.region,"魔","mk-inv","마교 침공");
   {const c=caravan();if(c.here)addM(c.region,"商","mk-cv","떠돌이 상단")}
+  happenNow().forEach(e=>addM(e.region,HAPPEN_T[e.type].ch,"mk-hap",`강호 돌발 · ${HAPPEN_T[e.type].n}`));
   const markSvg=Object.entries(marks).map(([r,list])=>{const R=REGIONS[r];return list.map((m,i)=>`<g class="mk ${m.cls}" transform="translate(${R.x+13+i*15} ${R.y-22})"><title>${m.lab}</title><rect x="-7" y="-7" width="14" height="14" rx="2"/><text y="3.6">${m.ch}</text></g>`).join("")}).join("");
   return `<div class="mapbox"><svg class="map" viewBox="0 0 400 304" role="img" aria-label="중원 지도">
     <path class="river" d="M20,58 C80,52 120,74 175,82 S290,70 395,58"/><text class="rname" x="196" y="74">황하</text>
     <path class="river" d="M70,248 C130,236 180,250 240,242 S330,252 395,236"/><text class="rname" x="300" y="262">장강</text>
     ${roads}${nodes}${markSvg}${mates}${me2}</svg></div>
-    <div class="mklegend"><span><i class="mk-boss">討</i>이번 토벌 · ${bossFor(periodNow()).n}</span>${invOn()&&sNow()<invasion.end?`<span><i class="mk-inv">魔</i>마교 침공</span>`:""}${caravan().here?`<span><i class="mk-cv">商</i>떠돌이 상단</span>`:""}</div>`;
+    <div class="mklegend"><span><i class="mk-boss">討</i>이번 토벌 · ${bossFor(periodNow()).n}</span>${invOn()&&sNow()<invasion.end?`<span><i class="mk-inv">魔</i>마교 침공</span>`:""}${caravan().here?`<span><i class="mk-cv">商</i>떠돌이 상단</span>`:""}${happenNow().map(e=>`<span><i class="mk-hap">${HAPPEN_T[e.type].ch}</i>${HAPPEN_T[e.type].n} · ${REGIONS[e.region].n}</span>`).join("")}</div>`;
 }
 function worldTab(){
   const h=me,a=activity(h),now=Date.now();
@@ -3525,8 +3695,8 @@ function worldTab(){
     else if(direct) regionBox+=`<div class="row" style="margin-top:6px"><button class="btn solid" id="goBtn" type="button" ${a?"disabled":""}>${R.n}로 떠나기 · ${hrsTxt(direct)}${tg.length?` (${tg.join(", ")})`:""}</button>${realMates().length?`<button class="btn ghost" type="button" data-callgo="${dest}">무리에게 같이 가자고 하기</button>`:""}${a?`<span class="note" style="margin:0">${busyText[a]} 떠날 수 없다.</span>`:""}</div>`;
     else{const rt=route(h.loc,dest);regionBox+=`<p class="note">바로 가는 길이 없다. ${rt.path.map(p=>REGIONS[p].n).join(" → ")} (모두 ${hrsTxt(teaHrs(h,hrsFor(h,rt.hours)))}${speedTags(h,null).length?`, ${speedTags(h,null).join(" · ")}`:""}) 순으로 한 곳씩 이동해야 한다.</p>`}
   }
-  regionBox+=(focus===h.loc?regionSectBox(focus)+jobBox(h)+stableBox(h)+innBox(h)+smithBox(h):"")+`</div>`;
-  return `${invBox(h)}<section><div class="label">지도</div>${mapSvg()}
+  regionBox+=(focus===h.loc?regionSectBox(focus)+jobBox(h)+fishBox(h)+stableBox(h)+innBox(h)+smithBox(h):"")+`</div>`;
+  return `${happenBox(h)}${invBox(h)}${questBox(h)}<section><div class="label">지도</div>${mapSvg()}
     <p class="note">지역을 누르면 정보가 보이고, 이어진 곳이면 바로 떠날 수 있다.</p>${regionBox}${caravanBox(h)}</section>
     ${travelBox?`<section style="margin-top:20px">${travelBox}</section>`:""}
     <section><div class="label">사건</div>${missionBox()}${journalList()}</section>`;
@@ -3600,7 +3770,7 @@ function selfTab(){
     <section>${foldHead("bag","행낭")}<div class="foldb" ${foldOpen("bag")?"":"hidden"}>
       <div class="bag"><div><b>${(h.silver||0).toLocaleString()}</b>은자 <span>· 냥 · 객잔과 떠돌이 상단에서 쓴다</span></div>${h.horse?`<div><b>🐎</b>${esc(h.horse.n)} <span>· ${horseT(h.horse).n} · 이동 시간 -${Math.round(horseT(h.horse).cut*100)}%</span></div>`:""}${Object.entries(ITEMS).map(([k,[n,sub]])=>`<div><b>${h.items[k]||0}</b>${n} <span>· ${sub}</span>${FOOD[k]&&h.items[k]>0?` <button class="btn sm ghost" type="button" data-eat="${k}" ${h.buff?.[FOOD[k].k]?"disabled":""}>${FOOD[k].v||"먹기"}</button>`:""}</div>`).join("")}</div>
       ${h.buff&&Object.keys(h.buff).length?`<p class="note">걸려 있는 효과: ${Object.entries(h.buff).map(([k,it])=>k==="cart"?`<b>표국 마차</b> (다음 이동 -${CART_CUT*100}%)`:`<b>${ITEMS[it]?.[0]||it}</b> (${k==="scene"?"다음 사건 조사 +2":k==="atk"?"공격 +15%":k==="hp"?"체력 +20%":k==="travel"?"다음 이동 -20%":"다음 수련 경험치 +15%"})`).join(" · ")}</p>`:""}
-      <p class="note">강화석은 장비 탭에서 강화에 쓴다. 약초는 소굴에서 회복에 쓴다. 약초·술·향낭·장신구·옥비녀는 인연 탭에서 동료에게, 강호 탭에서 문파에 선물로 쓴다. 음식과 차는 먹기·마시기를 누르면 효과가 걸린다. 착용하는 장신구는 장비 탭에 있다.</p></div></section>${bioSection()}${titleSection()}${sectTabSection()}`;
+      <p class="note">강화석은 장비 탭에서 강화에 쓴다. 약초는 소굴에서 회복에 쓴다. 약초·술·향낭·장신구·옥비녀는 인연 탭에서 동료에게, 강호 탭에서 문파에 선물로 쓴다. 음식과 차는 먹기·마시기를 누르면 효과가 걸린다. 착용하는 장신구는 장비 탭에 있다.</p></div></section>${manorSection(h)}${bioSection()}${titleSection()}${sectTabSection()}`;
 }
 
 /* 동행 탭 */
@@ -3677,6 +3847,12 @@ function bind(){
   document.querySelectorAll("[data-bgforget]").forEach(b=>b.addEventListener("click",()=>{bigupForget=b.dataset.bgforget||null;render()}));
   document.querySelectorAll("[data-bgforgetok]").forEach(b=>b.addEventListener("click",()=>bigupDrop(b.dataset.bgforgetok)));
   on("#bgLearn",bigupLearn);
+  document.querySelectorAll("[data-quest]").forEach(b=>b.addEventListener("click",()=>claimQuest(+b.dataset.quest)));on("#qWeek",claimWeek);
+  document.querySelectorAll("[data-hdig]").forEach(b=>b.addEventListener("click",()=>happenDig(b.dataset.hdig)));
+  document.querySelectorAll("[data-hduel]").forEach(b=>b.addEventListener("click",()=>happenDuel(b.dataset.hduel)));
+  document.querySelectorAll("[data-hgo]").forEach(b=>b.addEventListener("click",()=>{dest=b.dataset.hgo;tab="world";render();try{document.querySelector(".region")?.scrollIntoView({block:"start"})}catch(e){}}));
+  on("#fishCast",fishCast);on("#fishPull",()=>fishPull(false));on("#fishSell",fishSell);
+  document.querySelectorAll("[data-craft]").forEach(b=>b.addEventListener("click",()=>craftFurn(b.dataset.craft)));
   document.querySelectorAll("[data-fold]").forEach(b=>b.addEventListener("click",()=>toggleFold(b.dataset.fold)));
   document.querySelectorAll("[data-reroll]").forEach(b=>b.addEventListener("click",()=>rerollOpt(gsel,+b.dataset.reroll)));
   document.querySelectorAll("[data-job]").forEach(b=>b.addEventListener("click",()=>{jobPick.k=b.dataset.job;render()}));
