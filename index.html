@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261102004607">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261102011214">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -127,6 +127,9 @@ section{margin-top:30px}
 .gopt{display:block;font-size:12px;margin-top:2px}.rr{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0;border-bottom:1px dashed var(--line)}.rr .gopt{margin:0}
 .foldh .label{margin:0;flex:1}.foldh i{font-style:normal;font-size:12px;color:var(--ink-3);white-space:nowrap}.foldb[hidden]{display:none}
 .npcsel{margin-top:4px;font:inherit;font-size:12px;padding:3px 6px;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:2px;max-width:100%}
+.wx{font-family:var(--f-body);font-size:13px;font-weight:400;color:var(--ink-2);border:1px solid var(--line);padding:1px 8px;border-radius:20px;vertical-align:3px;margin-left:6px}
+.dex{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-top:8px}.dx{border:1px dashed var(--line);padding:6px 8px;font-size:12px;color:var(--ink-3)}
+.dx b{display:block;font-size:13px}.dx.got{border-style:solid;color:var(--ink-2)}.dx.got b{color:var(--ink)}.dx.got.t1 b{color:var(--c-dang)}.dx.got.t2 b{color:var(--c-mudang)}.dx.got.t3 b{color:var(--c-sorim)}
 .qlist{display:grid;gap:8px;margin-top:8px}.qrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);background:var(--paper)}
 .qrow>div{flex:1;min-width:0}.qrow b{display:block}.qrow span{font-size:12px;color:var(--ink-2)}.qrow em{font-style:normal;font-size:12px;color:var(--ink-3)}.qrow.done{opacity:.55}.qrow.week{margin-top:8px;border-color:var(--ink)}
 .qbar{height:4px;background:var(--line);margin-top:6px}.qbar i{display:block;height:100%;background:var(--seal)}
@@ -1985,11 +1988,18 @@ const TITLES=[
   {id:"b8",g:"인연",n:"인심 좋은 협객",hint:"선물을 10번 보낸다",ok:h=>cnt(h,"gift")>=10},
   {id:"d1",g:"논검",n:"논검 첫 승",hint:"논검비무에서 처음 이긴다",ok:h=>cnt(h,"duelW")>=1},
   {id:"d10",g:"논검",n:"검론의 달인",hint:"논검비무에서 10번 이긴다",ok:h=>cnt(h,"duelW")>=10},
-  {id:"d30",g:"논검",n:"검을 논하는 자",hint:"논검비무를 30번 겨룬다",ok:h=>cnt(h,"duelW")+cnt(h,"duelL")+cnt(h,"duelD")>=30}];
+  {id:"d30",g:"논검",n:"검을 논하는 자",hint:"논검비무를 30번 겨룬다",ok:h=>cnt(h,"duelW")+cnt(h,"duelL")+cnt(h,"duelD")>=30},
+  {id:"f10",g:"낚시",n:"초보 강태공",hint:"물고기를 10마리 낚는다",ok:h=>cnt(h,"fish")>=10},
+  {id:"f100",g:"낚시",n:"강태공",hint:"물고기를 100마리 낚는다",ok:h=>cnt(h,"fish")>=100},
+  {id:"f500",g:"낚시",n:"어신(魚神)",hint:"물고기를 500마리 낚는다",ok:h=>cnt(h,"fish")>=500},
+  {id:"fs20",g:"낚시",n:"어보 수집가",hint:"어보에 20종을 올린다",ok:h=>Object.keys(h.fdex||{}).length>=20},
+  {id:"fs35",g:"낚시",n:"물길을 아는 자",hint:"어보에 35종을 올린다",ok:h=>Object.keys(h.fdex||{}).length>=35},
+  {id:"fs50",g:"낚시",n:"어보를 완성한 자",hint:"어보 50종을 모두 채운다",ok:h=>Object.keys(h.fdex||{}).length>=FISH_N},
+  {id:"fl1",g:"낚시",n:"용을 낚은 자",hint:"전설 등급 물고기를 낚는다",ok:h=>cnt(h,"fishLeg")>=1}];
 const TITLE_BY=Object.fromEntries(TITLES.map(t=>[t.id,t]));
 const titleOf=h=>{const t=h?.title&&h.titles?.[h.title]&&TITLE_BY[h.title];return t?(t.show?t.show(h):t.n):""};
 /* 칭호 배지: 칭호 갈래마다 다른 색 상자 */
-const TB_CLS={경지:"tb-r",관문:"tb-g",문파:"tb-s",강호:"tb-w",토벌:"tb-l",장비:"tb-e",인연:"tb-b",논검:"tb-d"};
+const TB_CLS={경지:"tb-r",관문:"tb-g",문파:"tb-s",강호:"tb-w",토벌:"tb-l",장비:"tb-e",인연:"tb-b",논검:"tb-d",낚시:"tb-b"};
 function titleBadge(h){const t=h?.title&&h.titles?.[h.title]&&TITLE_BY[h.title];if(!t)return "";return `<span class="tb ${TB_CLS[t.g]||""}">${esc(t.show?t.show(h):t.n)}</span>`}
 window.titleBadge=titleBadge;
 const titled=h=>titleBadge(h);
@@ -2308,17 +2318,47 @@ function happenBox(h){const now=happenNow(),nx=happenNext();
 const kstHM=t=>{const d=new Date(t+KST);return `${String(d.getUTCHours()).padStart(2,"0")}:${String(d.getUTCMinutes()).padStart(2,"0")}`};
 
 /* ───────── 낚시: 하루 다섯 번 던진다. 입질이 오면 재빨리 챈다 ───────── */
-const FISH={bung:{n:"붕어",p:8,w:30},ing:{n:"잉어",p:15,w:22},me:{n:"메기",p:20,w:14},sso:{n:"쏘가리",p:25,w:10},gold:{n:"금잉어",p:120,w:3,rare:1},scale:{n:"용왕의 비늘",p:400,w:.4,rare:1},
-  boot:{n:"낡은 짚신",p:0,w:8,junk:1},box:{n:"녹슨 함",p:0,w:4,junk:1}};
-const FISH_REGION={jiangnan:"sso",shandong:"jogi",hubei:"me",sichuan:"gang",yunnan:"gang",hebei:"ing",qinghai:"hwang",xiyu:"sand"};
-const FISH_EXTRA={jogi:{n:"참조기",p:30,w:12},gang:{n:"강준치",p:28,w:10},hwang:{n:"황하잉어",p:35,w:9},sand:{n:"모래무지",p:30,w:10}};
-const fishName=k=>(FISH[k]||FISH_EXTRA[k])?.n||k, fishPrice=k=>(FISH[k]||FISH_EXTRA[k])?.p||0;
+/* 물고기 50종: [이름, 값, 무는 정도, 등급(0 흔함·1 보통·2 귀함·3 전설), 나오는 지역(없으면 어디서나), 나오는 날씨(없으면 언제나)] */
+const FISHDB={
+  bung:["붕어",8,30,0],ing:["잉어",15,22,0],me:["메기",20,14,0],pira:["피라미",6,24,0],songsa:["송사리",5,18,0],beodeul:["버들치",9,14,0],napja:["납자루",10,10,0],
+  sso:["쏘가리",25,10,1],dongja:["동자개",22,9,1],gamul:["가물치",30,6,1],nuchi:["누치",24,7,1],gold:["금잉어",120,3,2],scale:["용왕의 비늘",400,.4,3],
+  mikku:["미꾸라지",14,12,0,null,["rain"]],eel:["뱀장어",45,9,1,null,["rain"]],eun:["은어",50,7,1,null,["fog"]],unmu:["운무어",90,2,2,null,["fog"]],
+  bing:["빙어",35,12,1,null,["snow"]],kkeuri:["끄리",28,8,1,null,["cloud"]],
+  yeolmok:["열목어",55,5,2,["shaanxi","sichuan","qinghai","yunnan"],["sun"]],sungeo:["숭어",32,8,1,["shandong","jiangnan","hebei"],["wind"]],
+  hmeg:["황하메기",30,10,1,["henan"]],moran:["모란잉어",60,4,2,["henan"]],
+  sancheon:["진령 산천어",40,9,1,["shaanxi"]],baekrin:["백린어",85,3,2,["shaanxi"]],
+  muchang:["무창어",35,10,1,["hubei"]],cheolgap:["철갑상어",150,2,2,["hubei","jiangnan"]],
+  gang:["강준치",28,10,1,["sichuan","yunnan"]],amwon:["암원리",40,8,1,["sichuan"]],
+  jogi:["참조기",30,12,0,["shandong"]],galchi:["갈치",30,12,0,["shandong"]],godeung:["고등어",22,14,0,["shandong"]],domi:["참돔",55,7,1,["shandong"]],muneo:["문어",40,8,1,["shandong"]],wangge:["왕게",120,3,2,["shandong"]],
+  choeo:["초어",26,12,0,["jiangnan"]],taiho:["태호 백어",32,10,1,["jiangnan"]],geumrin:["금린 쏘가리",140,2,2,["jiangnan"]],
+  sand:["모래무지",30,10,0,["xiyu"]],cheonsan:["천산 송어",60,7,1,["xiyu"]],sinyeo:["사막 신어",300,.4,3,["xiyu"]],
+  hwang:["황하잉어",35,9,1,["qinghai","henan"]],hwangeo:["청해 황어",45,9,1,["qinghai"]],
+  baekeo:["소호 백어",25,12,0,["anhui"]],seokrin:["석린어",70,4,2,["anhui"]],
+  bungwang:["붕어왕",50,6,1,["hebei"]],gungeo:["얼하이 궁어",45,8,1,["yunnan"]],bidan:["비단잉어",110,3,2,["yunnan"]],
+  hwangyong:["황하 용어",350,.3,3,["henan","qinghai"]],jara:["황금 자라",300,.4,3,["anhui","jiangnan","hubei"]]};
+const FISH_JUNK={boot:["낡은 짚신",0,8],box:["녹슨 함",0,4]};
+const FISH_TIER=["흔함","보통","귀함","전설"];
+const fishOk=(k,loc,wx)=>{const f=FISHDB[k];return (!f[4]||f[4].includes(loc))&&(!f[5]||f[5].includes(wx))};
+const FISH_N=Object.keys(FISHDB).length;
+/* 예전 이름표와 맞추기 (장원 재료·판매가) */
+const FISH=Object.fromEntries(Object.entries(FISHDB).map(([k,f])=>[k,{n:f[0],p:f[1],w:f[2],rare:f[3]>=2?1:0}])),FISH_EXTRA={};
+/* 날씨: 지역마다 날마다 바뀐다. 날씨에 따라 무는 고기가 달라진다 */
+const WEATHER={sun:{n:"맑음",ch:"☀",tip:"붕어가 잘 문다. 산골 계곡에서는 맑은 날에만 열목어가 나온다",boost:{bung:2}},cloud:{n:"흐림",ch:"☁",tip:"쏘가리가 잘 물고, 흐린 날에만 끄리가 나온다",boost:{sso:2.5}},
+  rain:{n:"비",ch:"☂",tip:"메기가 잘 물고, 비 오는 날에만 뱀장어와 미꾸라지가 나온다",boost:{me:3}},
+  fog:{n:"안개",ch:"霧",tip:"귀한 고기가 잘 물고, 안개 낀 날에만 은어와 운무어가 나온다. 꽝도 잦다",boost:{gold:2,scale:2,boot:2}},
+  wind:{n:"바람",ch:"風",tip:"녹슨 함이 잘 걸리고, 바닷가와 강어귀에서는 바람 부는 날에만 숭어가 나온다",boost:{box:2.5}},
+  snow:{n:"눈",ch:"雪",tip:"얼음 밑에서 눈 오는 날에만 빙어가 나온다",boost:{}}};
+const SNOWY=["hebei","qinghai","xiyu","shandong","shaanxi"];
+function weatherOf(region,day=dayKey()){const R=seeded(day*131+[...region].reduce((a,c)=>a*33+c.charCodeAt(0)|0,7)),m=new Date(Date.now()+KST).getUTCMonth()+1,winter=[11,12,1,2].includes(m);
+  const opts=[["sun",4],["cloud",3],["rain",2.5],["fog",1.5],["wind",2],...(winter&&SNOWY.includes(region)?[["snow",2.5]]:[])],tot=opts.reduce((a,x)=>a+x[1],0);let r=R()*tot;for(const [k,w] of opts){if((r-=w)<0)return k}return "sun"}
+const fishName=k=>FISHDB[k]?.[0]||FISH_JUNK[k]?.[0]||k, fishPrice=k=>FISHDB[k]?.[1]||0;
 const FISH_DAY=5;
 const fishCasts=h=>FISH_DAY+(furnLv(h,"pond")||0)+(happenHere("fishing",h.loc)?2:0);
 const fishUsed=h=>h.fishDay?.day===dayKey()?h.fishDay.n:0;
 let fishState=null,fishTimer=null;
-function fishTable(h){const t=Object.entries(FISH).map(([k,f])=>[k,f.w]),ex=FISH_REGION[h.loc];if(ex&&FISH_EXTRA[ex])t.push([ex,FISH_EXTRA[ex].w]);else if(ex&&FISH[ex])t.find(x=>x[0]===ex)[1]*=2;
-  if(happenHere("fishing",h.loc))t.forEach(x=>{if(FISH[x[0]]?.rare)x[1]*=3});return t}
+function fishTable(h){const wx=weatherOf(h.loc),W=WEATHER[wx],bloom=happenHere("fishing",h.loc);
+  const t=Object.keys(FISHDB).filter(k=>fishOk(k,h.loc,wx)).map(k=>{const f=FISHDB[k];let w=f[2];if(f[4])w*=1.3;if(W.boost?.[k])w*=W.boost[k];if(bloom&&f[3]>=2)w*=3;return [k,w]});
+  for(const [k,f] of Object.entries(FISH_JUNK))t.push([k,f[2]*(W.boost?.[k]||1)]);return t}
 function fishRoll(h){const t=fishTable(h),tot=t.reduce((a,x)=>a+x[1],0);let r=Math.random()*tot;for(const [k,w] of t){if((r-=w)<0)return k}return "bung"}
 function fishCast(){const h=me;if(h.travel){toast("길 위에서는 낚시할 수 없다.");return}if(fishUsed(h)>=fishCasts(h)){toast("오늘은 더 던질 수 없다.");return}if(fishState)return;
   fishState={phase:"wait"};render();clearTimeout(fishTimer);fishTimer=setTimeout(()=>{fishState={phase:"bite",t:Date.now()};render();fishTimer=setTimeout(()=>fishPull(true),1500)},2000+Math.random()*5000)}
@@ -2328,22 +2368,31 @@ function fishPull(late){clearTimeout(fishTimer);if(!fishState)return;const ph=fi
   const k=fishRoll(h);let text;
   if(k==="boot")text="낡은 짚신이 걸려 나왔다… 누가 버린 걸까.";
   else if(k==="box"){const s=addSilver(h,20+Math.floor(Math.random()*40));h.items.stone+=2;text=`녹슨 함이 걸렸다! 열어 보니 ${silverTxt(s)}과 강화석 2개.`}
-  else{h.fish={...(h.fish||{}),[k]:((h.fish||{})[k]||0)+1};bump(h,"fish");text=`${fishName(k)}${josa(fishName(k),"을").slice(fishName(k).length)} 낚았다!${(FISH[k]||{}).rare?" 귀한 고기다!":""}`}
+  else{h.fish={...(h.fish||{}),[k]:((h.fish||{})[k]||0)+1};bump(h,"fish");const first=!h.fdex?.[k];h.fdex={...(h.fdex||{}),[k]:(h.fdex?.[k]||0)+1};const tr=FISHDB[k][3];if(tr>=3)bump(h,"fishLeg");
+    text=`${fishName(k)}${josa(fishName(k),"을").slice(fishName(k).length)} 낚았다!${tr===3?" 전설 속의 고기다!!":tr===2?" 귀한 고기다!":""}${first?` 처음 보는 고기라 어보에 올렸다. (${Object.keys(h.fdex).length}/${FISH_N})`:""}`}
   fishLast={ok:true,text,k};addLog(h,`${REGIONS[h.loc].n} 물가에서 낚시 · ${text}`);save(h)}
 let fishLast=null;
-function fishSell(){const h=structuredClone(me),f=h.fish||{};let sum=0,n=0;const keep=new Set(["gold","scale"]);
-  for(const k in f){if(keep.has(k)||!f[k])continue;sum+=fishPrice(k)*f[k];n+=f[k];f[k]=0}if(!n){toast("팔 물고기가 없다. (금잉어와 용왕의 비늘은 장원 재료라 따로 판다)");return}
+function fishSell(){const h=structuredClone(me),f=h.fish||{};let sum=0,n=0;const keep=new Set(Object.keys(FISHDB).filter(k=>FISHDB[k][3]>=2));
+  for(const k in f){if(keep.has(k)||!f[k])continue;sum+=fishPrice(k)*f[k];n+=f[k];f[k]=0}if(!n){toast("팔 물고기가 없다. (귀함·전설 고기는 팔지 않고 남겨 둔다)");return}
   addSilver(h,sum);addLog(h,`객잔에 물고기 ${n}마리를 팔았다. (${silverTxt(sum)})`);save(h);toast(`물고기 ${n}마리 · ${silverTxt(sum)}`)}
-function fishBox(h){if(h.travel)return "";const used=fishUsed(h),max=fishCasts(h),left=Math.max(0,max-used),ex=FISH_REGION[h.loc],bloom=happenHere("fishing",h.loc);
-  const head=shopHead("fish",`${REGIONS[h.loc].n} 물가 · 오늘 ${left}/${max}번${bloom?" · 대풍어!":""}`);
+function fishBox(h){if(h.travel)return "";const used=fishUsed(h),max=fishCasts(h),left=Math.max(0,max-used),ex=Object.keys(FISHDB).filter(k=>FISHDB[k][4]?.includes(h.loc)),bloom=happenHere("fishing",h.loc);
+  const wk=weatherOf(h.loc),W=WEATHER[wk];
+  const head=shopHead("fish",`${REGIONS[h.loc].n} 물가 · ${W.ch} ${W.n} · 오늘 ${left}/${max}번${bloom?" · 대풍어!":""}`);
   if(!shopOpen.fish&&!fishState)return `<div class="shop">${head}</div>`;
   const f=h.fish||{},bag=Object.entries(f).filter(([,v])=>v>0).map(([k,v])=>`${fishName(k)} ${v}`).join(" · ");
   const stage=fishState?.phase==="wait"?`<div class="fishpond wait"><span>찌가 고요히 떠 있다…</span></div><button class="btn" type="button" id="fishPull">챈다!</button>`
     :fishState?.phase==="bite"?`<div class="fishpond bite"><span>찌가 쑥 들어갔다! 입질이다!</span></div><button class="btn sealb" type="button" id="fishPull">챈다!</button>`
     :`<div class="fishpond"><span>${fishLast?esc(fishLast.text):"물결이 잔잔하다."}</span></div><button class="btn sealb" type="button" id="fishCast" ${left<=0?"disabled":""}>${left>0?"낚싯대를 던진다":"오늘은 다 던졌다"}</button>`;
   return `<div class="shop">${head}${stage}
-    <p class="note">찌가 쑥 들어가면 1.5초 안에 챈다. 너무 일찍 채도, 늦어도 놓친다.${ex?` 이 지역 특산: ${fishName(ex)}.`:""}</p>
-    <div class="row" style="margin-top:6px"><span class="note" style="margin:0;flex:1">어망: ${bag||"비었다"}</span><button class="btn sm ghost" type="button" id="fishSell">물고기 팔기</button></div></div>`}
+    <p class="note">오늘 ${REGIONS[h.loc].n} 날씨는 <b>${W.n}</b> · ${W.tip}.${ex.length?` 이 지역에서만: ${ex.map(k=>h.fdex?.[k]?fishName(k):"???").join(", ")}.`:""} 찌가 쑥 들어가면 1.5초 안에 챈다. 너무 일찍 채도, 늦어도 놓친다.</p>
+    <div class="row" style="margin-top:6px"><span class="note" style="margin:0;flex:1">어망: ${bag||"비었다"}</span><button class="btn sm ghost" type="button" id="fishSell">물고기 팔기</button></div>
+    <button type="button" class="shoph" id="dexBtn" style="margin-top:8px"><span class="kicker">어보 · ${Object.keys(h.fdex||{}).filter(k=>FISHDB[k]).length}/${FISH_N}종 · 지금까지 ${cnt(h,"fish")}마리</span><i>${dexOpen?"접기 ▴":"펼치기 ▾"}</i></button>${dexOpen?dexView(h):""}</div>`}
+let dexOpen=false;
+const RN=k=>REGIONS[k]?.n||k;
+function dexView(h){const d=h.fdex||{};return `<div class="dex">${Object.entries(FISHDB).sort((a,b)=>a[1][3]-b[1][3]).map(([k,f])=>{const got=d[k];
+  const where=[f[4]?f[4].map(RN).join("·"):"어디서나",f[5]?f[5].map(w=>WEATHER[w].n).join("·")+"인 날":""].filter(Boolean).join(" · ");
+  return `<div class="dx t${f[3]} ${got?"got":""}"><b>${got?f[0]:"???"}</b><span>${FISH_TIER[f[3]]} · ${got?`${got}마리 · ${f[1]}냥`:where}</span></div>`}).join("")}</div>
+  <p class="note">못 잡은 고기는 나오는 곳과 날씨만 알려 준다. 귀함·전설 고기는 물고기 팔기에서 빠진다.</p>`}
 
 /* ───────── 내 장원: 물건을 만들어 두면 능력치가 오른다 ───────── */
 const FURN={
@@ -3688,7 +3737,7 @@ function worldTab(){
         :confirmAbort?`<button class="btn sealb" id="abYes" type="button">돌아가기</button><button class="btn ghost" id="abNo" type="button">계속 가기</button>`
         :`<button class="btn ghost" id="abBtn" type="button">발길 돌리기</button>`}</div></div>`}
   const focus=dest||(h.travel?h.travel.to:h.loc),R=REGIONS[focus];
-  let regionBox=`<div class="region"><div><h3>${R.n}</h3><div class="place">${R.place}</div></div><p>${R.note}</p>${(REGION_SECTS[focus]||[]).length?`<div class="homes">${REGION_SECTS[focus].map(k=>`<span>${emblem(k,"sm")}${SECTS[k].n}의 근거지</span>`).join("")}</div>`:""}`;
+  let regionBox=`<div class="region"><div><h3>${R.n} <span class="wx" title="오늘 날씨">${WEATHER[weatherOf(focus)].ch} ${WEATHER[weatherOf(focus)].n}</span></h3><div class="place">${R.place}</div></div><p>${R.note}</p>${(REGION_SECTS[focus]||[]).length?`<div class="homes">${REGION_SECTS[focus].map(k=>`<span>${emblem(k,"sm")}${SECTS[k].n}의 근거지</span>`).join("")}</div>`:""}`;
   if(!h.travel&&dest&&dest!==h.loc){
     const direct=teaHrs(h,hrsFor(h,roadHours(h.loc,dest),dest)),tg=speedTags(h,dest),lock=R.minRealm&&h.realm<R.minRealm;
     if(lock) regionBox+=`<p class="note">${REALMS[R.minRealm].n} 이상만 들어갈 수 있다.</p>`;
@@ -3851,7 +3900,7 @@ function bind(){
   document.querySelectorAll("[data-hdig]").forEach(b=>b.addEventListener("click",()=>happenDig(b.dataset.hdig)));
   document.querySelectorAll("[data-hduel]").forEach(b=>b.addEventListener("click",()=>happenDuel(b.dataset.hduel)));
   document.querySelectorAll("[data-hgo]").forEach(b=>b.addEventListener("click",()=>{dest=b.dataset.hgo;tab="world";render();try{document.querySelector(".region")?.scrollIntoView({block:"start"})}catch(e){}}));
-  on("#fishCast",fishCast);on("#fishPull",()=>fishPull(false));on("#fishSell",fishSell);
+  on("#dexBtn",()=>{dexOpen=!dexOpen;render()});on("#fishCast",fishCast);on("#fishPull",()=>fishPull(false));on("#fishSell",fishSell);
   document.querySelectorAll("[data-craft]").forEach(b=>b.addEventListener("click",()=>craftFurn(b.dataset.craft)));
   document.querySelectorAll("[data-fold]").forEach(b=>b.addEventListener("click",()=>toggleFold(b.dataset.fold)));
   document.querySelectorAll("[data-reroll]").forEach(b=>b.addEventListener("click",()=>rerollOpt(gsel,+b.dataset.reroll)));
