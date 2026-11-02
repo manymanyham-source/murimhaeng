@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261102011214">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261102193809">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -3593,6 +3593,8 @@ function render(){
   const ae=document.activeElement;if(ae&&ae.closest?.(".mailf")&&/^(INPUT|TEXTAREA)$/.test(ae.tagName)&&ae.type!=="checkbox"&&ae.type!=="radio"){if(!render.pend){render.pend=true;ae.addEventListener("blur",()=>{render.pend=false;setTimeout(render,0)},{once:true})}return}
   const app=$("#app"),fb0=$("#inlineFeed"),fbAt=!fb0||fb0.scrollHeight-fb0.scrollTop-fb0.clientHeight<30,fbSt=fb0?.scrollTop||0;
   if(!ready){app.innerHTML="";return}
+  /* 의뢰가 바뀌는 날이면 새 의뢰를 그 자리에서 기록해 둔다 (기록해야 그 뒤에 한 일이 쌓인다) */
+  if(me&&(me.quests?.day!==dayKey()||me.qweek?.wk!==weekKey())&&!render.qs){render.qs=true;setTimeout(()=>{render.qs=false;if(!me||(me.quests?.day===dayKey()&&me.qweek?.wk===weekKey()))return;save(ensureQuests(structuredClone(me)))},0)}
   $("#status").textContent = mode==="db"
     ? (others.length?`${others.length+(me?1:0)}명이 이 무림에 있습니다.`:"함께할 사람을 기다리는 중입니다.")
     : "이 기기에만 기록되는 홀로 수련 모드입니다.";
