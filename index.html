@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261102211255">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261103002531">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -130,6 +130,8 @@ section{margin-top:30px}
 .wx{font-family:var(--f-body);font-size:13px;font-weight:400;color:var(--ink-2);border:1px solid var(--line);padding:1px 8px;border-radius:20px;vertical-align:3px;margin-left:6px}
 .dex{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-top:8px}.dx{border:1px dashed var(--line);padding:6px 8px;font-size:12px;color:var(--ink-3)}
 .dx b{display:block;font-size:13px}.dx.got{border-style:solid;color:var(--ink-2)}.dx.got b{color:var(--ink)}.dx.got.t1 b{color:var(--c-dang)}.dx.got.t2 b{color:var(--c-mudang)}.dx.got.t3 b{color:var(--c-sorim)}
+.retake{margin-top:14px;padding:12px 14px;border:1px solid #7C1F2A;background:rgba(124,31,42,.06)}.retake.freed{border-color:var(--c-dang);background:rgba(54,115,72,.08)}.retake p{margin:6px 0 8px}
+.wall.occ{border-color:#7C1F2A;background:rgba(124,31,42,.08)}
 .qlist{display:grid;gap:8px;margin-top:8px}.qrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);background:var(--paper)}
 .qrow>div{flex:1;min-width:0}.qrow b{display:block}.qrow span{font-size:12px;color:var(--ink-2)}.qrow em{font-style:normal;font-size:12px;color:var(--ink-3)}.qrow.done{opacity:.55}.qrow.week{margin-top:8px;border-color:var(--ink)}
 .qbar{height:4px;background:var(--line);margin-top:6px}.qbar i{display:block;height:100%;background:var(--seal)}
@@ -1992,6 +1994,7 @@ const TITLES=[
   {id:"d1",g:"논검",n:"논검 첫 승",hint:"논검비무에서 처음 이긴다",ok:h=>cnt(h,"duelW")>=1},
   {id:"d10",g:"논검",n:"검론의 달인",hint:"논검비무에서 10번 이긴다",ok:h=>cnt(h,"duelW")>=10},
   {id:"d30",g:"논검",n:"검을 논하는 자",hint:"논검비무를 30번 겨룬다",ok:h=>cnt(h,"duelW")+cnt(h,"duelL")+cnt(h,"duelD")>=30},
+  {id:"re1",g:"강호",n:"탈환의 영웅",hint:"마교에게서 지역을 되찾을 때 공로 1위를 한다",ok:h=>cnt(h,"reTop")>=1},
   {id:"f10",g:"낚시",n:"초보 강태공",hint:"물고기를 10마리 낚는다",ok:h=>cnt(h,"fish")>=10},
   {id:"f100",g:"낚시",n:"강태공",hint:"물고기를 100마리 낚는다",ok:h=>cnt(h,"fish")>=100},
   {id:"f500",g:"낚시",n:"어신(魚神)",hint:"물고기를 500마리 낚는다",ok:h=>cnt(h,"fish")>=500},
@@ -2201,7 +2204,7 @@ const shopHead=(k,label)=>`<button type="button" class="shoph" data-shop="${k}" 
 const INN={mandu:12,dongpo:40,samgye:35,longjing:20,puer:20,herb:15,wine:25,zhuye:35,hyang:40,trinket:40,nuer:55,binyeo:65};
 /* 내 문파 근거지의 객잔은 15% 싸게 판다 */
 const atHome=h=>!h.travel&&(REGION_SECTS[h.loc]||[]).includes(h.sect);
-const mkt=h=>happenHere("market",h?.loc)&&!h?.travel?.7:1;
+const mkt=h=>h?.travel?1:(happenHere("market",h?.loc)?.7:1)*(occupied(h?.loc)?1.5:festival(h?.loc)?.8:1);
 const innPrice=(h,k)=>Math.round(INN[k]*(atHome(h)?.85:1)*mkt(h));
 function innBuy(k){const h=structuredClone(me),p=INN[k]&&innPrice(h,k);if(!p||h.travel)return;if((h.silver||0)<p){toast(`은자가 ${p-(h.silver||0)}냥 모자랍니다.`);return}
   h.silver-=p;h.items[k]++;addLog(h,`객잔에서 ${josa(ITEMS[k][0],"을")} 샀다. (${silverTxt(p)})`);save(h);toast(`${ITEMS[k][0]} +1 · ${silverTxt(h.silver)} 남음`)}
@@ -2530,6 +2533,51 @@ const invPts=h=>h?.inv?.id&&h.inv.id===invasion?.id?h.inv.pts||0:0;
 const invList=()=>allHeroes().filter(h=>h&&invPts(h)>0&&!(h._id&&String(h._id).startsWith("fake-"))).map(h=>({id:h===me?myId():h._id,name:h.name,pts:invPts(h===me?me:h)})).sort((a,b)=>b.pts-a.pts);
 const invTotal=()=>invList().reduce((a,x)=>a+x.pts,0);
 function invDown(){return !!invasion&&invTotal()>=invasion.hp}
+/* 침공을 막지 못하면 그 지역이 하루 동안 마교에 점령된다: 사건을 맡을 수 없고, 객잔·마방 값이 50% 오른다 */
+const OCC_LEN=24*3600e3;
+const occEnd=()=>invasion?invasion.end+OCC_LEN:0;
+const invFailed=()=>!!invasion&&invasion.status==="on"&&sNow()>=invasion.end&&!invDown();
+/* 탈환전: 의병 지원(물자)과 잠입 정찰(판정)으로 마교의 장악력을 깎는다. 다 깎으면 남은 시간은 해방 축제 */
+const rePts=h=>h?.reclaim?.id&&h.reclaim.id===invasion?.id?h.reclaim.pts||0:0;
+const reList=()=>allHeroes().filter(h=>h&&rePts(h)>0&&!(h._id&&String(h._id).startsWith("fake-"))).map(h=>({id:h===me?myId():h._id,name:h.name,pts:rePts(h===me?me:h)})).sort((a,b)=>b.pts-a.pts);
+const reTotal=()=>reList().reduce((a,x)=>a+x.pts,0);
+const reNeed=()=>invasion?Math.max(600,Math.round(invasion.hp*.15)):0;
+const reFreed=()=>invFailed()&&reTotal()>=reNeed();
+const occWindow=region=>invFailed()&&region===invasion.region&&sNow()<occEnd();
+const occupied=region=>occWindow(region)&&!reFreed();
+const festival=region=>occWindow(region)&&reFreed();
+const RE_DONATE={silver:{n:"은자 100냥",need:{silver:100},pts:30},herb:{n:"약초 5개",need:{herb:5},pts:25},stone:{n:"강화석 5개",need:{stone:5},pts:30}};
+const RE_DON_DAY=5;
+const reDay=h=>h.reDay?.day===dayKey()?h.reDay:{day:dayKey(),don:0,scout:0};
+function reAdd(h,pts){h.reclaim=rePts(h)?h.reclaim:{id:invasion.id,pts:0};h.reclaim.pts+=pts;return pts}
+function reDonate(k){const D=RE_DONATE[k],h=structuredClone(me);if(!D||!occupied(invasion?.region))return;if(h.travel||h.loc!==invasion.region){toast(`${REGIONS[invasion.region].n}에 있어야 의병에게 물자를 건넬 수 있다.`);return}
+  const d=reDay(h);if(d.don>=RE_DON_DAY){toast("오늘은 더 건넬 수 없다.");return}
+  for(const [m,v] of Object.entries(D.need)){if((m==="silver"?h.silver||0:h.items[m]||0)<v){toast(`${josa(D.n,"이")} 모자라다.`);return}}
+  for(const [m,v] of Object.entries(D.need)){if(m==="silver")h.silver-=v;else h.items[m]-=v}
+  d.don++;h.reDay=d;reAdd(h,D.pts);addLog(h,`의병에게 ${josa(D.n,"을")} 건넸다. 마교의 장악력 -${D.pts}`);save(h);toast(`의병 지원 · 장악력 -${D.pts}`)}
+function reScout(){const h=structuredClone(me);if(!occupied(invasion?.region))return;if(h.travel||h.loc!==invasion.region){toast(`${REGIONS[invasion.region].n}에 있어야 잠입할 수 있다.`);return}
+  const d=reDay(h);if(d.scout>=1){toast("오늘은 이미 잠입했다.");return}
+  const st=h.stats.shen>=h.stats.nei?"shen":"nei",bonus=Math.floor(h.stats[st]/10),roll=1+Math.floor(Math.random()*20),dc=dcFor(h.realm)+2,ok=roll===20||(roll!==1&&roll+bonus>=dc);
+  d.scout++;h.reDay=d;let txt;
+  if(ok){const pts=reAdd(h,90+h.realm*15);txt=pickOne(["마교의 보급 창고에 불을 놓고 빠져나왔다.","마교 향주의 명령서를 훔쳐 의병에게 넘겼다.","보초 셋을 소리 없이 쓰러뜨리고 감옥 문을 열었다."])+` 장악력 -${pts}`}
+  else{const lost=Math.min(h.silver||0,30+h.realm*5);h.silver-=lost;txt=pickOne(["발각되어 담을 넘어 도망쳤다.","함정에 걸려 겨우 빠져나왔다."])+` 은자 ${lost}냥을 잃었다.`}
+  addLog(h,`마교 점령지 잠입 · ${STATS[st].n} 판정 ${roll}+${bonus}/${dc} · ${txt}`);save(h);toast(ok?`잠입 성공! ${txt}`:`잠입 실패… ${txt}`)}
+function reClaim(){const h=structuredClone(me);if(!reFreed()||!rePts(h)||h.reClaimed===invasion.id)return;const list=reList(),rank=list.findIndex(x=>x.id===myId());
+  const got=[silverTxt(addSilver(h,120+(rank===0?150:rank<3?60:0)))];h.items.stone+=5;got.push("강화석 +5");const x=Math.round(expPerHour(h.level)*2);applyExp(h,x);got.push(`경험치 +${x}`);
+  if(rank===0){bump(h,"reTop");got.push("탈환 공로 1위")}bump(h,"reWin");h.reClaimed=invasion.id;
+  addLog(h,`${josa(REGIONS[invasion.region].n,"을")} 마교에게서 되찾았다! ${got.join(", ")}`);save(h);toast(`탈환 보상 · ${got.join(" · ")}`)}
+function reBox(h){if(!invFailed()||sNow()>=occEnd())return "";const R=REGIONS[invasion.region],tot=reTotal(),need=reNeed(),left=Math.max(0,need-tot),freed=reFreed(),here=!h.travel&&h.loc===invasion.region,d=reDay(h),mine=rePts(h),list=reList();
+  if(freed)return `<div class="retake freed"><div class="kicker">탈환 성공 · ${R.n}</div><p><b>${josa(R.n,"을")} 되찾았다!</b> 마교가 물러갔다. <span data-suntil="${occEnd()}"></span> 동안 해방 축제로 객잔·마방이 20% 싸다.</p>
+    <div class="invrank">${list.slice(0,5).map((x,i)=>`<span class="${x.id===myId()?"me":""}">${i+1}. ${esc(x.name)} ${x.pts.toLocaleString()}</span>`).join("")}</div>
+    ${mine&&h.reClaimed!==invasion.id?`<button class="btn sealb" type="button" id="reClaim" style="margin-top:8px">탈환 보상 받기</button>`:mine?`<p class="note" style="margin:6px 0 0">탈환 보상을 받았다.</p>`:""}</div>`;
+  return `<div class="retake"><div class="kicker">탈환전 · ${R.n}</div><p>마교가 ${josa(R.n,"을")} 장악하고 있다. 의병을 돕고 점령지에 잠입해 마교를 몰아내자. 장악력을 모두 깎으면 바로 물러간다.</p>
+    <div class="invbar"><i style="width:${Math.min(100,left/need*100)}%"></i><span>마교의 장악력 ${left.toLocaleString()} / ${need.toLocaleString()}</span></div>
+    ${here?`<div class="shopl" style="margin-top:8px">${Object.entries(RE_DONATE).map(([k,D])=>`<button class="shopi" type="button" data-redon="${k}" ${d.don>=RE_DON_DAY?"disabled":""}><b>의병 지원</b><span>${D.n} 건네기</span><em>장악력 -${D.pts}</em></button>`).join("")}
+      <button class="shopi" type="button" id="reScout" ${d.scout>=1?"disabled":""}><b>잠입 정찰</b><span>${h.stats.shen>=h.stats.nei?"신법":"내공"} 판정 · 실패하면 은자를 잃는다</span><em>${d.scout?"오늘 했다":"하루 1번"}</em></button></div>
+      <p class="note">의병 지원은 하루 ${RE_DON_DAY}번 (오늘 ${d.don}/${RE_DON_DAY}). 잠입은 성공하면 장악력을 크게 깎는다.</p>`
+      :`<div class="row" style="margin-top:8px"><button class="btn" type="button" data-hgo="${invasion.region}">${R.n} 지도에서 보기</button><span class="note" style="margin:0">그 지역에 가야 도울 수 있다.</span></div>`}
+    <div class="invrank">${list.slice(0,5).map((x,i)=>`<span class="${x.id===myId()?"me":""}">${i+1}. ${esc(x.name)} ${x.pts.toLocaleString()}</span>`).join("")||`<span>아직 아무도 나서지 않았다.</span>`}</div>
+    <p class="note" style="margin:4px 0 0">내 공로 <b>${mine}</b> · 되찾으면 공로가 있는 모두가 보상을 받고, 1위는 「탈환의 영웅」 칭호를 얻는다.</p></div>`}
 function addInv(h,pts){if(!invActive())return 0;pts=Math.max(1,Math.round(pts));h.inv=h.inv?.id===invasion.id?h.inv:{id:invasion.id,pts:0};h.inv.pts+=pts;return pts}
 /* 침공 중인 지역에서는 탐문과 소굴에 마교도가 섞여 나온다 */
 const invHere=(region,t=sNow())=>!!invasion&&invasion.status==="on"&&region===invasion.region&&t>=invasion.start&&t<invasion.end;
@@ -2550,17 +2598,17 @@ function invClaim(){if(!invasion)return;const h=structuredClone(me),mine=invPts(
   else{got.push(silverTxt(addSilver(h,40)));h.items.stone+=2;got.push("강화석 +2")}
   h.invClaimed=invasion.id;addLog(h,`마교 침공 ${won?"격퇴":"종료"} · 내 기여 ${mine} · ${got.join(", ")}`);save(h);toast(won?"마교를 물리쳤습니다! 보상을 받았습니다.":"침공이 끝났습니다. 위로 보상을 받았습니다.")}
 function invBox(h){if(!invOn())return "";const mine=invPts(h),over=sNow()>=invasion.end||invDown(),claimable=over&&mine>0&&h.invClaimed!==invasion.id;
-  if(over&&!claimable&&sNow()-invasion.end>86400e3)return "";
+  if(over&&!claimable&&sNow()>=occEnd()&&!(reFreed()&&rePts(h)&&h.reClaimed!==invasion.id))return "";
   const tot=invTotal(),left=Math.max(0,invasion.hp-tot),list=invList(),R=REGIONS[invasion.region],n=h.invDay?.day===dayKey()?h.invDay.n:0,here=!h.travel&&h.loc===invasion.region;
   return `<section class="inv"><div class="label">마교 침공 · ${R.n}</div>
-    <p>${over?(invDown()?`<b>마교를 물리쳤다!</b> 강호가 힘을 모아 ${josa(R.n,"을")} 지켜 냈다.`:`침공이 끝났다. 마교는 ${josa(R.n,"을")} 휩쓸고 물러갔다.`):`천마신교의 무리가 <b>${R.n}</b>에 쳐들어왔다. <span data-suntil="${invasion.end}"></span> 안에 모두의 힘으로 몰아내야 한다.`}</p>
+    <p>${over?(invDown()?`<b>마교를 물리쳤다!</b> 강호가 힘을 모아 ${josa(R.n,"을")} 지켜 냈다.`:`침공을 막지 못했다. 마교가 ${josa(R.n,"을")} 점령했다.${sNow()<occEnd()?` <span data-suntil="${occEnd()}"></span> 동안 그곳에서는 사건을 맡을 수 없고, 객잔·마방 값이 50% 오른다.`:" 이제 마교는 물러갔다."}`):`천마신교의 무리가 <b>${R.n}</b>에 쳐들어왔다. <span data-suntil="${invasion.end}"></span> 안에 모두의 힘으로 몰아내야 한다.`}</p>
     <div class="invbar"><i style="width:${Math.min(100,left/invasion.hp*100)}%"></i><span>마교의 기세 ${left.toLocaleString()} / ${invasion.hp.toLocaleString()}</span></div>
     <p class="note">기여 쌓는 법: ${R.n} 사건 해결(쉬움 60 · 보통 100 · 어려움 200, 탐문 중 마교도를 쓰러뜨리면 한 명당 +15), 어디서든 소굴 보스전 +80, 관문 돌파 +200, ${R.n}에서 순찰대 토벌(하루 ${INV_PATROL}번).</p>
     <div class="invrank">${list.slice(0,5).map((x,i)=>`<span class="${x.id===myId()?"me":""}">${i+1}. ${esc(x.name)} ${x.pts.toLocaleString()}</span>`).join("")||`<span>아직 아무도 싸우지 않았다.</span>`}</div>
     <div class="row" style="margin-top:10px"><span class="note" style="margin:0">내 기여 <b>${mine.toLocaleString()}</b></span>
     ${claimable?`<button class="btn sealb" type="button" id="invClaim">${invDown()?"격퇴 보상 받기":"위로 보상 받기"}</button>`
       :over?"":here?`<button class="btn sealb" type="button" id="invPatrol" ${n>=INV_PATROL||activity(h)?"disabled":""}>순찰대와 싸운다 · 오늘 ${INV_PATROL-n}/${INV_PATROL}</button>`
-      :`<button class="btn ghost" type="button" id="invGo">${R.n} 지도에서 보기</button>`}</div></section>`}
+      :`<button class="btn ghost" type="button" id="invGo">${R.n} 지도에서 보기</button>`}</div>${reBox(h)}</section>`}
 /* 관리자: 침공 시작·끝내기 (공지 탭) */
 let invDraft={region:"henan",days:3,per:1500};
 async function invStart(){if(!isOwner||mode!=="db")return;const people=Math.max(3,allHeroes().filter(h=>h.sect&&!(h._id&&String(h._id).startsWith("fake-"))).length),d=invDraft;
@@ -3371,6 +3419,7 @@ function startMission(diff){
   const h=structuredClone(me),p=periodNow();diff=+diff||0;
   if(activity(h)){toast(`${busyText[activity(h)]} 임무를 맡을 수 없습니다.`);return}
   if(misDone(h,h.loc,diff,p)){toast("이 사건은 이미 해결했습니다.");return}
+  if(occupied(h.loc)){toast(`${josa(REGIONS[h.loc].n,"은")} 마교에 점령되어 사건을 맡을 수 없습니다.`);return}
   const idx=incidentSlots(h.loc,p)[diff],inc=INC[h.loc][idx],now=Date.now(),d=missionHours(h.realm,diff);
   h.mission={region:h.loc,period:p,idx,diff,tr:traitsOf(h),start:now,end:now+d*3600e3,phase:"wait",step:0,clues:0,rolls:[],fight:null};
   addLog(h,`「${inc.t}」 사건을 맡아 탐문을 시작했다.`); save(h);
@@ -3723,6 +3772,8 @@ function mapSvg(){
   const marks={};const addM=(r,ch,cls,lab)=>{(marks[r]=marks[r]||[]).push({ch,cls,lab})};
   {const B=bossFor(periodNow());addM(B.region,"討","mk-boss",`토벌 · ${B.n}`)}
   if(invOn()&&sNow()<invasion.end)addM(invasion.region,"魔","mk-inv","마교 침공");
+  if(invasion&&occupied(invasion.region))addM(invasion.region,"占","mk-inv","마교 점령");
+  if(invasion&&festival(invasion.region))addM(invasion.region,"祭","mk-hap","해방 축제");
   {const c=caravan();if(c.here)addM(c.region,"商","mk-cv","떠돌이 상단")}
   happenNow().forEach(e=>addM(e.region,HAPPEN_T[e.type].ch,"mk-hap",`강호 돌발 · ${HAPPEN_T[e.type].n}`));
   const markSvg=Object.entries(marks).map(([r,list])=>{const R=REGIONS[r];return list.map((m,i)=>`<g class="mk ${m.cls}" transform="translate(${R.x+13+i*15} ${R.y-22})"><title>${m.lab}</title><rect x="-7" y="-7" width="14" height="14" rx="2"/><text y="3.6">${m.ch}</text></g>`).join("")}).join("");
@@ -3730,7 +3781,7 @@ function mapSvg(){
     <path class="river" d="M20,58 C80,52 120,74 175,82 S290,70 395,58"/><text class="rname" x="196" y="74">황하</text>
     <path class="river" d="M70,248 C130,236 180,250 240,242 S330,252 395,236"/><text class="rname" x="300" y="262">장강</text>
     ${roads}${nodes}${markSvg}${mates}${me2}</svg></div>
-    <div class="mklegend"><span><i class="mk-boss">討</i>이번 토벌 · ${bossFor(periodNow()).n}</span>${invOn()&&sNow()<invasion.end?`<span><i class="mk-inv">魔</i>마교 침공</span>`:""}${caravan().here?`<span><i class="mk-cv">商</i>떠돌이 상단</span>`:""}${happenNow().map(e=>`<span><i class="mk-hap">${HAPPEN_T[e.type].ch}</i>${HAPPEN_T[e.type].n} · ${REGIONS[e.region].n}</span>`).join("")}</div>`;
+    <div class="mklegend"><span><i class="mk-boss">討</i>이번 토벌 · ${bossFor(periodNow()).n}</span>${invOn()&&sNow()<invasion.end?`<span><i class="mk-inv">魔</i>마교 침공</span>`:""}${invasion&&occupied(invasion.region)?`<span><i class="mk-inv">占</i>마교 점령 · ${REGIONS[invasion.region].n}</span>`:""}${invasion&&festival(invasion.region)?`<span><i class="mk-hap">祭</i>해방 축제 · ${REGIONS[invasion.region].n}</span>`:""}${caravan().here?`<span><i class="mk-cv">商</i>떠돌이 상단</span>`:""}${happenNow().map(e=>`<span><i class="mk-hap">${HAPPEN_T[e.type].ch}</i>${HAPPEN_T[e.type].n} · ${REGIONS[e.region].n}</span>`).join("")}</div>`;
 }
 function worldTab(){
   const h=me,a=activity(h),now=Date.now();
@@ -3759,6 +3810,7 @@ function missionBox(){
   const h=me,m=h.mission,now=Date.now();
   if(!m){
     if(h.travel) return `<p class="empty">길 위에서는 사건을 맡을 수 없다. 목적지에 도착하면 그 지역의 사건을 볼 수 있다.</p>`;
+    if(occupied(h.loc))return `<div class="wall occ"><p><b>${josa(REGIONS[h.loc].n,"은")} 마교에 점령되었다.</b> 마교도들이 거리를 지키고 있어 사건을 맡을 수 없다. 객잔과 마방 값도 50% 올랐다.</p><p class="note" style="margin:0"><span data-suntil="${occEnd()}"></span> 뒤에 마교가 물러간다. 강호 탭 위의 탈환전에서 의병을 돕거나 잠입하면 더 빨리 몰아낼 수 있다.</p></div>`;
     const p=periodNow(),a=activity(h),slots=incidentSlots(h.loc,p);
     const cards=slots.map((idx,d)=>{const inc=INC[h.loc][idx],D=DIFF[d],done=misDone(h,h.loc,d,p);
       return `<div class="case ${done?"done":""}" style="margin-bottom:12px"><div class="kicker">${REGIONS[h.loc].n} · <span class="diff d${d}">${D.n}</span> · 탐문 ${hrsTxt(missionHours(h.realm,d))}${done?" · 해결함":""}</div><h3>${inc.t}</h3>${done?"":`<p>${inc.i}</p>`}
@@ -3901,6 +3953,7 @@ function bind(){
   document.querySelectorAll("[data-bgforget]").forEach(b=>b.addEventListener("click",()=>{bigupForget=b.dataset.bgforget||null;render()}));
   document.querySelectorAll("[data-bgforgetok]").forEach(b=>b.addEventListener("click",()=>bigupDrop(b.dataset.bgforgetok)));
   on("#bgLearn",bigupLearn);
+  document.querySelectorAll("[data-redon]").forEach(b=>b.addEventListener("click",()=>reDonate(b.dataset.redon)));on("#reScout",reScout);on("#reClaim",reClaim);
   document.querySelectorAll("[data-quest]").forEach(b=>b.addEventListener("click",()=>claimQuest(+b.dataset.quest)));on("#qWeek",claimWeek);
   document.querySelectorAll("[data-hdig]").forEach(b=>b.addEventListener("click",()=>happenDig(b.dataset.hdig)));
   document.querySelectorAll("[data-hduel]").forEach(b=>b.addEventListener("click",()=>happenDuel(b.dataset.hduel)));
