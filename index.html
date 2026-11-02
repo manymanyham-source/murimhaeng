@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261102193809">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261102211255">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1320,19 +1320,19 @@ function bestOf(stats,extra,dc){let m=-1;stats.forEach(st=>{if(st){const c=chanc
    방(gates/<id>)은 막을 처리한 사람만 쓴다. 각자의 선택은 자기 문서(gateacts/<내 id>)에만 쓴다.
    모두 고르거나 90초가 지나면, 누구든 먼저 잠금을 얻은 사람이 그 막을 처리한다. */
 const GATES={
-  3:{boss:"혈안산군",sn:"혈안산군",title:"절정의 관문",region:"hubei",hp:3000,def:100,aoe:100,smash:320,roar:{need:350,dmg:900},adds:{hp:600,bite:40,n:"새끼 요괴"},psn:40,ready:true,hitN:"앞발 휘두르기",
+  3:{boss:"혈안산군",sn:"혈안산군",title:"절정의 관문",region:"hubei",hp:3300,def:100,aoe:108,smash:340,roar:{need:350,dmg:900},adds:{hp:600,bite:40,n:"새끼 요괴"},psn:40,ready:true,hitN:"앞발 휘두르기",
      lore:"무당산 깊은 숲, 사람 손에 길러진 거대한 호랑이 요괴. 붉은 눈이 밤마다 마을을 내려다본다.",
      win:"혈안산군이 마지막 숨을 몰아쉬며 쓰러졌다. 목에 감긴 낡은 가죽 끈에는 검은 뱀이 새겨져 있었다.",
      lose:"모두 쓰러졌다. 혈안산군은 유유히 숲으로 사라졌다.",flee:"혈안산군이 상처 입은 몸을 끌고 숲 깊이 달아났다. 다음엔 놓치지 않는다.",slideHit:"비탈이 무너졌다!"},
-  4:{boss:"흑사련주 진무악",sn:"진무악",title:"초절정의 관문",region:"jiangnan",hp:4600,def:115,aoe:125,smash:390,roar:{need:500,dmg:1150},adds:{hp:850,bite:50,n:"흑사련 무사"},psn:50,refl:.25,ready:true,hitN:"흑사장 연타",
+  4:{boss:"흑사련주 진무악",sn:"진무악",title:"초절정의 관문",region:"jiangnan",hp:5800,def:115,aoe:145,smash:450,roar:{need:620,dmg:1350},adds:{hp:1050,bite:58,n:"흑사련 무사"},psn:58,refl:.25,ready:true,hitN:"흑사장 연타",
      lore:"요괴를 키운 배후. 마교의 돈을 받고 일하는 사파 연합의 우두머리. 강남 물길 위의 누선에서 손님을 기다린다.",
      win:"진무악이 무릎을 꿇었다. 품에서 떨어진 서찰에는 붉은 마교의 인장이 찍혀 있었다.",
      lose:"모두 쓰러졌다. 진무악의 웃음소리가 강남의 물길 위로 멀어져 갔다.",flee:"진무악이 연막 속으로 사라졌다. 흑사련의 배가 강 건너로 미끄러져 갔다.",slideHit:"독침이 쏟아졌다!"},
-  5:{boss:"혈영마군 사도현",sn:"사도현",title:"화경의 관문",region:"shaanxi",hp:6200,def:130,aoe:170,smash:520,roar:{need:700,dmg:1500},adds:{hp:1100,bite:70,n:"혈영 분신"},psn:70,drain:.6,ready:true,hitN:"혈영장",
+  5:{boss:"혈영마군 사도현",sn:"사도현",title:"화경의 관문",region:"shaanxi",hp:8000,def:130,aoe:210,smash:630,roar:{need:900,dmg:1850},adds:{hp:1450,bite:80,n:"혈영 분신"},psn:80,drain:.6,ready:true,hitN:"혈영장",
      lore:"사파를 부리던 마교 간부. 정파 문파에 첩자를 심어두었다. 화산 아래 버려진 사당에서 피 냄새가 난다.",
      win:"사도현의 몸이 핏빛 안개로 흩어졌다. 남은 것은 천마신교 장로의 영패 하나뿐이었다.",
      lose:"모두 쓰러졌다. 사도현이 핏빛 안개 속에서 낮게 웃었다.",flee:"사도현의 몸이 핏빛 안개로 흩어져 서쪽 하늘로 날아갔다.",slideHit:"핏물이 솟구쳤다!"},
-  6:{boss:"천마 혁련천",sn:"천마",title:"현경의 관문",region:"xiyu",hp:8400,def:145,aoe:215,smash:640,roar:{need:900,dmg:2000},adds:{hp:1500,bite:90,n:"마령"},psn:90,refl:.3,drain:.6,ready:true,hitN:"천마수",
+  6:{boss:"천마 혁련천",sn:"천마",title:"현경의 관문",region:"xiyu",hp:11500,def:145,aoe:265,smash:790,roar:{need:1200,dmg:2550},adds:{hp:2000,bite:108,n:"마령"},psn:108,refl:.3,drain:.6,ready:true,hitN:"천마수",
      lore:"모든 사건의 끝. 천산 꼭대기 천마신교의 총단에서 강호 전체를 내려다본다.",
      win:"천마가 쓰러졌다. 천마신교의 깃발이 서역의 모래바람 속에 꺾였다. 강호에 오랜만의 아침이 온다.",
      lose:"모두 쓰러졌다. 천마는 돌아보지도 않고 총단 안으로 걸어 들어갔다.",flee:"천마가 모래바람 속으로 사라졌다. 강호의 그림자가 다시 짙어진다.",slideHit:"하늘과 땅이 무너졌다!"}};
@@ -1412,7 +1412,7 @@ function gateOmen(room){
   const a=room.act,alive=room.party.filter(x=>x.hp>0),A=GA(room.realm)[a];let target=null;
   if(A.t==="mark"){const pl=alive.filter(x=>x.player);target=(pl.length&&Math.random()<.7?pickOne(pl):pickOne(alive)).id}
   const t=room.party.find(x=>x.id===target);
-  return {target,text:fill(A.omen,{t:t?gnm(t):"",need:GATES[room.realm].roar.need})};
+  return {target,text:fill(A.omen,{t:t?gnm(t):"",need:Math.round(GATES[room.realm].roar.need*(1+.3*((room.hum||1)-1)))})};
 }
 function openGate(){
   const h=me,nr=h.realm+1,G=GATES[nr];
@@ -1436,7 +1436,9 @@ function leaveGate(){const r=myRoom();gateLeaveConfirm=false;
   GS.setAct({room:null,joined:false,mode:"manual"})}
 function startGate(){
   const r=myRoom();if(!r||r.owner!==myId()||r.status!=="lobby")return;const G=GATES[r.realm],n=structuredClone(r);
-  n.party=buildGateParty(r);n.status="fight";n.act=1;n.bossHp=G.hp;n.bossMax=G.hp;n.rage=false;n.minions=0;n.poison={};
+  n.party=buildGateParty(r);n.status="fight";n.act=1;
+  /* 사람이 늘수록 보스도 단단해진다: 한 사람 더할 때마다 체력 +30% */
+  {const hum=n.party.filter(x=>x.player).length;n.bossHp=n.bossMax=Math.round(G.hp*(1+.3*(hum-1)));n.hum=hum}n.rage=false;n.minions=0;n.poison={};
   n.log=[{k:"sec",x:`${G.title} · ${G.boss}`},{k:"amb",x:G.lore},{k:"comp",x:`${G.sn}: ${GA(r.realm)[1].say}`}];
   n.omen=gateOmen(n);n.deadline=sNow()+GATE_WAIT;GS.setRoom(r.id,n);
   GS.setAct({...myAct(),act:1,action:null});
@@ -1471,7 +1473,8 @@ function resolveGate(room){
     acts[m.id]=m.player&&ad.room===n.id&&ad.mode!=="auto"&&ad.act===a&&ad.action?ad.action:gateAuto(n,m)}
   log.push({k:"sec",x:`${a}막 · ${A.n}`},{k:"ev2",sub:"omen",x:n.omen.text});
   if(n.vuln)n.vuln--;
-  if(T==="adds"){n.minions=G.adds.hp;log.push({k:"ev2",sub:"hit",x:`${G.adds.n}들이 앞을 가로막았다. (${G.adds.n} 체력 ${G.adds.hp.toLocaleString()})`})}
+  const HS=1+.3*((n.hum||1)-1);
+  if(T==="adds"){n.minions=Math.round(G.adds.hp*HS);log.push({k:"ev2",sub:"hit",x:`${G.adds.n}들이 앞을 가로막았다. (${G.adds.n} 체력 ${n.minions.toLocaleString()})`})}
   if(T==="seal")log.push({k:"ev2",sub:"hit",x:"혈도가 막혔다. 이번 막에는 아무도 무공을 쓸 수 없다."});
   let actDmg=0,taunt=null;const guard={},iron={},pshield={v:1};let weak=1;
   const deal=(atk,mult,hits,crit)=>{let s=0;for(let i=0;i<hits;i++){let d=Math.max(1,Math.round(atk*mult*100/(100+G.def)*(.9+Math.random()*.2)*(n.vuln>0?(n.vulnM||1.15):1)));if(Math.random()*100<crit)d=Math.round(d*1.5);s+=d}return s};
@@ -1508,7 +1511,7 @@ function resolveGate(room){
     else if(T==="slide"){const fall=Math.random()<.5?"left":"right",hitL=[];for(const m of alive()){if(sides[m.id]===fall){const d=take(m,G.smash*1.1,true);mark(m);hitL.push(`${gnm(m)} ${d<0?"회피":d}`)}}
       log.push({k:"ev2",sub:"act",x:`왼쪽: ${P.filter(x=>sides[x.id]==="left").map(gnm).join(", ")||"없음"} / 오른쪽: ${P.filter(x=>sides[x.id]==="right").map(gnm).join(", ")||"없음"}`});
       log.push({k:"ev2",sub:"hit",x:`${fall==="left"?"왼쪽":"오른쪽"}에 ${G.slideHit} ${hitL.length?hitL.join(" · "):"아무도 휘말리지 않았다."}`})}
-    else if(T==="roar"){const nd=G.roar.need,dm=G.roar.dmg;if(actDmg<nd){const al=alive(),each=Math.round(dm*bMul/al.length);al.forEach(m=>{m.hp=Math.max(0,m.hp-each);mark(m)});log.push({k:"ev2",sub:"hit",x:`피해 ${actDmg}로 모자랐다. ${A.n}${josa(A.n,"이").slice(A.n.length)} 모두를 덮친다! 각자 ${each} 피해 (${dm}을 ${al.length}명이 나눠 받음)`})}
+    else if(T==="roar"){const nd=Math.round(G.roar.need*HS),dm=G.roar.dmg;if(actDmg<nd){const al=alive(),each=Math.round(dm*bMul/al.length);al.forEach(m=>{m.hp=Math.max(0,m.hp-each);mark(m)});log.push({k:"ev2",sub:"hit",x:`피해 ${actDmg}로 모자랐다. ${A.n}${josa(A.n,"이").slice(A.n.length)} 모두를 덮친다! 각자 ${each} 피해 (${dm}을 ${al.length}명이 나눠 받음)`})}
       else log.push({k:"ev2",sub:"act",x:`${actDmg} 피해! 기세에 눌린 ${G.sn}의 ${A.n}${josa(A.n,"이").slice(A.n.length)} 흩어졌다.`})}
     else{
       if(T==="rage"&&n.bossHp<=n.bossMax/2&&!n.rage){n.rage=true;log.push({k:"ev2",sub:"hit",x:`${josa(G.sn,"이")} 광폭해졌다! 이제부터 공격이 1.3배로 거세진다.`})}
@@ -1533,14 +1536,14 @@ function resolveGate(room){
 }
 /* 도우미로 이긴 적 있는 관문: 벽에 닿으면 다시 싸우지 않고 바로 오른다 */
 function promoteByWin(){const h=structuredClone(me),nr=h.realm+1;if(!atWall(h)||!REALMS[nr]?.gate||!(h.gateWins?.[nr]>0))return;
-  h.realm=nr;h.points+=5;applyExp(h,0);const got=[`${REALMS[nr].n}의 경지에 올랐다! (포인트 +5)`];(ADV[h.sect]||[]).filter(x=>x.r===nr).forEach(x=>got.push(`새 무공 「${x.n}」을 깨쳤다`));
+  h.realm=nr;h.points+=5;applyExp(h,0);const got=[`${REALMS[nr].n}의 경지에 올랐다! (포인트 +5)`];(ADV[h.sect]||[]).filter(x=>x.r===nr).forEach(x=>got.push(`새 무공 「${x.n}」${josa(String(x.n),"을").slice(String(x.n).length)} 깨쳤다`));
   addLog(h,`${GATES[nr].title}에서 이긴 기억을 되새겨 벽을 넘었다. ${got.join(", ")}`);save(h);toast(got.join(" · "))}
 function claimGate(){
   const r=myRoom();if(!r||(r.status!=="win"&&r.status!=="fail"))return;const h=structuredClone(me);h.gateDone=h.gateDone||{};if(h.gateDone[r.id])return;
   const G=GATES[r.realm],got=[];
   if(r.status==="win"){
     h.gateWins={...(h.gateWins||{}),[r.realm]:(h.gateWins?.[r.realm]||0)+1};if(r.owner!==myId())bump(h,"gateHelp");
-    if(h.realm===r.realm-1&&atWall(h)){h.realm=r.realm;h.points+=5;applyExp(h,0);got.push(`${REALMS[r.realm].n}의 경지에 올랐다! (포인트 +5)`);(ADV[h.sect]||[]).filter(x=>x.r===r.realm).forEach(x=>got.push(`새 무공 「${x.n}」을 깨쳤다 · ${x.d}`))}
+    if(h.realm===r.realm-1&&atWall(h)){h.realm=r.realm;h.points+=5;applyExp(h,0);got.push(`${REALMS[r.realm].n}의 경지에 올랐다! (포인트 +5)`);(ADV[h.sect]||[]).filter(x=>x.r===r.realm).forEach(x=>got.push(`새 무공 「${x.n}」${josa(String(x.n),"을").slice(String(x.n).length)} 깨쳤다 · ${x.d}`))}
     else{const exp=expPerHour(h.level)*3;applyExp(h,exp);got.push(`도우미 보상 · 경험치 +${exp}`)}
     h.items.stone+=5;got.push("강화석 +5");got.push(silverTxt(addSilver(h,r.owner===myId()?150:100)));{const ip=addInv(h,200);if(ip)got.push(`마교 침공 기여 +${ip}`)}
     if(Math.random()<.5){const it=rarify(h,makeItem(pickOne(["weapon","armor","acc"]),Math.min(6,r.realm),pickOne(SPECS)),"gate");got.push(`장비 「${gainItem(h,it)}」`)}
@@ -2415,7 +2418,7 @@ function craftFurn(k){const h=structuredClone(me),lv=furnLv(h,k);if(!FURN[k]||lv
   const lack=Object.entries(c).filter(([m,v])=>matHave(h,m)<v).map(([m,v])=>`${matName(m)} ${v-matHave(h,m)}`);if(lack.length){toast(`모자라다: ${lack.join(", ")}`);return}
   for(const [m,v] of Object.entries(c)){if(m==="silver")h.silver-=v;else if(m.startsWith("f_"))h.fish[m.slice(2)]-=v;else h.items[m]-=v}
   h.manor={...(h.manor||{}),[k]:lv+1};bump(h,"craft");const F=FURN[k];
-  addLog(h,`장원에 「${F.n}」${lv?`을 ${lv+1}단계로 고쳐 놓았다`:"을 들여놓았다"}. ${F.u} +${F.per*(lv+1)}`);save(h);toast(`「${F.n}」 ${lv+1}단계 · ${F.u} +${F.per*(lv+1)}`)}
+  addLog(h,`장원에 「${F.n}」${josa(F.n,"을").slice(F.n.length)} ${lv?`${lv+1}단계로 고쳐 놓았다`:"들여놓았다"}. ${F.u} +${F.per*(lv+1)}`);save(h);toast(`「${F.n}」 ${lv+1}단계 · ${F.u} +${F.per*(lv+1)}`)}
 function manorView(h,mine){const tiles=Object.entries(FURN).map(([k,F])=>{const lv=furnLv(h,k);return `<div class="mtile ${lv?"on":""}"><b>${F.n}</b><span>${lv?"●".repeat(lv)+"○".repeat(FURN_MAX-lv):mine?"아직 없다":"—"}</span></div>`}).join("");
   return `<div class="manor">${tiles}</div>`}
 function manorSection(h){const B=manorBonus(h),parts=Object.entries(FURN).filter(([k])=>furnLv(h,k)).map(([k,F])=>`${F.u} +${F.per*furnLv(h,k)}`);
@@ -2431,9 +2434,9 @@ function manorSection(h){const B=manorBonus(h),parts=Object.entries(FURN).filter
 
 /* 마방과 표국: 말을 사고 올리거나, 마차를 빌린다 */
 function stableBuy(kind){const h=structuredClone(me);if(h.travel)return;const HORSE_BUY=Math.round(HORSE_BUY0*mkt(h)),CART_COST=Math.round(CART_COST0*mkt(h)),HORSE_T=HORSE_T0.map(t=>t.cost?{...t,cost:Math.round(t.cost*mkt(h))}:t);
-  if(kind==="horse"){if(h.horse)return;if((h.silver||0)<HORSE_BUY){toast(`은자가 ${HORSE_BUY-(h.silver||0)}냥 모자랍니다.`);return}h.silver-=HORSE_BUY;const n=pickOne(HORSES);h.horse={n,t:Date.now(),tier:0};addLog(h,`마방에서 말 「${n}」을 샀다. (${silverTxt(HORSE_BUY)})`);save(h);toast(`말 「${n}」 · 이동 시간 -30%`);return}
+  if(kind==="horse"){if(h.horse)return;if((h.silver||0)<HORSE_BUY){toast(`은자가 ${HORSE_BUY-(h.silver||0)}냥 모자랍니다.`);return}h.silver-=HORSE_BUY;const n=pickOne(HORSES);h.horse={n,t:Date.now(),tier:0};addLog(h,`마방에서 말 「${n}」${josa(String(n),"을").slice(String(n).length)} 샀다. (${silverTxt(HORSE_BUY)})`);save(h);toast(`말 「${n}」 · 이동 시간 -30%`);return}
   if(kind==="up"){const t=(h.horse?.tier||0)+1,T=HORSE_T[t];if(!h.horse||!T)return;if((h.silver||0)<T.cost){toast(`은자가 ${T.cost-(h.silver||0)}냥 모자랍니다.`);return}
-    h.silver-=T.cost;h.horse.tier=t;addLog(h,`「${h.horse.n}」을 ${T.n}로 길러 냈다. 이동 시간 -${Math.round(T.cut*100)}% (${silverTxt(T.cost)})`);save(h);toast(`「${h.horse.n}」이 ${T.n}가 되었다!`);return}
+    h.silver-=T.cost;h.horse.tier=t;addLog(h,`「${h.horse.n}」${josa(String(h.horse.n),"을").slice(String(h.horse.n).length)} ${T.n}로 길러 냈다. 이동 시간 -${Math.round(T.cut*100)}% (${silverTxt(T.cost)})`);save(h);toast(`「${h.horse.n}」${josa(String(h.horse.n),"이").slice(String(h.horse.n).length)} ${T.n}가 되었다!`);return}
   if(kind==="cart"){if(h.buff?.cart)return;if((h.silver||0)<CART_COST){toast(`은자가 ${CART_COST-(h.silver||0)}냥 모자랍니다.`);return}h.silver-=CART_COST;h.buff=h.buff||{};h.buff.cart=1;addLog(h,`표국 마차를 빌렸다. 다음 이동 -${CART_CUT*100}% (${silverTxt(CART_COST)})`);save(h);toast(`표국 마차 · 다음 이동 -${CART_CUT*100}%`)}}
 function stableBox(h){if(h.travel)return "";const HORSE_BUY=Math.round(HORSE_BUY0*mkt(h)),CART_COST=Math.round(CART_COST0*mkt(h)),HORSE_T=HORSE_T0.map(t=>t.cost?{...t,cost:Math.round(t.cost*mkt(h))}:t);const ht=horseT(h.horse),nx=h.horse?HORSE_T[(h.horse.tier||0)+1]:null,kg=kgCut(h);
   const head=shopHead("stable",`${REGIONS[h.loc].n} 마방·표국 · ${ht?`${esc(h.horse.n)} (${ht.n})`:"말 없음"}${h.buff?.cart?" · 마차 예약됨":""}`);
@@ -3067,8 +3070,8 @@ function bigupBox(h){const slots=bigupSlots(h),mine=bigupOf(h),c=h.items?.clue||
       ${can&&bigupPick?`<div class="row" style="margin-top:8px"><button class="btn sealb" type="button" id="bgLearn">단서 ${BIGUP_COST}개로 「${SKILL_NAME[bigupPick]}」 익히기</button></div>`:""}`}</div>`}
 function bigupLearn(){const k=bigupPick,h=structuredClone(me);if(!k||k===h.sect||!SKILL_NAME[k])return;h.bigup=bigupOf(h);
   if(h.items.clue<BIGUP_COST||h.bigup.length>=bigupSlots(h)||h.bigup.includes(k))return;
-  h.items.clue-=BIGUP_COST;h.bigup.push(k);bigupPick=null;addLog(h,`비급을 풀어 ${SECTS[k].n}의 「${SKILL_NAME[k]}」을 익혔다.`);save(h);toast(`「${SKILL_NAME[k]}」을 익혔다!`)}
-function bigupDrop(k){const h=structuredClone(me);h.bigup=bigupOf(h).filter(x=>x!==k);bigupForget=null;addLog(h,`「${SKILL_NAME[k]}」을 잊었다.`);save(h)}
+  h.items.clue-=BIGUP_COST;h.bigup.push(k);bigupPick=null;addLog(h,`비급을 풀어 ${SECTS[k].n}의 「${SKILL_NAME[k]}」${josa(String(SKILL_NAME[k]),"을").slice(String(SKILL_NAME[k]).length)} 익혔다.`);save(h);toast(`「${SKILL_NAME[k]}」${josa(String(SKILL_NAME[k]),"을").slice(String(SKILL_NAME[k]).length)} 익혔다!`)}
+function bigupDrop(k){const h=structuredClone(me);h.bigup=bigupOf(h).filter(x=>x!==k);bigupForget=null;addLog(h,`「${SKILL_NAME[k]}」${josa(String(SKILL_NAME[k]),"을").slice(String(SKILL_NAME[k]).length)} 잊었다.`);save(h)}
 const advOpen=h=>h?[...(ADV[h.sect]||[]).filter(s=>s.r<=(h.realm||0)),...bigupOf(h).map(bigupSkill)]:[];
 const advHasM=(m,k)=>!!m&&m.hp>0&&advOpen(heroOfM(m)).some(s=>s.k===k);
 const advHasAny=(P,k)=>P.some(x=>advHasM(x,k));
