@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261103002531">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261103152607">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -773,6 +773,8 @@ let writing=Promise.resolve();
 let journalCache=null,lastJournal=null;
 /* 지난 일지는 캐릭터 기록과 따로, 본인만 읽는 칸(journals/내 번호)에 둔다. 캐릭터 기록이 작아야 모두에게 빨리 간다. */
 function save(h){
+  /* 새 날의 의뢰는 사람이 무언가 할 때 함께 기록한다. 시작점은 이번 행동 직전 상태(me)로 잡는다 */
+  try{if(h.sect&&(h.quests?.day!==dayKey()||h.qweek?.wk!==weekKey()))ensureQuests(h,me&&me.name===h.name?me:h)}catch(e){}
   try{checkTitles(h)}catch(e){}
   me=h; render();
   if(mode==="db"){
@@ -2256,10 +2258,10 @@ const QPOOL=[
   {k:"craft",n:"장원 손질",d:()=>"장원의 물건을 하나 만들거나 고친다",need:[1,1]}];
 const QWEEK_NEED=10;
 const weekKey=()=>Math.floor((dayKey()+3)/7);
-function rollQuests(h){const seed=(dayKey()*7919+[...String(myId())].reduce((a,c)=>a*31+c.charCodeAt(0)|0,0))>>>0,R=seeded(seed),pool=QPOOL.slice(),out=[];
-  while(out.length<3&&pool.length){const q=pool.splice(Math.floor(R()*pool.length),1)[0];const need=q.need[0]+Math.floor(R()*(q.need[1]-q.need[0]+1));out.push({k:q.k,need,base:cnt(h,q.k),claimed:false})}
+function rollQuests(h,from){from=from||h;const seed=(dayKey()*7919+[...String(myId())].reduce((a,c)=>a*31+c.charCodeAt(0)|0,0))>>>0,R=seeded(seed),pool=QPOOL.slice(),out=[];
+  while(out.length<3&&pool.length){const q=pool.splice(Math.floor(R()*pool.length),1)[0];const need=q.need[0]+Math.floor(R()*(q.need[1]-q.need[0]+1));out.push({k:q.k,need,base:cnt(from,q.k),claimed:false})}
   return {day:dayKey(),list:out}}
-function ensureQuests(h){if(h.quests?.day!==dayKey())h.quests=rollQuests(h);if(h.qweek?.wk!==weekKey())h.qweek={wk:weekKey(),n:0,claimed:false};return h}
+function ensureQuests(h,from){if(h.quests?.day!==dayKey())h.quests=rollQuests(h,from);if(h.qweek?.wk!==weekKey())h.qweek={wk:weekKey(),n:0,claimed:false};return h}
 const qProg=(h,q)=>Math.min(q.need,Math.max(0,cnt(h,q.k)-q.base));
 function claimQuest(i){const h=ensureQuests(structuredClone(me)),q=h.quests.list[i];if(!q||q.claimed||qProg(h,q)<q.need)return;
   q.claimed=true;h.qweek.n++;const got=[silverTxt(addSilver(h,30+h.level))];h.items.stone+=2;got.push("강화석 +2");if(Math.random()<.35){h.items.clue++;got.push("비급 단서 +1")}
@@ -3645,8 +3647,6 @@ function render(){
   const ae=document.activeElement;if(ae&&ae.closest?.(".mailf")&&/^(INPUT|TEXTAREA)$/.test(ae.tagName)&&ae.type!=="checkbox"&&ae.type!=="radio"){if(!render.pend){render.pend=true;ae.addEventListener("blur",()=>{render.pend=false;setTimeout(render,0)},{once:true})}return}
   const app=$("#app"),fb0=$("#inlineFeed"),fbAt=!fb0||fb0.scrollHeight-fb0.scrollTop-fb0.clientHeight<30,fbSt=fb0?.scrollTop||0;
   if(!ready){app.innerHTML="";return}
-  /* 의뢰가 바뀌는 날이면 새 의뢰를 그 자리에서 기록해 둔다 (기록해야 그 뒤에 한 일이 쌓인다) */
-  if(me&&(me.quests?.day!==dayKey()||me.qweek?.wk!==weekKey())&&!render.qs){render.qs=true;setTimeout(()=>{render.qs=false;if(!me||(me.quests?.day===dayKey()&&me.qweek?.wk===weekKey()))return;save(ensureQuests(structuredClone(me)))},0)}
   $("#status").textContent = mode==="db"
     ? (others.length?`${others.length+(me?1:0)}명이 이 무림에 있습니다.`:"함께할 사람을 기다리는 중입니다.")
     : "이 기기에만 기록되는 홀로 수련 모드입니다.";
