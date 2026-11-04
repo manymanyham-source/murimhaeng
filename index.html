@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261103155237">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261104224737">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -133,6 +133,8 @@ section{margin-top:30px}
 .retake{margin-top:14px;padding:12px 14px;border:1px solid #7C1F2A;background:rgba(124,31,42,.06)}.retake.freed{border-color:var(--c-dang);background:rgba(54,115,72,.08)}.retake p{margin:6px 0 8px}
 .wall.occ{border-color:#7C1F2A;background:rgba(124,31,42,.08)}
 .disc.up{color:#7C1F2A}.buffn{margin:6px 0 0;color:var(--c-dang)}
+.hall{margin-top:10px;padding:10px 12px;border:1px solid var(--line);background:var(--paper)}.hallh{display:flex;gap:8px;align-items:center}.hallh b{display:block}.hallh span{font-size:12px;color:var(--ink-2)}
+.hall .say{margin:8px 0;font-size:14px}.hall .say b{margin-right:4px}.sq{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}.sq p{margin:6px 0}.sq.done p:first-of-type{color:var(--ink)}
 .qlist{display:grid;gap:8px;margin-top:8px}.qrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);background:var(--paper)}
 .qrow>div{flex:1;min-width:0}.qrow b{display:block}.qrow span{font-size:12px;color:var(--ink-2)}.qrow em{font-style:normal;font-size:12px;color:var(--ink-3)}.qrow.done{opacity:.55}.qrow.week{margin-top:8px;border-color:var(--ink)}
 .qbar{height:4px;background:var(--line);margin-top:6px}.qbar i{display:block;height:100%;background:var(--seal)}
@@ -1733,9 +1735,11 @@ function changeSect(to){
 function postOffer(h){
   const f=favorOf(h,h.sect);
   if(!h.post&&h.realm>=5&&f>=1000&&h.postDeclined!=="elder")return {k:"elder",n:"장로",by:NPCS[h.sect][2],say:`"${h.name}, 그대의 무위와 문파를 향한 마음은 모두가 보았네. 장로의 자리를 맡아 주겠나?"`};
-  if(h.post==="elder"&&h.realm>=6&&h.tianmo&&h.postDeclined!=="master")return {k:"master",n:headN(h.sect),by:NPCS[h.sect][3],say:`"이제 이 늙은이는 물러날 때가 되었네. ${josa(SECTS[h.sect].n,"을")} 맡아 주게."`};
+  if(h.post==="elder"&&h.realm>=6&&(h.tianmo||h.gateWins?.[6]>0||h.realm>=6)&&h.postDeclined!=="master")return {k:"master",n:headN(h.sect),by:NPCS[h.sect][3],say:`"이제 이 늙은이는 물러날 때가 되었네. ${josa(SECTS[h.sect].n,"을")} 맡아 주게."`};
   return null;
 }
+/* 사양했던 자리를 다시 청한다 */
+function reconsiderPost(){const h=structuredClone(me);if(!h.postDeclined)return;h.postDeclined=null;addLog(h,"사양했던 자리를 다시 생각해 보기로 했다.");save(h)}
 function answerPost(yes){const h=structuredClone(me),o=postOffer(h);if(!o)return;
   if(yes){h.post=o.k;addLog(h,`${SECTS[h.sect].n}의 ${josa(o.n,"이")} 되었다.`);toast(`${o.n}이 되었습니다!`)}else{h.postDeclined=o.k;addLog(h,`${o.n} 자리를 사양했다.`)}save(h)}
 function sectTabSection(){
@@ -1743,8 +1747,9 @@ function sectTabSection(){
   const rows=Object.entries(SECTS).map(([k,s])=>{const v=favorOf(h,k),st=favorStage(v),nx=FAVOR_STAGES.find(x=>x[0]>v);
     return `<div class="fav"><span>${emblem(k,"sm")}</span><div><b>${s.n}${k===cur?" · 본문":""}</b><span>${st[1]} · ${v}${nx?` / ${nx[0]} (${nx[1]})`:""}${st[2]?` · 그 문파 NPC 능력치 +${st[2]*100}%`:""}</span>
       <div class="hpb"><i style="width:${Math.min(100,nx?(v-st[0])/(nx[0]-st[0])*100:100)}%"></i></div></div></div>`}).join("");
-  const post=h.post?`<p class="note"><b>${SECTS[cur].n} ${h.post==="elder"?"장로":headN(cur)}</b>의 자리에 있다.</p>`:`<p class="note">장로: 화경 + 본문 우호도 동지(1000) · ${headN(cur)}: 현경 + 장로 + 천마 토벌. 조건이 되면 문파 어른이 직접 찾아온다.</p>`;
-  const offerBox=offer?`<div class="wall"><p><b>${offer.by}</b>이(가) 찾아왔다.</p><p>${esc(offer.say)}</p><div class="row"><button class="btn sealb" id="postYes" type="button">${offer.n} 자리를 받는다</button><button class="btn ghost" id="postNo" type="button">사양한다</button></div></div>`:"";
+  const reBtn=h.postDeclined&&!offer&&postOffer({...h,postDeclined:null})?`<div class="row" style="margin:6px 0"><button class="btn sm" type="button" id="postRe">마음이 바뀌었다 · ${h.postDeclined==="elder"?"장로":headN(cur)} 자리를 다시 청한다</button></div>`:"";
+  const post=reBtn+(h.post?`<p class="note"><b>${SECTS[cur].n} ${h.post==="elder"?"장로":headN(cur)}</b>의 자리에 있다.</p>`:`<p class="note">장로: 화경 + 본문 우호도 동지(1000) · ${headN(cur)}: 장로가 된 뒤 현경(천마를 쓰러뜨려야 오른다). 조건이 되면 문파 어른이 직접 찾아온다.</p>`);
+  const offerBox=offer?`<div class="wall"><p><b>${josa(offer.by,"이")}</b> 찾아왔다.</p><p>${esc(offer.say)}</p><div class="row"><button class="btn sealb" id="postYes" type="button">${offer.n} 자리를 받는다</button><button class="btn ghost" id="postNo" type="button">사양한다</button></div></div>`:"";
   const opts=Object.keys(SECTS).filter(k=>k!==cur);
   const move=sectConfirm&&sectPick?`<div class="wall"><div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px">${emblem(sectPick,"sm")}<div style="flex:1;min-width:0"><b>${SECTS[sectPick].n}</b> · ${SECTS[sectPick].role}<br><span class="note" style="margin:0">${esc(SECTS[sectPick].desc)} 주력 ${SECTS[sectPick].main.map(m=>STATS[m].n).join("+")} · 설 수 있는 자리: ${SECT_ROLES[sectPick].map(r=>ROLE_N[r]).join(", ")}</span></div></div><p><b>${SECTS[cur].n}</b>을(를) 떠나 <b>${SECTS[sectPick].n}</b>로 옮긴다. ${SECTS[cur].n} 우호도가 70% 줄고, 7일 동안 다시 들어갈 수 없다.${h.post?" 직위도 잃는다.":""}</p>
       <div class="row"><button class="btn sealb" id="sectYes" type="button">파문을 감수하고 옮긴다</button><button class="btn ghost" id="sectNo" type="button">그만둔다</button></div></div>`
@@ -1789,9 +1794,73 @@ function bondTab(){
 function sectGift(k){
   const it=giftPick["sect-"+k]||"herb",h=structuredClone(me);if(h.items[it]<1){toast(`${josa(ITEMS[it][0],"이")} 없습니다.`);return}
   h.items[it]--;addFavor(h,k,SECT_GIFT[it]);addLog(h,`${SECTS[k].n}에 ${josa(ITEMS[it][0],"을")} 바쳤다. (우호도 +${SECT_GIFT[it]})`);save(h);toast(`${SECTS[k].n} 우호도 +${SECT_GIFT[it]}`)}
+/* ───────── 문파 거처: NPC와 인사하고, 내 문파에서는 날마다 의뢰를 받는다. 우호도에 따라 맞는 사람과 말투가 바뀐다 ─────────
+   out: 다른 문파 사람에게 하는 말 (냉담·우호·신뢰·동지), mem: 같은 문파 사람에게 하는 말, q: 문파 일일 의뢰 (말한 사람 번호, 부탁, 선택지) */
+const SECT_TALK={
+  sorim:{out:["\"시주께서는 무슨 일로 오셨습니까. 산문 안은 함부로 들어오시면 안 됩니다.\"","\"아미타불, 또 오셨군요. 차 한 잔 하고 가시지요.\"","\"시주의 이름이 산문 안에서도 자주 들립니다. 좋은 일만 하고 계시더군요.\"","\"소림의 문은 언제나 시주께 열려 있소. 나무아미타불.\""],
+    mem:["\"사형, 오늘도 목인방 청소 당번이십니다!\"","\"사형, 어제 그 나한권 한 수만 다시 보여 주십시오!\"","\"자네가 있어 소림의 이름이 빛나는구나.\"","\"다음 방장 자리는 자네가 이어야 할지도 모르겠군. 허허.\""],
+    q:[{t:"산문 앞의 미아",s:0,ask:"\"산문 앞에 아이 하나가 울고 있어요. 산 아래 마을 아이 같은데…\"",o:[["nei","염불로 마음을 가라앉혀 달래고 집을 묻는다","아이가 울음을 그치고 집을 일러 주었다. 무사히 데려다주었다.","아이는 더 크게 울었다. 결국 혜원이 업고 내려갔다."],["wai","아이를 업고 산 아래 마을을 집집이 돈다","해 질 녘에 아이의 어미를 찾아냈다. 어미가 몇 번이고 절했다.","마을을 다 돌았지만 찾지 못했다. 아이는 절에서 하룻밤 묵기로 했다."],[null,"공양간에 데려가 떡을 먹인다","떡을 먹은 아이가 방긋 웃었다. 혜원이 고맙다고 합장했다."]]},
+      {t:"장경각 정리",s:1,ask:"\"장경각 서책이 비에 젖었다. 말리는 걸 도와다오.\"",o:[["shen","높은 서가를 오르내리며 젖은 책을 꺼낸다","한 권도 상하지 않고 모두 말려 냈다.","발을 헛디뎌 서가 하나를 엎었다. 혜광이 말없이 한숨을 쉬었다."],["nei","내력으로 습기를 말려 본다","책장이 바스락거리며 말랐다. 지나가던 원각대사가 고개를 끄덕였다.","내력이 엇나가 책 귀퉁이가 그을렸다."],[null,"볕 드는 마당에 책을 펼쳐 둔다","한나절 걸렸지만 무사히 말렸다."]]}]},
+  hwasan:{out:["\"화산에 무슨 볼일이오? 매화검수들은 손님을 반기지 않소.\"","\"아, 그대였군. 매화 구경이라도 하고 가게.\"","\"그대의 검 이야기는 들었소. 한번 겨뤄 보고 싶군.\"","\"화산의 매화는 그대를 위해서도 핀다네.\""],
+    mem:["\"사제, 아침 수련에 또 늦었지? 장문인께 이를 거야.\"","\"사형, 매화검법 스물네 수, 오늘은 끝까지 가 보죠!\"","\"자네 검끝에서 매화향이 나는군. 많이 늘었어.\"","\"화산을 다시 일으킬 검은 자네 손에 있네.\""],
+    q:[{t:"매화나무 옮겨 심기",s:0,ask:"\"낙안봉 매화나무가 시들어요. 절벽 위 묘목을 옮겨 심어야 하는데…\"",o:[["shen","절벽을 타고 올라 묘목을 캐 온다","묘목을 무사히 옮겨 심었다. 내년 봄엔 꽃이 피겠지.","절벽에서 미끄러져 겨우 매달렸다. 묘목은 다음에."],["wai","흙을 지고 올라 시든 나무 뿌리를 북돋운다","땀을 비 오듯 흘렸지만 나무에 생기가 돌았다.","흙짐이 무너져 길이 엉망이 됐다."],[null,"물을 길어다 준다","나무 아래 흙이 촉촉해졌다. 매소운이 웃었다."]]},
+      {t:"검기 시범",s:1,ask:"\"새로 들어온 제자들이 검기를 못 믿어요. 시범 좀 보여 주시겠어요?\"",o:[["wai","바위를 한칼에 벤다","바위가 두 쪽 났다. 제자들의 눈이 동그래졌다.","칼이 튕겨 나갔다. 제자들이 웃음을 참았다."],["shen","떨어지는 매화잎 열 장을 공중에서 벤다","열 장 모두 반으로 갈라져 내려앉았다.","일곱 장에서 그쳤다. 그래도 박수가 나왔다."],[null,"검보다 마음이라고 말해 준다","제자들이 고개를 끄덕였다. 진검향이 쓴웃음을 지었다."]]}]},
+  ami:{out:["\"아미산은 수행처입니다. 용건만 말씀해 주세요.\"","\"어서 오세요. 금정의 구름이 오늘따라 고와요.\"","\"다친 데는 없으신가요? 약 한 첩 지어 드릴게요.\"","\"아미의 부처님께서 그대를 지켜 주실 거예요.\""],
+    mem:["\"약초밭 물 주는 날이야. 잊었지?\"","\"회춘수 손 모양 다시 봐 주세요!\"","\"그대의 손에서 따뜻한 기운이 나는구나.\"","\"아미의 자비가 그대를 통해 강호에 퍼지겠구나.\""],
+    q:[{t:"절벽의 산삼",s:0,ask:"\"절벽 아래에 산삼이 보였어요. 혼자서는 무서워서…\"",o:[["shen","밧줄 없이 절벽을 내려간다","뿌리째 고스란히 캐 왔다. 소청이 손뼉을 쳤다.","돌이 무너져 산삼이 굴러떨어졌다."],["nei","기운을 읽어 진짜 산삼인지 먼저 가린다","도라지가 아니라 진짜 산삼이었다. 조심스레 캐 왔다.","도라지였다… 소청이 웃음을 터뜨렸다."],[null,"함께 내려가 망을 봐 준다","무사히 캐 왔다. 소청이 고맙다며 경단을 건넸다."]]},
+      {t:"마을의 열병",s:1,ask:"\"산 아래 마을에 열병이 돌아요. 일손이 모자라요.\"",o:[["nei","내력으로 열을 내린다","밤새 다섯 사람의 열을 내렸다.","힘이 부쳐 한 사람만 돌봤다."],["wai","물을 길어 나르고 약을 달인다","약 달이는 냄새가 마을에 퍼졌다. 사람들이 하나둘 일어났다.","약탕기를 엎었다. 정월이 다시 달였다."],[null,"앓는 아이들의 말벗이 되어 준다","아이들이 그대 무용담에 눈을 반짝였다."]]}]},
+  mudang:{out:["\"무당산에 오셨으면 먼저 신발의 흙부터 터시지요.\"","\"태극은 돌고 도는 법. 다시 뵙는군요.\"","\"그대의 기운이 고르군요. 함께 좌공이라도 하시겠소?\"","\"무당의 문은 그대에게 늘 열려 있소. 무량수불.\""],
+    mem:["\"태극권 첫 식부터 다시. 어깨에 힘 빼!\"","\"오늘 운무가 좋아요. 금정에서 함께 수련해요!\"","\"부드러움이 강함을 이긴다는 걸 이제 아는구나.\"","\"자네라면 무당의 도를 강호에 펼 수 있겠지.\""],
+    q:[{t:"안개 속 순례자",s:0,ask:"\"안개 속에서 순례자 일행이 길을 잃었대요.\"",o:[["nei","기척을 읽어 사람 숨소리를 찾는다","안개 속에서 일행을 찾아 산문까지 이끌었다.","엉뚱한 골짜기를 헤맸다. 다행히 일행이 스스로 내려왔다."],["shen","봉우리를 뛰어올라 위에서 내려다본다","구름 위에서 등불을 발견했다. 모두 구했다.","안개가 짙어 아무것도 보이지 않았다."],[null,"종을 울려 방향을 알린다","종소리를 따라 일행이 무사히 돌아왔다."]]},
+      {t:"옛 진무검 손질",s:1,ask:"\"전각의 옛 진무검에 녹이 슬었소. 손질을 도와주시오.\"",o:[["wai","숫돌로 칼날을 세운다","칼날이 달빛처럼 빛났다.","힘을 너무 줘서 칼끝이 이 빠졌다… 유청명이 못 본 척했다."],["nei","내력으로 녹을 밀어낸다","녹이 비늘처럼 떨어져 나갔다. 현운진인이 감탄했다.","녹이 더 번졌다. 유청명이 한숨을 쉬었다."],[null,"기름을 먹여 닦는다","말끔해졌다. 유청명이 고개를 끄덕였다."]]}]},
+  dang:{out:["\"당가에 함부로 발 들이면 독에 쓰러져도 몰라요.\"","\"아, 그쪽이구나. 이번엔 독 안 탔으니까 차 마셔도 돼요.\"","\"당가 사람들도 그대 이름은 알아요. 조심해서 다녀요.\"","\"그대는 이제 당가의 손님이 아니라 식구나 다름없지요.\""],
+    mem:["\"또 해독제 안 챙겼죠? 여기요.\"","\"비도 던지기 내기해요! 지는 사람이 만두 사기!\"","\"가주께서 그대 이야기를 하시더군. 칭찬이었어.\"","\"당가의 이름을 걸고, 그대를 믿네.\""],
+    q:[{t:"독초 가려내기",s:0,ask:"\"새로 들어온 약초에 독초가 섞였대요. 골라내야 해요.\"",o:[["nei","기운으로 독기를 읽는다","독초 일곱 포기를 정확히 골라냈다.","하나를 놓쳐 손끝이 저렸다. 당소미가 해독제를 줬다."],["shen","재빠른 손놀림으로 잎맥을 하나하나 본다","해 지기 전에 다 골라냈다.","손이 꼬여 바구니를 엎었다."],[null,"당소미에게 맡기고 바구니를 나른다","당소미가 골라내고 그대가 날랐다. 손발이 척척 맞았다."]]},
+      {t:"비도 과녁",s:1,ask:"\"비도 과녁이 다 닳았어. 새 과녁을 세워 줘.\"",o:[["wai","통나무를 지고 와 과녁을 박는다","단단한 과녁이 섰다.","통나무가 굴러 담장을 부쉈다."],["shen","세운 과녁에 비도를 던져 시험한다","열 발 모두 한가운데 꽂혔다. 당무영이 휘파람을 불었다.","세 발이 빗나갔다. 당무영이 낄낄 웃었다."],[null,"과녁에 붉은 칠을 한다","과녁이 보기 좋아졌다."]]}]},
+  namgung:{out:["\"남궁세가에 무슨 일이오. 세가의 손님은 예를 갖추시오.\"","\"오, 그대군. 창궁검을 보러 왔소?\"","\"그대라면 세가의 연무장에 들어와도 좋소.\"","\"남궁의 검이 그대와 함께하길.\""],
+    mem:["\"오늘 연무장 비질 당번입니다!\"","\"창궁무애검 한 수 받아 주시지요!\"","\"가문의 체면을 세워 주는구나.\"","\"세가를 이을 재목이로다.\""],
+    q:[{t:"가보 검집",s:0,ask:"\"가보 검의 검집이 갈라졌어요. 장인에게 가져가야 해요.\"",o:[["wai","무거운 검을 지고 장인에게 간다","장인이 검을 보더니 무릎을 꿇었다. 정성껏 고쳐 주었다.","도중에 검집이 더 갈라졌다…"],["nei","직접 내력으로 나무를 붙인다","갈라진 틈이 감쪽같이 붙었다.","나무가 그을렸다."],[null,"아교를 발라 묶어 둔다","임시로나마 붙었다."]]},
+      {t:"다른 세가의 손님",s:1,ask:"\"다른 세가 손님이 와서 겨루자고 하오. 대신 나가 주겠소?\"",o:[["wai","정면으로 맞선다","세 합 만에 손님이 검을 거두었다. 세가의 체면이 섰다.","비겼다. 손님이 정중히 인사하고 떠났다."],["shen","한 발 물러서며 허점을 노린다","손님의 소매를 베었다. 남궁휘가 크게 웃었다.","허점을 찾지 못했다."],[null,"술상을 차려 화해시킨다","손님이 크게 취해 돌아갔다. 남궁휘가 고개를 저었다."]]}]},
+  akga:{out:["\"악가는 충절의 가문이오. 의롭지 않은 자는 받지 않소.\"","\"반갑소! 창술 연무 구경하고 가시오.\"","\"그대의 의기는 들었소. 악가의 벗이로군.\"","\"진충보국. 그대와 같은 이가 있어 강호가 산다.\""],
+    mem:["\"창대 닦는 게 수련의 시작이다!\"","\"오늘은 연환창 백 번입니다!\"","\"네 창끝이 흔들리지 않는구나.\"","\"악가의 깃발을 네가 들어라.\""],
+    q:[{t:"의병 훈련",s:0,ask:"\"마을 장정들에게 창 쥐는 법을 가르쳐야 해요.\"",o:[["wai","직접 시범을 보이며 자세를 잡아 준다","장정들의 창끝이 가지런해졌다.","너무 엄하게 해서 장정 둘이 도망갔다."],["nei","호흡법부터 가르친다","장정들이 덜 지치게 되었다. 악소운이 감탄했다.","다들 졸았다."],[null,"밥을 해 먹인다","배부른 장정들이 의욕을 냈다."]]},
+      {t:"태산 기슭의 산적",s:1,ask:"\"태산 기슭에 산적이 숨었다는 소문이 있네.\"",o:[["shen","몰래 다가가 인원을 센다","산적 열둘, 두목 하나. 정확히 알아냈다.","들켜서 달아났다. 그래도 위치는 알았다."],["wai","정면으로 들이닥친다","산적들이 혼비백산 흩어졌다.","혼자서는 무리였다. 겨우 빠져나왔다."],[null,"관아에 알린다","관병이 출동했다. 악진명이 아쉬워했다."]]}]},
+  kunlun:{out:["\"곤륜은 멀고 춥소. 무슨 일로 여기까지?\"","\"눈길 오느라 고생했소. 차라도 데워 드리지.\"","\"그대의 발걸음은 구름 같군. 곤륜의 신법을 닮았소.\"","\"설산의 문은 그대를 위해 늘 열려 있소.\""],
+    mem:["\"눈 치우기부터 해!\"","\"운룡대팔식 여덟 번째 식, 같이 해요!\"","\"구름 위를 걷는 듯하구나.\"","\"곤륜의 하늘은 너를 기억하리라.\""],
+    q:[{t:"천산설련",s:0,ask:"\"설산 꼭대기에 천산설련이 피었대요.\"",o:[["shen","빙벽을 타고 오른다","눈보라를 뚫고 설련을 땄다.","눈사태를 겨우 피했다. 꽃은 다음에."],["nei","내력으로 추위를 막으며 천천히 오른다","얼지 않고 무사히 꽃을 따 왔다.","추위에 내력이 흩어져 돌아왔다."],[null,"설하와 함께 가서 길을 내 준다","설하가 꽃을 땄다. 그대 덕분이라며 웃었다."]]},
+      {t:"운해 아래 새 길",s:1,ask:"\"운해 아래 길이 바뀌었소. 새 길을 그려야 하오.\"",o:[["shen","봉우리를 건너뛰며 길을 살핀다","새 지도가 완성됐다.","안개에 길을 잃을 뻔했다."],["nei","기류를 읽어 안전한 길을 찾는다","바람이 통하는 길을 찾아냈다.","헛걸음만 했다."],[null,"옛 지도를 베껴 둔다","옛길이나마 정리됐다."]]}]},
+  jegal:{out:["\"제갈세가는 진법으로 둘러싸여 있소. 길을 잃지 마시오.\"","\"오, 다시 왔군. 바둑 한 판 두겠소?\"","\"그대는 머리도 좋은 무인이로군. 드문 일이오.\"","\"그대와 함께라면 어떤 진도 깨지지 않겠소.\""],
+    mem:["\"팔진도 첫 문부터 외우세요!\"","\"연노 새 화살 깎았어요. 시험해 봐요!\"","\"자네 계책이 장로들 사이에 화제야.\"","\"와룡의 지혜를 이을 사람이 바로 자네군.\""],
+    q:[{t:"어긋난 진법",s:0,ask:"\"세가를 두른 진법이 하나 어긋났어요. 같이 찾아요.\"",o:[["nei","기의 흐름을 따라 어긋난 돌을 찾는다","어긋난 돌 하나를 찾아 바로잡았다.","오히려 진에 갇혀 반나절 헤맸다."],["shen","진 안을 재빨리 돌며 돌을 하나하나 짚는다","한 바퀴 만에 찾아냈다.","제자리를 맴돌았다…"],[null,"제갈소의 말대로 돌을 나른다","제갈소가 지휘하고 그대가 옮겼다. 진이 다시 돌았다."]]},
+      {t:"새 연노 시험",s:1,ask:"\"새 연노가 잘 쏘아지는지 봐 주시오.\"",o:[["shen","움직이며 과녁을 맞힌다","열 발 연사가 모두 과녁에 꽂혔다.","시위가 엉켜 한 발도 못 쐈다."],["wai","힘껏 시위를 당겨 사거리를 잰다","오십 보 밖 나무에 꽂혔다. 제갈운이 기록했다.","시위가 끊어졌다."],[null,"설계도를 함께 들여다본다","나사 하나가 거꾸로였다. 제갈운이 고쳤다."]]}]}};
+const stageIdx=v=>{let i=0;FAVOR_STAGES.forEach((x,j)=>{if(v>=x[0])i=j});return i};
+const sectDay=h=>h.sectDay?.day===dayKey()?h.sectDay:{day:dayKey(),greet:{},quest:null};
+const sectQuestOf=k=>{const R=seeded(dayKey()*977+[...k].reduce((a,c)=>a*31+c.charCodeAt(0)|0,0));return Math.floor(R()*SECT_TALK[k].q.length)};
+function sectGreet(k){const h=structuredClone(me),T=SECT_TALK[k];if(!T||h.travel||!(REGION_SECTS[h.loc]||[]).includes(k))return;const d=sectDay(h);if(d.greet[k]!==undefined)return;
+  const si=stageIdx(favorOf(h,k));d.greet[k]=si;h.sectDay=d;addFavor(h,k,5);addLog(h,`${SECTS[k].n}의 ${NPCS[k][si]}에게 인사했다. ${(h.sect===k?T.mem:T.out)[si]} (우호도 +5)`);save(h)}
+function sectQuestDo(k,oi){const h=structuredClone(me),T=SECT_TALK[k];if(!T||h.sect!==k||h.travel||!(REGION_SECTS[h.loc]||[]).includes(k))return;const d=sectDay(h);if(d.quest)return;
+  const Q=T.q[sectQuestOf(k)],o=Q.o[oi];if(!o)return;let ok=true,txt=o[2],roll=null;
+  if(o[0]){const bonus=Math.floor(h.stats[o[0]]/10),r=1+Math.floor(Math.random()*20),dc=dcFor(h.realm)+2;ok=r===20||(r!==1&&r+bonus>=dc);roll=`${STATS[o[0]].n} 판정 ${r}+${bonus}/${dc}`;txt=ok?o[2]:o[3]}
+  const fv=o[0]?(ok?30:10):15,got=[`우호도 +${fv}`];addFavor(h,k,fv);got.push(silverTxt(addSilver(h,ok&&o[0]?30+h.level:15)));
+  if(ok&&o[0]){const x=Math.round(expPerHour(h.level));applyExp(h,x);got.push(`경험치 +${x}`)}
+  if(ok&&stageIdx(favorOf(h,k))>=2&&Math.random()<.5){const it=pickOne(["mandu","longjing","puer","herb"]);h.items[it]=(h.items[it]||0)+1;got.push(`${ITEMS[it][0]} +1 (정을 담아 건넨 것)`)}
+  d.quest={i:sectQuestOf(k),oi,ok,txt,roll,got};h.sectDay=d;bump(h,"sectq");
+  addLog(h,`문파 의뢰 「${Q.t}」 · ${roll?roll+" · ":""}${txt} (${got.join(", ")})`);save(h);toast(`문파 의뢰 · ${got.join(" · ")}`)}
+function sectHall(region){const ks=REGION_SECTS[region];if(!ks||me.travel||me.loc!==region)return "";const h=me,d=sectDay(h),dc=dcFor(h.realm)+2;
+  return ks.map(k=>{const T=SECT_TALK[k],v=favorOf(h,k),si=stageIdx(v),st=favorStage(v),own=h.sect===k,greeted=d.greet[k]!==undefined,nm=NPCS[k][greeted?d.greet[k]:si];
+    let quest="";
+    if(own){const Q=T.q[sectQuestOf(k)],dq=d.quest,qn=NPCS[k][Q.s];
+      quest=dq?`<div class="sq done"><div class="kicker">오늘의 문파 의뢰 · ${Q.t} · 마쳤다</div><p>${esc(dq.txt)}</p><p class="note" style="margin:0">${dq.roll?dq.roll+" · ":""}${dq.got.join(" · ")}</p></div>`
+        :`<div class="sq"><div class="kicker">오늘의 문파 의뢰 · ${Q.t}</div><p><b>${qn}</b>: ${Q.ask}</p><div class="opts">${Q.o.map((o,i)=>{if(!o[0])return `<button class="opt" type="button" data-sq="${k}|${i}"><b>행동</b><span>${o[1]}</span><small>판정 없음 · 우호도 +15</small></button>`;
+          const c=optCheck(o[0],0,dc,false);return `<button class="opt" type="button" data-sq="${k}|${i}">${c.b}<span>${o[1]}</span>${c.s}</button>`}).join("")}</div>
+          <p class="note" style="margin:6px 0 0">판정에 성공하면 우호도 +30과 은자·경험치, 실패해도 우호도 +10. 하루 한 번, 자정에 새 의뢰가 들어온다.${si>=2?" 신뢰 이상이면 가끔 정표를 건넨다.":""}</p></div>`}
+    return `<div class="hall"><div class="hallh">${emblem(k,"sm")}<div><b>${SECTS[k].n}${own?" · 내 문파":""}</b><span>우호도 ${v} · ${st[1]}${st[2]?` (NPC +${Math.round(st[2]*100)}%)`:""}</span></div></div>
+      <p class="say"><b>${nm}</b> ${greeted&&own&&h.post?(h.post==="master"?`"${headN(k)}님, 오늘도 문파는 평안합니다. 분부만 내리십시오."`:`"장로님, 오셨습니까! 제자들이 장로님 무용담만 기다립니다."`):greeted?(own?T.mem:T.out)[d.greet[k]]:`<span class="note">${["낯선 얼굴을 경계하는 눈치다.","반갑게 손을 들어 보인다.","멀리서부터 알아보고 다가온다.","문 앞까지 마중 나와 있다."][si]}</span>`}</p>
+      <div class="row">${greeted?`<span class="note" style="margin:0">오늘은 인사를 나눴다.</span>`:`<button class="btn sm" type="button" data-sgreet="${k}">${nm}에게 인사한다 · 우호도 +5</button>`}</div>${quest}</div>`}).join("")}
+
 function regionSectBox(region){
   const ks=REGION_SECTS[region];if(!ks||me.travel||me.loc!==region)return "";
-  return `<div class="row" style="margin-top:8px;flex-wrap:wrap">${ks.map(k=>`<span class="note" style="margin:0">${SECTS[k].n}에 선물:</span>
+  return `${sectHall(region)}<div class="row" style="margin-top:8px;flex-wrap:wrap">${ks.map(k=>`<span class="note" style="margin:0">${SECTS[k].n}에 선물:</span>
     <select data-gpick="sect-${k}" aria-label="${SECTS[k].n}에 바칠 선물">${GIFTS.map(g=>`<option value="${g}" ${(giftPick["sect-"+k]||"herb")===g?"selected":""}>${ITEMS[g][0]} (${me.items[g]}개 · +${SECT_GIFT[g]})</option>`).join("")}</select>
     <button class="btn sm" type="button" data-sgift="${k}">바친다</button>`).join("")}</div>`;
 }
@@ -2028,11 +2097,11 @@ function checkTitles(h){
 function setTitle(id){const h=structuredClone(me);if(id&&!h.titles?.[id])return;h.title=id||null;save(h);toast(id?`칭호를 달았습니다: 「${titleOf(h)}」`:"칭호를 떼었습니다.")}
 function titleSection(){
   const h=me,own=h.titles||{},n=Object.keys(own).filter(k=>TITLE_BY[k]).length,groups=[...new Set(TITLES.map(t=>t.g))];
-  return `<section><div class="label">칭호 · ${n}/${TITLES.length}</div>
+  return `<section>${foldHead("titles",`칭호 · ${n}/${TITLES.length}`)}<div class="foldb" ${foldOpen("titles")?"":"hidden"}>
     <p class="note" style="margin-top:0">얻은 칭호를 누르면 이름 앞에 단다. 다른 사람에게도 보인다.${h.title?` <button class="btn sm ghost" type="button" data-title="">칭호 떼기</button>`:""}</p>
     ${groups.map(g=>`<div class="tgrp"><span class="kicker">${g}</span><div class="tlist">${TITLES.filter(t=>t.g===g).map(t=>{const has=!!own[t.id],on=h.title===t.id;
       return has?`<button type="button" class="tt ${on?"on":""}" data-title="${t.id}" title="${esc(t.hint)}"><b>${esc(t.show?t.show(h):t.n)}</b><span>${on?"달고 있음":esc(t.hint)}</span></button>`
-        :`<div class="tt off"><b>？？？</b><span>${esc(t.hint)}</span></div>`}).join("")}</div></div>`).join("")}</section>`;
+        :`<div class="tt off"><b>？？？</b><span>${esc(t.hint)}</span></div>`}).join("")}</div></div>`).join("")}</div></section>`;
 }
 
 
@@ -3942,6 +4011,8 @@ function bind(){
   document.querySelectorAll("[data-pjoin]").forEach(b=>b.addEventListener("click",()=>partyJoin(b.dataset.pjoin)));
   document.querySelectorAll("[data-pkick]").forEach(b=>b.addEventListener("click",()=>partyKick(b.dataset.pkick)));
   on("#partyLeave",partyLeave);
+  document.querySelectorAll("[data-sgreet]").forEach(b=>b.addEventListener("click",()=>sectGreet(b.dataset.sgreet)));
+  document.querySelectorAll("[data-sq]").forEach(b=>b.addEventListener("click",()=>{const [k,i]=b.dataset.sq.split("|");sectQuestDo(k,+i)}));
   document.querySelectorAll("[data-sgift]").forEach(b=>b.addEventListener("click",()=>sectGift(b.dataset.sgift)));
   document.querySelectorAll("[data-sect]").forEach(b=>b.addEventListener("click",()=>{sectPick=b.dataset.sect;sectConfirm=true;render()}));
   on("#sectYes",()=>changeSect(sectPick)); on("#sectNo",()=>{sectConfirm=false;sectPick=null;render()});
@@ -3957,7 +4028,7 @@ function bind(){
   document.querySelectorAll("[data-bgpick]").forEach(b=>b.addEventListener("click",()=>{bigupPick=bigupPick===b.dataset.bgpick?null:b.dataset.bgpick;render()}));
   document.querySelectorAll("[data-bgforget]").forEach(b=>b.addEventListener("click",()=>{bigupForget=b.dataset.bgforget||null;render()}));
   document.querySelectorAll("[data-bgforgetok]").forEach(b=>b.addEventListener("click",()=>bigupDrop(b.dataset.bgforgetok)));
-  on("#bgLearn",bigupLearn);
+  on("#bgLearn",bigupLearn);on("#postRe",reconsiderPost);
   document.querySelectorAll("[data-redon]").forEach(b=>b.addEventListener("click",()=>reDonate(b.dataset.redon)));on("#reScout",reScout);on("#reClaim",reClaim);
   document.querySelectorAll("[data-quest]").forEach(b=>b.addEventListener("click",()=>claimQuest(+b.dataset.quest)));on("#qWeek",claimWeek);
   document.querySelectorAll("[data-hdig]").forEach(b=>b.addEventListener("click",()=>happenDig(b.dataset.hdig)));
