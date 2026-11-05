@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261104224737">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261105020428">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -135,6 +135,7 @@ section{margin-top:30px}
 .disc.up{color:#7C1F2A}.buffn{margin:6px 0 0;color:var(--c-dang)}
 .hall{margin-top:10px;padding:10px 12px;border:1px solid var(--line);background:var(--paper)}.hallh{display:flex;gap:8px;align-items:center}.hallh b{display:block}.hallh span{font-size:12px;color:var(--ink-2)}
 .hall .say{margin:8px 0;font-size:14px}.hall .say b{margin-right:4px}.sq{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}.sq p{margin:6px 0}.sq.done p:first-of-type{color:var(--ink)}
+.nem{border:1px solid #4A2A5C;background:rgba(74,42,92,.07);padding:12px 14px}.nem h3{margin:4px 0}.nem p{margin:6px 0}.nem .say{font-style:normal;color:var(--ink)}
 .qlist{display:grid;gap:8px;margin-top:8px}.qrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);background:var(--paper)}
 .qrow>div{flex:1;min-width:0}.qrow b{display:block}.qrow span{font-size:12px;color:var(--ink-2)}.qrow em{font-style:normal;font-size:12px;color:var(--ink-3)}.qrow.done{opacity:.55}.qrow.week{margin-top:8px;border-color:var(--ink)}
 .qbar{height:4px;background:var(--line);margin-top:6px}.qbar i{display:block;height:100%;background:var(--seal)}
@@ -1249,7 +1250,7 @@ function endRun(h,why){
   run.phase="done";run.summary={why,dealt,got};
   h.journal=[{title:`소굴 · ${B.n}`,region:B.region,start:run.start,tier:1,label:why==="boss"?`피해 ${dealt.toLocaleString()}`:why==="retreat"?"돌아섬":"쓰러짐",
     lines:run.log.map((l,i)=>({...l,t:run.start+i,k:l.k}))},...(h.journal||[])].slice(0,10);
-  addLog(h,`${B.n}의 소굴: ${head}${got.length?" "+got.join(", "):""}`);save(h);
+  addLog(h,`${B.n}의 소굴: ${head}${got.length?" "+got.join(", "):""}`);maybeNemesis(h);save(h);
 }
 function retreat(){const h=structuredClone(me);if(!h.lair||h.lair.phase!=="fork")return;retreatConfirm=false;endRun(h,"retreat")}
 function leaveLair(){const h=structuredClone(me);h.lair=null;save(h)}
@@ -1385,6 +1386,8 @@ const GACTS={
   {t:"slide",n:"천지붕괴",omen:"하늘과 땅이 동시에 무너지려 한다! 왼쪽과 오른쪽, 어느 쪽으로 피할까?",say:"사라져라."},
   {t:"flee",n:"천마멸세",omen:"천마가 모든 내력을 끌어모은다. 이번 막에 쓰러뜨리지 못하면 천마는 다시 어둠으로 돌아간다!",say:"이것이 천마의 끝이라 생각하느냐."}]};
 const GA=r=>GACTS[r]||GACTS[3];
+/* 비경 같은 임시 관문은 방 안에 보스(G)와 막(A)을 직접 들고 다닌다 */
+const roomG=r=>r.G||GATES[r.realm],roomA=r=>r.A||GA(r.realm);
 const GREL={guard:{지인:["{a|이} 외친다. \"{b}, 피해요!\""],친우:["{a|이} 소리친다. \"{b}! 내 뒤로 와!\""],사형제:["{a|이} 외친다. \"물러서라, 내가 받는다!\""],연인:["{a|이} 망설임 없이 {b|의} 앞을 가로막는다."],사부:["{a|이} 외친다. \"내 뒤에 서라, 아직 네 차례가 아니다!\""],제자:["{a|이} 외친다. \"사부님, 이번엔 제가 막겠습니다!\""]},
   down:{지인:["{a|이} 쓰러진 {b|을} 돌아본다."],친우:["\"{b}!\" {a|의} 목소리가 떨린다."],사형제:["{a|이} 이를 악문다. \"사문의 이름으로, 이 빚은 갚는다.\""],연인:["{a|이} {b|의} 이름을 부르며 달려간다."],사부:["{a|이} 쓰러진 {b|을} 보고 이를 악문다. \"가르친 대로만 버텨라.\""],제자:["\"사부님!\" {a|의} 목소리가 떨린다. \"제가 끝까지 지키겠습니다.\""]},
   skill:{지인:["{a|와} {b|이} 눈빛을 주고받는다."],친우:["\"지금이다!\" {a|와} {b|의} 호흡이 딱 맞는다."],사형제:["\"사형, 지금입니다!\" 같은 사문의 초식이 겹친다."],연인:["{a|와} {b|이} 등을 맞댄다. 말이 필요 없다."],사부:["\"보아라, 이것이 그 초식이다!\" {a|와} {b|의} 검로가 한 줄로 겹친다."],제자:["\"사부님, 배운 대로 갑니다!\" {a|와} {b|의} 초식이 맞물린다."]}};
@@ -1419,10 +1422,10 @@ function buildGateParty(room){
 }
 const gnm=m=>m.player?`\u0001${m.name}\u0002`:m.name;
 function gateOmen(room){
-  const a=room.act,alive=room.party.filter(x=>x.hp>0),A=GA(room.realm)[a];let target=null;
+  const a=room.act,alive=room.party.filter(x=>x.hp>0),A=roomA(room)[a];let target=null;
   if(A.t==="mark"){const pl=alive.filter(x=>x.player);target=(pl.length&&Math.random()<.7?pickOne(pl):pickOne(alive)).id}
   const t=room.party.find(x=>x.id===target);
-  return {target,text:fill(A.omen,{t:t?gnm(t):"",need:Math.round(GATES[room.realm].roar.need*(1+.3*((room.hum||1)-1)))})};
+  return {target,text:fill(A.omen,{t:t?gnm(t):"",need:Math.round(roomG(room).roar.need*(1+.3*((room.hum||1)-1)))})};
 }
 function openGate(){
   const h=me,nr=h.realm+1,G=GATES[nr];
@@ -1465,7 +1468,7 @@ function maybeResolve(){
       if(!fresh||fresh.status!=="fight"||fresh.act!==r.act)return;await GS.setRoom(r.id,resolveGate(fresh))}
     finally{setTimeout(()=>{gateResolving=false},400)}})();
 }
-function gateAuto(room,m){const T=GA(room.realm)[room.act]?.t;
+function gateAuto(room,m){const T0=roomA(room)[room.act]?.t,T=room.curse==="seal"&&T0!=="slide"?"seal":T0;
   if(T==="slide")return Math.random()<.5?"left":"right";
   if(T==="seal")return m.hp/m.max<.4?"def":"atk";
   if(T==="reflect")return m.hp/m.max<.6||m.role==="tank"?"def":"atk";
@@ -1478,14 +1481,15 @@ function gateAuto(room,m){const T=GA(room.realm)[room.act]?.t;
 }
 function relLine(room,kind,a,b,log){if(!a||!b||a.id===b.id)return;const pool=GREL[kind][relDir(a.id,b.id)]||GREL[kind].지인;log.push({k:"comp",x:fill(pickOne(pool),{a:gnm(a),b:gnm(b)})})}
 function resolveGate(room){
-  const n=structuredClone(room),G=GATES[n.realm],a=n.act,A=GA(n.realm)[a],T=A.t,log=n.log,P=n.party,alive=()=>P.filter(x=>x.hp>0);
-  const acts={};for(const m of P)if(m.hp>0){const ad=m.player?(m.id===myId()?myAct():gateActs[m.id]||{}):{};
+  const n=structuredClone(room),G=roomG(n),a=n.act,A=roomA(n)[a],T=A.t,SEAL=T==="seal"||(n.curse==="seal"&&T!=="slide"),log=n.log,P=n.party,alive=()=>P.filter(x=>x.hp>0);
+  const acts={};for(const m of P)if(m.hp>0){const ad=m.player?(m.id===myId()?(n.solo?{room:n.id,act:a,action:n.myAction,mode:n.myMode}:myAct()):gateActs[m.id]||{}):{};
     acts[m.id]=m.player&&ad.room===n.id&&ad.mode!=="auto"&&ad.act===a&&ad.action?ad.action:gateAuto(n,m)}
   log.push({k:"sec",x:`${a}막 · ${A.n}`},{k:"ev2",sub:"omen",x:n.omen.text});
   if(n.vuln)n.vuln--;
   const HS=1+.3*((n.hum||1)-1);
   if(T==="adds"){n.minions=Math.round(G.adds.hp*HS);log.push({k:"ev2",sub:"hit",x:`${G.adds.n}들이 앞을 가로막았다. (${G.adds.n} 체력 ${n.minions.toLocaleString()})`})}
   if(T==="seal")log.push({k:"ev2",sub:"hit",x:"혈도가 막혔다. 이번 막에는 아무도 무공을 쓸 수 없다."});
+  if(n.curse==="poison"&&T!=="poison"){const v=alive().sort(()=>Math.random()-.5).slice(0,1);v.forEach(x=>n.poison[x.id]=Math.max(n.poison[x.id]||0,2));if(v.length)log.push({k:"ev2",sub:"hit",x:`비경의 독무가 ${gnm(v[0])}에게 스민다.`})}
   let actDmg=0,taunt=null;const guard={},iron={},pshield={v:1};let weak=1;
   const deal=(atk,mult,hits,crit)=>{let s=0;for(let i=0;i<hits;i++){let d=Math.max(1,Math.round(atk*mult*100/(100+G.def)*(.9+Math.random()*.2)*(n.vuln>0?(n.vulnM||1.15):1)));if(Math.random()*100<crit)d=Math.round(d*1.5);s+=d}return s};
   /* 범위 공격: 졸개와 보스를 함께 맞힌다 */
@@ -1496,7 +1500,7 @@ function resolveGate(room){
   if(Math.random()<.35){const np=alive().filter(x=>!x.player);const s=np.length?pickOne(np):null;if(s&&NPC_SAY[s.name])log.push({k:"comp",x:`${s.name}: ${pickOne(NPC_SAY[s.name])}`})}
   const sides={},skillers=[],dealtBy={};
   for(const m of P){if(m.hp<=0)continue;let act=acts[m.id];if(m.cd>0)m.cd--;const d0=actDmg;
-    if(T==="seal"&&(act==="skill"||String(act).startsWith("adv:")))act="atk";
+    if(SEAL&&(act==="skill"||String(act).startsWith("adv:")))act="atk";
     if(T==="slide"){sides[m.id]=act==="left"||act==="right"?act:(Math.random()<.5?"left":"right");continue}
     if(m.role==="heal"&&!m.player){const low=alive().sort((x,y)=>x.hp/x.max-y.hp/y.max)[0];if(low.hp/low.max<.65){const amt=Math.round(Math.max(m.atk*1.3,60));low.hp=Math.min(low.max,low.hp+amt);log.push({k:"ev2",sub:"act",x:`${m.name}의 회춘수 · ${gnm(low)} +${amt}`});continue}}
     if(String(act).startsWith("adv:")&&advUse(C,m,act.slice(4))){}
@@ -1526,7 +1530,7 @@ function resolveGate(room){
     else{
       if(T==="rage"&&n.bossHp<=n.bossMax/2&&!n.rage){n.rage=true;log.push({k:"ev2",sub:"hit",x:`${josa(G.sn,"이")} 광폭해졌다! 이제부터 공격이 1.3배로 거세진다.`})}
       if(T==="poison"){const v=alive().sort(()=>Math.random()-.5).slice(0,2);v.forEach(x=>n.poison[x.id]=3);log.push({k:"ev2",sub:"hit",x:`${v.map(gnm).join(", ")}에게 독기가 스며들었다. (3막 동안)`})}
-      if(T==="reflect"){const back=[];for(const m of alive()){const dd=dealtBy[m.id]||0;if(dd>0&&acts[m.id]!=="def"){const v=Math.max(1,Math.round(dd*(G.refl||.25)));m.hp=Math.max(0,m.hp-v);mark(m);back.push(`${gnm(m)} -${v}${m.hp<=0?"(쓰러짐)":""}`)}}
+      if(T==="reflect"||n.curse==="reflect"){const back=[];for(const m of alive()){const dd=dealtBy[m.id]||0;if(dd>0&&acts[m.id]!=="def"){const v=Math.max(1,Math.round(dd*(G.refl||.25)));m.hp=Math.max(0,m.hp-v);mark(m);back.push(`${gnm(m)} -${v}${m.hp<=0?"(쓰러짐)":""}`)}}
         log.push({k:"ev2",sub:"hit",x:back.length?`${A.n}! 준 피해가 되돌아왔다 · ${back.join(" · ")}`:`${A.n}! 아무도 되돌려 맞지 않았다.`})}
       let taken=0;const parts=alive().map(m=>{const d=take(m,G.aoe);if(d>0)taken+=d;mark(m);return `${gnm(m)} ${d<0?"회피":d}${m.hp<=0?"(쓰러짐)":""}`});
       log.push({k:"ev2",sub:"hit",x:`${A.hitN||G.hitN}! ${parts.join(" · ")}`});
@@ -1540,8 +1544,8 @@ function resolveGate(room){
   log.push({k:"amb",x:`이번 막 피해 ${actDmg} · ${G.sn} 남은 체력 ${n.bossHp.toLocaleString()}/${n.bossMax.toLocaleString()}`});
   if(n.bossHp<=0){n.status="win";log.push({k:"sec",x:"관문 돌파"},{k:"end",x:G.win})}
   else if(!P.some(x=>x.player&&x.hp>0)){n.status="fail";log.push({k:"sec",x:"패배"},{k:"end",x:G.lose})}
-  else if(a>=8){n.status="fail";log.push({k:"sec",x:"놓침"},{k:"end",x:G.flee})}
-  else{n.act=a+1;n.omen=gateOmen(n);n.deadline=sNow()+GATE_WAIT;{const NA=GA(n.realm)[n.act];if(NA.say&&Math.random()<.6)log.push({k:"comp",x:`${G.sn}: ${NA.say}`})}}
+  else if(a>=roomA(n).length-1){n.status="fail";log.push({k:"sec",x:"놓침"},{k:"end",x:G.flee})}
+  else{n.act=a+1;n.omen=gateOmen(n);n.deadline=sNow()+GATE_WAIT;{const NA=roomA(n)[n.act];if(NA.say&&Math.random()<.6)log.push({k:"comp",x:`${G.sn}: ${NA.say}`})}}
   n.log=log.slice(-160);return n;
 }
 /* 도우미로 이긴 적 있는 관문: 벽에 닿으면 다시 싸우지 않고 바로 오른다 */
@@ -1566,7 +1570,8 @@ function claimGate(){
   h.journal=[{title:`관문 · ${G.boss}`,region:G.region,start:r.created,tier:1,label:r.status==="win"?"돌파":"실패",lines:r.log.map((l,i)=>({...l,t:r.created+i}))},...(h.journal||[])].slice(0,10);
   addLog(h,`${G.title} ${r.status==="win"?"돌파":"실패"}. ${got.join(", ")}`);save(h);toast(got[0]);
 }
-function gateTab(){
+function gateTab(){const tw=me.tower;if(tw?.room&&tw.wk===weekKey())return towerView(tw.room);return gateTab0()+towerSection()}
+function gateTab0(){
   const r=myRoom();if(r&&r.status!=="closed")return gateRoomView(r);
   const h=me,nr=h.realm+1,G=GATES[nr],canOpen=atWall(h)&&REALMS[nr]?.gate&&G?.ready,now=Date.now();
   /* 모집 중인 방은 연 사람이 아직 그 방에 있고, 아직 그 경지에 오르지 않았을 때만 보인다 */
@@ -2070,6 +2075,10 @@ const TITLES=[
   {id:"d10",g:"논검",n:"검론의 달인",hint:"논검비무에서 10번 이긴다",ok:h=>cnt(h,"duelW")>=10},
   {id:"d30",g:"논검",n:"검을 논하는 자",hint:"논검비무를 30번 겨룬다",ok:h=>cnt(h,"duelW")+cnt(h,"duelL")+cnt(h,"duelD")>=30},
   {id:"re1",g:"강호",n:"탈환의 영웅",hint:"마교에게서 지역을 되찾을 때 공로 1위를 한다",ok:h=>cnt(h,"reTop")>=1},
+  {id:"tw10",g:"비경",n:"비경 탐험가",hint:"무림 비경 10층을 넘는다",ok:h=>(h.towerMax||0)>=10},
+  {id:"tw25",g:"비경",n:"비경의 정복자",hint:"무림 비경 25층을 넘는다",ok:h=>(h.towerMax||0)>=25},
+  {id:"tw50",g:"비경",n:"천외천",hint:"무림 비경 50층을 넘는다",ok:h=>(h.towerMax||0)>=50},
+  {id:"nem1",g:"강호",n:"숙적을 꺾은 자",hint:"숙적과의 결전에서 이긴다",ok:h=>(h.nemSlain||[]).length>=1,show:h=>`${(h.nemSlain||[])[0]||"숙적"}${josa((h.nemSlain||[])[0]||"숙적","을").slice(((h.nemSlain||[])[0]||"숙적").length)} 꺾은 자`},
   {id:"f10",g:"낚시",n:"초보 강태공",hint:"물고기를 10마리 낚는다",ok:h=>cnt(h,"fish")>=10},
   {id:"f100",g:"낚시",n:"강태공",hint:"물고기를 100마리 낚는다",ok:h=>cnt(h,"fish")>=100},
   {id:"f500",g:"낚시",n:"어신(魚神)",hint:"물고기를 500마리 낚는다",ok:h=>cnt(h,"fish")>=500},
@@ -2080,7 +2089,7 @@ const TITLES=[
 const TITLE_BY=Object.fromEntries(TITLES.map(t=>[t.id,t]));
 const titleOf=h=>{const t=h?.title&&h.titles?.[h.title]&&TITLE_BY[h.title];return t?(t.show?t.show(h):t.n):""};
 /* 칭호 배지: 칭호 갈래마다 다른 색 상자 */
-const TB_CLS={경지:"tb-r",관문:"tb-g",문파:"tb-s",강호:"tb-w",토벌:"tb-l",장비:"tb-e",인연:"tb-b",논검:"tb-d",낚시:"tb-b"};
+const TB_CLS={비경:"tb-g",경지:"tb-r",관문:"tb-g",문파:"tb-s",강호:"tb-w",토벌:"tb-l",장비:"tb-e",인연:"tb-b",논검:"tb-d",낚시:"tb-b"};
 function titleBadge(h){const t=h?.title&&h.titles?.[h.title]&&TITLE_BY[h.title];if(!t)return "";return `<span class="tb ${TB_CLS[t.g]||""}">${esc(t.show?t.show(h):t.n)}</span>`}
 window.titleBadge=titleBadge;
 const titled=h=>titleBadge(h);
@@ -2510,6 +2519,117 @@ function manorSection(h){const B=manorBonus(h),parts=Object.entries(FURN).filter
     ${manorView(h,true)}
     <p class="note">${parts.length?`장원에서 받는 효과: ${parts.join(" · ")}`:"장원이 비어 있다. 재료를 모아 물건을 들이면 능력치가 오른다."} 물건마다 세 단계까지 고칠 수 있고, 단계가 오를수록 재료가 두 배씩 든다. 다른 사람이 인물 카드에서 내 장원을 구경할 수 있다.</p>
     <div class="flist">${rows}</div></div></section>`}
+
+/* ───────── 무림 비경: 층을 하나씩 오르는 탑. 5층마다 주인이 있고, 층마다 저주가 붙는다. 매주 월요일에 지난주 기록의 절반부터 다시 ───────── */
+const TW_FOES=["비경의 수문장","석상 무사","독전갈 왕","그림자 자객","얼음 요괴","불꽃 도깨비","백골 장군","청동 거인","혈랑 무리의 우두머리","미친 검귀","천년 구렁이","파계승"];
+const TW_LORDS=["비경의 문지기 금강역사","혈해의 군주","만독노조","무영귀왕","빙궁의 여왕","화룡","백골마제","천외천의 검마","구천현녀의 그림자","혼돈의 수호자"];
+const TW_CURSE={none:{n:"저주 없음",d:"평범한 층"},seal:{n:"봉인",d:"모든 막에 무공을 쓸 수 없다"},poison:{n:"독무",d:"매 막 누군가에게 독이 스민다"},reflect:{n:"반탄",d:"공격하면 준 피해 일부가 되돌아온다"},iron:{n:"강철",d:"보스 방어 1.5배"},fury:{n:"광분",d:"보스 공격 1.25배"}};
+const TW_OMEN={mark:"{b|의} 눈이 {t|을} 노린다. 다음 일격은 저 사람에게 떨어진다.",sweep:"{b|이} 크게 휘두를 기세다. 모두를 덮친다.",slide:"천장이 무너지려 한다! 왼쪽과 오른쪽, 어느 쪽으로 피할까?",
+  roar:"{b|이} 기를 모은다. 이번 막에 합쳐서 {need} 피해를 주지 못하면 모두가 휩쓸린다.",rage:"{b|의} 기세가 사나워진다. 체력이 절반 아래라면 이제부터 더 거세진다.",adds:"비경의 잡귀들이 몰려온다! 공격의 절반이 막히고, 매 막 덤벼든다.",
+  poison:"독무가 피어오른다. 맞으면 세 막 동안 독이 퍼진다.",seal:"비경의 기운이 내력을 짓누른다. 이번 막에는 무공을 쓸 수 없다.",drain:"{b|이} 피 냄새를 맡는다. 이번 막에 흘린 피만큼 체력을 되찾는다.",
+  reflect:"{b|이} 강기를 두른다. 공격하면 준 피해 일부가 되돌아온다.",flee:"{b|이} 비경 깊은 곳으로 물러나려 한다. 이번 막에 쓰러뜨리지 못하면 놓친다!"};
+const TW_ACTN={mark:"노림수",sweep:"휩쓸기",slide:"붕괴",roar:"기세",rage:"광폭",adds:"잡귀",poison:"독무",seal:"봉인",drain:"흡혈",reflect:"반탄",flee:"퇴각"};
+const TW_DAY=5;
+const TW_K={hp:1300,hg:1.065,dg:1.04,df:3};
+const twFloorBoss=f=>f%5===0;
+function twSpec(f){const R=seeded(weekKey()*7919+f*104729),boss=twFloorBoss(f),name=boss?`${TW_LORDS[Math.floor(f/5-1)%TW_LORDS.length]}${f>50?` (${Math.floor((f-1)/50)+1}대)`:""}`:pickOneR(TW_FOES,R);
+  const curse=f<=2?"none":pickOneR(["none","none","seal","poison","reflect","iron","fury"],R);
+  const pool=["mark","sweep","slide","roar","rage","adds","poison","seal","drain","reflect"],n=boss?5:3,types=[];while(types.length<n){const t=pickOneR(pool,R);if(!types.includes(t)||types.length>=pool.length)types.push(t)}types.push("flee");
+  const g=Math.pow(TW_K.hg,f-1),dmg=Math.pow(TW_K.dg,f-1)*(curse==="fury"?1.25:1),sn=name.split(" ").pop();
+  const G={boss:name,sn,title:`비경 ${f}층`,region:"xiyu",hp:Math.round(TW_K.hp*g*(boss?1.6:1)),def:Math.round((90+f*TW_K.df)*(curse==="iron"?1.5:1)),aoe:Math.round(110*dmg),smash:Math.round(340*dmg),
+    roar:{need:Math.round(420*g),dmg:Math.round(1000*dmg)},adds:{hp:Math.round(500*g),bite:Math.round(45*dmg),n:"잡귀"},psn:Math.round(40*dmg),refl:.25,drain:.5,hitN:boss?"주인의 일격":"휩쓸기",
+    win:`${josa(name,"이")} 쓰러졌다. 다음 층으로 이어지는 계단이 드러났다.`,lose:"모두 쓰러졌다. 비경의 기운이 일행을 입구로 밀어냈다.",flee:`${josa(name,"이")} 비경 깊은 곳으로 사라졌다.`,slideHit:"천장이 무너졌다!"};
+  const A=[null,...types.map(t=>({t,n:TW_ACTN[t],hitN:t==="sweep"?"휩쓸기":undefined,omen:TW_OMEN[t].replace(/\{b\|(.)\}/g,(_,p)=>josa(name,p)).replace("{b}",name),say:""}))];
+  return {f,boss,name,curse,G,A}}
+const twWeek=h=>{const wk=weekKey(),t=h.tower;if(t?.wk===wk)return t;const last=t?.best||0;return {wk,floor:Math.max(1,Math.floor(last/2)),best:Math.max(0,Math.floor(last/2)-1),start:Math.max(1,Math.floor(last/2)),day:null,room:null,last:null}};
+const twUsed=t=>t.day?.d===dayKey()?t.day.n:0;
+let twAuto=false;
+function twEnter(){const h=structuredClone(me);if(h.realm<3){toast("비경은 절정부터 들어갈 수 있다.");return}if(activity(h)){toast(`${busyText[activity(h)]} 비경에 들어갈 수 없다.`);return}
+  const t=twWeek(h);if(t.room)return;if(twUsed(t)>=TW_DAY){toast("오늘은 더 들어갈 수 없다.");return}
+  const S=twSpec(t.floor),id="tw-"+myId().replace(/[^A-Za-z0-9_-]/g,"")+"-"+Date.now().toString(36);
+  const n={id,realm:h.realm,owner:myId(),solo:true,G:S.G,A:S.A,curse:S.curse,floor:t.floor,status:"lobby",created:Date.now()};
+  n.party=buildGateParty(n);n.status="fight";n.act=1;n.bossHp=n.bossMax=S.G.hp;n.rage=false;n.minions=0;n.poison={};n.hum=1;
+  n.log=[{k:"sec",x:`무림 비경 · ${t.floor}층 · ${S.name}`},{k:"amb",x:S.curse!=="none"?`이 층에는 「${TW_CURSE[S.curse].n}」의 저주가 걸려 있다. ${TW_CURSE[S.curse].d}.`:"고요한 층이다. 발소리만 울린다."}];n.omen=gateOmen(n);
+  t.day={d:dayKey(),n:twUsed(t)+1};t.room=n;t.last=null;h.tower=t;twAuto=false;save(h)}
+function twAct(action,auto){const h=structuredClone(me),t=h.tower;if(!t?.room||t.room.status!=="fight")return;let n=t.room;
+  const step=()=>{n.myAction=auto?null:action;n.myMode=auto?"auto":"manual";n=resolveGate(n);n.log=n.log.slice(-80)};
+  step();if(auto)while(n.status==="fight")step();
+  t.room=n;if(n.status!=="fight")twFinish(h,t);h.tower=t;save(h)}
+function twFinish(h,t){const n=t.room,f=n.floor,got=[];
+  if(n.status==="win"){const s=addSilver(h,15+f*4);got.push(silverTxt(s));const st=1+Math.floor(f/4);h.items.stone+=st;got.push(`강화석 +${st}`);const x=Math.round(expPerHour(h.level)*(.6+f*.05));applyExp(h,x);got.push(`경험치 +${x}`);
+    if(twFloorBoss(f)){h.items.clue+=2;got.push("비급 단서 +2");const r=Math.random(),rar=f>=20?(r<.5?3:2):f>=10?(r<.3?3:2):(r<.5?2:1);const it=setRar(makeItem(pickOne(["weapon","armor","acc"]),Math.min(6,h.realm),pickOne(SPECS)),rar);got.push(`장비 「${gainItem(h,it)}」`)}
+    t.best=Math.max(t.best||0,f);t.floor=f+1;h.towerMax=Math.max(h.towerMax||0,f);bump(h,"towerWin")}
+  {const ef=useBattleFood(h);if(ef)got.push(ef)}
+  t.last={f,win:n.status==="win",got,name:n.G.boss};t.room=null;
+  addLog(h,`무림 비경 ${f}층 · ${n.G.boss} · ${n.status==="win"?"돌파":"실패"}${got.length?` · ${got.join(", ")}`:""}`)}
+function twLeave(){const h=structuredClone(me),t=h.tower;if(!t?.room)return;t.room.status="fail";twFinish(h,t);h.tower=t;save(h)}
+function twRank(){const wk=weekKey();return allHeroes().filter(x=>x&&x.tower?.wk===wk&&(x.tower.best||0)>0&&!(x._id&&String(x._id).startsWith("fake-"))).map(x=>({id:x===me?myId():x._id,name:x.name,best:x.tower.best})).sort((a,b)=>b.best-a.best)}
+function towerSection(){const h=me,t=twWeek(h),used=twUsed(t),left=TW_DAY-used,S=twSpec(t.floor),rk=twRank();
+  if(t.room)return towerView(t.room);
+  const lock=h.realm<3;
+  return `<section><div class="label">무림 비경 · 이번 주</div><div class="case">
+    <div class="kicker">${lock?"절정부터":`내 기록 ${t.best||0}층 · 오늘 ${left}/${TW_DAY}번`}</div><h3>${t.floor}층${S.boss?" · 층의 주인":""} — ${S.name}</h3>
+    <p>${S.boss?"다섯 층마다 비경의 주인이 버티고 있다. 이기면 귀한 장비와 비급 단서를 얻는다.":"층을 오를수록 적이 강해진다. 이길 때마다 다음 층으로 오른다."} 저주: <b>${TW_CURSE[S.curse].n}</b>${S.curse!=="none"?` · ${TW_CURSE[S.curse].d}`:""}</p>
+    ${t.last?`<div class="wall" style="margin:8px 0"><p>${t.last.f}층 ${t.last.win?`<b>돌파!</b> ${josa(t.last.name,"을")} 쓰러뜨렸다.`:`실패. ${josa(t.last.name,"에게")} 밀려났다.`}</p>${t.last.got.length?`<p class="note" style="margin:0">${t.last.got.join(" · ")}</p>`:""}</div>`:""}
+    <div class="row"><button class="btn sealb" type="button" id="twEnter" ${lock||left<=0||activity(h)?"disabled":""}>${lock?"절정부터 들어갈 수 있다":left<=0?"오늘은 다 들어갔다":`${t.floor}층에 들어간다`}</button></div>
+    <p class="note">하루 ${TW_DAY}번 도전한다. 매주 월요일에 지난주 최고 기록의 절반 층부터 다시 오른다. 파티는 나와 NPC 셋이고, NPC 문파는 토벌에서 고른 대로 따라온다.</p>
+    <div class="label" style="margin-top:12px">이번 주 순위</div><div class="invrank">${rk.slice(0,9).map((x,i)=>`<span class="${x.id===myId()?"me":""}">${i+1}. ${esc(x.name)} ${x.best}층</span>`).join("")||"<span>아직 아무도 오르지 않았다.</span>"}</div></div></section>`}
+function towerView(r){const P=r.party,me2=P.find(x=>x.id===myId()),A=r.A,T=A[r.act]?.t,seal=T==="seal"||(r.curse==="seal"&&T!=="slide");
+  const feed=`<div class="feedwrap" style="margin:14px -18px 0"><ul class="feed" id="gateFeed">${r.log.map(battleLine).join("")}</ul></div>`;
+  const dots=`<div class="acts8">${A.slice(1).map((g,i)=>`<span class="${i+1<r.act?"past":i+1===r.act?"now":""}">${i+1}<em>${g.n}</em></span>`).join("")}</div>`;
+  const bars=`<div class="lparty">${P.map(x=>`<div class="lp ${x.hp<=0?"dead":""}">${x.player?face(x.id,x.sect,"sm"):emblem(x.sect,"sm")}<div><b>${esc(x.name)}${x.id===myId()?" (나)":" · NPC"}</b><span>${ROLE_N[x.role]} · ${x.hp}/${x.max}</span><div class="hpb"><i style="width:${x.hp/x.max*100}%"></i></div></div></div>`).join("")}</div>`;
+  const btn=(k,b,s,dis)=>`<button class="opt" type="button" data-twact="${k}" ${dis?"disabled":""}><b>${b}</b><span>${s}</span></button>`;
+  const ctl=!me2||me2.hp<=0?`<p class="note">쓰러져 있다.</p><button class="btn" type="button" id="twAuto">남은 싸움을 지켜본다</button>`
+    :`<div class="omen">◆ ${r.act}막 · ${esc(r.omen.text).replace(/\u0001(.*?)\u0002/g,"<b>$1</b>")}</div>${buffNote(me)}
+    <div class="row" style="justify-content:space-between;margin:10px 0"><span class="note" style="margin:0">기력 ${me2.qi}/${me2.qmax}${r.curse!=="none"?` · 저주: ${TW_CURSE[r.curse].n}`:""}</span><button class="btn sm ghost" type="button" id="twAuto">자동으로 끝까지</button></div>
+    <div class="acts3">${T==="slide"?btn("left","왼쪽","왼쪽으로 피한다")+btn("right","오른쪽","오른쪽으로 피한다")
+      :btn("atk","공격",`${ROLE_N[me2.role]}의 기본 공격`)+btn("def","방어","받는 피해 60% 감소")+(seal?"":btn("skill",SKILL_NAME[me2.sect],`${SKILL_ACT[me2.sect].split(" · ").slice(1).join(" · ")} · 기력 25${me2.cd?` · ${me2.cd}막 뒤 가능`:""}`,me2.cd||me2.qi<25)+advBtns(me,r.fx,myId(),me2,btn,"막"))}</div>
+    ${seal?`<p class="note" style="margin:8px 0 0">무공이 봉인되어 공격과 방어만 고를 수 있다.</p>`:T==="slide"?"":advPassNote(me,r.fx,myId())}
+    <div class="row" style="margin-top:10px"><button class="btn sm ghost" type="button" id="twLeave">비경에서 물러난다 (실패로 친다)</button></div>`;
+  return `<section><div class="case"><div class="kicker">무림 비경 · ${r.floor}층${r.curse!=="none"?` · ${TW_CURSE[r.curse].n}의 저주`:""}</div><h3>${esc(r.G.boss)}</h3>
+    <div class="bar seal-c"><i style="width:${(r.bossHp/r.bossMax*100).toFixed(1)}%"></i></div>
+    <div class="barnote"><span>체력 ${r.bossHp.toLocaleString()} / ${r.bossMax.toLocaleString()}${r.rage?" · 광폭":""}${r.minions>0?` · 잡귀 ${r.minions}`:""}</span><span>${r.act}/${A.length-1}막</span></div>
+    ${dots}${bars}<div style="margin-top:14px">${ctl}</div>${feed}</div></section>`}
+
+/* ───────── 숙적: 사람마다 이름 있는 사파 고수가 하나 붙는다. 탐문·소굴 끝에 가끔 길을 막고, 만날수록 세진다. 세 번 이기면 결전 ───────── */
+const NEM_SUR=["마","혈","귀","독고","흑","백","철","냉","광","사마"],NEM_GIVEN=["천귀","무영","혈랑","소양","구천","야차","파군","명월","잔혼","적사","무명","청린"],NEM_EP=["혈수(血手)","독룡(毒龍)","귀영(鬼影)","철면(鐵面)","광검(狂劍)","냉혈(冷血)","흑풍(黑風)","백골(白骨)","쌍도(雙刀)","탈혼(奪魂)"];
+function nemMake(h,gen){const R=seeded([...String(myId())].reduce((a,c)=>a*31+c.charCodeAt(0)|0,0)+gen*7919);return {gen,name:pickOneR(NEM_SUR,R)+pickOneR(NEM_GIVEN,R),ep:pickOneR(NEM_EP,R),met:0,wins:0,lost:0,done:false,pending:null,lastT:0}}
+const nemFull=N=>`${N.ep.replace(/\(.*\)/,"")} ${N.name}`;
+const NEM_GAP=8*3600e3;
+function maybeNemesis(h){if((h.realm||0)<3)return "";h.nemesis=h.nemesis||nemMake(h,1);const N=h.nemesis;
+  if(N.done){if(Date.now()-N.lastT>3*86400e3){h.nemesis=nemMake(h,(N.gen||1)+1);return ""}return ""}
+  if(N.pending||Date.now()-N.lastT<NEM_GAP||Math.random()>.3)return "";
+  N.pending={t:Date.now(),final:N.wins>=3};return `${nemFull(N)}의 기척이 느껴진다…`}
+const NEM_LINES={first:["\"네가 요즘 강호에 이름 좀 날린다는 {me}냐? 내 이름은 {n}. 기억해 둬라.\"","\"{me}… 그 이름, 오늘부터 내 칼에 새겨 두지.\""],
+  again:["\"지난번엔 운이 좋았지. 오늘은 다를 거다.\"","\"그 상처, 다 나았나? 다시 벌려 주마.\"","\"네 놈 생각에 잠을 못 잤다. 오늘 끝을 보자.\""],
+  gloat:["\"하하, 또 왔나? 이번엔 목숨까지 두고 가라.\"","\"지난번처럼 엎드려 빌어 보지 그러냐.\""],
+  final:["\"이제 끝을 보자, {me}. 둘 중 하나는 여기서 강호를 떠난다.\""],
+  flee:["\"크윽… 이 빚은 반드시 갚는다!\"","\"오늘은 여기까지다. 다음엔… 다음엔 반드시!\"","연막을 터뜨리고 사라지며 외친다. \"{me}! 잊지 마라!\""],
+  win:["\"아직 멀었군. 다음엔 좀 더 강해져서 와라.\"","\"이게 전부냐? 실망이다.\""],
+  die:["\"…강호는 넓구나. {me}, 네 이름 저승에서도 잊지 않겠다.\""]};
+const nemLine=(k,h,N)=>fill(pickOne(NEM_LINES[k]),{me:h.name,n:nemFull(N)});
+function nemFight(fight){const h=structuredClone(me),N=h.nemesis;if(!N?.pending)return;const fin=N.pending.final;
+  if(!fight){N.pending=null;N.lastT=Date.now();addLog(h,`숙적 ${josa(nemFull(N),"을")} 피해 길을 돌아갔다. 등 뒤로 비웃음이 들렸다.`);save(h);return}
+  const d=derived(h),ratio=d.atk/(h.level*14+60),p=Math.max(.2,Math.min(.85,.35+.25*ratio-.03*N.met-(fin?.1:0))),win=Math.random()<p;
+  const open=N.met===0?nemLine("first",h,N):fin?nemLine("final",h,N):N.lost>N.wins?nemLine("gloat",h,N):nemLine("again",h,N);
+  const mid=pickOne(["칼과 칼이 열 번 부딪쳤다. 불꽃이 튀었다.","숙적의 칼끝이 옷깃을 스쳤다. 한 치만 깊었어도…","서로 세 걸음 물러나 숨을 골랐다."]);
+  const got=[];N.met++;N.lastT=Date.now();N.pending=null;
+  if(win){N.wins++;const x=Math.round(expPerHour(h.level)*(fin?5:2));applyExp(h,x);got.push(`경험치 +${x}`);got.push(silverTxt(addSilver(h,(50+h.level)*(fin?3:1))));h.items.stone+=fin?10:3;got.push(`강화석 +${fin?10:3}`);
+    if(fin){N.done=true;h.items.clue+=5;got.push("비급 단서 +5");const it=setRar(makeItem(pickOne(["weapon","armor","acc"]),Math.min(6,h.realm),pickOne(SPECS)),3);it.name=`${N.name}의 ${it.name.split(" ").pop()}`;got.push(`장비 「${gainItem(h,it)}」`);h.nemSlain=[...(h.nemSlain||[]),nemFull(N)];bump(h,"nemKill")}}
+  else{N.lost++;const lost=Math.min(h.silver||0,40+h.level);h.silver-=lost;got.push(`은자 ${lost}냥을 빼앗겼다`)}
+  const end=win?(fin?nemLine("die",h,N):nemLine("flee",h,N)):nemLine("win",h,N);
+  N.log=[{t:Date.now(),open,mid,end,win,fin},...(N.log||[])].slice(0,6);
+  addLog(h,`숙적 ${josa(nemFull(N),"와")}${fin?"의 결전":" 마주쳤다"} · ${win?(fin?"끝내 쓰러뜨렸다!":"이겼다. 숙적은 달아났다."):"졌다."} ${got.join(", ")}`);save(h);toast(win?(fin?`숙적 ${josa(nemFull(N),"을")} 쓰러뜨렸다!`:"숙적을 물리쳤다!"):"숙적에게 졌다…")}
+function nemBox(h){const N=h.nemesis;if(!N)return "";const last=N.log?.[0];
+  if(N.pending)return `<section><div class="nem"><div class="kicker">숙적 · ${N.pending.final?"결전":"출현"}</div><h3>${esc(nemFull(N))}</h3>
+    <p>${N.pending.final?`세 번 꺾인 ${josa(N.name,"이")} 이번에는 물러서지 않을 기세로 길을 막았다. 결전이다.`:N.met===0?`처음 보는 사파 고수가 길을 막았다. 눈빛이 예사롭지 않다.`:`${josa(N.name,"이")} 또 나타났다. (${N.wins}승 ${N.lost}패)`}</p>
+    <div class="row"><button class="btn sealb" type="button" data-nem="1">맞선다</button><button class="btn ghost" type="button" data-nem="0">피한다</button></div>
+    <p class="note" style="margin:6px 0 0">${N.pending.final?"이기면 숙적을 영영 쓰러뜨리고 전설 장비와 칭호를 얻는다.":`세 번 이기면 결전이 열린다. 지면 은자를 조금 빼앗긴다. 만날수록 숙적도 강해진다.`}</p></div></section>`;
+  if(last&&Date.now()-last.t<6*3600e3)return `<section><div class="nem done"><div class="kicker">숙적 · ${esc(nemFull(N))} · ${last.win?(last.fin?"결전 승리":"승리"):"패배"}</div>
+    <p class="say">${esc(last.open)}</p><p>${esc(last.mid)}</p><p class="say">${esc(last.end)}</p></div></section>`;
+  return ""}
+function nemSection(h){const N=h.nemesis;if(!N)return (h.realm||0)>=3?`<p class="note">아직 숙적이 없다. 탐문이나 소굴을 다니다 보면 누군가 그대를 노리기 시작할 것이다.</p>`:"";
+  return `<div class="fav"><span>⚔</span><div><b>숙적 · ${esc(nemFull(N))}${N.done?" (쓰러뜨림)":""}</b><span>${N.met}번 마주침 · ${N.wins}승 ${N.lost}패${N.done?"":` · 결전까지 ${Math.max(0,3-N.wins)}승`}${(h.nemSlain||[]).length?` · 지금까지 꺾은 숙적 ${h.nemSlain.length}`:""}</span></div></div>`}
 
 /* 마방과 표국: 말을 사고 올리거나, 마차를 빌린다 */
 function stableBuy(kind){const h=structuredClone(me);if(h.travel)return;const HORSE_BUY=Math.round(HORSE_BUY0*mkt(h)),CART_COST=Math.round(CART_COST0*mkt(h)),HORSE_T=HORSE_T0.map(t=>t.cost?{...t,cost:Math.round(t.cost*mkt(h))}:t);
@@ -3700,7 +3820,7 @@ function finishMission(){
   saveJournal(h,m,inc,r.t,`보상: 경험치 +${r.exp}, 강화석 +${r.stone}${extra.length?", "+extra.join(", "):""}`);
   h.dn={...(h.dn||{}),[m.region+"|"+misDiff(m)]:m.period}; if(misDiff(m)===2)bump(h,"misHard"); h.mission=null; bump(h,"mis");
   addLog(h,`「${inc.t}」 ${TIER[r.t]}. 경험치 +${r.exp}, 강화석 +${r.stone}${extra.length?", "+extra.join(", "):""}${ups?`, Lv.${lv0}→${h.level}`:""}`);
-  save(h); toast(ups?`사건 해결! 레벨이 올랐습니다. Lv.${h.level}`:`사건 해결 · ${TIER[r.t]}`);
+  maybeNemesis(h);save(h); toast(ups?`사건 해결! 레벨이 올랐습니다. Lv.${h.level}`:`사건 해결 · ${TIER[r.t]}`);
 }
 function abortMission(){const h=structuredClone(me);if(!h.mission)return;addLog(h,`「${INC[h.mission.region][h.mission.idx].t}」 탐문을 그만두었다.`);h.mission=null;confirmAbort=false;save(h)}
 
@@ -3875,7 +3995,7 @@ function worldTab(){
     else{const rt=route(h.loc,dest);regionBox+=`<p class="note">바로 가는 길이 없다. ${rt.path.map(p=>REGIONS[p].n).join(" → ")} (모두 ${hrsTxt(teaHrs(h,hrsFor(h,rt.hours)))}${speedTags(h,null).length?`, ${speedTags(h,null).join(" · ")}`:""}) 순으로 한 곳씩 이동해야 한다.</p>`}
   }
   regionBox+=(focus===h.loc?regionSectBox(focus)+jobBox(h)+fishBox(h)+stableBox(h)+innBox(h)+smithBox(h):"")+`</div>`;
-  return `${happenBox(h)}${invBox(h)}${questBox(h)}<section><div class="label">지도</div>${mapSvg()}
+  return `${nemBox(h)}${happenBox(h)}${invBox(h)}${questBox(h)}<section><div class="label">지도</div>${mapSvg()}
     <p class="note">지역을 누르면 정보가 보이고, 이어진 곳이면 바로 떠날 수 있다.</p>${regionBox}${caravanBox(h)}</section>
     ${travelBox?`<section style="margin-top:20px">${travelBox}</section>`:""}
     <section><div class="label">사건</div>${missionBox()}${journalList()}</section>`;
@@ -3945,7 +4065,7 @@ function selfTab(){
         <dt>회피율</dt><dd>${d.eva.toFixed(1)}%</dd><dt>치명타</dt><dd>${d.crit.toFixed(1)}%</dd>
       </dl>
       <div class="label" style="margin-top:22px">익힌 무공</div>
-      <ul class="skills">${s.sk.map(k=>`<li><b>${k[0]}</b><span class="tag">${k[1]}</span><span>${k[2]}</span></li>`).join("")}${(ADV[h.sect]||[]).map(k=>`<li class="${k.r>h.realm?"lock":""}"><b>${k.n}</b><span class="tag">${k.p?"패시브":"액티브"}</span><span>${k.d}${k.cd?` · 재사용 ${k.cd}합`:k.once?" · 싸움마다 한 번":""}${k.r>h.realm?` · <em>${REALMS[k.r].n}에 깨친다</em>`:""}</span></li>`).join("")}</ul>${bigupBox(h)}
+      <ul class="skills">${s.sk.map(k=>`<li><b>${k[0]}</b><span class="tag">${k[1]}</span><span>${k[2]}</span></li>`).join("")}${(ADV[h.sect]||[]).map(k=>`<li class="${k.r>h.realm?"lock":""}"><b>${k.n}</b><span class="tag">${k.p?"패시브":"액티브"}</span><span>${k.d}${k.cd?` · 재사용 ${k.cd}합`:k.once?" · 싸움마다 한 번":""}${k.r>h.realm?` · <em>${REALMS[k.r].n}에 깨친다</em>`:""}</span></li>`).join("")}</ul>${bigupBox(h)}${nemSection(h)}
     </div></section>
     <section>${foldHead("bag","행낭")}<div class="foldb" ${foldOpen("bag")?"":"hidden"}>
       <div class="bag"><div><b>${(h.silver||0).toLocaleString()}</b>은자 <span>· 냥 · 객잔과 떠돌이 상단에서 쓴다</span></div>${h.horse?`<div><b>🐎</b>${esc(h.horse.n)} <span>· ${horseT(h.horse).n} · 이동 시간 -${Math.round(horseT(h.horse).cut*100)}%</span></div>`:""}${Object.entries(ITEMS).map(([k,[n,sub]])=>`<div><b>${h.items[k]||0}</b>${n} <span>· ${sub}</span>${FOOD[k]&&h.items[k]>0?` <button class="btn sm ghost" type="button" data-eat="${k}" ${h.buff?.[FOOD[k].k]?"disabled":""}>${FOOD[k].v||"먹기"}</button>`:""}</div>`).join("")}</div>
@@ -4028,7 +4148,9 @@ function bind(){
   document.querySelectorAll("[data-bgpick]").forEach(b=>b.addEventListener("click",()=>{bigupPick=bigupPick===b.dataset.bgpick?null:b.dataset.bgpick;render()}));
   document.querySelectorAll("[data-bgforget]").forEach(b=>b.addEventListener("click",()=>{bigupForget=b.dataset.bgforget||null;render()}));
   document.querySelectorAll("[data-bgforgetok]").forEach(b=>b.addEventListener("click",()=>bigupDrop(b.dataset.bgforgetok)));
-  on("#bgLearn",bigupLearn);on("#postRe",reconsiderPost);
+  on("#bgLearn",bigupLearn);
+  on("#twEnter",twEnter);on("#twAuto",()=>twAct(null,true));on("#twLeave",twLeave);document.querySelectorAll("[data-twact]").forEach(b=>b.addEventListener("click",()=>twAct(b.dataset.twact,false)));
+  document.querySelectorAll("[data-nem]").forEach(b=>b.addEventListener("click",()=>nemFight(b.dataset.nem==="1")));on("#postRe",reconsiderPost);
   document.querySelectorAll("[data-redon]").forEach(b=>b.addEventListener("click",()=>reDonate(b.dataset.redon)));on("#reScout",reScout);on("#reClaim",reClaim);
   document.querySelectorAll("[data-quest]").forEach(b=>b.addEventListener("click",()=>claimQuest(+b.dataset.quest)));on("#qWeek",claimWeek);
   document.querySelectorAll("[data-hdig]").forEach(b=>b.addEventListener("click",()=>happenDig(b.dataset.hdig)));
