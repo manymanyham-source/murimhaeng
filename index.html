@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261107233020">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261107234917">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -4515,6 +4515,12 @@ window.FIREBASE_CONFIG = {
   .gate-auth[hidden]{display:none}
   .ga-box{width:100%;max-width:380px;display:grid;gap:14px}
   .ga-box h1{font-family:var(--f-brush);font-size:46px;letter-spacing:.08em;line-height:1}
+  .ga-load{display:grid;gap:14px;justify-items:center;text-align:center}.ga-load[hidden],.ga-main[hidden]{display:none}
+  .ga-load p{color:var(--ink-2);font-size:15px;letter-spacing:.08em;margin:6px 0 0}
+  .ga-dots{display:flex;gap:7px}.ga-dots i{width:7px;height:7px;border-radius:50%;background:var(--seal);opacity:.25;animation:gaDot 1.2s infinite}
+  .ga-dots i:nth-child(2){animation-delay:.2s}.ga-dots i:nth-child(3){animation-delay:.4s}
+  @keyframes gaDot{0%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+  @media (prefers-reduced-motion:reduce){.ga-dots i{animation:none;opacity:.6}}
   .ga-box .sub{color:var(--ink-3);font-size:13px;letter-spacing:.14em;margin-top:-6px}
   .ga-tabs{display:flex;border-bottom:1px solid var(--line)}
   .ga-tabs button{flex:1;background:none;border:0;padding:10px;font-family:var(--f-brush);font-size:18px;color:var(--ink-3);border-bottom:2px solid transparent;margin-bottom:-1px}
@@ -4535,6 +4541,8 @@ window.FIREBASE_CONFIG = {
   const st=document.createElement("style");st.textContent=css;document.head.appendChild(st);
   const box=document.createElement("div");box.className="gate-auth";box.id="gateAuth";
   box.innerHTML=`<div class="ga-box"><div><h1>무림행</h1><div class="sub">武林行 · 초대받은 사람만 들어올 수 있는 강호</div></div>
+    <div class="ga-load" id="gaLoad" role="status"><div class="ga-dots" aria-hidden="true"><i></i><i></i><i></i></div><p id="gaLoadT">강호로 들어가는 중입니다…</p></div>
+    <div class="ga-main" id="gaMain" hidden>
     <div class="ga-tabs" role="tablist"><button type="button" role="tab" id="gaTabIn" aria-selected="true">들어가기</button><button type="button" role="tab" id="gaTabUp" aria-selected="false">처음 왔어요</button></div>
     <form id="gaForm" novalidate>
       <div style="display:grid;gap:14px">
@@ -4544,14 +4552,15 @@ window.FIREBASE_CONFIG = {
       <div class="ga-err" id="gaErr" role="alert"></div>
       <button class="btn solid" type="submit" id="gaGo">들어가기</button>
       <p class="note" id="gaNote" style="margin:0">비밀번호를 잊으면 관리자에게 말해 주세요. 캐릭터는 그대로 옮겨 줄 수 있어요.</p></div>
-    </form></div>`;
+    </form></div></div>`;
   document.body.appendChild(box);
   const admin=document.createElement("div");admin.className="admin";admin.id="adminPanel";admin.hidden=true;document.body.appendChild(admin);
   let signup=false;
   function setTab(up){signup=up;$s("#gaTabIn").setAttribute("aria-selected",!up);$s("#gaTabUp").setAttribute("aria-selected",up);$s("#gaCodeRow").hidden=!up;
     $s("#gaGo").textContent=up?"초대코드로 가입하기":"들어가기";$s("#gaPw").autocomplete=up?"new-password":"current-password";$s("#gaErr").textContent=""}
   $s("#gaTabIn").onclick=()=>setTab(false);$s("#gaTabUp").onclick=()=>setTab(true);
-  const err=t=>{$s("#gaErr").textContent=t};
+  const showForm=()=>{$s("#gaLoad").hidden=true;$s("#gaMain").hidden=false};
+  const err=t=>{showForm();$s("#gaErr").textContent=t};
   const busy=b=>{$s("#gaGo").disabled=b};
 
   if(!cfg||!cfg.apiKey||String(cfg.apiKey).includes("여기")){err("설정 파일(config.js)에 Firebase 설정값이 아직 없어요.");busy(true);return}
@@ -4590,7 +4599,8 @@ window.FIREBASE_CONFIG = {
   /* 가입 중에는 초대코드 처리가 끝난 뒤에 직접 확인한다 (먼저 확인하면 아직 회원이 아니라서 막힌다) */
   auth.onAuthStateChanged(u=>{if(signingUp)return;enter(u)});
   async function enter(u){
-    if(!u){if(started)location.reload();box.hidden=false;return}
+    if(!u){if(started)location.reload();box.hidden=false;showForm();return}
+    $s("#gaLoad").hidden=false;$s("#gaMain").hidden=true;
     try{let s;try{s=await fs.doc("users/"+u.uid).get()}catch(e){await new Promise(r=>setTimeout(r,900));s=await fs.doc("users/"+u.uid).get()}
       if(!s.exists){err("가입이 끝나지 않은 계정이에요. 초대코드로 다시 가입해 주세요.");await auth.signOut();return}
       me={uid:u.uid,id:s.data().id,admin:s.data().admin===true};
