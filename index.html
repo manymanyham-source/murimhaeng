@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261107232041">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261107233020">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1908,6 +1908,11 @@ let parcels={},giveOpen=false,givePick={kind:"mats",key:"",qty:1,note:""};
 const myParcels=()=>Object.values(parcels).filter(p=>p.to===myId()).sort((a,b)=>b.t-a.t);
 const sentParcels=()=>Object.values(parcels).filter(p=>p.from===myId()).sort((a,b)=>b.t-a.t);
 const GIVE_KIND={mats:"재료",fish:"물고기",items:"물품",gear:"장비",silver:"은자"};
+/* 같은 지역(둘 다 머무는 중)이면 손으로 건네고, 아니면 표국 배송: 가장 짧은 길의 시간 × 15냥 (+ 은자는 5%) */
+function roadDist(a,b){if(a===b)return 0;const D={[a]:0},Q=[a];while(Q.length){Q.sort((x,y)=>D[x]-D[y]);const u=Q.shift();for(const [x,y,w] of ROADS){const v=x===u?y:y===u?x:null;if(v&&(D[v]===undefined||D[u]+w<D[v])){D[v]=D[u]+w;Q.push(v)}}}return D[b]??12}
+const sameSpot=(a,b)=>!!a&&!!b&&!a.travel&&!b.travel&&a.loc===b.loc;
+const shipFrom=h=>h.travel?h.travel.to:h.loc;
+function shipFee(h,o,kind,qty){if(sameSpot(h,o))return 0;const hrs=roadDist(shipFrom(h),shipFrom(o))||2;return Math.round(hrs*15+(kind==="silver"?qty*.05:0))}
 function giveList(h,kind){if(kind==="mats")return Object.entries(h.mats||{}).filter(([,v])=>v>0).map(([k,v])=>[k,`${matN(k)} (${v})`,v]);
   if(kind==="fish")return Object.entries(h.fish||{}).filter(([,v])=>v>0).map(([k,v])=>[k,`${fishName(k)} (${v})`,v]);
   if(kind==="items")return Object.entries(h.items||{}).filter(([k,v])=>v>0&&ITEMS[k]).map(([k,v])=>[k,`${ITEMS[k][0]} (${v})`,v]);
@@ -1917,13 +1922,16 @@ const parcelText=p=>p.kind==="silver"?silverTxt(p.qty):p.kind==="gear"?`장비 �
 async function sendParcel(to){if(mode!=="db"){toast("여럿이 함께하는 곳에서만 건넬 수 있다.");return}const o=heroById(to);if(!o||to===myId())return;
   const h=structuredClone(me),{kind}=givePick,list=giveList(h,kind),row=list.find(x=>x[0]===givePick.key)||list[0];if(!row){toast("건넬 것이 없다.");return}
   const key=row[0],qty=kind==="gear"?1:Math.max(1,Math.min(row[2],Math.floor(+givePick.qty||1)));
-  const p={from:myId(),fromName:h.name,to,toName:o.name,kind,key,qty,note:String(givePick.note||"").slice(0,60),t:Date.now()};
+  const fee=shipFee(h,o,kind,qty),ship=fee>0;if((h.silver||0)<fee+(kind==="silver"?qty:0)){toast(`은자가 모자라다. (표국 수수료 ${fee}냥)`);return}
+  const p={from:myId(),fromName:h.name,to,toName:o.name,kind,key,qty,note:String(givePick.note||"").slice(0,60),t:Date.now(),ship};
   if(kind==="gear"){const it=h.bag[+key];if(!it){toast("그 장비가 없다.");return}p.item=it;h.bag.splice(+key,1)}
   else if(kind==="silver"){if((h.silver||0)<qty){toast("은자가 모자라다.");return}h.silver-=qty}
   else{const src=kind==="mats"?(h.mats=h.mats||{}):kind==="fish"?(h.fish=h.fish||{}):h.items;if((src[key]||0)<qty){toast("그만큼 가지고 있지 않다.");return}src[key]-=qty}
   const id=myId().replace(/[^A-Za-z0-9_-]/g,"").slice(0,12)+"-"+Date.now().toString(36);
+  h.silver=(h.silver||0)-fee;
   try{await db.doc("parcels/"+id).set(p);parcels[id]={...p,id}}catch(e){toast("보내지 못했어요. 잠시 뒤 다시 해 주세요.");return}
-  addLog(h,`${josa(o.name,"에게")} ${josa(parcelText(p),"을")} 건넸다.${p.note?` "${p.note}"`:""}`);save(h);giveOpen=false;givePick.qty=1;givePick.note="";paintProfile();toast(`${o.name}에게 보냈다 · ${parcelText(p)}`)}
+  addLog(h,ship?`표국에 ${josa(parcelText(p),"을")} 맡겨 ${REGIONS[shipFrom(o)].n}의 ${josa(o.name,"에게")} 보냈다. (수수료 ${fee}냥)${p.note?` "${p.note}"`:""}`:`${josa(o.name,"에게")} ${josa(parcelText(p),"을")} 건넸다.${p.note?` "${p.note}"`:""}`);
+  save(h);giveOpen=false;givePick.qty=1;givePick.note="";paintProfile();toast(ship?`표국이 짐을 실었다 · ${parcelText(p)} · 수수료 ${fee}냥`:`${o.name}에게 건넸다 · ${parcelText(p)}`)}
 async function takeParcel(id,back){const p0=parcels[id];if(!p0||mode!=="db")return;const mine=p0.to===myId(),sender=p0.from===myId();if(back?!sender:!mine)return;
   if(!back&&p0.kind==="gear"&&(me.bag||[]).length>=20){toast("행낭이 가득 찼다. 장비를 정리하고 받자.");return}
   try{const L=await db.doc("parcels/"+id).acquire({holder:uid,ttlMs:6000});if(!L.acquired){toast("잠시 뒤 다시 눌러 주세요.");return}
@@ -1936,17 +1944,19 @@ async function takeParcel(id,back){const p0=parcels[id];if(!p0||mode!=="db")retu
   addLog(h,back?`${josa(p.toName,"에게")} 보낸 꾸러미(${parcelText(p)})를 도로 거두었다.`:`${josa(p.fromName,"이")} 보낸 꾸러미를 받았다 · ${parcelText(p)}${p.note?` · "${p.note}"`:""}`);save(h);toast(back?"꾸러미를 거두었다.":`받았다 · ${parcelText(p)}`)}
 function parcelInbox(){const L=myParcels(),S=sentParcels();if(!L.length&&!S.length)return "";
   return `<section><div class="label">꾸러미 · 받을 것 ${L.length}</div>
-    ${L.map(p=>`<div class="mail"><div class="mailh" style="cursor:default"><b>${esc(josa(p.fromName,"이"))} 보낸 꾸러미</b><span>${hhmm(p.t)} · ${esc(parcelText(p))}</span></div>
+    ${L.map(p=>`<div class="mail"><div class="mailh" style="cursor:default"><b>${esc(josa(p.fromName,"이"))} ${p.ship?"표국으로 부친":"건넨"} 꾸러미</b><span>${hhmm(p.t)} · ${esc(parcelText(p))}</span></div>
       <div class="mailb">${p.note?`<p>"${esc(p.note)}"</p>`:""}<button class="btn sm sealb" type="button" data-ptake="${p.id}">받는다</button></div></div>`).join("")}
     ${S.length?`<p class="note" style="margin-top:10px">아직 안 받아 간 꾸러미: ${S.map(p=>`${esc(p.toName)}에게 ${esc(parcelText(p))} <button class="btn sm ghost" type="button" data-pback="${p.id}">도로 거두기</button>`).join(" · ")}</p>`:""}</section>`}
 function giveBox(to){const h=me,list=giveList(h,givePick.kind);if(!list.find(x=>x[0]===givePick.key))givePick.key=list[0]?.[0]||"";const row=list.find(x=>x[0]===givePick.key);
-  return `<div class="givebox"><div class="kicker">${esc(heroById(to)?.name||"")}에게 건네기</div>
+  const o=heroById(to),on=o?.name||"",qn=givePick.kind==="gear"?1:Math.max(1,Math.min(row?.[2]||1,Math.floor(+givePick.qty||1))),fee=shipFee(h,o,givePick.kind,qn),ship=fee>0;
+  return `<div class="givebox"><div class="kicker">${esc(on)}에게 ${ship?"표국 배송":"건네주기"}</div>
+    <p class="note" style="margin:4px 0">${ship?`${esc(josa(on,"은"))} ${o?.travel?"길 위에 있다":`${REGIONS[o?.loc]?.n||"먼 곳"}에 있다`}. 표국에 맡기면 수수료를 받고 곧장 실어다 준다.`:`${REGIONS[h.loc]?.n||"같은 곳"}에 함께 있다. 손으로 직접 건넨다 (수수료 없음).`}</p>
     <div class="seg" style="margin:6px 0;flex-wrap:wrap">${Object.entries(GIVE_KIND).map(([k,n])=>`<button type="button" class="${givePick.kind===k?"on":""}" data-gkind="${k}">${n}</button>`).join("")}</div>
     ${list.length?`<div class="mailf"><label>무엇을<select id="gKey">${list.map(([k,n])=>`<option value="${k}" ${k===givePick.key?"selected":""}>${esc(n)}</option>`).join("")}</select></label>
       ${givePick.kind==="gear"?"":`<label>얼마나<input id="gQty" type="number" min="1" max="${row?.[2]||1}" value="${Math.min(givePick.qty||1,row?.[2]||1)}"></label>`}
       <label>한마디 (선택)<input id="gNote" maxlength="60" value="${esc(givePick.note||"")}" placeholder="잘 써라!"></label></div>
-      <div class="row" style="margin-top:8px"><button class="btn sm sealb" type="button" id="gSend">보낸다</button><button class="btn sm ghost" type="button" id="gCancel">그만둔다</button></div>
-      <p class="note" style="margin:6px 0 0">상대가 우편함에서 받아 간다. 받기 전이라면 내 우편함에서 도로 거둘 수 있다.</p>`:`<p class="note">건넬 ${josa(GIVE_KIND[givePick.kind],"이")} 없다.</p><button class="btn sm ghost" type="button" id="gCancel">그만둔다</button>`}</div>`}
+      <div class="row" style="margin-top:8px"><button class="btn sm sealb" type="button" id="gSend" data-ship="${ship?1:0}">${ship?`표국에 맡긴다 (${fee}냥)`:"건넨다"}</button><button class="btn sm ghost" type="button" id="gCancel">그만둔다</button></div>
+      <p class="note" style="margin:6px 0 0">상대가 우편함에서 받아 간다. 받기 전이라면 내 우편함에서 도로 거둘 수 있다${ship?" (수수료는 돌려받지 못한다)":""}.</p>`:`<p class="note">건넬 ${josa(GIVE_KIND[givePick.kind],"이")} 없다.</p><button class="btn sm ghost" type="button" id="gCancel">그만둔다</button>`}</div>`}
 
 function mailTab(){
   const list=myMails();
@@ -3108,6 +3118,7 @@ function paintProfile(){
   el.querySelectorAll("[data-pfgo]").forEach(b=>b.onclick=()=>{tab=b.dataset.pfgo;profileId=null;paintProfile();try{const cb=document.querySelector(".chat-box");if(cb&&innerWidth<700)cb.hidden=true}catch(e){}render()});
   el.querySelectorAll("[data-pfduel]").forEach(b=>b.onclick=()=>{duelInvite(b.dataset.pfduel);profileId=null;paintProfile()});
   {const q=x=>el.querySelector(x),sync=()=>{if(q("#gKey"))givePick.key=q("#gKey").value;if(q("#gQty"))givePick.qty=+q("#gQty").value||1;if(q("#gNote"))givePick.note=q("#gNote").value};
+    if(q("#gQty")&&q("#gSend")?.dataset.ship==="1")q("#gQty").oninput=()=>{sync();const o=heroById(profileId),f=shipFee(me,o,givePick.kind,Math.max(1,Math.floor(givePick.qty||1)));q("#gSend").textContent=`표국에 맡긴다 (${f}냥)`};
     if(q("#pfGive"))q("#pfGive").onclick=()=>{giveOpen=!giveOpen;paintProfile()};
     el.querySelectorAll("[data-gkind]").forEach(b=>b.onclick=()=>{sync();givePick.kind=b.dataset.gkind;givePick.key="";givePick.qty=1;paintProfile()});
     if(q("#gKey"))q("#gKey").onchange=()=>{sync();givePick.qty=1;paintProfile()};
