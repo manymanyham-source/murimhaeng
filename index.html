@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261107234917">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261108001230">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -780,7 +780,9 @@ function normalize(h){
 let writing=Promise.resolve();
 let journalCache=null,lastJournal=null;
 /* 지난 일지는 캐릭터 기록과 따로, 본인만 읽는 칸(journals/내 번호)에 둔다. 캐릭터 기록이 작아야 모두에게 빨리 간다. */
+let heroLive=false; /* 서버에서 내 기록을 한 번이라도 받아 왔는가. 그 전(기기에 남은 옛 사본)에는 저장하지 않는다 */
 function save(h){
+  if(mode==="db"&&!heroLive&&me){toast("강호 소식을 받아오는 중이에요. 잠시 뒤 다시 해 주세요.");return}
   /* 새 날의 의뢰는 사람이 무언가 할 때 함께 기록한다. 시작점은 이번 행동 직전 상태(me)로 잡는다 */
   try{if(h.sect&&(h.quests?.day!==dayKey()||h.qweek?.wk!==weekKey()))ensureQuests(h,me&&me.name===h.name?me:h)}catch(e){}
   try{checkTitles(h)}catch(e){}
@@ -2305,6 +2307,9 @@ async function postNotice(){
   catch(e){toast("올리지 못했어요. ("+(e?.code||e?.message||"오류")+")")}finally{noticeBusy=false}}
 async function delNotice(id){if(!isOwner||mode!=="db")return;try{await db.doc("notices/"+id).delete();delete notices[id];render();toast("공지를 내렸습니다.")}catch(e){toast("지우지 못했어요.")}}
 async function pinNotice(id){if(!isOwner||mode!=="db")return;const n=notices[id];if(!n)return;try{const d={...n,pin:!n.pin};await db.doc("notices/"+id).set(d);notices[id]=d;render()}catch(e){toast("바꾸지 못했어요.")}}
+/* 대화창의 [공지] 버튼이 부른다: 공지 탭으로 넘어가기, 안 읽은 공지 수 */
+window.goTab=t=>{tab=t;try{localStorage.setItem("murim-tab",tab)}catch(e){};render();document.querySelector(".tabs")?.scrollIntoView({block:"start",behavior:"smooth"})};
+window.noticeUnread=()=>{try{return me?noticeList().filter(n=>n.t>(me.noticeSeen||0)).length:0}catch(e){return 0}};
 function noticeTab(){
   const list=noticeList(),seen=me.noticeSeen||0;
   const items=list.length?list.map((n,i)=>{const open=noticeOpen===n.id||(noticeOpen===null&&i===0);
@@ -2524,7 +2529,16 @@ function fishPull(late){clearTimeout(fishTimer);if(!fishState)return;const ph=fi
   else{h.fish={...(h.fish||{}),[k]:((h.fish||{})[k]||0)+1};bump(h,"fish");const first=!h.fdex?.[k];h.fdex={...(h.fdex||{}),[k]:(h.fdex?.[k]||0)+1};const tr=FISHDB[k][3];if(tr>=3)bump(h,"fishLeg");
     text=`${fishName(k)}${josa(fishName(k),"을").slice(fishName(k).length)} 낚았다!${tr===3?" 전설 속의 고기다!!":tr===2?" 귀한 고기다!":""}${first?` 처음 보는 고기라 어보에 올렸다. (${Object.keys(h.fdex).length}/${FISH_N})`:""}`}
   fishLast={ok:true,text,k};addLog(h,`${REGIONS[h.loc].n} 물가에서 낚시 · ${text}`);save(h)}
-let fishLast=null;
+let fishLast=null,fishSellOpen=false;
+/* 고른 물고기를 원하는 만큼 판다 */
+function fishSellOne(k,qty){const h=structuredClone(me),f=h.fish||{},have=f[k]||0,n=Math.max(0,Math.min(have,Math.floor(qty)||0));if(!n||!FISHDB[k])return;
+  const sum=fishPrice(k)*n;f[k]=have-n;addSilver(h,sum);addLog(h,`객잔에 ${fishName(k)} ${n}마리를 팔았다. (${silverTxt(sum)})`);save(h);toast(`${fishName(k)} ${n}마리 · ${silverTxt(sum)}`)}
+function fishSellBox(h){const L=Object.entries(h.fish||{}).filter(([k,v])=>v>0&&FISHDB[k]).sort((a,b)=>FISHDB[a[0]][3]-FISHDB[b[0]][3]||fishPrice(a[0])-fishPrice(b[0]));
+  if(!L.length)return `<p class="note">어망이 비었다.</p>`;
+  return `<div class="flist">${L.map(([k,v])=>{const t=FISHDB[k][3];return `<div class="frow"><div><b>${fishName(k)}</b> <span class="tag">${FISH_TIER[t]}</span><span>${v}마리 · 한 마리 ${silverTxt(fishPrice(k))}${t>=2?" · 귀한 고기다":""}</span></div>
+    <input type="number" min="1" max="${v}" value="${t>=2?1:v}" data-fsq="${k}" style="width:58px" aria-label="${fishName(k)} 몇 마리">
+    <button class="btn sm ${t>=2?"ghost":"sealb"}" type="button" data-fsell="${k}">판다</button></div>`}).join("")}</div>
+    <div class="row" style="margin-top:8px"><button class="btn sm ghost" type="button" id="fishSell">흔함·보통 고기 한꺼번에 팔기</button></div>`}
 function fishSell(){const h=structuredClone(me),f=h.fish||{};let sum=0,n=0;const keep=new Set(Object.keys(FISHDB).filter(k=>FISHDB[k][3]>=2));
   for(const k in f){if(keep.has(k)||!f[k])continue;sum+=fishPrice(k)*f[k];n+=f[k];f[k]=0}if(!n){toast("팔 물고기가 없다. (귀함·전설 고기는 팔지 않고 남겨 둔다)");return}
   addSilver(h,sum);addLog(h,`객잔에 물고기 ${n}마리를 팔았다. (${silverTxt(sum)})`);save(h);toast(`물고기 ${n}마리 · ${silverTxt(sum)}`)}
@@ -2538,7 +2552,7 @@ function fishBox(h){if(h.travel)return "";const used=fishUsed(h),max=fishCasts(h
     :`<div class="fishpond"><span>${fishLast?esc(fishLast.text):"물결이 잔잔하다."}</span></div><button class="btn sealb" type="button" id="fishCast" ${left<=0?"disabled":""}>${left>0?"낚싯대를 던진다":"오늘은 다 던졌다"}</button>`;
   return `<div class="shop">${head}${stage}
     <p class="note">오늘 ${REGIONS[h.loc].n} 날씨는 <b>${W.n}</b> · ${W.tip}.${ex.length?` 이 지역에서만: ${ex.map(k=>h.fdex?.[k]?fishName(k):"???").join(", ")}.`:""} 찌가 쑥 들어가면 1.5초 안에 챈다. 너무 일찍 채도, 늦어도 놓친다.</p>
-    <div class="row" style="margin-top:6px"><span class="note" style="margin:0;flex:1">어망: ${bag||"비었다"}</span><button class="btn sm ghost" type="button" id="fishSell">물고기 팔기</button></div>
+    <div class="row" style="margin-top:6px"><span class="note" style="margin:0;flex:1">어망: ${bag||"비었다"}</span><button class="btn sm ghost" type="button" id="fishSellT">${fishSellOpen?"팔기 접기":"물고기 팔기"}</button></div>${fishSellOpen?fishSellBox(h):""}
     <button type="button" class="shoph" id="dexBtn" style="margin-top:8px"><span class="kicker">어보 · ${Object.keys(h.fdex||{}).filter(k=>FISHDB[k]).length}/${FISH_N}종 · 지금까지 ${cnt(h,"fish")}마리</span><i>${dexOpen?"접기 ▴":"펼치기 ▾"}</i></button>${dexOpen?dexView(h):""}</div>`}
 let dexOpen=false;
 const RN=k=>REGIONS[k]?.n||k;
@@ -4324,7 +4338,8 @@ function bind(){
   document.querySelectorAll("[data-hdig]").forEach(b=>b.addEventListener("click",()=>happenDig(b.dataset.hdig)));
   document.querySelectorAll("[data-hduel]").forEach(b=>b.addEventListener("click",()=>happenDuel(b.dataset.hduel)));
   document.querySelectorAll("[data-hgo]").forEach(b=>b.addEventListener("click",()=>{dest=b.dataset.hgo;tab="world";render();try{document.querySelector(".region")?.scrollIntoView({block:"start"})}catch(e){}}));
-  on("#dexBtn",()=>{dexOpen=!dexOpen;render()});on("#fishCast",fishCast);on("#fishPull",()=>fishPull(false));on("#fishSell",fishSell);
+  on("#dexBtn",()=>{dexOpen=!dexOpen;render()});on("#fishCast",fishCast);on("#fishPull",()=>fishPull(false));on("#fishSell",fishSell);on("#fishSellT",()=>{fishSellOpen=!fishSellOpen;render()});
+  document.querySelectorAll("[data-fsell]").forEach(b=>b.onclick=()=>{const k=b.dataset.fsell,i=document.querySelector(`[data-fsq="${k}"]`);fishSellOne(k,+(i?.value||1))});
   document.querySelectorAll("[data-craft]").forEach(b=>b.addEventListener("click",()=>craftFurn(b.dataset.craft)));
   document.querySelectorAll("[data-fold]").forEach(b=>b.addEventListener("click",()=>toggleFold(b.dataset.fold)));
   document.querySelectorAll("[data-reroll]").forEach(b=>b.addEventListener("click",()=>rerollOpt(gsel,+b.dataset.reroll)));
@@ -4451,10 +4466,10 @@ async function boot(){
   db.collection("gateacts").onSnapshot(snap=>{const mine=gateActs[uid];gateActs={};snap.docs.forEach(d=>{if(d.exists)gateActs[d.id]=structuredClone(d.data())});
     if(mine&&(!gateActs[uid]||(gateActs[uid].t||0)<(mine.t||0)))gateActs[uid]=mine;if(ready)render();maybeResolve();maybeResolveLair();try{maybeResolveDuel()}catch(e){}},()=>{});
   db.collection("heroes").onSnapshot(snap=>{
-    const mine=snap.docs.find(x=>x.id===uid);
+    const mine=snap.docs.find(x=>x.id===uid);if(snap.fromCache!==true&&!(mine?.metadata?.fromCache))heroLive=true;
     if(!(mine?.metadata?.hasPendingWrites)){me=mine?.exists?normalize(structuredClone(mine.data())):null;if(me){if(me.journal&&!journalCache)journalCache=me.journal;me.journal=journalCache||me.journal||[]}}
     others=snap.docs.filter(x=>x.id!==uid&&x.exists).map(x=>Object.assign(normalize(structuredClone(x.data())),{_id:x.id}));
-    mergeFake();ready=true;render();syncBonds();
+    mergeFake();if(!heroLive&&!ready)return;ready=true;render();syncBonds();
   },e=>{toast("강호 소식이 끊겼어요. 새로고침해 주세요.")});
   setTimeout(()=>{if(!ready){ready=true;render()}},8000);
 }
@@ -4501,7 +4516,7 @@ window.FIREBASE_CONFIG = {
             tx.set(lr,{holder,exp:now+(ttlMs||30000)});return{acquired:true}})}catch(e){return{acquired:false}}}}},
       collection(path){const ref=fs.collection(path);return{
         doc:id=>api.doc(path+"/"+id),
-        onSnapshot:(n,e)=>ref.onSnapshot({includeMetadataChanges:true},s=>n({docs:s.docs.map(wrap),size:s.size,empty:s.empty}),e)}}};
+        onSnapshot:(n,e)=>ref.onSnapshot({includeMetadataChanges:true},s=>n({docs:s.docs.map(wrap),size:s.size,empty:s.empty,fromCache:s.metadata?.fromCache}),e)}}};
     return api;
   }
   function installClaude(){
@@ -4566,7 +4581,7 @@ window.FIREBASE_CONFIG = {
   if(!cfg||!cfg.apiKey||String(cfg.apiKey).includes("여기")){err("설정 파일(config.js)에 Firebase 설정값이 아직 없어요.");busy(true);return}
   firebase.initializeApp(cfg);auth=firebase.auth();fs=firebase.firestore();
   /* 한 번 받은 기록과 대화는 이 기기에 저장해 두고, 바뀐 것만 다시 받는다 (읽기 횟수 절약) */
-  try{fs.enablePersistence&&fs.enablePersistence({synchronizeTabs:true}).catch(()=>{})}catch(e){}
+  /* 기기 저장 사본(persistence)은 쓰지 않는다: 다른 기기에서 바뀐 기록을 옛 사본이 덮어쓰는 일이 있었다 */
 
   $s("#gaForm").addEventListener("submit",async e=>{
     e.preventDefault();err("");
@@ -4719,6 +4734,7 @@ addEventListener("murim-ready",()=>{
   .chat .ct{display:flex;border-bottom:1px solid var(--line)}
   .chat .ct button{flex:1;background:none;border:0;padding:10px 4px;font-family:var(--f-brush);font-size:16px;color:var(--ink-3);border-bottom:2px solid transparent;position:relative}
   .chat .ct button[aria-selected="true"]{color:var(--ink);border-color:var(--ink)}
+  .chat .ct #chatNotice{color:var(--seal);flex:.9}
   .chat .ct button i{position:absolute;top:8px;right:14%;width:6px;height:6px;border-radius:50%;background:var(--seal)}
   .chat .cx{background:none;border:0;padding:0 12px;color:var(--ink-3);font-size:18px}
   .chat .sub{font-size:12px;color:var(--ink-3);padding:6px 12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px}
@@ -4760,7 +4776,8 @@ addEventListener("murim-ready",()=>{
     btn.innerHTML=`대화${total?`<b>${total}</b>`:""}`;
     if(box.hidden)return;
     const k=curKey();if(k)mark(k);
-    const tabs=`<div class="ct"><button type="button" data-t="server" aria-selected="${tab==="server"}">서버${tab!=="server"&&unread("ch:server")?"<i></i>":""}</button><button type="button" data-t="region" aria-selected="${tab==="region"}">지역${tab!=="region"&&l&&unread("ch:"+l)?"<i></i>":""}</button><button type="button" data-t="dm" aria-selected="${tab==="dm"}">1:1${tab!=="dm"&&anyDm?"<i></i>":""}</button><button class="cx" type="button" aria-label="닫기">×</button></div>`;
+    const nUn=typeof window.noticeUnread==="function"?window.noticeUnread():0;
+    const tabs=`<div class="ct"><button type="button" id="chatNotice" title="공지 탭으로 간다">[공지]${nUn?"<i></i>":""}</button><button type="button" data-t="server" aria-selected="${tab==="server"}">서버${tab!=="server"&&unread("ch:server")?"<i></i>":""}</button><button type="button" data-t="region" aria-selected="${tab==="region"}">지역${tab!=="region"&&l&&unread("ch:"+l)?"<i></i>":""}</button><button type="button" data-t="dm" aria-selected="${tab==="dm"}">1:1${tab!=="dm"&&anyDm?"<i></i>":""}</button><button class="cx" type="button" aria-label="닫기">×</button></div>`;
     let body="",sub="",canSend=!!k;
     if(tab==="server")sub=`<div class="sub"><span>무림 전체에 들리는 이야기</span></div>`;
     if(tab==="region")sub=`<div class="sub"><span>${l?`${REG[l]}에 있는 사람들만 듣는다`:"길 위에서는 지역 대화를 할 수 없다"}</span></div>`;
@@ -4781,6 +4798,7 @@ addEventListener("murim-ready",()=>{
     if($c("#chatIn")){$c("#chatIn").value=keepDraft;if(hadFocus)$c("#chatIn").focus()}
     box.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{tab=b.dataset.t;if(tab!=="dm")dmWith=null;paint()});
     box.querySelector(".cx").onclick=()=>{box.hidden=true;paint()};
+    if($c("#chatNotice"))$c("#chatNotice").onclick=()=>{box.hidden=true;paint();if(typeof window.goTab==="function")window.goTab("notice")};
     box.querySelectorAll("[data-dm]").forEach(b=>b.onclick=()=>{dmWith=b.dataset.dm;paint()});
     if($c("#dmBack"))$c("#dmBack").onclick=()=>{dmWith=null;paint()};
     if($c("#chatForm"))$c("#chatForm").onsubmit=async e=>{e.preventDefault();const inp=$c("#chatIn"),text=inp.value.trim().slice(0,200);if(!text)return;
