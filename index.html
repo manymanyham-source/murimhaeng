@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261108012236">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261110030008">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -2853,11 +2853,11 @@ function sellMats(){const h=structuredClone(me),m=h.mats||{};let sum=0,n=0;for(c
 let dhStat="nei";
 function workshop(h){const lv=craftLv(h),xp=h.craftXp||0,nx=Math.pow(lv+1,2)*12,bag=Object.entries(h.mats||{}).filter(([,v])=>v>0).sort((a,b)=>MATS[a[0]][2]-MATS[b[0]][2]);
   const need=nd=>Object.entries(nd).map(([k,v])=>`<i class="${((h.mats||{})[k]||0)>=v?"":"lack"}">${matN(k)} ${(h.mats||{})[k]||0}/${v}</i>`).join(" ");
-  const gear=Object.entries(GEAR_RECIPE).map(([slot,R])=>{const g=gearNeed(h,slot),ores=Object.keys(MATS).filter(k=>MATS[k][1]==="ore"&&((h.mats||{})[k]||0)>=R.ore);
+  const gear=Object.entries(GEAR_RECIPE).map(([slot,R])=>{const g=gearNeed(h,slot),ores=Object.keys(MATS).filter(k=>MATS[k][1]==="ore"&&((h.mats||{})[k]||0)>0).sort((a,b)=>MATS[b][2]-MATS[a][2]),enough=k=>((h.mats||{})[k]||0)>=R.ore,short=ores.filter(k=>!enough(k)&&(!g.ore||MATS[k][2]>MATS[g.ore][2]));
     return `<div class="frow"><div><b>${R.n} 만들기</b><span>광석 ${R.ore}${R.wood?` · 목재 ${R.wood}`:""}${R.herb?` · 약초 ${R.herb}`:""} · 은자 ${R.silver} · 좋은 광석일수록 등급이 높다 (운철이면 전설)</span>
-      ${ores.length?`<select class="npcsel" data-core="${slot}">${ores.map(k=>`<option value="${k}" ${k===g.ore?"selected":""}>${matN(k)} (${MAT_TIER[MATS[k][2]]}) · ${(h.mats||{})[k]}개</option>`).join("")}</select>`:`<span class="fcost"><i class="lack">광석 ${R.ore}개가 필요하다</i></span>`}
+      ${ores.length?`<select class="npcsel" data-core="${slot}" aria-label="${R.n}에 쓸 광석">${ores.map(k=>`<option value="${k}" ${k===g.ore?"selected":""} ${enough(k)?"":"disabled"}>${matN(k)} (${MAT_TIER[MATS[k][2]]}) · ${(h.mats||{})[k]}/${R.ore}개${enough(k)?"":" · 모자람"}</option>`).join("")}</select>${short.length?`<span class="fcost"><i class="lack">${short.map(k=>`${matN(k)} ${(h.mats||{})[k]}/${R.ore}개 · ${R.ore}개가 있어야 쓸 수 있다`).join(" · ")}</i></span>`:""}`:`<span class="fcost"><i class="lack">광석 ${R.ore}개가 필요하다</i></span>`}
       ${g.ore?`<span class="fcost">${need(g.need)} <i class="${(h.silver||0)>=R.silver?"":"lack"}">은자 ${R.silver}</i></span>`:""}</div>
-      <button class="btn sm ${g.ok?"sealb":""}" type="button" data-cgear="${slot}" ${g.ok?"":"disabled"}>만든다</button></div>`}).join("");
+      <button class="btn sm ${g.ok?"sealb":""}" type="button" data-cgear="${slot}" ${g.ok?"":"disabled"}>${g.ore?`${josa(matN(g.ore),"로")} 만든다`:"만든다"}</button></div>`}).join("");
   const tools=Object.entries(TOOLS).map(([k,T])=>{const ok=hasMats(h,T.need)&&!(T.buff&&h.buff?.[T.buff]),held=T.buff&&h.buff?.[T.buff];
     return `<div class="frow"><div><b>${T.n}</b>${held?` <span class="tag">지니고 있다</span>`:""}<span>${T.d}</span><span class="fcost">${need(T.need)}</span>
       ${k==="daehwan"?`<select class="npcsel" id="dhStat">${Object.keys(STATS).map(s=>`<option value="${s}" ${s===dhStat?"selected":""}>${STATS[s].n} +1</option>`).join("")}</select>`:""}</div>
