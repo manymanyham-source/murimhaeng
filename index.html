@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261110030008">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261110030634">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1886,19 +1886,20 @@ function regionSectBox(region){
    mail/<번호> = {title, body, to:["*"] 또는 [받는 사람 번호...], gifts:{exp,stone,herb,wine,trinket,clue,horse}, t}
    받은 표시는 각자 h.mailGot[번호] 에 남긴다 (각자 자기 기록만 고친다). */
 const MAIL_GIFTS=[["silver","은자"],["mandu","만두"],["dongpo","동파육"],["samgye","삼계탕"],["exp","경험치"],["stone","강화석"],["herb","약초"],["wine","화주"],["trinket","장신구"],["clue","비급 단서"]];
-let mails={}, mailDraft={title:"",body:"",to:"all",pick:{},gifts:{},horse:false}, mailOpen=null, mailBusy=false;
+let mails={}, mailDraft={title:"",body:"",to:"all",pick:{},gifts:{},mats:{},horse:false}, mailOpen=null, mailBusy=false;
 const mailForMe=m=>Array.isArray(m.to)&&(m.to.includes("*")||m.to.includes(myId()));
 const myMails=()=>Object.entries(mails).map(([id,m])=>({...m,id})).filter(mailForMe).sort((a,b)=>b.t-a.t);
-const hasGifts=m=>!!(m.gifts&&(m.gifts.horse||MAIL_GIFTS.some(([k])=>m.gifts[k]>0)));
+const hasGifts=m=>!!(m.gifts&&(m.gifts.horse||MAIL_GIFTS.some(([k])=>m.gifts[k]>0)||Object.values(m.gifts.mats||{}).some(v=>v>0)));
 const mailGot=id=>!!me?.mailGot?.[id];
 const mailUnread=()=>myMails().filter(m=>!mailGot(m.id)&&(hasGifts(m)||!(me.mailSeen>=m.t))).length;
-function giftText(g){const out=MAIL_GIFTS.filter(([k])=>g?.[k]>0).map(([k,n])=>`${n} +${g[k]}`);if(g?.horse)out.push("말 한 필 (이동 시간 -30%)");return out}
+function giftText(g){const out=MAIL_GIFTS.filter(([k])=>g?.[k]>0).map(([k,n])=>`${n} +${g[k]}`);for(const [k,v] of Object.entries(g?.mats||{}))if(v>0&&MATS[k])out.push(`${matN(k)} +${v}`);if(g?.horse)out.push("말 한 필 (이동 시간 -30%)");return out}
 function claimMail(id){
   const m=mails[id];if(!m||!mailForMe(m)||mailGot(id))return;
   const h=structuredClone(me),g=m.gifts||{},got=[];h.mailGot={...(h.mailGot||{}),[id]:Date.now()};
   const lv0=h.level;
   for(const [k,n] of MAIL_GIFTS){const v=Math.max(0,Math.floor(+g[k]||0));if(!v)continue;
     if(k==="exp")applyExp(h,v);else if(k==="silver")addSilver(h,v);else h.items[k]=(h.items[k]||0)+v;got.push(`${n} +${v}`)}
+  for(const [k,v0] of Object.entries(g.mats||{})){const v=Math.max(0,Math.floor(+v0||0));if(!v||!MATS[k])continue;h.mats=h.mats||{};h.mats[k]=(h.mats[k]||0)+v;got.push(`${matN(k)} +${v}`)}
   if(g.horse){if(h.horse)got.push("말 (이미 있어 강화석 +10으로 대신)"),h.items.stone+=10;else{const n=pickOne(HORSES);h.horse={n,t:Date.now()};got.push(`말 「${n}」`)}}
   addLog(h,`우편 「${m.title}」${got.length?` 받음: ${got.join(", ")}`:" 확인"}${h.level>lv0?`, Lv.${lv0}→${h.level}`:""}.`);
   save(h);toast(got.length?`받았습니다: ${got.slice(0,3).join(", ")}`:"확인했습니다.");
@@ -1907,10 +1908,10 @@ async function sendMail(){
   if(!isOwner||mode!=="db"||mailBusy)return;const d=mailDraft;
   const title=d.title.trim().slice(0,60),body=d.body.trim().slice(0,1000);if(!title){toast("제목을 적어 주세요.");return}
   const to=d.to==="all"?["*"]:Object.keys(d.pick).filter(k=>d.pick[k]);if(!to.length){toast("받을 사람을 골라 주세요.");return}
-  const gifts={};MAIL_GIFTS.forEach(([k])=>{const v=Math.max(0,Math.floor(+d.gifts[k]||0));if(v)gifts[k]=v});if(d.horse)gifts.horse=true;
+  const gifts={};MAIL_GIFTS.forEach(([k])=>{const v=Math.max(0,Math.floor(+d.gifts[k]||0));if(v)gifts[k]=v});if(d.horse)gifts.horse=true;{const mm={};for(const [k,v0] of Object.entries(d.mats||{})){const v=Math.max(0,Math.floor(+v0||0));if(v&&MATS[k])mm[k]=v}if(Object.keys(mm).length)gifts.mats=mm}
   const id="m"+Date.now().toString(36);mailBusy=true;
   try{await db.doc("mail/"+id).set({title,body,to,gifts,t:Date.now(),from:me.name});mails[id]={title,body,to,gifts,t:Date.now()};
-    mailDraft={title:"",body:"",to:"all",pick:{},gifts:{},horse:false};toast("우편을 보냈습니다.");render()}
+    mailDraft={title:"",body:"",to:"all",pick:{},gifts:{},mats:{},horse:false};toast("우편을 보냈습니다.");render()}
   catch(e){toast("보내지 못했어요. ("+(e?.code||e?.message||"오류")+")")}finally{mailBusy=false}
 }
 async function delMail(id){if(!isOwner||mode!=="db")return;try{await db.doc("mail/"+id).delete();delete mails[id];render();toast("우편을 거두었습니다.")}catch(e){toast("지우지 못했어요.")}}
@@ -1986,6 +1987,9 @@ function mailTab(){
       <div class="label" style="margin:6px 0 0">보상 (비워 두면 공지만)</div>
       <div class="mailg">${MAIL_GIFTS.map(([k,n])=>`<label>${n}<input type="number" min="0" inputmode="numeric" data-mg="${k}" value="${d.gifts[k]||""}" placeholder="0"></label>`).join("")}
         <label class="chk"><input type="checkbox" data-mhorse ${d.horse?"checked":""}> 말 한 필 (이름은 무작위)</label></div>
+      <details class="mailmats" ${Object.values(d.mats||{}).some(v=>v>0)?"open":""}><summary>재료 · 광석 넣기${Object.values(d.mats||{}).filter(v=>v>0).length?` (${Object.entries(d.mats).filter(([,v])=>v>0).map(([k,v])=>`${matN(k)} ${v}`).join(", ")})`:""}</summary>
+        ${["ore","wood","herb"].map(kind=>`<div class="label" style="margin:8px 0 0">${{ore:"광석",wood:"목재",herb:"약초"}[kind]}</div><div class="mailg">${Object.keys(MATS).filter(k=>MATS[k][1]===kind).sort((a,b)=>MATS[a][2]-MATS[b][2]).map(k=>`<label>${matN(k)} <small>${MAT_TIER[MATS[k][2]]}</small><input type="number" min="0" inputmode="numeric" data-mm="${k}" value="${d.mats?.[k]||""}" placeholder="0"></label>`).join("")}</div>`).join("")}
+      </details>
       <div class="label" style="margin:6px 0 0">받는 사람</div>
       <div class="chips"><label class="chip"><input type="radio" name="mto" value="all" ${d.to==="all"?"checked":""}><span>모두 (나중에 들어올 사람도)</span></label><label class="chip"><input type="radio" name="mto" value="pick" ${d.to!=="all"?"checked":""}><span>골라서</span></label></div>
       ${d.to!=="all"?`<div class="chips">${ppl.map(p=>`<label class="chip"><input type="checkbox" data-mpick="${p.id}" ${d.pick[p.id]?"checked":""}><span>${esc(p.name)}${p.id===myId()?" (나)":""}</span></label>`).join("")}</div>`:""}
@@ -1999,6 +2003,7 @@ function bindMail(){
   document.querySelectorAll("[data-mdel]").forEach(b=>b.addEventListener("click",()=>delMail(b.dataset.mdel)));
   document.querySelectorAll("[data-md]").forEach(i=>i.addEventListener("input",()=>mailDraft[i.dataset.md]=i.value));
   document.querySelectorAll("[data-mg]").forEach(i=>i.addEventListener("input",()=>mailDraft.gifts[i.dataset.mg]=i.value));
+  document.querySelectorAll("[data-mm]").forEach(i=>i.addEventListener("input",()=>{mailDraft.mats=mailDraft.mats||{};mailDraft.mats[i.dataset.mm]=i.value}));
   document.querySelectorAll("[data-mhorse]").forEach(i=>i.addEventListener("change",()=>mailDraft.horse=i.checked));
   document.querySelectorAll("[name=mto]").forEach(i=>i.addEventListener("change",()=>{mailDraft.to=i.value;render()}));
   document.querySelectorAll("[data-mpick]").forEach(i=>i.addEventListener("change",()=>mailDraft.pick[i.dataset.mpick]=i.checked));
