@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261111034434">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261111035418">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -3183,10 +3183,15 @@ function isoFree(h,draft,k,x,y,r){const [fw,fd]=isoFp(k,r);if(x<0||y<0||x+fw>ISO
   const all={...FURN,...DECOR};for(const o of Object.keys(ISO_SLOT)){if(o===k||!furnLv(h,o)||!all[o])continue;const [ox,oy,or]=isoPos(h,o,draft),[ow,od]=isoFp(o,or);if(x<ox+ow&&ox<x+fw&&y<oy+od&&oy<y+fd)return false}
   return true}
 /* 장원 가기 (전체 화면) */
-let isoView=null,isoSel=null,isoEdit=false,isoDraft=null,isoMsg="",visits={};
+let isoView=null,isoSel=null,isoEdit=false,isoDraft=null,isoMsg="",visits={},visitsExtra={},visitQ=false;
+const NOTICE_LIM=20,MAIL_LIM=30;
+/* 남의 장원 방명록: 들어갈 때 그 장원 것만 한 번 읽어 둔다 */
+async function loadVisits(host){if(!visitQ||mode!=="db"||host===myId())return;try{const s=await db.collection("visits").where("host","==",host).get();
+  for(const k of Object.keys(visitsExtra))if(visitsExtra[k].host===host)delete visitsExtra[k];s.docs.forEach(d=>{if(d.exists)visitsExtra[d.id]={...structuredClone(d.data()),id:d.id}});
+  Object.assign(visits,visitsExtra);if(isoView===host)paintManor()}catch(e){}}
 const visitsTo=id=>Object.values(visits).filter(v=>v.host===id).sort((a,b)=>b.t-a.t);
 const myVisitToday=host=>Object.values(visits).some(v=>v.host===host&&v.visitor===myId()&&v.day===dayKey());
-function openManor(id){const o=id===myId()?me:heroById(id);if(!o)return;isoView=id;isoSel=null;isoEdit=false;isoDraft=null;isoMsg="";
+function openManor(id){const o=id===myId()?me:heroById(id);if(!o)return;isoView=id;isoSel=null;isoEdit=false;isoDraft=null;isoMsg="";loadVisits(id);
   if(id===myId()&&mode==="db"){const h=structuredClone(me),seen=h.visitSeen||0,news=visitsTo(myId()).filter(v=>v.t>seen&&v.visitor!==myId());
     if(news.length){news.forEach(v=>addBond(h,v.visitor,5));h.visitSeen=Date.now();addLog(h,`${news.map(v=>v.vname).join(", ")}${pj(news[news.length-1].vname,"이")} 장원에 다녀갔다. (인연 +5)`);save(h)}}
   paintManor()}
@@ -5221,11 +5226,19 @@ async function boot(){
     docs.filter(d=>{const x=d.data()||{},t=x.updated||x.end||x.start||x.created||x.t||0;return t&&now-t>OLD&&d.id!==me?.colair}).slice(0,30-swept)
       .forEach(d=>{swept++;db.doc(col+"/"+d.id).delete().catch(()=>{})})};
   db.collection("duels").onSnapshot(snap=>{sweep("duels",snap.docs.filter(d=>d.exists));duels={};snap.docs.forEach(d=>{if(d.exists)duels[d.id]=structuredClone(d.data())});if(ready)render();maybeResolveDuel()},()=>{});
-  db.collection("events").onSnapshot(snap=>{const d=snap.docs.find(x=>x.id==="invasion"&&x.exists);invasion=d?structuredClone(d.data()):null;if(ready)render()},()=>{});
-  db.collection("notices").onSnapshot(snap=>{notices={};snap.docs.forEach(d=>{if(d.exists)notices[d.id]=structuredClone(d.data())});if(ready)render()},()=>{});
-  db.collection("visits").onSnapshot(snap=>{visits={};snap.docs.forEach(d=>{if(d.exists)visits[d.id]={...structuredClone(d.data()),id:d.id}});if(isoView&&!isoEdit)paintManor();if(ready)render()},()=>{});
+  /* 읽기 아끼기: 사이트(파이어베이스)에서는 필요한 문서만 골라 읽는다. 조건 검색이 없는 곳에서는 전부 읽는다 */
+  const canQ=c=>["where","orderBy","limit"].every(k=>typeof c[k]==="function"),Q=(path,f)=>{const c=db.collection(path);return canQ(c)?f(c):c};
+  if(canQ(db.collection("events")))db.doc("events/invasion").onSnapshot(d=>{invasion=d.exists?structuredClone(d.data()):null;if(ready)render()},()=>{});
+  else db.collection("events").onSnapshot(snap=>{const d=snap.docs.find(x=>x.id==="invasion"&&x.exists);invasion=d?structuredClone(d.data()):null;if(ready)render()},()=>{});
+  Q("notices",c=>c.orderBy("t","desc").limit(NOTICE_LIM)).onSnapshot(snap=>{notices={};snap.docs.forEach(d=>{if(d.exists)notices[d.id]=structuredClone(d.data())});if(ready)render()},()=>{});
+  if(canQ(db.collection("visits"))){visitQ=true;
+    /* 방명록은 내 장원에 온 발자국과 내가 남긴 발자국만 늘 지켜본다. 남의 장원은 들어갈 때 한 번 읽는다 */
+    const vs={to:{},by:{}},vput=()=>{visits={...visitsExtra,...vs.to,...vs.by};if(isoView&&!isoEdit)paintManor();if(ready)render()};
+    db.collection("visits").where("host","==",uid).onSnapshot(snap=>{vs.to={};snap.docs.forEach(d=>{if(d.exists)vs.to[d.id]={...structuredClone(d.data()),id:d.id}});vput()},()=>{});
+    db.collection("visits").where("visitor","==",uid).onSnapshot(snap=>{vs.by={};snap.docs.forEach(d=>{if(d.exists)vs.by[d.id]={...structuredClone(d.data()),id:d.id}});vput()},()=>{})}
+  else db.collection("visits").onSnapshot(snap=>{visits={};snap.docs.forEach(d=>{if(d.exists)visits[d.id]={...structuredClone(d.data()),id:d.id}});if(isoView&&!isoEdit)paintManor();if(ready)render()},()=>{});
   db.collection("parcels").onSnapshot(snap=>{parcels={};snap.docs.forEach(d=>{if(d.exists)parcels[d.id]={...structuredClone(d.data()),id:d.id}});if(ready)render()},()=>{});
-  db.collection("mail").onSnapshot(snap=>{mails={};snap.docs.forEach(d=>{if(d.exists)mails[d.id]=structuredClone(d.data())});if(ready)render()},()=>{});
+  Q("mail",c=>c.orderBy("t","desc").limit(MAIL_LIM)).onSnapshot(snap=>{mails={};snap.docs.forEach(d=>{if(d.exists)mails[d.id]=structuredClone(d.data())});if(ready)render()},()=>{});
   db.collection("avatars").onSnapshot(snap=>{avatars={};snap.docs.forEach(d=>{if(d.exists)avatars[d.id]=d.data().img});if(ready)render()},()=>{});
   db.collection("lairs").onSnapshot(snap=>{sweep("lairs",snap.docs.filter(d=>d.exists));lairRuns={};snap.docs.forEach(d=>{if(d.exists)lairRuns[d.id]=structuredClone(d.data())});if(ready)render();maybeResolveLair()},()=>{});
   db.collection("gates").onSnapshot(snap=>{sweep("gates",snap.docs.filter(d=>d.exists));gateRooms={};snap.docs.forEach(d=>{if(d.exists)gateRooms[d.id]=structuredClone(d.data())});if(ready)render();maybeResolve()},()=>{});
@@ -5280,9 +5293,12 @@ window.FIREBASE_CONFIG = {
           try{return await fs.runTransaction(async tx=>{const s=await tx.get(lr),now=srvNow();
             if(s.exists&&s.data().exp>now&&s.data().holder!==holder)return{acquired:false};
             tx.set(lr,{holder,exp:now+(ttlMs||30000)});return{acquired:true}})}catch(e){return{acquired:false}}}}},
-      collection(path){const ref=fs.collection(path);return{
-        doc:id=>api.doc(path+"/"+id),
-        onSnapshot:(n,e)=>ref.onSnapshot({includeMetadataChanges:true},s=>n({docs:s.docs.map(wrap),size:s.size,empty:s.empty,fromCache:s.metadata?.fromCache}),e)}}};
+      collection(path){const ref=fs.collection(path);
+        /* 조건(where)·순서·개수 제한으로 필요한 문서만 읽는다 */
+        const Q=r=>({where:(f,op,v)=>Q(r.where(f,op,v)),orderBy:(f,d)=>Q(r.orderBy(f,d)),limit:n=>Q(r.limit(n)),
+          get:async()=>{const s=await r.get();return{docs:s.docs.map(wrap)}},
+          onSnapshot:(n,e)=>r.onSnapshot({includeMetadataChanges:true},s=>n({docs:s.docs.map(wrap),size:s.size,empty:s.empty,fromCache:s.metadata?.fromCache}),e)});
+        return{doc:id=>api.doc(path+"/"+id),...Q(ref)}}};
     return api;
   }
   function installClaude(){
@@ -5544,8 +5560,13 @@ addEventListener("murim-ready",()=>{
   /* 귓속말은 평소엔 마지막 한 마디만 엿본다(새 귓속말 표시용). 대화를 열었을 때만 최근 20마디를 읽는다 */
   const peek={};
   function listen(key,ref,lim,store){const sk=(store===peek?"peek|":"")+key;if(unsub[sk])return;unsub[sk]=true;store=store||msgs;unsub[sk]=ref.orderBy("st","desc").limit(lim||(key.startsWith("dm:")?20:30)).onSnapshot(s=>{store[key]=s.docs.map(d=>{const x=d.data({serverTimestamps:"estimate"})||{},st=x.st&&x.st.toMillis?x.st.toMillis():(typeof x.st==="number"?x.st:Date.now());return {...x,id:d.id,t:st}}).reverse();later()},()=>{})}
-  function ensure(){listen("ch:server",fs.collection("chat/server/msgs"));
-    const l=myLoc();if(l)listen("ch:"+l,fs.collection(`chat/${l}/msgs`));
+  /* 서버·지역 대화도 창을 열기 전에는 마지막 한 마디만 엿본다 (새 말 표시용). 그 탭을 처음 열 때 최근 30마디를 읽는다.
+     지역을 옮기면 예전 지역 대화는 더 듣지 않는다 */
+  function ensure(){const open=!box.hidden;
+    listen("ch:server",fs.collection("chat/server/msgs"),1,peek);if(open&&tab==="server")listen("ch:server",fs.collection("chat/server/msgs"));
+    const l=myLoc();
+    for(const sk of Object.keys(unsub)){const k=sk.replace(/^peek\|/,"");if(k.startsWith("ch:")&&k!=="ch:server"&&k!=="ch:"+l){try{typeof unsub[sk]==="function"&&unsub[sk]()}catch(e){}delete unsub[sk];delete msgs[k];delete peek[k]}}
+    if(l){listen("ch:"+l,fs.collection(`chat/${l}/msgs`),1,peek);if(open&&tab==="region")listen("ch:"+l,fs.collection(`chat/${l}/msgs`))}
     peers().forEach(o=>listen(keyOf("dm",o._id),fs.collection(`dm/${pair(o._id)}/msgs`),1,peek));
     if(dmWith)listen(keyOf("dm",dmWith),fs.collection(`dm/${pair(dmWith)}/msgs`))}
   const latest=k=>[...(msgs[k]||[]),...(peek[k]||[])];
