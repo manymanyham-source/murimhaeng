@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261110030634">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261110200408">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -3328,7 +3328,12 @@ async function coJoinCore(id){
 function coGo(f){f.status="active";f.log.push({k:"amb",x:`${f.members.length}명이 나란히 어둠 속으로 들어선다.`})}
 async function coStart(){const r=myRun();if(!r||r.members[0]!==myId())return;
   await coEdit(f=>f.status==="invite"&&f.members.length>=2,f=>{coGo(f)})}
-async function coCancel(){const r=myRun();if(!r)return;const h=structuredClone(me);
+/* 닫혔거나(무리장이 초대를 거둠) 오래 멈춘 판: 남은 사람이 직접 빠져나올 수 있어야 한다 */
+const coDead=r=>!r||r.status==="closed"||(r.status==="done"&&Date.now()-(r.updated||0)>3*86400e3)||(r.status==="invite"&&Date.now()-(r.updated||0)>30*60e3)||(r.status==="active"&&Date.now()-(r.updated||0)>3*3600e3);
+const coNeverStarted=r=>!!r&&(r.status==="invite"||(r.status==="closed"&&!(r.path||[]).length&&!r.boss));
+async function coCancel(){const r=myRun();const h=structuredClone(me);
+  if(coDead(r)){if(coNeverStarted(r)&&h.raid?.period===r.period&&h.raid?.tries?.day===dayKey()&&h.raid.tries.n)h.raid.tries.n--;
+    h.colair=null;addLog(h,"닫힌 소굴 어귀에서 빠져나왔다.");save(h);toast("소굴에서 빠져나왔습니다.");return}
   if(r.status==="invite"&&r.members[0]===myId()){const f=structuredClone(r);f.status="closed";await LS.set(r.id,f);if(h.raid?.tries?.n)h.raid.tries.n--}
   else if(r.status==="invite"){await coEdit(f=>f.status==="invite",f=>{f.members=f.members.filter(x=>x!==myId());delete f.roles[myId()];f.log.push({k:"amb",x:`${josa(me.name,"이")} 어귀에서 발길을 돌렸다.`})});if(h.raid?.tries?.n)h.raid.tries.n--}
   h.colair=null;save(h)}
@@ -3451,6 +3456,8 @@ function coClaim(){
 }
 function coLairView(r){
   const B=bossFor(r.period),party=coParty(r);
+  if(coDead(r))return `<div class="wall" style="margin-top:16px"><p>${r.status==="closed"?`<b>${esc(heroById(r.members[0])?.name||"무리장")}</b>${pj(heroById(r.members[0])?.name||"무리장","이")} 소굴 초대를 거두었다.`:"이 소굴은 끝났거나 너무 오래 멈춰 있다."}</p>
+    <p class="note">${coNeverStarted(r)?"출발 전이라 오늘 쓴 입장 횟수는 돌려받는다.":""}</p><button class="btn sealb" type="button" id="coCancel">소굴에서 빠져나오기</button></div>`;
   if(r.status==="invite"){const lead=r.members[0]===myId(),wait=(r.invitees||[r.invitee]).filter(id=>!r.members.includes(id)).map(id=>esc(heroById(id)?.name||"?"));
     return `<div class="wall" style="margin-top:16px"><p>소굴 어귀: ${r.members.map(id=>`<b>${esc(heroById(id)?.name||"?")}</b>`).join(", ")} (${r.members.length}/${PARTY_MAX})${wait.length?` · 기다리는 중: ${wait.join(", ")}`:""}</p>
       <p class="note">${lead?"무리원 화면의 토벌 탭에 초대가 뜬다. 모두 오면 바로 들어가고, 먼저 출발하면 빈자리는 NPC가 채운다.":"무리장이 출발하기를 기다리는 중이다."}</p>
