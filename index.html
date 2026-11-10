@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261111002527">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261111010412">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -478,6 +478,49 @@ select{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--line);
 .face{display:block;flex:none;border-radius:50%;object-fit:cover;border:1.5px solid var(--line);background:var(--paper-2)}
 .face.big{width:64px;height:64px}.face.md{width:50px;height:50px}.face.sm{width:36px;height:36px}
 .facebtn{background:none;border:0;padding:0;border-radius:50%;cursor:pointer;flex:none}
+
+/* ───────── 리뉴얼: 더 밝고 깔끔하게 (화선지 바탕 · 흰 카드 · 둥근 모서리) ───────── */
+:root{--paper:#F6F4EE;--paper-2:#EEEAE1;--card:#FFFFFF;--ink:#1F201C;--ink-2:#55554D;--ink-3:#8E8B82;--line:rgba(31,32,28,.11);--line-2:rgba(31,32,28,.06);
+  --stain:rgba(176,150,100,.05);--grain:.10;--r:12px;--r-s:8px;--shadow:0 1px 2px rgba(40,34,20,.05),0 4px 14px rgba(40,34,20,.05)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--card:#1B1C21;--line-2:rgba(229,226,214,.07);--shadow:0 1px 2px rgba(0,0,0,.3)}}
+:root[data-theme="dark"]{--card:#1B1C21;--line-2:rgba(229,226,214,.07);--shadow:0 1px 2px rgba(0,0,0,.3)}
+:root:not([data-theme="dark"]) #mount{opacity:.55}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #mount{opacity:1}}
+body{line-height:1.65}
+/* 카드 */
+.case,.forge,.feed,.mail,.hall,.givebox,.bond,.gt,.banner,.pfcard,.shop.cv,.shop.ilil,.bag div,.fav,.pm2,.lp{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.case{padding:18px 18px 16px;margin-top:12px}
+.forge{padding:16px}
+.bag div,.fav,.pm2,.lp,.gt{border-radius:var(--r-s);box-shadow:none}
+.wall{border-left:0;border:1px solid color-mix(in srgb,var(--seal) 28%,transparent);border-radius:var(--r);background:color-mix(in srgb,var(--seal) 5%,var(--card));padding:14px 16px}
+.wall.occ{border-color:color-mix(in srgb,#7C1F2A 35%,transparent)}
+.shop.ilil{border-color:color-mix(in srgb,var(--seal) 45%,transparent);background:color-mix(in srgb,var(--seal) 4%,var(--card));padding:14px 16px}
+/* 접는 줄(일거리·물가·객잔…) */
+.shop{border-top:1px solid var(--line-2);margin-top:4px;padding-top:6px}
+.shoph{padding:10px 2px}
+/* 고르는 칸 */
+.shopi,.opt,.gslot,.tt,.smv,.chip span,.npcsel,.trt{border-radius:var(--r-s);background:var(--card)}
+.shopi.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.chip span{padding:10px 16px}
+.chip input:checked+span{box-shadow:inset 0 0 0 1px var(--ink);background:color-mix(in srgb,var(--ink) 4%,var(--card))}
+.seg{border-radius:var(--r-s);overflow:hidden;background:var(--card)}
+/* 단추 */
+.btn{border-radius:var(--r-s);border-width:1px;padding:10px 18px}
+.btn.sm{border-radius:6px;padding:6px 11px}
+.btn.solid,.btn.sealb:not(.ghost){box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.btn.sealb{background:color-mix(in srgb,var(--seal) 5%,var(--card))}
+.btn.ghost{background:var(--card)}
+/* 탭 */
+.tabs{border-bottom:1px solid var(--line);gap:0}
+/* 경험치 막대 */
+.bar{height:8px;background:var(--line-2);border-radius:99px}
+/* 글씨 위계 */
+.label{letter-spacing:.18em;color:var(--ink-3)}
+.label::after{background:var(--line-2)}
+.note{color:var(--ink-3)}
+section{margin-top:28px}
+/* 입력칸 */
+input[type=number],input[type=text],input:not([type]),select,textarea{border-radius:6px}
 </style>
 
 <div class="wrap">
@@ -4887,6 +4930,9 @@ addEventListener("murim-ready",()=>{
   .chat .ct{display:flex;border-bottom:1px solid var(--line)}
   .chat .ct button{flex:1;background:none;border:0;padding:10px 4px;font-family:var(--f-brush);font-size:16px;color:var(--ink-3);border-bottom:2px solid transparent;position:relative}
   .chat .ct button[aria-selected="true"]{color:var(--ink);border-color:var(--ink)}
+  .chat .dmnew{display:flex;gap:6px;padding:10px 12px;border-top:1px solid var(--line)}
+  .chat .dmnew select{flex:1;min-width:0;font:inherit;font-size:14px;padding:7px 8px;background:var(--paper);color:var(--ink);border:1px solid var(--line)}
+  .chat .dmnew button{font:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer}
   .chat .ct #chatNotice{color:var(--seal);flex:.9}
   .chat .ct button i{position:absolute;top:8px;right:14%;width:6px;height:6px;border-radius:50%;background:var(--seal)}
   .chat .cx{background:none;border:0;padding:0 12px;color:var(--ink-3);font-size:18px}
@@ -4939,7 +4985,10 @@ addEventListener("murim-ready",()=>{
     if(tab==="server")sub=`<div class="sub"><span>무림 전체에 들리는 이야기</span></div>`;
     if(tab==="region")sub=`<div class="sub"><span>${l?`${REG[l]}에 있는 사람들만 듣는다`:"길 위에서는 지역 대화를 할 수 없다"}</span></div>`;
     if(tab==="dm"&&!dmWith){canSend=false;const ps=peers();
-      body=`<div class="ppl">${ps.length?ps.map(o=>`<button type="button" data-dm="${o._id}">${o.name}<span>${unread(keyOf("dm",o._id))?"<b>새 귓속말</b>":(latest(keyOf("dm",o._id)).sort((a,b)=>a.t-b.t).slice(-1)[0]?.text||"").slice(0,18)}</span></button>`).join(""):`<p class="empty2" style="padding:20px">아직 귓속말을 나눌 사람이 없다.</p>`}</div>`}
+      /* 1:1 목록에는 귓속말을 나눈 사람만, 최근 순으로. 새 대화는 아래 고르기로 연다 */
+      const lastT=o=>Math.max(0,...latest(keyOf("dm",o._id)).map(m=>m.t||0)),talked=ps.filter(o=>lastT(o)>0).sort((a,b)=>lastT(b)-lastT(a)),rest=ps.filter(o=>!lastT(o)).sort((a,b)=>String(a.name).localeCompare(String(b.name),"ko"));
+      body=`<div class="ppl">${talked.length?talked.map(o=>`<button type="button" data-dm="${o._id}">${o.name}<span>${unread(keyOf("dm",o._id))?"<b>새 귓속말</b>":(latest(keyOf("dm",o._id)).sort((a,b)=>a.t-b.t).slice(-1)[0]?.text||"").slice(0,18)}</span></button>`).join(""):`<p class="empty2" style="padding:20px 12px">아직 귓속말을 나눈 사람이 없다.</p>`}</div>
+        ${rest.length?`<div class="dmnew"><select id="dmPick" aria-label="귓속말할 사람"><option value="">새 귓속말 보낼 사람…</option>${rest.map(o=>`<option value="${o._id}">${o.name}</option>`).join("")}</select><button type="button" id="dmPickGo">대화 열기</button></div>`:""}`}
     else{if(tab==="dm"){const o=peers().find(x=>x._id===dmWith);sub=`<div class="sub"><span>${o?(typeof josa==="function"?josa(o.name,"와"):o.name):"?"} 귓속말</span><button type="button" id="dmBack">목록</button></div>`}
       const list=k?msgs[k]||[]:[];
       body=`<div class="msgs" id="chatMsgs">${list.length?list.map(m=>{const d=new Date(m.t);return `<div class="m ${m.from===uid?"mine":""}"><span class="cavw"></span><div><span class="who"></span><span class="tx"></span><span class="tm">${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}</span></div></div>`}).join(""):`<p class="empty2">${k?"아직 아무 말도 없다. 먼저 말을 걸어 보자.":""}</p>`}</div>`}
@@ -4958,6 +5007,8 @@ addEventListener("murim-ready",()=>{
     if($c("#chatNotice"))$c("#chatNotice").onclick=()=>{box.hidden=true;paint();if(typeof window.goTab==="function")window.goTab("notice")};
     box.querySelectorAll("[data-dm]").forEach(b=>b.onclick=()=>{dmWith=b.dataset.dm;paint()});
     if($c("#dmBack"))$c("#dmBack").onclick=()=>{dmWith=null;paint()};
+    if($c("#dmPickGo"))$c("#dmPickGo").onclick=()=>{const v=$c("#dmPick").value;if(v){dmWith=v;paint()}};
+    if($c("#dmPick"))$c("#dmPick").onchange=()=>{const v=$c("#dmPick").value;if(v){dmWith=v;paint()}};
     if($c("#chatForm"))$c("#chatForm").onsubmit=async e=>{e.preventDefault();const inp=$c("#chatIn"),text=inp.value.trim().slice(0,200);if(!text)return;
       if(Date.now()-last<600){alertLine("조금만 천천히 보내 주세요.");return}last=Date.now();inp.value="";
       const ref=tab==="dm"?fs.collection(`dm/${pair(dmWith)}/msgs`):fs.collection(`chat/${tab==="server"?"server":myLoc()}/msgs`);
