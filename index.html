@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261111073645">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261111082756">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -3196,7 +3196,7 @@ function isoFree(h,draft,k,x,y,r){const [fw,fd]=isoFp(k,r);if(x<0||y<0||x+fw>ISO
   return true}
 /* 장원 가기 (전체 화면) */
 let isoView=null,isoSel=null,isoEdit=false,isoDraft=null,isoMsg="",visits={},visitsExtra={},visitQ=false;
-const NOTICE_LIM=15,MAIL_LIM=20;
+const NOTICE_LIM=5,MAIL_LIM=10;
 /* 남의 장원 방명록: 들어갈 때 그 장원 것만 한 번 읽어 둔다 */
 async function loadVisits(host){if(!visitQ||mode!=="db"||host===myId())return;try{const s=await db.collection("visits").where("host","==",host).get();
   for(const k of Object.keys(visitsExtra))if(visitsExtra[k].host===host)delete visitsExtra[k];s.docs.forEach(d=>{if(d.exists)visitsExtra[d.id]={...structuredClone(d.data()),id:d.id}});
@@ -5237,9 +5237,14 @@ async function boot(){
   const sweep=(col,docs)=>{if(sweep.done?.[col])return;sweep.done={...(sweep.done||{}),[col]:1};const now=Date.now();
     docs.filter(d=>{const x=d.data()||{},t=x.updated||x.end||x.start||x.created||x.t||0;return t&&now-t>OLD&&d.id!==me?.colair}).slice(0,30-swept)
       .forEach(d=>{swept++;db.doc(col+"/"+d.id).delete().catch(()=>{})})};
-  db.collection("duels").onSnapshot(snap=>{sweep("duels",snap.docs.filter(d=>d.exists));duels={};snap.docs.forEach(d=>{if(d.exists)duels[d.id]=structuredClone(d.data())});if(ready)render();maybeResolveDuel()},()=>{});
-  /* 읽기 아끼기: 사이트(파이어베이스)에서는 필요한 문서만 골라 읽는다. 조건 검색이 없는 곳에서는 전부 읽는다 */
   const canQ=c=>["where","orderBy","limit"].every(k=>typeof c[k]==="function"),Q=(path,f)=>{const c=db.collection(path);return canQ(c)?f(c):c};
+  /* 논검: 내가 낀 것만 읽는다 (청한 것 a, 받은 것 b) */
+  const both=(col,fa,fb,cb)=>{if(!canQ(db.collection(col)))return db.collection(col).onSnapshot(snap=>cb(snap.docs.filter(d=>d.exists)),()=>{});
+    const part={a:[],b:[]},go=()=>{const m=new Map();[...part.a,...part.b].forEach(d=>m.set(d.id,d));cb([...m.values()])};
+    db.collection(col).where(fa,"==",uid).onSnapshot(snap=>{part.a=snap.docs.filter(d=>d.exists);go()},()=>{});
+    db.collection(col).where(fb,"==",uid).onSnapshot(snap=>{part.b=snap.docs.filter(d=>d.exists);go()},()=>{})};
+  both("duels","a","b",docs=>{sweep("duels",docs);duels={};docs.forEach(d=>{duels[d.id]=structuredClone(d.data())});if(ready)render();maybeResolveDuel()});
+  /* 읽기 아끼기: 사이트(파이어베이스)에서는 필요한 문서만 골라 읽는다. 조건 검색이 없는 곳에서는 전부 읽는다 */
   if(canQ(db.collection("events")))db.doc("events/invasion").onSnapshot(d=>{invasion=d.exists?structuredClone(d.data()):null;if(ready)render()},()=>{});
   else db.collection("events").onSnapshot(snap=>{const d=snap.docs.find(x=>x.id==="invasion"&&x.exists);invasion=d?structuredClone(d.data()):null;if(ready)render()},()=>{});
   Q("notices",c=>c.orderBy("t","desc").limit(NOTICE_LIM)).onSnapshot(snap=>{notices={};snap.docs.forEach(d=>{if(d.exists)notices[d.id]=structuredClone(d.data())});if(ready)render()},()=>{});
@@ -5249,7 +5254,7 @@ async function boot(){
     db.collection("visits").where("host","==",uid).onSnapshot(snap=>{vs.to={};snap.docs.forEach(d=>{if(d.exists)vs.to[d.id]={...structuredClone(d.data()),id:d.id}});vput()},()=>{});
     db.collection("visits").where("visitor","==",uid).onSnapshot(snap=>{vs.by={};snap.docs.forEach(d=>{if(d.exists)vs.by[d.id]={...structuredClone(d.data()),id:d.id}});vput()},()=>{})}
   else db.collection("visits").onSnapshot(snap=>{visits={};snap.docs.forEach(d=>{if(d.exists)visits[d.id]={...structuredClone(d.data()),id:d.id}});if(isoView&&!isoEdit)paintManor();if(ready)render()},()=>{});
-  db.collection("parcels").onSnapshot(snap=>{parcels={};snap.docs.forEach(d=>{if(d.exists)parcels[d.id]={...structuredClone(d.data()),id:d.id}});if(ready)render()},()=>{});
+  both("parcels","to","from",docs=>{parcels={};docs.forEach(d=>{parcels[d.id]={...structuredClone(d.data()),id:d.id}});if(ready)render()});
   Q("mail",c=>c.orderBy("t","desc").limit(MAIL_LIM)).onSnapshot(snap=>{mails={};snap.docs.forEach(d=>{if(d.exists)mails[d.id]=structuredClone(d.data())});if(ready)render()},()=>{});
   if(canQ(db.collection("avatars"))){
     /* 초상화는 거의 안 바뀌니 이 기기에 담아 두고, 마지막으로 본 뒤에 바뀐 것만 받는다 */
