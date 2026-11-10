@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261110201902">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261111001633">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -2541,7 +2541,13 @@ function weatherOf(region,day=dayKey()){const R=seeded(day*131+[...region].reduc
   const opts=[["sun",4],["cloud",3],["rain",2.5],["fog",1.5],["wind",2],...(winter&&SNOWY.includes(region)?[["snow",2.5]]:[])],tot=opts.reduce((a,x)=>a+x[1],0);let r=R()*tot;for(const [k,w] of opts){if((r-=w)<0)return k}return "sun"}
 const fishName=k=>FISHDB[k]?.[0]||FISH_JUNK[k]?.[0]||k, fishPrice=k=>FISHDB[k]?.[1]||0;
 const FISH_DAY=5;
-const fishCasts=h=>FISH_DAY+(furnLv(h,"pond")||0)+(happenHere("fishing",h.loc)?2:0);
+const fishBase=h=>FISH_DAY+(furnLv(h,"pond")||0)+(happenHere("fishing",h.loc)?2:0);
+/* 미끼 더 사기: 오늘 횟수를 다 쓰면 은자로 한 번씩 더 던진다. 300냥부터 살 때마다 두 배, 자정에 초기화. 산 미끼는 30% 확률로 줄이 끊긴다 */
+const FISH_BUY=300,FISH_SNAP=.3;
+const fishBought=h=>h.fishBuy?.day===dayKey()?h.fishBuy.n:0,fishBuyCost=h=>FISH_BUY*2**fishBought(h);
+const fishCasts=h=>fishBase(h)+fishBought(h);
+function fishBuy(){const h=structuredClone(me),c=fishBuyCost(h);if(fishUsed(h)<fishCasts(h)||fishState)return;if((h.silver||0)<c){toast(`은자가 모자라다. (${silverTxt(c)})`);return}
+  h.silver-=c;h.fishBuy={day:dayKey(),n:fishBought(h)+1};addLog(h,`객잔에서 미끼를 더 샀다. (${silverTxt(c)})`);save(h);toast(`미끼를 샀다 · 한 번 더 던질 수 있다 (${silverTxt(c)})`)}
 const fishUsed=h=>h.fishDay?.day===dayKey()?h.fishDay.n:0;
 let fishState=null,fishTimer=null;
 function fishTable(h){const wx=weatherOf(h.loc),W=WEATHER[wx],bloom=happenHere("fishing",h.loc);
@@ -2551,8 +2557,9 @@ function fishRoll(h){const t=fishTable(h),tot=t.reduce((a,x)=>a+x[1],0);let r=Ma
 function fishCast(){const h=me;if(h.travel){toast("길 위에서는 낚시할 수 없다.");return}if(fishUsed(h)>=fishCasts(h)){toast("오늘은 더 던질 수 없다.");return}if(fishState)return;
   fishState={phase:"wait"};render();clearTimeout(fishTimer);fishTimer=setTimeout(()=>{fishState={phase:"bite",t:Date.now()};render();fishTimer=setTimeout(()=>fishPull(true),1500)},2000+Math.random()*5000)}
 function fishPull(late){clearTimeout(fishTimer);if(!fishState)return;const ph=fishState.phase,h=structuredClone(me);fishState=null;
-  h.fishDay={day:dayKey(),n:fishUsed(h)+1};if(h.buff?.bait){h.buff.bait--;if(h.buff.bait<=0)delete h.buff.bait}
+  const extra=fishUsed(h)>=fishBase(h);h.fishDay={day:dayKey(),n:fishUsed(h)+1};if(h.buff?.bait){h.buff.bait--;if(h.buff.bait<=0)delete h.buff.bait}
   if(ph!=="bite"||late){const msg=ph==="wait"?"너무 일찍 챘다. 고기가 놀라 달아났다.":"입질을 놓쳤다. 미끼만 사라졌다.";fishLast={ok:false,text:msg};save(h);return}
+  if(extra&&Math.random()<FISH_SNAP){fishLast={ok:false,text:"묵직하게 걸렸는데… 산 미끼가 시원찮았는지 줄이 툭 끊어졌다."};save(h);return}
   const k=fishRoll(h);let text;
   if(k==="boot")text="낡은 짚신이 걸려 나왔다… 누가 버린 걸까.";
   else if(k==="box"){const s=addSilver(h,20+Math.floor(Math.random()*40));h.items.stone+=2;text=`녹슨 함이 걸렸다! 열어 보니 ${silverTxt(s)}과 강화석 2개.`}
@@ -2579,7 +2586,7 @@ function fishBox(h){if(h.travel)return "";const used=fishUsed(h),max=fishCasts(h
   const f=h.fish||{},bag=Object.entries(f).filter(([,v])=>v>0).map(([k,v])=>`${fishName(k)} ${v}`).join(" · ");
   const stage=fishState?.phase==="wait"?`<div class="fishpond wait"><span>찌가 고요히 떠 있다…</span></div><button class="btn" type="button" id="fishPull">챈다!</button>`
     :fishState?.phase==="bite"?`<div class="fishpond bite"><span>찌가 쑥 들어갔다! 입질이다!</span></div><button class="btn sealb" type="button" id="fishPull">챈다!</button>`
-    :`<div class="fishpond"><span>${fishLast?esc(fishLast.text):"물결이 잔잔하다."}</span></div><button class="btn sealb" type="button" id="fishCast" ${left<=0?"disabled":""}>${left>0?"낚싯대를 던진다":"오늘은 다 던졌다"}</button>`;
+    :`<div class="fishpond"><span>${fishLast?esc(fishLast.text):"물결이 잔잔하다."}</span></div>${left>0?`<button class="btn sealb" type="button" id="fishCast">${fishUsed(h)>=fishBase(h)?"산 미끼로 던진다":"낚싯대를 던진다"}</button>`:`<button class="btn" type="button" id="fishBuy" ${(h.silver||0)<fishBuyCost(h)?"disabled":""}>미끼 더 사기 · ${silverTxt(fishBuyCost(h))}</button><p class="note" style="margin:6px 0 0">오늘 횟수를 다 썼다. 산 미끼는 30% 확률로 줄이 끊긴다. 살 때마다 값이 두 배가 되고 자정에 처음 값으로 돌아간다.</p>`}`;
   return `<div class="shop">${head}${stage}
     <p class="note">오늘 ${REGIONS[h.loc].n} 날씨는 <b>${W.n}</b> · ${W.tip}.${ex.length?` 이 지역에서만: ${ex.map(k=>h.fdex?.[k]?fishName(k):"???").join(", ")}.`:""} 찌가 쑥 들어가면 1.5초 안에 챈다. 너무 일찍 채도, 늦어도 놓친다.</p>
     <div class="row" style="margin-top:6px"><span class="note" style="margin:0;flex:1">어망: ${bag||"비었다"}</span><button class="btn sm ghost" type="button" id="fishSellT">${fishSellOpen?"팔기 접기":"물고기 팔기"}</button></div>${fishSellOpen?fishSellBox(h):""}
@@ -4451,7 +4458,7 @@ function bind(){
   document.querySelectorAll("[data-hdig]").forEach(b=>b.addEventListener("click",()=>happenDig(b.dataset.hdig)));
   document.querySelectorAll("[data-hduel]").forEach(b=>b.addEventListener("click",()=>happenDuel(b.dataset.hduel)));
   document.querySelectorAll("[data-hgo]").forEach(b=>b.addEventListener("click",()=>{dest=b.dataset.hgo;tab="world";render();try{document.querySelector(".region")?.scrollIntoView({block:"start"})}catch(e){}}));
-  on("#dexBtn",()=>{dexOpen=!dexOpen;render()});on("#fishCast",fishCast);on("#fishPull",()=>fishPull(false));on("#fishSell",fishSell);on("#rbAsk",()=>{rbAsk=true;render()});on("#rbNo",()=>{rbAsk=false;render()});on("#rbGo",doRebirth);on("#fishSellT",()=>{fishSellOpen=!fishSellOpen;render()});
+  on("#dexBtn",()=>{dexOpen=!dexOpen;render()});on("#fishCast",fishCast);on("#fishBuy",fishBuy);on("#fishPull",()=>fishPull(false));on("#fishSell",fishSell);on("#rbAsk",()=>{rbAsk=true;render()});on("#rbNo",()=>{rbAsk=false;render()});on("#rbGo",doRebirth);on("#fishSellT",()=>{fishSellOpen=!fishSellOpen;render()});
   document.querySelectorAll("[data-fsell]").forEach(b=>b.onclick=()=>{const k=b.dataset.fsell,i=document.querySelector(`[data-fsq="${k}"]`);fishSellOne(k,+(i?.value||1))});
   document.querySelectorAll("[data-craft]").forEach(b=>b.addEventListener("click",()=>craftFurn(b.dataset.craft)));
   document.querySelectorAll("[data-fold]").forEach(b=>b.addEventListener("click",()=>toggleFold(b.dataset.fold)));
