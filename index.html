@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261111001633">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261111002527">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -148,6 +148,7 @@ section{margin-top:30px}
 .manor{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0}.mtile{border:1px dashed var(--line);padding:8px;text-align:center;font-size:12px;color:var(--ink-3)}.mtile b{display:block;font-size:13px}
 .mtile.on{border-style:solid;border-color:var(--ink);color:var(--ink);background:var(--paper)}.mtile.on span{color:var(--seal);letter-spacing:2px}
 .rbm{display:inline-block;font-size:13px;letter-spacing:.1em;color:var(--seal);border:1px solid var(--seal);padding:1px 6px;margin:0 8px;vertical-align:middle;font-family:var(--f-body,inherit)}.rbm.asc{color:#7a5cc0;border-color:#7a5cc0}
+.shop.ilil{border:1px solid var(--seal);padding:12px;background:color-mix(in srgb,var(--seal) 6%,transparent)}
 .flist{display:grid;gap:8px;margin-top:8px}.frow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line)}.frow>div{flex:1;min-width:0}
 .frow span{display:block;font-size:12px;color:var(--ink-2)}.frow .tag{display:inline;font-size:11px;border:1px solid var(--line);padding:0 5px;color:var(--ink-3)}.fcost i{font-style:normal;margin-right:6px}.fcost i.lack{color:var(--seal)}
 .shopi.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
@@ -742,10 +743,12 @@ const TIER=["대성공","성공","미흡"];
 const ITEMS={stone:["강화석","장비 강화 재료"],herb:["약초","선물 · 회복"],wine:["화주","선물"],trinket:["장신구","선물"],clue:["비급 단서","50개로 다른 문파 무공을 익힌다"],
   zhuye:["죽엽청","선물 · 맑은 술"],nuer:["여아홍","선물 · 귀한 술"],hyang:["향낭","선물 · 향주머니"],binyeo:["옥비녀","선물 · 귀한 장신구"],
   longjing:["용정차","마시면 다음 이동 시간 -20%"],puer:["보이차","마시면 다음 수련 경험치 +15%"],
-  mandu:["만두","먹으면 다음 사건 현장 조사 판정 +2"],dongpo:["동파육","먹으면 다음 소굴·관문 싸움이 끝날 때까지 공격 +15%"],samgye:["삼계탕","먹으면 다음 소굴·관문 싸움이 끝날 때까지 체력 +20%"]};
+  mandu:["만두","먹으면 다음 사건 현장 조사 판정 +2"],milbong:["꿀막대","일일절 과자 · 먹으면 1시간 동안 경험치 +11%"],dongpo:["동파육","먹으면 다음 소굴·관문 싸움이 끝날 때까지 공격 +15%"],samgye:["삼계탕","먹으면 다음 소굴·관문 싸움이 끝날 때까지 체력 +20%"]};
 /* 음식: 객잔에서 사서 행낭에서 먹는다. 먹은 효과는 h.buff 에 남고, 쓰이면 사라진다 */
-const FOOD={longjing:{k:"travel",t:"정신이 맑아진다. 다음 이동 시간 -20%",v:"마시기"},puer:{k:"train",t:"속이 편안하다. 다음 수련 경험치 +15%",v:"마시기"},mandu:{k:"scene",t:"든든하다. 다음 사건 현장 조사 판정 +2"},dongpo:{k:"atk",t:"힘이 넘친다. 다음 소굴·관문 싸움이 끝날 때까지 공격 +15%"},samgye:{k:"hp",t:"몸이 뜨끈하다. 다음 소굴·관문 싸움이 끝날 때까지 체력 +20%"}};
-function eatFood(it){const f=FOOD[it],h=structuredClone(me);if(!f||!(h.items[it]>0))return;if(h.buff?.[f.k]){toast("이미 먹은 효과가 남아 있습니다.");return}
+const FOOD={longjing:{k:"travel",t:"정신이 맑아진다. 다음 이동 시간 -20%",v:"마시기"},puer:{k:"train",t:"속이 편안하다. 다음 수련 경험치 +15%",v:"마시기"},mandu:{k:"scene",t:"든든하다. 다음 사건 현장 조사 판정 +2"},milbong:{k:"ilil",t:"달콤하다. 1시간 동안 경험치 +11%"},dongpo:{k:"atk",t:"힘이 넘친다. 다음 소굴·관문 싸움이 끝날 때까지 공격 +15%"},samgye:{k:"hp",t:"몸이 뜨끈하다. 다음 소굴·관문 싸움이 끝날 때까지 체력 +20%"}};
+function eatFood(it){const f=FOOD[it],h=structuredClone(me);if(!f||!(h.items[it]>0))return;
+  if(it==="milbong"){const until=Math.max(Date.now(),h.buff?.ilil||0)+3600e3;h.items[it]--;h.buff={...(h.buff||{}),ilil:until};bump(h,"eat");addLog(h,`꿀막대를 먹었다. 달콤하다. 경험치 +11% (${hhmm(until)}까지)`);save(h);toast(`꿀막대 · ${hhmm(until)}까지 경험치 +11%`);return}
+  if(h.buff?.[f.k]){toast("이미 먹은 효과가 남아 있습니다.");return}
   h.items[it]--;h.buff={...(h.buff||{}),[f.k]:it};bump(h,"eat");addLog(h,`${josa(ITEMS[it][0],"을")} ${f.v?"마셨다":"먹었다"}. ${f.t}`);save(h);toast(`${ITEMS[it][0]} · ${f.t}`)}
 /* 싸움 화면에 지금 걸려 있는 음식 효과를 보여 준다 */
 function buffNote(h){const b=h?.buff||{},p=[];if(b.atk)p.push(`${ITEMS[b.atk]?.[0]||"음식"} 공격 +15%`);if(b.hp)p.push(`${ITEMS[b.hp]?.[0]||"음식"} 체력 +20%`);
@@ -815,7 +818,7 @@ function derived(h){
     eva:Math.min(40,s.shen*.3+go("eva")), crit:5+s.shen*.1+go("crit")};
 }
 function applyExp(h,exp){
-  exp=Math.round(exp*rbExpM(h));h.exp+=exp; const c=cap(h.realm); let ups=0;
+  exp=Math.round(exp*rbExpM(h)*((h.buff?.ilil||0)>Date.now()?1.11:1));h.exp+=exp; const c=cap(h.realm); let ups=0;
   while(h.level<c && h.exp>=need(h.level)){h.exp-=need(h.level);h.level++;h.points+=3;ups++}
   if(h.level>=c) h.exp=Math.min(h.exp,need(h.level));
   return ups;
@@ -1934,7 +1937,7 @@ const GIVE_KIND={mats:"재료",fish:"물고기",items:"물품",gear:"장비",sil
 function roadDist(a,b){if(a===b)return 0;const D={[a]:0},Q=[a];while(Q.length){Q.sort((x,y)=>D[x]-D[y]);const u=Q.shift();for(const [x,y,w] of ROADS){const v=x===u?y:y===u?x:null;if(v&&(D[v]===undefined||D[u]+w<D[v])){D[v]=D[u]+w;Q.push(v)}}}return D[b]??12}
 const sameSpot=(a,b)=>!!a&&!!b&&!a.travel&&!b.travel&&a.loc===b.loc;
 const shipFrom=h=>h.travel?h.travel.to:h.loc;
-function shipFee(h,o,kind,qty){if(sameSpot(h,o))return 0;const hrs=roadDist(shipFrom(h),shipFrom(o))||2;return Math.round(hrs*15+(kind==="silver"?qty*.05:0))}
+function shipFee(h,o,kind,qty,key){if(sameSpot(h,o))return 0;if(kind==="items"&&key==="milbong"&&isIlil())return 0;const hrs=roadDist(shipFrom(h),shipFrom(o))||2;return Math.round(hrs*15+(kind==="silver"?qty*.05:0))}
 function giveList(h,kind){if(kind==="mats")return Object.entries(h.mats||{}).filter(([,v])=>v>0).map(([k,v])=>[k,`${matN(k)} (${v})`,v]);
   if(kind==="fish")return Object.entries(h.fish||{}).filter(([,v])=>v>0).map(([k,v])=>[k,`${fishName(k)} (${v})`,v]);
   if(kind==="items")return Object.entries(h.items||{}).filter(([k,v])=>v>0&&ITEMS[k]).map(([k,v])=>[k,`${ITEMS[k][0]} (${v})`,v]);
@@ -1944,13 +1947,13 @@ const parcelText=p=>p.kind==="silver"?silverTxt(p.qty):p.kind==="gear"?`장비 �
 async function sendParcel(to){if(mode!=="db"){toast("여럿이 함께하는 곳에서만 건넬 수 있다.");return}const o=heroById(to);if(!o||to===myId())return;
   const h=structuredClone(me),{kind}=givePick,list=giveList(h,kind),row=list.find(x=>x[0]===givePick.key)||list[0];if(!row){toast("건넬 것이 없다.");return}
   const key=row[0],qty=kind==="gear"?1:Math.max(1,Math.min(row[2],Math.floor(+givePick.qty||1)));
-  const fee=shipFee(h,o,kind,qty),ship=fee>0;if((h.silver||0)<fee+(kind==="silver"?qty:0)){toast(`은자가 모자라다. (표국 수수료 ${fee}냥)`);return}
+  const fee=shipFee(h,o,kind,qty,key),ship=!sameSpot(h,o);if((h.silver||0)<fee+(kind==="silver"?qty:0)){toast(`은자가 모자라다. (표국 수수료 ${fee}냥)`);return}
   const p={from:myId(),fromName:h.name,to,toName:o.name,kind,key,qty,note:String(givePick.note||"").slice(0,60),t:Date.now(),ship};
   if(kind==="gear"){const it=h.bag[+key];if(!it){toast("그 장비가 없다.");return}p.item=it;h.bag.splice(+key,1)}
   else if(kind==="silver"){if((h.silver||0)<qty){toast("은자가 모자라다.");return}h.silver-=qty}
   else{const src=kind==="mats"?(h.mats=h.mats||{}):kind==="fish"?(h.fish=h.fish||{}):h.items;if((src[key]||0)<qty){toast("그만큼 가지고 있지 않다.");return}src[key]-=qty}
   const id=myId().replace(/[^A-Za-z0-9_-]/g,"").slice(0,12)+"-"+Date.now().toString(36);
-  h.silver=(h.silver||0)-fee;
+  h.silver=(h.silver||0)-fee;if(kind==="items"&&key==="milbong"&&isIlil()){const E=ililOf(h);E.give+=qty;h.ilil=E}
   try{await db.doc("parcels/"+id).set(p);parcels[id]={...p,id}}catch(e){toast("보내지 못했어요. 잠시 뒤 다시 해 주세요.");return}
   addLog(h,ship?`표국에 ${josa(parcelText(p),"을")} 맡겨 ${REGIONS[shipFrom(o)].n}의 ${josa(o.name,"에게")} 보냈다. (수수료 ${fee}냥)${p.note?` "${p.note}"`:""}`:`${josa(o.name,"에게")} ${josa(parcelText(p),"을")} 건넸다.${p.note?` "${p.note}"`:""}`);
   save(h);giveOpen=false;givePick.qty=1;givePick.note="";paintProfile();toast(ship?`표국이 짐을 실었다 · ${parcelText(p)} · 수수료 ${fee}냥`:`${o.name}에게 건넸다 · ${parcelText(p)}`)}
@@ -1962,7 +1965,7 @@ async function takeParcel(id,back){const p0=parcels[id];if(!p0||mode!=="db")retu
   const h=structuredClone(me),p=p0;
   if(p.kind==="gear"){h.bag=h.bag||[];h.bag.push(p.item)}else if(p.kind==="silver")h.silver=(h.silver||0)+p.qty;
   else{const src=p.kind==="mats"?(h.mats=h.mats||{}):p.kind==="fish"?(h.fish=h.fish||{}):h.items;src[p.key]=(src[p.key]||0)+p.qty}
-  if(!back)bump(h,"parcelGot");
+  if(!back)bump(h,"parcelGot");if(!back&&p.kind==="items"&&p.key==="milbong"&&isIlil()){const E=ililOf(h);E.got+=p.qty;h.ilil=E}
   addLog(h,back?`${josa(p.toName,"에게")} 보낸 꾸러미(${parcelText(p)})를 도로 거두었다.`:`${josa(p.fromName,"이")} 보낸 꾸러미를 받았다 · ${parcelText(p)}${p.note?` · "${p.note}"`:""}`);save(h);toast(back?"꾸러미를 거두었다.":`받았다 · ${parcelText(p)}`)}
 function parcelInbox(){const L=myParcels(),S=sentParcels();if(!L.length&&!S.length)return "";
   return `<section><div class="label">꾸러미 · 받을 것 ${L.length}</div>
@@ -1970,14 +1973,14 @@ function parcelInbox(){const L=myParcels(),S=sentParcels();if(!L.length&&!S.leng
       <div class="mailb">${p.note?`<p>"${esc(p.note)}"</p>`:""}<button class="btn sm sealb" type="button" data-ptake="${p.id}">받는다</button></div></div>`).join("")}
     ${S.length?`<p class="note" style="margin-top:10px">아직 안 받아 간 꾸러미: ${S.map(p=>`${esc(p.toName)}에게 ${esc(parcelText(p))} <button class="btn sm ghost" type="button" data-pback="${p.id}">도로 거두기</button>`).join(" · ")}</p>`:""}</section>`}
 function giveBox(to){const h=me,list=giveList(h,givePick.kind);if(!list.find(x=>x[0]===givePick.key))givePick.key=list[0]?.[0]||"";const row=list.find(x=>x[0]===givePick.key);
-  const o=heroById(to),on=o?.name||"",qn=givePick.kind==="gear"?1:Math.max(1,Math.min(row?.[2]||1,Math.floor(+givePick.qty||1))),fee=shipFee(h,o,givePick.kind,qn),ship=fee>0;
+  const o=heroById(to),on=o?.name||"",qn=givePick.kind==="gear"?1:Math.max(1,Math.min(row?.[2]||1,Math.floor(+givePick.qty||1))),fee=shipFee(h,o,givePick.kind,qn,givePick.key),ship=!sameSpot(h,o);
   return `<div class="givebox"><div class="kicker">${esc(on)}에게 ${ship?"표국 배송":"건네주기"}</div>
-    <p class="note" style="margin:4px 0">${ship?`${esc(josa(on,"은"))} ${o?.travel?"길 위에 있다":`${REGIONS[o?.loc]?.n||"먼 곳"}에 있다`}. 표국에 맡기면 수수료를 받고 곧장 실어다 준다.`:`${REGIONS[h.loc]?.n||"같은 곳"}에 함께 있다. 손으로 직접 건넨다 (수수료 없음).`}</p>
+    <p class="note" style="margin:4px 0">${ship?`${esc(josa(on,"은"))} ${o?.travel?"길 위에 있다":`${REGIONS[o?.loc]?.n||"먼 곳"}에 있다`}. ${fee?"표국에 맡기면 수수료를 받고 곧장 실어다 준다.":"오늘은 일일절이라 표국이 꿀막대를 공짜로 실어다 준다."}`:`${REGIONS[h.loc]?.n||"같은 곳"}에 함께 있다. 손으로 직접 건넨다 (수수료 없음).`}</p>
     <div class="seg" style="margin:6px 0;flex-wrap:wrap">${Object.entries(GIVE_KIND).map(([k,n])=>`<button type="button" class="${givePick.kind===k?"on":""}" data-gkind="${k}">${n}</button>`).join("")}</div>
     ${list.length?`<div class="mailf"><label>무엇을<select id="gKey">${list.map(([k,n])=>`<option value="${k}" ${k===givePick.key?"selected":""}>${esc(n)}</option>`).join("")}</select></label>
       ${givePick.kind==="gear"?"":`<label>얼마나<input id="gQty" type="number" min="1" max="${row?.[2]||1}" value="${Math.min(givePick.qty||1,row?.[2]||1)}"></label>`}
       <label>한마디 (선택)<input id="gNote" maxlength="60" value="${esc(givePick.note||"")}" placeholder="잘 써라!"></label></div>
-      <div class="row" style="margin-top:8px"><button class="btn sm sealb" type="button" id="gSend" data-ship="${ship?1:0}">${ship?`표국에 맡긴다 (${fee}냥)`:"건넨다"}</button><button class="btn sm ghost" type="button" id="gCancel">그만둔다</button></div>
+      <div class="row" style="margin-top:8px"><button class="btn sm sealb" type="button" id="gSend" data-ship="${ship?1:0}">${ship?`표국에 맡긴다 (${fee?fee+"냥":"오늘은 무료"})`:"건넨다"}</button><button class="btn sm ghost" type="button" id="gCancel">그만둔다</button></div>
       <p class="note" style="margin:6px 0 0">상대가 우편함에서 받아 간다. 받기 전이라면 내 우편함에서 도로 거둘 수 있다${ship?" (수수료는 돌려받지 못한다)":""}.</p>`:`<p class="note">건넬 ${josa(GIVE_KIND[givePick.kind],"이")} 없다.</p><button class="btn sm ghost" type="button" id="gCancel">그만둔다</button>`}</div>`}
 
 function mailTab(){
@@ -2099,6 +2102,9 @@ const maxPlus=h=>Math.max(0,...[...Object.values(h.gear||{}),...(h.bag||[])].fil
 /* 칭호 확인은 내 기록을 저장할 때만 하므로, 관계는 나와 다른 사람 사이로 본다 */
 const anyRel=(h,r)=>others.some(o=>o._id&&!String(o._id).startsWith("fake-")&&(PAIR[r]?sajeRole(myId(),o._id)===r:relMutual(myId(),o._id)===r));
 const TITLES=[
+  /* 절기 */
+  {id:"ilil1",g:"절기",n:"다정한 협객",hint:"일일절에 꿀막대를 11개 이상 건넨다",ok:h=>(h.ilil?.give||0)>=11},
+  {id:"ilil2",g:"절기",n:"강호의 인기인",hint:"일일절에 꿀막대를 11개 이상 받는다",ok:h=>(h.ilil?.got||0)>=11},
   /* 환골탈태 · 비승 */
   {id:"rb1",g:"환골",n:"일환",hint:"처음으로 환골탈태한다",ok:h=>(h.rb||0)>=1},
   {id:"rb2",g:"환골",n:"이환",hint:"두 번 환골탈태한다",ok:h=>(h.rb||0)>=2},
@@ -2181,7 +2187,7 @@ const TITLES=[
 const TITLE_BY=Object.fromEntries(TITLES.map(t=>[t.id,t]));
 const titleOf=h=>{const t=h?.title&&h.titles?.[h.title]&&TITLE_BY[h.title];return t?(t.show?t.show(h):t.n):""};
 /* 칭호 배지: 칭호 갈래마다 다른 색 상자 */
-const TB_CLS={환골:"tb-r",비경:"tb-g",공방:"tb-e",경지:"tb-r",관문:"tb-g",문파:"tb-s",강호:"tb-w",토벌:"tb-l",장비:"tb-e",인연:"tb-b",논검:"tb-d",낚시:"tb-b"};
+const TB_CLS={절기:"tb-r",환골:"tb-r",비경:"tb-g",공방:"tb-e",경지:"tb-r",관문:"tb-g",문파:"tb-s",강호:"tb-w",토벌:"tb-l",장비:"tb-e",인연:"tb-b",논검:"tb-d",낚시:"tb-b"};
 function titleBadge(h){const t=h?.title&&h.titles?.[h.title]&&TITLE_BY[h.title];if(!t)return "";return `<span class="tb ${TB_CLS[t.g]||""}">${esc(t.show?t.show(h):t.n)}</span>`}
 window.titleBadge=titleBadge;
 const titled=h=>titleBadge(h);
@@ -2403,17 +2409,44 @@ function startJob(){const h=structuredClone(me),k=jobPick.k,hr=jobPick.h;if(!JOB
   if(h.jobDay===dayKey()){toast("오늘은 이미 일했다. 자정에 다시 일거리가 생긴다.");return}
   const now=Date.now();h.job={k,hours:hr,start:now,end:now+hr*3600e3,loc:h.loc,pay:jobPay(h,k,hr)};h.jobDay=dayKey();
   addLog(h,`${REGIONS[h.loc].n}에서 ${JOBS[k].n} 일을 ${hr}시간 맡았다.`);jobStopAsk=false;save(h)}
-function finishJob(stop){const h=structuredClone(me),j=h.job;if(!j)return;const J=JOBS[j.k],done=Date.now()>=j.end;
+function finishJob(stop){const h=structuredClone(me),j=h.job;if(!j)return;
+  if(j.k==="maehwa"){const done=Date.now()>=j.end,M=MAEHWA[j.mk]||MAEHWA.s;h.job=null;jobStopAsk=false;
+    if(!done){addLog(h,"매화장에서 발을 헛디뎌 내려왔다. 다음엔 끝까지 버텨 보자.");save(h);toast("중간에 내려왔다.");return}
+    h.items.milbong=(h.items.milbong||0)+M.bar;const ex=Math.round(need(h.level)*M.exp);applyExp(h,ex);
+    addLog(h,`매화장 위에서 ${josa(M.n,"을")} 버텼다! 다리가 후들거리지만 기운이 맑다. (꿀막대 +${M.bar}, 경험치 +${ex.toLocaleString()})`);save(h);toast(`매화장 수련 완료 · 꿀막대 +${M.bar} · 경험치 +${ex.toLocaleString()}`);return}const J=JOBS[j.k],done=Date.now()>=j.end;
   const f=done?1:Math.min(1,(Date.now()-j.start)/(j.end-j.start))*.5,pay=Math.round(j.pay*f),got=[silverTxt(addSilver(h,pay))];
   if(done&&j.k==="inn"){h.items.mandu=(h.items.mandu||0)+1;got.push("만두 +1")}
   if(done&&j.k==="herb"){h.items.herb=(h.items.herb||0)+1;got.push("약초 +1")}
   h.job=null;jobStopAsk=false;if(done)bump(h,"jobH",j.hours);
   addLog(h,done?`${J.n} 일을 마쳤다. ${fill(pickOne(J.lines),{me:h.name})} (${got.join(", ")})`:`${J.n} 일을 중간에 그만두었다. 일한 만큼의 절반만 받았다. (${got.join(", ")})`);
   save(h);toast(done?`일삯을 받았다 · ${got.join(" · ")}`:`절반만 받았다 · ${got[0]}`)}
-function jobBox(h){if(h.travel)return "";const j=h.job,today=h.jobDay===dayKey()&&!j;
-  const head=shopHead("job",`${REGIONS[h.loc].n} 일거리${j?` · ${JOBS[j.k].n} 하는 중`:today?" · 오늘은 다 했다":" · 하루 한 번"}`);
+/* ───────── 일일절(一一節): 11월 11일 하루. 꿀막대를 받아 친구에게 건네고, 매화장 위에서 버틴다 ───────── */
+const jobName=j=>j?.k==="maehwa"?"매화장 수련":JOBS[j?.k]?.n||"일";
+const isIlil=()=>{const d=new Date(Date.now()+KST);return d.getUTCMonth()===10&&d.getUTCDate()===11};
+const ililYear=()=>new Date(Date.now()+KST).getUTCFullYear();
+const ililOf=h=>h.ilil?.y===ililYear()?structuredClone(h.ilil):{y:ililYear(),give:0,got:0,claimed:false,done:{}};
+const MAEHWA={s:{n:"11분",min:11,bar:2,exp:.04},l:{n:"1시간 11분",min:71,bar:5,exp:.15}};
+function ililClaim(){if(!isIlil())return;const h=structuredClone(me),E=ililOf(h);if(E.claimed)return;E.claimed=true;h.ilil=E;h.items.milbong=(h.items.milbong||0)+11;
+  addLog(h,"일일절이다. 객잔 주인이 꿀막대 열한 개를 쥐여 주었다. \"좋은 사람한테 나눠 줘.\"");save(h);toast("꿀막대 11개를 받았다!")}
+function maehwaStart(k){if(!isIlil())return;const h=structuredClone(me),E=ililOf(h),M=MAEHWA[k];if(!M||E.done[k])return;
+  if(activity(h)){toast(`${busyText[activity(h)]} 매화장에 오를 수 없다.`);return}
+  const now=Date.now();E.done={...E.done,[k]:true};h.ilil=E;h.job={k:"maehwa",mk:k,hours:M.min/60,start:now,end:now+M.min*60e3,loc:h.loc,pay:0};
+  addLog(h,`매화장 위에 올라섰다. ${M.n} 동안 버틴다.`);save(h)}
+function ililBox(h){if(!isIlil()||h.travel)return "";const E=ililOf(h),busy=activity(h);
+  return `<div class="shop ilil"><div class="kicker">오늘 하루 · 일일절(一一節)</div>
+    <p style="margin:6px 0">막대 넷이 나란히 서는 날. 강호 사람들은 꿀막대를 나누며 정을 전한다.</p>
+    ${E.claimed?`<p class="note" style="margin:4px 0">꿀막대는 친구 프로필의 「건네주기」에서 물품 → 꿀막대를 골라 보낸다. 오늘은 먼 곳에도 <b>수수료 없이</b> 간다. 먹으면 1시간 동안 경험치 +11%.</p>`
+      :`<button class="btn sealb" type="button" id="ililClaim">객잔 주인에게 꿀막대 받기 (11개)</button>`}
+    <p class="note" style="margin:4px 0">오늘 건넨 꿀막대 ${E.give}개 · 받은 꿀막대 ${E.got}개${E.give>=11?" · 「다정한 협객」":""}${E.got>=11?" · 「강호의 인기인」":""}</p>
+    <div class="label" style="margin-top:10px">매화장 수련</div>
+    <p class="note" style="margin:2px 0 6px">나란히 박힌 매화장 위에서 버틴다. 버티는 동안은 다른 일을 할 수 없다. 길이마다 하루 한 번.</p>
+    <div class="row">${Object.entries(MAEHWA).map(([k,M])=>`<button class="btn sm ${E.done[k]?"ghost":"sealb"}" type="button" data-maehwa="${k}" ${E.done[k]||busy?"disabled":""}>${M.n} 버티기${E.done[k]?" · 했음":` · 꿀막대 ${M.bar} · 경험치`}</button>`).join("")}</div></div>`}
+function jobBox(h){if(h.travel)return "";const j=h.job,today=h.jobDay===dayKey()&&!(j&&j.k!=="maehwa");
+  if(j?.k==="maehwa"){const done=Date.now()>=j.end,M=MAEHWA[j.mk]||MAEHWA.s;return `<div class="shop"><div class="wall" style="margin-top:8px"><p><b>매화장 수련</b> · ${M.n}<br><span class="note">${done?"끝까지 버텼다!":`<span data-until="${j.end}"></span> 남음 · 흔들리지 않게 숨을 고른다`}</span></p>
+    <div class="row">${done?`<button class="btn sealb" type="button" id="jobDone">내려온다</button>`:jobStopAsk?`<button class="btn sm sealb" type="button" id="jobStopOk">그만 내려온다 (보상 없음)</button><button class="btn sm ghost" type="button" id="jobStopNo">계속 버틴다</button>`:`<button class="btn sm ghost" type="button" id="jobStop">그만두기</button>`}</div></div></div>`}
+  const head=shopHead("job",`${REGIONS[h.loc].n} 일거리${j?` · ${jobName(j)} 하는 중`:today?" · 오늘은 다 했다":" · 하루 한 번"}`);
   if(!shopOpen.job&&!j)return `<div class="shop">${head}</div>`;
-  if(j){const done=Date.now()>=j.end;return `<div class="shop">${head}<div class="wall" style="margin-top:8px"><p><b>${JOBS[j.k].n}</b> · ${REGIONS[j.loc].n} · ${j.hours}시간 · 일삯 ${silverTxt(j.pay)}<br><span class="note">${done?"일을 다 마쳤다.":`<span data-until="${j.end}"></span> 남음`}</span></p>
+  if(j){const done=Date.now()>=j.end;return `<div class="shop">${head}<div class="wall" style="margin-top:8px"><p><b>${jobName(j)}</b> · ${REGIONS[j.loc].n} · ${j.hours}시간 · 일삯 ${silverTxt(j.pay)}<br><span class="note">${done?"일을 다 마쳤다.":`<span data-until="${j.end}"></span> 남음`}</span></p>
     <div class="row">${done?`<button class="btn sealb" type="button" id="jobDone">일삯 받기</button>`:jobStopAsk?`<button class="btn sm sealb" type="button" id="jobStopOk">그만두고 절반만 받기</button><button class="btn sm ghost" type="button" id="jobStopNo">계속 일한다</button>`:`<button class="btn sm ghost" type="button" id="jobStop">그만두기</button>`}</div></div></div>`}
   if(today)return `<div class="shop">${head}<p class="note" style="margin-top:8px">오늘은 이미 일했다. 자정에 새 일거리가 들어온다.</p></div>`;
   const busy=activity(h);
@@ -3223,7 +3256,7 @@ function paintProfile(){
   el.querySelectorAll("[data-pfgo]").forEach(b=>b.onclick=()=>{tab=b.dataset.pfgo;profileId=null;paintProfile();try{const cb=document.querySelector(".chat-box");if(cb&&innerWidth<700)cb.hidden=true}catch(e){}render()});
   el.querySelectorAll("[data-pfduel]").forEach(b=>b.onclick=()=>{duelInvite(b.dataset.pfduel);profileId=null;paintProfile()});
   {const q=x=>el.querySelector(x),sync=()=>{if(q("#gKey"))givePick.key=q("#gKey").value;if(q("#gQty"))givePick.qty=+q("#gQty").value||1;if(q("#gNote"))givePick.note=q("#gNote").value};
-    if(q("#gQty")&&q("#gSend")?.dataset.ship==="1")q("#gQty").oninput=()=>{sync();const o=heroById(profileId),f=shipFee(me,o,givePick.kind,Math.max(1,Math.floor(givePick.qty||1)));q("#gSend").textContent=`표국에 맡긴다 (${f}냥)`};
+    if(q("#gQty")&&q("#gSend")?.dataset.ship==="1")q("#gQty").oninput=()=>{sync();const o=heroById(profileId),f=shipFee(me,o,givePick.kind,Math.max(1,Math.floor(givePick.qty||1)),givePick.key);q("#gSend").textContent=`표국에 맡긴다 (${f}냥)`};
     if(q("#pfGive"))q("#pfGive").onclick=()=>{giveOpen=!giveOpen;paintProfile()};
     el.querySelectorAll("[data-gkind]").forEach(b=>b.onclick=()=>{sync();givePick.kind=b.dataset.gkind;givePick.key="";givePick.qty=1;paintProfile()});
     if(q("#gKey"))q("#gKey").onchange=()=>{sync();givePick.qty=1;paintProfile()};
@@ -4188,7 +4221,7 @@ function heroView(){
 function bannerView(){
   const h=me,a=activity(h); if(!a) return "";
   const now=Date.now();
-  if(a==="job"){const j=h.job,done=now>=j.end;return `<div class="banner ${done?"done":""}"><span><b>${JOBS[j.k].n}</b> <span class="t">${done?"· 일을 마쳤다":`· <span data-until="${j.end}"></span> 남음`}</span></span>${tab!=="world"?`<button class="btn ghost" data-go="world" type="button">${done?"일삯 받으러":"보기"}</button>`:""}</div>`}
+  if(a==="job"){const j=h.job,done=now>=j.end;return `<div class="banner ${done?"done":""}"><span><b>${jobName(j)}</b> <span class="t">${done?"· 일을 마쳤다":`· <span data-until="${j.end}"></span> 남음`}</span></span>${tab!=="world"?`<button class="btn ghost" data-go="world" type="button">${done?"일삯 받으러":"보기"}</button>`:""}</div>`}
   if(a==="train"){const t=h.training,done=now>=t.end;return `<div class="banner ${done?"done":""}"><span><b>${STATS[t.stat].train}</b> <span class="t">${done?"· 끝났다":`· <span data-until="${t.end}"></span> 남음`}</span></span>${tab!=="train"?`<button class="btn ghost" data-go="train" type="button">${done?"거두러 가기":"보기"}</button>`:""}</div>`}
   if(a==="travel"){const t=h.travel,done=now>=t.end;return `<div class="banner ${done?"done":""}"><span><b>${REGIONS[t.to].n}</b>로 가는 길 <span class="t">${done?"· 도착했다":`· <span data-until="${t.end}"></span> 남음`}</span></span>${tab!=="world"?`<button class="btn ghost" data-go="world" type="button">${done?"도착하기":"보기"}</button>`:""}</div>`}
   if(a==="lair"&&h.colair&&!h.lair){const r=lairRuns[h.colair];return `<div class="banner done"><span><b>동행과 함께 소굴</b> <span class="t">· ${!r?"불러오는 중":r.status==="invite"?"동행을 기다리는 중":r.phase==="boss"?"보스방에서 싸우는 중":r.phase==="done"?"탐험 끝":"탐험 중"}</span></span>${tab!=="raid"?`<button class="btn ghost" data-go="raid" type="button">돌아가기</button>`:""}</div>`}
@@ -4270,7 +4303,7 @@ function worldTab(){
     else if(direct) regionBox+=`<div class="row" style="margin-top:6px"><button class="btn solid" id="goBtn" type="button" ${a?"disabled":""}>${josa(R.n,"로")} 떠나기 · ${hrsTxt(direct)}${tg.length?` (${tg.join(", ")})`:""}</button>${realMates().length?`<button class="btn ghost" type="button" data-callgo="${dest}">무리에게 같이 가자고 하기</button>`:""}${a?`<span class="note" style="margin:0">${busyText[a]} 떠날 수 없다.</span>`:""}</div>`;
     else{const rt=route(h.loc,dest);regionBox+=`<p class="note">바로 가는 길이 없다. ${rt.path.map(p=>REGIONS[p].n).join(" → ")} (모두 ${hrsTxt(teaHrs(h,hrsFor(h,rt.hours)))}${speedTags(h,null).length?`, ${speedTags(h,null).join(" · ")}`:""}) 순으로 한 곳씩 이동해야 한다.</p>`}
   }
-  regionBox+=(focus===h.loc?regionSectBox(focus)+jobBox(h)+fishBox(h)+gatherBox(h)+stableBox(h)+innBox(h)+smithBox(h):"")+`</div>`;
+  regionBox+=(focus===h.loc?regionSectBox(focus)+ililBox(h)+jobBox(h)+fishBox(h)+gatherBox(h)+stableBox(h)+innBox(h)+smithBox(h):"")+`</div>`;
   return `${nemBox(h)}${happenBox(h)}${invBox(h)}${questBox(h)}<section><div class="label">지도</div>${mapSvg()}
     <p class="note">지역을 누르면 정보가 보이고, 이어진 곳이면 바로 떠날 수 있다.</p>${regionBox}${caravanBox(h)}</section>
     ${travelBox?`<section style="margin-top:20px">${travelBox}</section>`:""}
@@ -4458,7 +4491,7 @@ function bind(){
   document.querySelectorAll("[data-hdig]").forEach(b=>b.addEventListener("click",()=>happenDig(b.dataset.hdig)));
   document.querySelectorAll("[data-hduel]").forEach(b=>b.addEventListener("click",()=>happenDuel(b.dataset.hduel)));
   document.querySelectorAll("[data-hgo]").forEach(b=>b.addEventListener("click",()=>{dest=b.dataset.hgo;tab="world";render();try{document.querySelector(".region")?.scrollIntoView({block:"start"})}catch(e){}}));
-  on("#dexBtn",()=>{dexOpen=!dexOpen;render()});on("#fishCast",fishCast);on("#fishBuy",fishBuy);on("#fishPull",()=>fishPull(false));on("#fishSell",fishSell);on("#rbAsk",()=>{rbAsk=true;render()});on("#rbNo",()=>{rbAsk=false;render()});on("#rbGo",doRebirth);on("#fishSellT",()=>{fishSellOpen=!fishSellOpen;render()});
+  on("#dexBtn",()=>{dexOpen=!dexOpen;render()});on("#fishCast",fishCast);on("#ililClaim",ililClaim);document.querySelectorAll("[data-maehwa]").forEach(b=>b.onclick=()=>maehwaStart(b.dataset.maehwa));on("#fishBuy",fishBuy);on("#fishPull",()=>fishPull(false));on("#fishSell",fishSell);on("#rbAsk",()=>{rbAsk=true;render()});on("#rbNo",()=>{rbAsk=false;render()});on("#rbGo",doRebirth);on("#fishSellT",()=>{fishSellOpen=!fishSellOpen;render()});
   document.querySelectorAll("[data-fsell]").forEach(b=>b.onclick=()=>{const k=b.dataset.fsell,i=document.querySelector(`[data-fsq="${k}"]`);fishSellOne(k,+(i?.value||1))});
   document.querySelectorAll("[data-craft]").forEach(b=>b.addEventListener("click",()=>craftFurn(b.dataset.craft)));
   document.querySelectorAll("[data-fold]").forEach(b=>b.addEventListener("click",()=>toggleFold(b.dataset.fold)));
