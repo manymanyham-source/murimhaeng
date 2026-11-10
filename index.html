@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261111041843">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261111073645">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1026,6 +1026,15 @@ let writing=Promise.resolve();
 let journalCache=null,lastJournal=null;
 /* 지난 일지는 캐릭터 기록과 따로, 본인만 읽는 칸(journals/내 번호)에 둔다. 캐릭터 기록이 작아야 모두에게 빨리 간다. */
 let heroLive=false; /* 서버에서 내 기록을 한 번이라도 받아 왔는가. 그 전(기기에 남은 옛 사본)에는 저장하지 않는다 */
+/* 읽기·쓰기 아끼기: 잇달아 누른 행동은 잠깐(1.5초) 모았다가 한 번에 기록한다.
+   (기록 한 번마다 접속한 모두가 그 인물을 한 번씩 다시 읽기 때문) 창을 닫거나 내리면 바로 기록한다 */
+const SAVE_GAP=1500;let pendHero=null,pendJournal=null,flushT=0;
+function flushHero(){clearTimeout(flushT);if(!pendHero||mode!=="db")return;const body=pendHero,jl=pendJournal||[],js=JSON.stringify(jl);pendHero=null;pendJournal=null;
+  if(js!==lastJournal){lastJournal=js;journalCache=jl;writing=writing.then(()=>db.doc("journals/"+uid).set({list:jl,t:Date.now()})).catch(()=>{})}
+  writing=writing.then(()=>db.doc("heroes/"+uid).set(body)).catch(e=>{
+    toast(e?.code==="invalid_argument"?"기록할 권한이 없어요. 다시 로그인해 주세요.":"기록이 잠시 실패했어요. 다시 시도해 주세요.");});
+  return writing}
+document.addEventListener("visibilitychange",()=>{if(document.hidden)flushHero()});addEventListener("pagehide",flushHero);addEventListener("beforeunload",flushHero);
 function save(h){
   if(mode==="db"&&!heroLive&&me){toast("강호 소식을 받아오는 중이에요. 잠시 뒤 다시 해 주세요.");return}
   /* 새 날의 의뢰는 사람이 무언가 할 때 함께 기록한다. 시작점은 이번 행동 직전 상태(me)로 잡는다 */
@@ -1033,10 +1042,8 @@ function save(h){
   try{checkTitles(h)}catch(e){}
   me=h; render();
   if(mode==="db"){
-    const body=JSON.parse(JSON.stringify(h)),jl=body.journal||[],js=JSON.stringify(jl);delete body.journal;
-    if(js!==lastJournal){lastJournal=js;journalCache=jl;writing=writing.then(()=>db.doc("journals/"+uid).set({list:jl,t:Date.now()})).catch(()=>{})}
-    writing=writing.then(()=>db.doc("heroes/"+uid).set(body)).catch(e=>{
-      toast(e?.code==="invalid_argument"?"기록할 권한이 없어요. 다시 로그인해 주세요.":"기록이 잠시 실패했어요. 다시 시도해 주세요.");});
+    const body=JSON.parse(JSON.stringify(h)),jl=body.journal||[];delete body.journal;
+    pendHero=body;pendJournal=jl;clearTimeout(flushT);flushT=setTimeout(flushHero,SAVE_GAP);
   }else{try{localStorage.setItem("gangho-hero",JSON.stringify(h))}catch(e){}}
 }
 function addLog(h,text){h.log=[{t:Date.now(),text},...(h.log||[])].slice(0,10)}
@@ -3189,7 +3196,7 @@ function isoFree(h,draft,k,x,y,r){const [fw,fd]=isoFp(k,r);if(x<0||y<0||x+fw>ISO
   return true}
 /* 장원 가기 (전체 화면) */
 let isoView=null,isoSel=null,isoEdit=false,isoDraft=null,isoMsg="",visits={},visitsExtra={},visitQ=false;
-const NOTICE_LIM=20,MAIL_LIM=30;
+const NOTICE_LIM=15,MAIL_LIM=20;
 /* 남의 장원 방명록: 들어갈 때 그 장원 것만 한 번 읽어 둔다 */
 async function loadVisits(host){if(!visitQ||mode!=="db"||host===myId())return;try{const s=await db.collection("visits").where("host","==",host).get();
   for(const k of Object.keys(visitsExtra))if(visitsExtra[k].host===host)delete visitsExtra[k];s.docs.forEach(d=>{if(d.exists)visitsExtra[d.id]={...structuredClone(d.data()),id:d.id}});
@@ -3917,7 +3924,7 @@ async function pickAvatar(file){
     toast("프로필 사진을 바꿨어요.");
   }catch(e){toast("사진을 읽지 못했어요. 다른 사진으로 해 주세요.")}
 }
-async function clearAvatar(){delete avatars[myId()];render();if(mode==="db")await db.doc("avatars/"+uid).delete().catch(()=>{});else{try{localStorage.removeItem("murim-avatar")}catch(e){}}}
+async function clearAvatar(){delete avatars[myId()];render();if(mode==="db")await db.doc("avatars/"+uid).set({img:"",t:Date.now()}).catch(()=>{});else{try{localStorage.removeItem("murim-avatar")}catch(e){}}}
 /* ───────── 동행 소굴: 동행 둘이 한 소굴에 함께 들어간다 ─────────
    판은 lairs/<번호> 하나를 함께 쓴다. 갈림길과 방은 먼저 누른 사람이 고른다(잠금으로 한 명만 통과).
    보스방은 관문처럼 각자 고르고, 둘 다 고르거나 60초가 지나면 진행한다. */
@@ -5244,14 +5251,20 @@ async function boot(){
   else db.collection("visits").onSnapshot(snap=>{visits={};snap.docs.forEach(d=>{if(d.exists)visits[d.id]={...structuredClone(d.data()),id:d.id}});if(isoView&&!isoEdit)paintManor();if(ready)render()},()=>{});
   db.collection("parcels").onSnapshot(snap=>{parcels={};snap.docs.forEach(d=>{if(d.exists)parcels[d.id]={...structuredClone(d.data()),id:d.id}});if(ready)render()},()=>{});
   Q("mail",c=>c.orderBy("t","desc").limit(MAIL_LIM)).onSnapshot(snap=>{mails={};snap.docs.forEach(d=>{if(d.exists)mails[d.id]=structuredClone(d.data())});if(ready)render()},()=>{});
-  db.collection("avatars").onSnapshot(snap=>{avatars={};snap.docs.forEach(d=>{if(d.exists)avatars[d.id]=d.data().img});if(ready)render()},()=>{});
+  if(canQ(db.collection("avatars"))){
+    /* 초상화는 거의 안 바뀌니 이 기기에 담아 두고, 마지막으로 본 뒤에 바뀐 것만 받는다 */
+    let av={};try{av=JSON.parse(localStorage.getItem("murim-avc-"+uid)||"{}")}catch(e){}
+    const maxT=Object.values(av).reduce((m,x)=>Math.max(m,x.t||0),0);for(const [k,x] of Object.entries(av))if(x.img)avatars[k]=x.img;
+    db.collection("avatars").where("t",">",maxT).onSnapshot(snap=>{snap.docs.forEach(d=>{if(!d.exists)return;const x=d.data();av[d.id]={img:x.img||"",t:x.t||0};if(x.img)avatars[d.id]=x.img;else delete avatars[d.id]});
+      try{localStorage.setItem("murim-avc-"+uid,JSON.stringify(av))}catch(e){}if(ready)render()},()=>{})}
+  else db.collection("avatars").onSnapshot(snap=>{avatars={};snap.docs.forEach(d=>{if(d.exists)avatars[d.id]=d.data().img});if(ready)render()},()=>{});
   db.collection("lairs").onSnapshot(snap=>{sweep("lairs",snap.docs.filter(d=>d.exists));lairRuns={};snap.docs.forEach(d=>{if(d.exists)lairRuns[d.id]=structuredClone(d.data())});if(ready)render();maybeResolveLair()},()=>{});
   db.collection("gates").onSnapshot(snap=>{sweep("gates",snap.docs.filter(d=>d.exists));gateRooms={};snap.docs.forEach(d=>{if(d.exists)gateRooms[d.id]=structuredClone(d.data())});if(ready)render();maybeResolve()},()=>{});
   db.collection("gateacts").onSnapshot(snap=>{const mine=gateActs[uid];gateActs={};snap.docs.forEach(d=>{if(d.exists)gateActs[d.id]=structuredClone(d.data())});
     if(mine&&(!gateActs[uid]||(gateActs[uid].t||0)<(mine.t||0)))gateActs[uid]=mine;if(ready)render();maybeResolve();maybeResolveLair();try{maybeResolveDuel()}catch(e){}},()=>{});
   db.collection("heroes").onSnapshot(snap=>{
     const mine=snap.docs.find(x=>x.id===uid);if(snap.fromCache!==true&&!(mine?.metadata?.fromCache))heroLive=true;
-    if(!(mine?.metadata?.hasPendingWrites)){me=mine?.exists?normalize(structuredClone(mine.data())):null;if(me){if(me.journal&&!journalCache)journalCache=me.journal;me.journal=journalCache||me.journal||[]}}
+    if(!pendHero&&!(mine?.metadata?.hasPendingWrites)){me=mine?.exists?normalize(structuredClone(mine.data())):null;if(me){if(me.journal&&!journalCache)journalCache=me.journal;me.journal=journalCache||me.journal||[]}}
     others=snap.docs.filter(x=>x.id!==uid&&x.exists).map(x=>Object.assign(normalize(structuredClone(x.data())),{_id:x.id}));
     mergeFake();if(!heroLive&&!ready)return;ready=true;render();syncBonds();
   },e=>{toast("강호 소식이 끊겼어요. 새로고침해 주세요.")});
@@ -5415,7 +5428,7 @@ window.FIREBASE_CONFIG = {
     const bar=document.createElement("div");bar.className="acct";
     bar.innerHTML=`<span>${me.id}${me.admin?" · 관리자":""}</span>${me.admin?`<button type="button" id="adminOpen">관리</button>`:""}<button type="button" id="logout">나가기</button>`;
     const w=document.querySelector(".wrap");w.insertBefore(bar,w.querySelector("#status"));
-    $s("#logout").onclick=()=>auth.signOut();
+    $s("#logout").onclick=async()=>{try{await window.flushHero?.()}catch(e){}auth.signOut()};
     if(me.admin)$s("#adminOpen").onclick=openAdmin;
   }
 
