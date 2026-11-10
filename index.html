@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261111032033">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261111034434">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -586,6 +586,73 @@ body.noscroll{overflow:hidden}
 .pxscene{display:block;width:100%;height:auto;aspect-ratio:64/20;max-height:150px;border-radius:var(--r-s,8px);margin:0 0 10px;image-rendering:pixelated;border:1px solid var(--line)}
 .gact{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
 .innseg button:disabled{opacity:.4;cursor:default}
+
+/* ───── 마교 침공 카드 ───── */
+section.inv{position:relative;overflow:hidden;border:0;border-radius:var(--r,12px);padding:0;margin-top:28px;color:#ece6da;background:radial-gradient(120% 80% at 100% 100%,#4a1e24 0%,transparent 60%),linear-gradient(170deg,#211619,#140e10);box-shadow:0 6px 20px rgba(30,8,10,.28)}
+section.inv::after{content:"魔";position:absolute;right:-8px;bottom:-34px;font-family:var(--f-brush);font-size:140px;line-height:1;color:rgba(255,255,255,.045);pointer-events:none}
+section.inv.free{background:radial-gradient(120% 80% at 100% 100%,#26345a 0%,transparent 60%),linear-gradient(170deg,#1a1f33,#11141f)}
+section.inv.free::after{content:"解"}
+section.inv.won{background:radial-gradient(120% 80% at 100% 100%,#4a3a22 0%,transparent 60%),linear-gradient(170deg,#221d16,#15120e)}
+section.inv.won::after{content:"勝"}
+.ivhd{position:relative}
+.ivhd .pxscene{height:auto;aspect-ratio:64/20;margin:0;border:0;border-radius:0}
+.ivtt{position:absolute;left:0;right:0;bottom:0;padding:18px 16px 10px;background:linear-gradient(180deg,transparent,rgba(16,10,12,.55) 45%,rgba(16,10,12,.92));display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap}
+.ivk{width:100%;font-size:11px;letter-spacing:.3em;color:#f4a493;text-shadow:0 1px 3px rgba(0,0,0,.8)}.ivtt h3{text-shadow:0 1px 4px rgba(0,0,0,.6)}
+.ivtt h3{margin:0;font-family:var(--f-brush);font-weight:400;font-size:22px;color:#fff;line-height:1.1;flex:1}
+.ivtime{font-size:12px;padding:3px 9px;border-radius:999px;background:rgba(176,56,42,.85);color:#fff;white-space:nowrap;font-variant-numeric:tabular-nums}
+.ivstamp{font-family:var(--f-brush);font-size:16px;padding:2px 10px;border:2px solid #e58a78;color:#e58a78;border-radius:4px;transform:rotate(-6deg)}
+.ivstamp.gold,.inv.won .ivstamp{color:#f0d27a;border-color:#f0d27a}
+.ivbd{position:relative;z-index:1;padding:12px 16px 16px}
+.ivmsg{margin:0 0 4px;font-size:14px;line-height:1.6;color:#e6ded2}.ivmsg b{color:#fff}
+.ivg{margin:12px 0 4px}
+.ivgh{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:#c9b8b4}
+.ivgh b{font-size:17px;color:#fff;font-variant-numeric:tabular-nums}.ivgh small{font-size:12px;color:#a99ea8;font-weight:400}
+.ivgb{height:12px;margin-top:5px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.4)}
+.ivgb i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#7a1f1a,#b0382a 60%,#e07a2e);box-shadow:0 0 10px rgba(224,122,46,.55);transition:width .6s}
+.ivgf{margin-top:4px;text-align:right;font-size:11px;color:#a99ea8}
+.ivhow{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px;margin:12px 0 4px}
+.ivhow span{display:flex;flex-direction:column;gap:1px;padding:7px 10px;border-radius:8px;background:rgba(255,255,255,.06);font-size:11px;color:#b9aeb6}
+.ivhow b{font-size:13px;color:#f4eee4;font-weight:600}
+.ivsub{margin:14px 0 6px;font-size:11px;letter-spacing:.2em;color:#a99ea8}
+.ivrk{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+.ivrk li{display:grid;grid-template-columns:22px minmax(0,auto) 1fr auto;align-items:center;gap:8px;font-size:13px;color:#e6ded2}
+.ivrk i{font-style:normal;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.1);font-size:11px;color:#ece6da}
+.ivrk li:nth-child(1) i{background:#c9952e;color:#1d140a}.ivrk li:nth-child(2) i{background:#a9a9b0;color:#16161a}.ivrk li:nth-child(3) i{background:#a8743f;color:#1d140a}
+.ivrk b{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:9em}
+.ivrb{height:5px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden}.ivrb em{display:block;height:100%;background:#b0382a;border-radius:999px}
+.ivrk s{text-decoration:none;font-variant-numeric:tabular-nums;color:#c9b8b4;font-size:12px}
+.ivrk li.me b,.ivrk li.me s{color:#f0d27a}.ivrk li.me .ivrb em{background:#f0d27a}
+.ivempty{margin:0;font-size:13px;color:#a99ea8}
+.ivme{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.1)}
+.ivmine{display:flex;flex-direction:column}.ivmine small{font-size:11px;color:#a99ea8}.ivmine b{font-size:22px;color:#fff;font-variant-numeric:tabular-nums;line-height:1.1}
+.inv .btn.sealb{background:#b0382a;border-color:#b0382a;color:#fff}.inv .btn.sealb:hover{background:#c9442f}.inv .btn.sealb:disabled{background:#5a3a3a;border-color:#5a3a3a;color:#c9b8b4}
+.inv .btn.ghost{background:transparent;border-color:rgba(255,255,255,.35);color:#ece6da}
+.ivnote{margin:8px 0 0;font-size:12px;color:#b9aeb6;line-height:1.5}.ivnote b{color:#fff}
+.inv .retake{margin-top:16px;padding:14px;border:0;border-radius:10px;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px rgba(229,138,120,.25)}
+.inv .retake p{margin:4px 0 0;font-size:13px;line-height:1.55;color:#e6ded2}
+.inv .retake.freed{box-shadow:inset 0 0 0 1px rgba(240,210,122,.35);background:rgba(240,210,122,.06)}
+.inv .retake .ivrk{margin-top:14px}.inv .retake .ivgo{margin-top:12px}
+.rek{font-family:var(--f-brush);font-size:17px;color:#e58a78}.retake.freed .rek{color:#f0d27a}
+.ivacts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+.ivact{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:9px 11px;border-radius:9px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#ece6da;text-align:left;cursor:pointer;font:inherit}
+.ivact:hover:not(:disabled){background:rgba(255,255,255,.11)}
+.ivact b{font-size:13px;font-weight:600}.ivact span{font-size:11px;color:#b9aeb6}.ivact em{font-style:normal;font-size:12px;color:#e58a78}
+.ivact.sneak{background:rgba(176,56,42,.18);border-color:rgba(229,138,120,.4)}
+.ivact:disabled{opacity:.45;cursor:default}
+
+section.inv.mini{padding:0}
+section.inv.mini::after{font-size:70px;bottom:-16px;right:-2px}
+.ivfold{position:relative;z-index:1;display:flex;align-items:center;gap:10px;width:100%;padding:12px 14px;border:0;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.ivseal{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:6px;background:#b0382a;color:#fff;font-family:var(--f-brush);font-size:18px}
+.inv.won .ivseal{background:#c9952e;color:#1d140a}.inv.free .ivseal{background:#3a5a9a}
+.ivft{flex:1;min-width:0;display:flex;flex-direction:column}.ivft b{font-weight:600;font-size:14px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ivft small{font-size:11px;color:#b9aeb6;font-variant-numeric:tabular-nums}
+.ivchip{flex:none;font-size:11px;padding:3px 8px;border-radius:999px;background:rgba(176,56,42,.85);color:#fff;white-space:nowrap}
+.inv.won .ivchip,.inv.free .ivchip{background:rgba(240,210,122,.9);color:#1d140a}
+.ivdot{flex:none;font-size:11px;padding:3px 7px;border-radius:999px;background:#f0d27a;color:#1d140a;font-weight:600;animation:ivpulse 1.6s ease-in-out infinite}
+@keyframes ivpulse{50%{opacity:.55}}@media (prefers-reduced-motion:reduce){.ivdot{animation:none}}
+.ivfold i{flex:none;font-style:normal;font-size:12px;color:#a99ea8}
+.ivgb.thin{height:4px;margin:0;border-radius:0;box-shadow:none}.ivgb.thin i{border-radius:0}
+.ivclose{position:absolute;z-index:2;top:8px;right:8px;padding:4px 10px;border-radius:999px;border:0;background:rgba(0,0,0,.45);color:#ece6da;font:inherit;font-size:12px;cursor:pointer}
 </style>
 
 <div class="wrap">
@@ -2563,7 +2630,7 @@ function bindNotice(){
 const silverTxt=n=>`은자 ${Number(n||0).toLocaleString()}냥`;
 function addSilver(h,n){n=Math.max(0,Math.round(n||0));h.silver=(h.silver||0)+n;if(n)bump(h,"silverIn",n);return n}
 /* 객잔·대장간은 접었다 펼 수 있다 (이 기기에 기억) */
-let shopOpen={f_bio:false,f_sectmv:false};try{shopOpen={f_bio:false,f_sectmv:false,...JSON.parse(localStorage.getItem("murim-shop")||"{}")}}catch(e){}
+let shopOpen={f_bio:false,f_sectmv:false,f_inv:false};try{shopOpen={f_bio:false,f_sectmv:false,f_inv:false,...JSON.parse(localStorage.getItem("murim-shop")||"{}")}}catch(e){}
 function toggleShop(k){shopOpen[k]=!shopOpen[k];try{localStorage.setItem("murim-shop",JSON.stringify(shopOpen))}catch(e){}render()}
 /* 인물 탭 접기: 기본은 펼침, 접으면 기억한다 */
 const foldOpen=k=>shopOpen["f_"+k]!==false;
@@ -2630,7 +2697,33 @@ function pxScene(k){let o="";const R=(x,y,w,h,c)=>{o+=`<rect x="${x}" y="${y}" w
   decor:()=>{sky("#efe9e0","#e6ddd0");R(0,15,64,5,"#c9b48e");R(6,4,20,11,"#f5f0e3");R(6,4,20,1,"#5e3f24");R(6,14,20,1,"#5e3f24");for(const x of [6,11,16,21,25])R(x,4,1,11,"#5e3f24");
     R(8,10,4,2,"#4c7a39");R(13,8,3,4,"#3a6c9a");R(18,9,5,3,"#4c7a39");                 /* 병풍 */
     R(33,10,4,5,"#6fa896");R(34,8,2,2,"#6fa896");R(33,7,4,1,"#8cc0ad");R(35,5,1,2,"#4c7a39");R(34,4,3,1,"#e8a0b5");   /* 화병 */
-    R(44,9,8,6,"#bdbab0");R(45,6,6,3,"#bdbab0");R(46,7,1,1,"#2b2622");R(49,7,1,1,"#2b2622");R(47,8,2,1,"#b0382a");R(43,14,10,1,"#8d8b84")}  /* 돌사자 */
+    R(44,9,8,6,"#bdbab0");R(45,6,6,3,"#bdbab0");R(46,7,1,1,"#2b2622");R(49,7,1,1,"#2b2622");R(47,8,2,1,"#b0382a");R(43,14,10,1,"#8d8b84")},  /* 돌사자 */
+  inv:()=>{R(0,0,64,20,"#3a1a1f");R(0,0,64,5,"#2a1418");R(0,8,64,4,"#6a2626");R(0,10,64,2,"#8a3424");
+    for(let x=0;x<64;x++){const y=8+Math.round(Math.sin(x/5)*1.6+Math.sin(x/2.3)*.7);R(x,y,1,20-y,"#24161a")}
+    const house=(x,w,hh)=>{R(x,18-hh,w,hh+2,"#120c0e");R(x-1,17-hh,w+2,1,"#120c0e");R(x,16-hh,w,1,"#120c0e")};
+    house(2,7,4);house(12,6,6);house(22,9,3);house(36,7,5);house(47,6,3);house(56,7,6);
+    const fire=(x,y)=>{R(x,y,3,2,"#e07a2e");R(x+1,y-1,1,1,"#f2a65e");R(x,y-2,1,1,"#f0d27a");R(x+2,y-3,1,1,"#e07a2e");R(x+1,y+1,1,1,"#f0d27a")};
+    fire(13,10);fire(38,11);fire(58,10);
+    for(const [x,y] of [[14,6],[15,4],[13,3],[39,7],[40,5],[38,3],[59,6],[58,4],[60,2]])R(x,y,1,1,"#5a4a4e");
+    const flag=(x)=>{R(x,4,1,14,"#0b0708");R(x+1,4,6,4,"#b0382a");R(x+1,8,4,1,"#b0382a");R(x+3,5,2,2,"#120c0e")};flag(27);flag(50);
+    R(0,18,64,2,"#0b0708")},
+  ivocc:()=>{R(0,0,64,20,"#2a1418");R(0,0,64,4,"#1d0f12");R(0,9,64,3,"#4a1e22");
+    R(0,10,64,10,"#1a1113");for(let x=0;x<64;x+=4)R(x,9,2,1,"#1a1113");          /* 성벽 */
+    R(26,11,12,9,"#0b0708");R(27,10,10,1,"#0b0708");R(28,9,8,1,"#0b0708");       /* 성문 */
+    R(31,1,1,9,"#0b0708");R(32,1,10,6,"#b0382a");R(32,7,7,1,"#b0382a");R(35,3,3,2,"#0b0708");   /* 천마 깃발 */
+    for(const x of [6,18,46,58]){R(x,7,1,3,"#0b0708");R(x-1,5,3,2,"#e07a2e");R(x,4,1,1,"#f0d27a")}   /* 횃불 */
+    for(const [x,y] of [[10,14],[16,15],[44,14],[52,15]]){R(x,y,1,1,"#e58a78")}},
+  ivwon:()=>{R(0,0,64,20,"#f0dcc0");R(0,0,64,4,"#e6c9a2");R(0,6,64,3,"#f6e6c8");R(44,4,7,7,"#f2c46a");R(45,3,5,1,"#f2c46a");R(45,11,5,1,"#f2c46a");
+    for(let x=0;x<64;x++){const y=9+Math.round(Math.sin(x/5)*1.4+Math.sin(x/2.3)*.6);R(x,y,1,20-y,"#b9a184")}
+    R(0,15,64,5,"#8a7a62");
+    R(12,4,1,12,"#5e3f24");R(13,4,7,5,"#f5f0e3");R(13,9,5,1,"#f5f0e3");R(15,5,3,3,"#3a6c9a");      /* 정파 깃발 */
+    R(30,15,9,1,"#3d2a20");R(38,13,5,3,"#7a2b22");R(39,14,3,1,"#4e1a15");                          /* 꺾인 마교 깃발 */
+    for(const [x,y] of [[24,3],[26,2],[56,5],[58,4]])R(x,y,1,1,"#7a6a5a")},
+  ivfree:()=>{R(0,0,64,20,"#1d2440");R(0,0,64,5,"#151b33");for(const [x,y] of [[5,2],[20,1],[41,3],[60,1],[33,2]])R(x,y,1,1,"#e6e1d4");
+    for(let x=0;x<64;x++){const y=11+Math.round(Math.sin(x/6)*1.2);R(x,y,1,20-y,"#121729")}
+    const fw=(cx,cy,c)=>{for(const [dx,dy] of [[0,-2],[0,2],[-2,0],[2,0],[-1,-1],[1,1],[1,-1],[-1,1]])R(cx+dx,cy+dy,1,1,c);R(cx,cy,1,1,"#fff")};fw(12,4,"#f0d27a");fw(50,3,"#e8a0b5");fw(30,6,"#86b9de");
+    for(let x=0;x<64;x++)R(x,9+Math.round(Math.abs(Math.sin(x/10.2))*2),1,1,"#5e3f24");
+    for(const [x,c] of [[4,"#b0382a"],[13,"#e07a2e"],[22,"#b0382a"],[33,"#f0d27a"],[42,"#b0382a"],[52,"#e07a2e"],[60,"#b0382a"]]){const y=10+Math.round(Math.abs(Math.sin(x/10.2))*2);R(x,y+1,3,3,c);R(x+1,y+4,1,1,"#f0d27a");R(x,y+2,3,1,"rgba(255,240,200,.35)")}}
   };S[k]?.();return `<svg class="pxscene" viewBox="0 0 64 20" shape-rendering="crispEdges" aria-hidden="true">${o}</svg>`}
 
 let innTab="buy";
@@ -3553,18 +3646,23 @@ function reClaim(){const h=structuredClone(me);if(!reFreed()||!rePts(h)||h.reCla
   const got=[silverTxt(addSilver(h,120+(rank===0?150:rank<3?60:0)))];h.items.stone+=5;got.push("강화석 +5");const x=Math.round(expPerHour(h.level)*2);applyExp(h,x);got.push(`경험치 +${x}`);
   if(rank===0){bump(h,"reTop");got.push("탈환 공로 1위")}bump(h,"reWin");h.reClaimed=invasion.id;
   addLog(h,`${josa(REGIONS[invasion.region].n,"을")} 마교에게서 되찾았다! ${got.join(", ")}`);save(h);toast(`탈환 보상 · ${got.join(" · ")}`)}
+/* 순위 · 게이지 (침공·탈환 함께 씀) */
+function ivRank(list,empty){if(!list.length)return `<p class="ivempty">${empty}</p>`;const top=list[0].pts||1;
+  return `<ol class="ivrk">${list.slice(0,5).map((x,i)=>`<li class="${x.id===myId()?"me":""}"><i>${i+1}</i><b>${esc(x.name)}</b><span class="ivrb"><em style="width:${Math.max(4,x.pts/top*100)}%"></em></span><s>${x.pts.toLocaleString()}</s></li>`).join("")}</ol>`}
+function ivGauge(name,left,max){const pct=Math.min(100,max?left/max*100:0);
+  return `<div class="ivg"><div class="ivgh"><span>${name}</span><b>${left.toLocaleString()}<small> / ${max.toLocaleString()}</small></b></div><div class="ivgb"><i style="width:${pct}%"></i></div><div class="ivgf">${Math.floor(100-pct)}% 꺾었다</div></div>`}
 function reBox(h){if(!invFailed()||sNow()>=occEnd())return "";const R=REGIONS[invasion.region],tot=reTotal(),need=reNeed(),left=Math.max(0,need-tot),freed=reFreed(),here=!h.travel&&h.loc===invasion.region,d=reDay(h),mine=rePts(h),list=reList();
-  if(freed)return `<div class="retake freed"><div class="kicker">탈환 성공 · ${R.n}</div><p><b>${josa(R.n,"을")} 되찾았다!</b> 마교가 물러갔다. <span data-suntil="${occEnd()}"></span> 동안 해방 축제로 객잔·마방이 20% 싸다.</p>
-    <div class="invrank">${list.slice(0,5).map((x,i)=>`<span class="${x.id===myId()?"me":""}">${i+1}. ${esc(x.name)} ${x.pts.toLocaleString()}</span>`).join("")}</div>
-    ${mine&&h.reClaimed!==invasion.id?`<button class="btn sealb" type="button" id="reClaim" style="margin-top:8px">탈환 보상 받기</button>`:mine?`<p class="note" style="margin:6px 0 0">탈환 보상을 받았다.</p>`:""}</div>`;
-  return `<div class="retake"><div class="kicker">탈환전 · ${R.n}</div><p>마교가 ${josa(R.n,"을")} 장악하고 있다. 의병을 돕고 점령지에 잠입해 마교를 몰아내자. 장악력을 모두 깎으면 바로 물러간다.</p>
-    <div class="invbar"><i style="width:${Math.min(100,left/need*100)}%"></i><span>마교의 장악력 ${left.toLocaleString()} / ${need.toLocaleString()}</span></div>
-    ${here?`<div class="shopl" style="margin-top:8px">${Object.entries(RE_DONATE).map(([k,D])=>`<button class="shopi" type="button" data-redon="${k}" ${d.don>=RE_DON_DAY?"disabled":""}><b>의병 지원</b><span>${D.n} 건네기</span><em>장악력 -${D.pts}</em></button>`).join("")}
-      <button class="shopi" type="button" id="reScout" ${d.scout>=1?"disabled":""}><b>잠입 정찰</b><span>${h.stats.shen>=h.stats.nei?"신법":"내공"} 판정 · 실패하면 은자를 잃는다</span><em>${d.scout?"오늘 했다":"하루 1번"}</em></button></div>
-      <p class="note">의병 지원은 하루 ${RE_DON_DAY}번 (오늘 ${d.don}/${RE_DON_DAY}). 잠입은 성공하면 장악력을 크게 깎는다.</p>`
-      :`<div class="row" style="margin-top:8px"><button class="btn" type="button" data-hgo="${invasion.region}">${R.n} 지도에서 보기</button><span class="note" style="margin:0">그 지역에 가야 도울 수 있다.</span></div>`}
-    <div class="invrank">${list.slice(0,5).map((x,i)=>`<span class="${x.id===myId()?"me":""}">${i+1}. ${esc(x.name)} ${x.pts.toLocaleString()}</span>`).join("")||`<span>아직 아무도 나서지 않았다.</span>`}</div>
-    <p class="note" style="margin:4px 0 0">내 공로 <b>${mine}</b> · 되찾으면 공로가 있는 모두가 보상을 받고, 1위는 「탈환의 영웅」 칭호를 얻는다.</p></div>`}
+  if(freed)return `<div class="retake freed"><div class="rek">탈환 성공</div><p><b>${josa(R.n,"을")} 되찾았다!</b> 마교가 물러갔다. <span data-suntil="${occEnd()}"></span> 동안 해방 축제로 객잔·마방이 20% 싸다.</p>
+    ${ivRank(list,"")}
+    ${mine&&h.reClaimed!==invasion.id?`<button class="btn sealb ivgo" type="button" id="reClaim">탈환 보상 받기</button>`:mine?`<p class="ivnote">탈환 보상을 받았다.</p>`:""}</div>`;
+  return `<div class="retake"><div class="rek">탈환전</div><p>의병을 돕고 점령지에 잠입해 마교를 몰아내자. 장악력을 모두 깎으면 바로 물러간다.</p>
+    ${ivGauge("마교의 장악력",left,need)}
+    ${here?`<div class="ivacts">${Object.entries(RE_DONATE).map(([k,D])=>`<button class="ivact" type="button" data-redon="${k}" ${d.don>=RE_DON_DAY?"disabled":""}><b>의병 지원</b><span>${D.n}</span><em>장악력 -${D.pts}</em></button>`).join("")}
+      <button class="ivact sneak" type="button" id="reScout" ${d.scout>=1?"disabled":""}><b>잠입 정찰</b><span>${h.stats.shen>=h.stats.nei?"신법":"내공"} 판정 · 실패하면 은자를 잃는다</span><em>${d.scout?"오늘 했다":"하루 1번"}</em></button></div>
+      <p class="ivnote">의병 지원 오늘 ${d.don}/${RE_DON_DAY} · 잠입은 성공하면 장악력을 크게 깎는다.</p>`
+      :`<div class="ivme"><span class="ivnote">${R.n}에 가야 도울 수 있다.</span><button class="btn ghost" type="button" data-hgo="${invasion.region}">${R.n} 지도에서 보기</button></div>`}
+    ${ivRank(list,"아직 아무도 나서지 않았다.")}
+    <p class="ivnote">내 공로 <b>${mine}</b> · 되찾으면 공로가 있는 모두가 보상을 받고, 1위는 「탈환의 영웅」 칭호를 얻는다.</p></div>`}
 function addInv(h,pts){if(!invActive())return 0;pts=Math.max(1,Math.round(pts));h.inv=h.inv?.id===invasion.id?h.inv:{id:invasion.id,pts:0};h.inv.pts+=pts;return pts}
 /* 침공 중인 지역에서는 탐문과 소굴에 마교도가 섞여 나온다 */
 const invHere=(region,t=sNow())=>!!invasion&&invasion.status==="on"&&region===invasion.region&&t>=invasion.start&&t<invasion.end;
@@ -3587,15 +3685,26 @@ function invClaim(){if(!invasion)return;const h=structuredClone(me),mine=invPts(
 function invBox(h){if(!invOn())return "";const mine=invPts(h),over=sNow()>=invasion.end||invDown(),claimable=over&&mine>0&&h.invClaimed!==invasion.id;
   if(over&&!claimable&&sNow()>=occEnd()&&!(reFreed()&&rePts(h)&&h.reClaimed!==invasion.id))return "";
   const tot=invTotal(),left=Math.max(0,invasion.hp-tot),list=invList(),R=REGIONS[invasion.region],n=h.invDay?.day===dayKey()?h.invDay.n:0,here=!h.travel&&h.loc===invasion.region;
-  return `<section class="inv"><div class="label">마교 침공 · ${R.n}</div>
-    <p>${over?(invDown()?`<b>마교를 물리쳤다!</b> 강호가 힘을 모아 ${josa(R.n,"을")} 지켜 냈다.`:`침공을 막지 못했다. 마교가 ${josa(R.n,"을")} 점령했다.${sNow()<occEnd()?` <span data-suntil="${occEnd()}"></span> 동안 그곳에서는 사건을 맡을 수 없고, 객잔·마방 값이 50% 오른다.`:" 이제 마교는 물러갔다."}`):`천마신교의 무리가 <b>${R.n}</b>에 쳐들어왔다. <span data-suntil="${invasion.end}"></span> 안에 모두의 힘으로 몰아내야 한다.`}</p>
-    <div class="invbar"><i style="width:${Math.min(100,left/invasion.hp*100)}%"></i><span>마교의 기세 ${left.toLocaleString()} / ${invasion.hp.toLocaleString()}</span></div>
-    <p class="note">기여 쌓는 법: ${R.n} 사건 해결(쉬움 60 · 보통 100 · 어려움 200, 탐문 중 마교도를 쓰러뜨리면 한 명당 +15), 어디서든 소굴 보스전 +80, 관문 돌파 +200, ${R.n}에서 순찰대 토벌(하루 ${INV_PATROL}번).</p>
-    <div class="invrank">${list.slice(0,5).map((x,i)=>`<span class="${x.id===myId()?"me":""}">${i+1}. ${esc(x.name)} ${x.pts.toLocaleString()}</span>`).join("")||`<span>아직 아무도 싸우지 않았다.</span>`}</div>
-    <div class="row" style="margin-top:10px"><span class="note" style="margin:0">내 기여 <b>${mine.toLocaleString()}</b></span>
-    ${claimable?`<button class="btn sealb" type="button" id="invClaim">${invDown()?"격퇴 보상 받기":"위로 보상 받기"}</button>`
-      :over?"":here?`<button class="btn sealb" type="button" id="invPatrol" ${n>=INV_PATROL||activity(h)?"disabled":""}>순찰대와 싸운다 · 오늘 ${INV_PATROL-n}/${INV_PATROL}</button>`
-      :`<button class="btn ghost" type="button" id="invGo">${R.n} 지도에서 보기</button>`}</div>${reBox(h)}</section>`}
+  const st=!over?"on":invDown()?"won":reFreed()?"free":"fail",occ=sNow()<occEnd();
+  const tag={on:`<span class="ivtime">남은 시간 <span data-suntil="${invasion.end}"></span></span>`,won:`<span class="ivstamp">격퇴</span>`,fail:`<span class="ivstamp">${occ?"점령":"종료"}</span>`,free:`<span class="ivstamp gold">탈환</span>`}[st];
+  const msg={on:`천마신교의 무리가 <b>${R.n}</b>에 쳐들어왔다. 모두의 힘으로 몰아내야 한다.`,
+    won:`<b>마교를 물리쳤다!</b> 강호가 힘을 모아 ${josa(R.n,"을")} 지켜 냈다.`,
+    fail:`침공을 막지 못했다. 마교가 ${josa(R.n,"을")} 점령했다.${occ?` <span data-suntil="${occEnd()}"></span> 동안 그곳에서는 사건을 맡을 수 없고, 객잔·마방 값이 50% 오른다.`:" 이제 마교는 물러갔다."}`,
+    free:`마교가 한때 ${josa(R.n,"을")} 점령했지만, 강호가 다시 되찾았다.`}[st];
+  const how=st==="on"?`<div class="ivhow"><span><b>사건 해결</b>${R.n} · 60/100/200</span><span><b>마교도 처치</b>탐문 중 · +15</span><span><b>소굴 보스</b>어디서든 · +80</span><span><b>관문 돌파</b>+200</span><span><b>순찰대 토벌</b>${R.n} · 하루 ${INV_PATROL}번</span></div>`:"";
+  const act=claimable?`<button class="btn sealb ivgo" type="button" id="invClaim">${invDown()?"격퇴 보상 받기":"위로 보상 받기"}</button>`
+    :over?"":here?`<button class="btn sealb ivgo" type="button" id="invPatrol" ${n>=INV_PATROL||activity(h)?"disabled":""}>순찰대와 싸운다 · ${INV_PATROL-n}/${INV_PATROL}</button>`
+    :`<button class="btn ghost" type="button" id="invGo">${R.n} 지도에서 보기</button>`;
+  const chip={on:"토벌 중",won:"토벌 완료",fail:occ?"점령 · 탈환전":"종료",free:"탈환 완료"}[st],reward=claimable||(reFreed()&&rePts(h)&&h.reClaimed!==invasion.id);
+  if(!foldOpen("inv"))return `<section class="inv mini ${st}"><button type="button" class="ivfold" data-fold="inv" aria-expanded="false">
+    <span class="ivseal">魔</span><span class="ivft"><b>마교 침공 · ${R.n}</b><small>${st==="on"?`<span data-suntil="${invasion.end}"></span> 남음 · 기세 ${Math.ceil(left/invasion.hp*100)}%`:st==="fail"&&occ?`마교의 장악력 ${Math.max(0,reNeed()-reTotal()).toLocaleString()} 남음`:`내 기여 ${mine.toLocaleString()}`}</small></span>
+    <span class="ivchip">${chip}</span>${reward?`<span class="ivdot">보상</span>`:""}<i>펼치기 ▾</i></button>
+    ${st==="on"?`<div class="ivgb thin"><i style="width:${Math.min(100,left/invasion.hp*100)}%"></i></div>`:""}</section>`;
+  return `<section class="inv ${st}"><div class="ivhd">${pxScene({on:"inv",won:"ivwon",fail:"ivocc",free:"ivfree"}[st])}<button type="button" class="ivclose" data-fold="inv" aria-expanded="true">접기 ▴</button><div class="ivtt"><span class="ivk">魔敎侵攻</span><h3>마교 침공 · ${R.n}</h3>${tag}</div></div>
+    <div class="ivbd"><p class="ivmsg">${msg}</p>
+    ${st==="on"?ivGauge("마교의 기세",left,invasion.hp):""}${how}
+    <div class="ivsub">기여 순위</div>${ivRank(list,"아직 아무도 싸우지 않았다.")}
+    ${act||st==="on"?`<div class="ivme"><div class="ivmine"><small>내 기여</small><b>${mine.toLocaleString()}</b></div>${act}</div>`:""}${reBox(h)}</div></section>`}
 /* 관리자: 침공 시작·끝내기 (공지 탭) */
 let invDraft={region:"henan",days:3,per:1500};
 async function invStart(){if(!isOwner||mode!=="db")return;const people=Math.max(3,allHeroes().filter(h=>h.sect&&!(h._id&&String(h._id).startsWith("fake-"))).length),d=invDraft;
