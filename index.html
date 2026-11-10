@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261111035418">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261111041843">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1965,6 +1965,11 @@ function giveGift(to){
   const v=addBond(h,to,GIFT_VAL[it]);h.sent=[{id:Date.now().toString(36),to,item:it,t:Date.now()},...(h.sent||[])].slice(0,20);
   addLog(h,`${josa(o.name,"에")}게 ${josa(ITEMS[it][0],"을")} 보냈다. (인연 +${v})`);save(h);toast(`${o.name}에게 ${josa(ITEMS[it][0],"을")} 보냈습니다.`);
 }
+/* 청을 사양하면 그 청(관계+시각)을 기억해 두고 다시 띄우지 않는다. 지금 맺은 관계는 그대로 둔다. 상대가 새로 청하면 다시 뜬다 */
+const relDenied=(mine,theirs)=>!!mine?.deny&&!!theirs?.want&&mine.deny.w===theirs.want&&(theirs.wantT||0)<=(mine.deny.t||0);
+function declineRel(to){const o=heroById(to);if(!o)return;const B=bondOf(to,myId());if(!B.want||B.want==="지인")return;
+  const h=structuredClone(me);h.bonds=h.bonds||{};const b=h.bonds[to]=h.bonds[to]||{pts:0};b.deny={w:B.want,t:B.wantT||Date.now()};
+  addLog(h,`${josa(o.name,"이")} 청한 ${B.want==="스승"?"사제의 연(제자로 받겠다는 청)":B.want==="제자"?"사제의 연(사부로 모시겠다는 청)":`${B.want}의 연`}을 정중히 사양했다.`);save(h);toast("청을 사양했습니다.")}
 function proposeRel(to,rel){relPick[to]=false;const h=structuredClone(me);h.bonds=h.bonds||{};const b=h.bonds[to]=h.bonds[to]||{pts:0};b.want=rel;b.wantT=Date.now();
   addLog(h,rel==="지인"?`${josa(heroById(to)?.name,"와")}의 관계를 내려놓았다.`:`${josa(heroById(to)?.name||"","에")}게 ${wantTxt(rel)} 청했다.`);save(h);
   toast(rel==="지인"?"관계를 내려놓았습니다.":PAIR[rel]?`${wantTxt(rel)} 청했습니다. 상대가 ${rel==="스승"?"사부로 모시기":"제자로 받기"}를 고르면 맺어집니다.`:`${rel}의 연을 청했습니다. 상대도 같은 관계를 고르면 맺어집니다.`)}
@@ -2049,13 +2054,13 @@ function bondTab(){
   const gifts=giftsToMe(),newG=gifts.filter(g=>g.t>(me.seenGift||0)).length;
   const list=!others.length?(mode!=="db"?`<p class="empty">다른 사람의 소식은 공유된 링크로 들어왔을 때 보인다.</p>`:`<p class="empty">아직 함께할 사람이 강호에 들어오지 않았다. 관리 화면에서 초대코드를 만들어 친구에게 주면, 친구가 가입하고 입문하는 순간 여기에 나타난다.</p>`)
     :others.map(o=>{const id=o._id,tot=bondTotal(myId(),id),st=stageOf(tot),nx=BOND_STAGES.find(x=>x[0]>tot),rel=relWith(id),A=bondOf(myId(),id),B=bondOf(id,myId());
-      const s=SECTS[o.sect]||SECTS.sorim,canRel=tot>=300,inv=B.want&&B.want!=="지인"&&!relMatch(B.want,A.want)&&relNorm(B.want)!==rel,lbl=relLabel(id);
+      const s=SECTS[o.sect]||SECTS.sorim,canRel=tot>=300,inv=B.want&&B.want!=="지인"&&!relMatch(B.want,A.want)&&relNorm(B.want)!==rel&&!relDenied(A,B),lbl=relLabel(id);
       const inP=following(id),called=me.party===myId()&&(me.partyInv||[]).includes(id)&&!inP,canCall=(!me.party||me.party===myId())&&!inP;
       return `<div class="bond"><div class="bh">${face(o._id,o.sect,"md")}<div><button type="button" class="pfl" data-pf="${id}">${titled(o)}<b>${esc(o.name)}</b></button><span>${s.n} · ${REALMS[o.realm]?.n||""}${rbLabel(o)?`(${rbLabel(o)})`:""} Lv.${o.level} · ${mateAct(o)}</span></div>
           <span class="relb ${rel!=="지인"?"on":""}">${lbl}</span></div>
         <div class="bbar"><span>인연 ${st[1]} · ${tot}${nx?` / ${nx[0]} (${nx[1]})`:""}</span><div class="hpb"><i style="width:${Math.min(100,nx?(tot-st[0])/(nx[0]-st[0])*100:100)}%"></i></div></div>
         ${rel!=="지인"?`<p class="note" style="margin:4px 0 0">${rel==="사제"?`사제(${lbl==="사부"?"내가 제자":"내가 스승"})`:rel}의 효과: ${REL_FX[rel]}${tot>=600?` · 합격기 「${COMBO[rel]}」 (관문에서 둘이 같은 막에 무공을 쓰면 발동)`:` · 600에서 합격기`}</p>`:""}
-        ${inv?`<div class="wall" style="margin-top:8px"><p><b>${esc(o.name)}</b>${josa(o.name,"이").slice(o.name.length)} ${B.want==="스승"?"나를 <b>제자로 받겠다고</b> 한다":B.want==="제자"?"나를 <b>사부로 모시겠다고</b> 한다":`<b>${B.want}</b>의 연을 청했다`}.</p><div class="row"><button class="btn sm sealb" type="button" data-rel="${id}" data-relv="${PAIR[B.want]||B.want}">받아들인다</button><button class="btn sm ghost" type="button" data-rel="${id}" data-relv="지인">사양한다</button></div></div>`:""}
+        ${inv?`<div class="wall" style="margin-top:8px"><p><b>${esc(o.name)}</b>${josa(o.name,"이").slice(o.name.length)} ${B.want==="스승"?"나를 <b>제자로 받겠다고</b> 한다":B.want==="제자"?"나를 <b>사부로 모시겠다고</b> 한다":`<b>${B.want}</b>의 연을 청했다`}.</p><div class="row"><button class="btn sm sealb" type="button" data-rel="${id}" data-relv="${PAIR[B.want]||B.want}">받아들인다</button><button class="btn sm ghost" type="button" data-reldeny="${id}">사양한다</button></div></div>`:""}
         <div class="row" style="margin-top:8px">
           <select id="gp-${id}" data-gpick="${id}" aria-label="보낼 선물">${GIFTS.map(g=>`<option value="${g}" ${(giftPick[id]||"herb")===g?"selected":""}>${ITEMS[g][0]} (${me.items[g]}개 · 인연 +${GIFT_VAL[g]})</option>`).join("")}</select>
           <button class="btn sm" type="button" data-gift="${id}" ${giftDayLeft(me)<1?"disabled":""}>선물 보내기 · 오늘 ${giftDayLeft(me)}/3</button>
@@ -2067,7 +2072,7 @@ function bondTab(){
             <button class="btn sm ghost" type="button" data-relx="${id}">${relPick[id]?"그만두기":"다른 관계 청하기"}</button><button class="btn sm ghost" type="button" data-rel="${id}" data-relv="지인">내려놓기</button></div>`:"";
           const pend=A.want&&A.want!=="지인"&&A.want!==mine;
           return head+(editing?`<div class="row" style="margin-top:6px"><span class="note" style="margin:0">${mine?"바꿔 청하기:":"관계 맺기:"}</span>${opts.map(([r,t])=>`<button class="btn sm ${A.want===r?"sealb":"ghost"}" type="button" data-rel="${id}" data-relv="${r}">${t}${A.want===r?" · 청함":""}</button>`).join("")}${!mine&&A.want?`<button class="btn sm ghost" type="button" data-rel="${id}" data-relv="지인">청한 것 거두기</button>`:""}</div>`
-            :pend?`<p class="note" style="margin:6px 0 0">${A.want==="스승"?"제자로 받겠다고":A.want==="제자"?"사부로 모시겠다고":`${A.want}의 연을`} 청해 둔 상태다. 상대가 받아들이면 관계가 바뀐다.</p>`:"");})()
+            :pend?`<p class="note" style="margin:6px 0 0">${relDenied(B,A)?`${esc(o.name)}${josa(o.name,"이").slice(o.name.length)} ${A.want==="스승"?"제자가 되어 달라는":A.want==="제자"?"사부가 되어 달라는":`${A.want}의 연을 맺자는`} 청을 사양했다. 다시 청하면 한 번 더 물어본다.`:`${A.want==="스승"?"제자로 받겠다고":A.want==="제자"?"사부로 모시겠다고":`${A.want}의 연을`} 청해 둔 상태다. 상대가 받아들이면 관계가 바뀐다.`}</p>`:"");})()
           :`<p class="note" style="margin:6px 0 0">인연이 각별(300)에 닿으면 친우·사형제·연인·사제 중 관계를 청할 수 있다.</p>`}
       </div>`}).join("");
   const giftList=gifts.length?`<ul class="log">${gifts.slice(0,10).map(g=>`<li class="${g.t>(me.seenGift||0)?"newg":""}"><time>${hhmm(g.t)}</time>${josa(esc(g.from),"이")} ${josa(ITEMS[g.item][0],"을")} 보냈다.</li>`).join("")}</ul>`:`<p class="empty">아직 받은 선물이 없다.</p>`;
@@ -2309,7 +2314,7 @@ function alarmsForMe(){
   for(const n of noticeList())if(n.t>(me.noticeSeen||0))out.push({key:"n"+n.id,t:n.t,icon:"榜",text:`[${NOTICE_BY}] 공지 <b>「${esc(n.title)}」</b>`,btn:[["공지 보기",`data-atab="notice"`]]});
   for(const m of myMails())if(!mailGot(m.id)&&(hasGifts(m)||!(me.mailSeen>=m.t)))out.push({key:"m"+m.id,t:m.t,icon:"信",text:`우편 <b>「${esc(m.title)}」</b>${hasGifts(m)?" · 보상이 들어 있다":""}`,btn:[["우편함 열기",`data-atab="mail"`]]});
   for(const o of others){if(!o._id)continue;const B=bondOf(o._id,myId()),A=bondOf(myId(),o._id);
-    if(B.want&&B.want!=="지인"&&!relMatch(B.want,A.want)&&relNorm(B.want)!==relMutual(myId(),o._id))out.push({key:"r"+o._id+B.want,t:B.wantT||0,who:o._id,icon:"緣",text:`${josa(esc(o.name),"이")} ${B.want==="스승"?"나를 <b>제자로 받겠다고</b> 한다.":B.want==="제자"?"나를 <b>사부로 모시겠다고</b> 한다.":`<b>${B.want}</b>의 연을 청했다.`}`,btn:[["인연 탭 보기",`data-atab="mates"`]]})}
+    if(B.want&&B.want!=="지인"&&!relMatch(B.want,A.want)&&relNorm(B.want)!==relMutual(myId(),o._id)&&!relDenied(A,B))out.push({key:"r"+o._id+B.want,t:B.wantT||0,who:o._id,icon:"緣",text:`${josa(esc(o.name),"이")} ${B.want==="스승"?"나를 <b>제자로 받겠다고</b> 한다.":B.want==="제자"?"나를 <b>사부로 모시겠다고</b> 한다.":`<b>${B.want}</b>의 연을 청했다.`}`,btn:[["인연 탭 보기",`data-atab="mates"`]]})}
   for(const g of giftsToMe().slice(0,5))out.push({key:"g"+g.fromId+g.id,t:g.t,who:g.fromId,icon:"禮",text:`${josa(esc(g.from),"이")} ${josa(ITEMS[g.item][0],"을")} 보냈다.`,btn:[]});
   return out.sort((a,b)=>b.t-a.t);
 }
@@ -5067,7 +5072,7 @@ function bind(){
   $("#avatarIn")?.addEventListener("change",e=>pickAvatar(e.target.files[0]));on("#avatarDel",clearAvatar);
   document.querySelectorAll("[data-gpick]").forEach(el=>el.addEventListener("change",()=>{giftPick[el.dataset.gpick]=el.value}));
   document.querySelectorAll("[data-gift]").forEach(b=>b.addEventListener("click",()=>giveGift(b.dataset.gift)));
-  document.querySelectorAll("[data-rel]").forEach(b=>b.addEventListener("click",()=>proposeRel(b.dataset.rel,b.dataset.relv)));
+  document.querySelectorAll("[data-rel]").forEach(b=>b.addEventListener("click",()=>proposeRel(b.dataset.rel,b.dataset.relv)));document.querySelectorAll("[data-reldeny]").forEach(b=>b.addEventListener("click",()=>declineRel(b.dataset.reldeny)));
   document.querySelectorAll("[data-relx]").forEach(b=>b.addEventListener("click",()=>{relPick[b.dataset.relx]=!relPick[b.dataset.relx];render()}));
   document.querySelectorAll("[data-title]").forEach(b=>b.addEventListener("click",()=>setTitle(b.dataset.title)));
   document.querySelectorAll("[data-pcall]").forEach(b=>b.addEventListener("click",()=>partyInvite(b.dataset.pcall)));
