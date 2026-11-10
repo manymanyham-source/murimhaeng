@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261111010412">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261111015937">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -145,6 +145,8 @@ section{margin-top:30px}
 .fishpond{margin:8px 0;padding:18px 12px;text-align:center;border:1px dashed var(--line);background:linear-gradient(180deg,transparent,var(--seal-soft));font-size:14px}
 .fishpond.wait span{opacity:.7}.fishpond.bite{border-color:var(--seal);background:var(--seal-soft);font-weight:700;animation:bob .35s ease-in-out infinite alternate}
 @keyframes bob{to{transform:translateY(2px)}}@media (prefers-reduced-motion:reduce){.fishpond.bite{animation:none}}
+.mscene{margin:6px 0 2px;border-radius:var(--r-s,8px);overflow:hidden;border:1px solid var(--line);background:#d8c9a6}
+.mscene svg{display:block;width:100%;height:auto;image-rendering:pixelated}
 .manor{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0}.mtile{border:1px dashed var(--line);padding:8px;text-align:center;font-size:12px;color:var(--ink-3)}.mtile b{display:block;font-size:13px}
 .mtile.on{border-style:solid;border-color:var(--ink);color:var(--ink);background:var(--paper)}.mtile.on span{color:var(--seal);letter-spacing:2px}
 .rbm{display:inline-block;font-size:13px;letter-spacing:.1em;color:var(--seal);border:1px solid var(--seal);padding:1px 6px;margin:0 8px;vertical-align:middle;font-family:var(--f-body,inherit)}.rbm.asc{color:#7a5cc0;border-color:#7a5cc0}
@@ -521,6 +523,23 @@ body{line-height:1.65}
 section{margin-top:28px}
 /* 입력칸 */
 input[type=number],input[type=text],input:not([type]),select,textarea{border-radius:6px}
+.sgrp{margin-top:18px}.sgrp>.label{margin-bottom:2px}
+.sgrp>.shop:first-of-type{border-top:0}
+.shoph .kicker{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink)}
+.sic{display:inline-grid;place-items:center;width:26px;height:26px;flex:none}
+.mscene.edit{outline:2px dashed var(--seal);outline-offset:2px;cursor:crosshair}
+.medit{margin-top:8px;font-size:13px;color:var(--ink-2)}
+.mgo{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:6px 0}
+body.noscroll{overflow:hidden}
+.isowrap{position:fixed;inset:0;z-index:75;background:rgba(20,18,14,.45);display:flex;justify-content:center;align-items:flex-start;overflow-y:auto;padding:max(12px,env(safe-area-inset-top)) 10px 24px}
+.isobox{width:100%;max-width:720px;background:var(--paper);border-radius:var(--r,12px);border:1px solid var(--line);box-shadow:0 8px 30px rgba(0,0,0,.18);padding:14px 14px 18px}
+.isohead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}.isohead b{font-family:var(--f-brush);font-size:22px;font-weight:400;letter-spacing:.06em}
+.isocv{display:block;width:100%;height:auto;aspect-ratio:176/120;image-rendering:pixelated;border-radius:var(--r-s,8px);cursor:pointer;touch-action:manipulation}
+.isocv.edit{outline:2px dashed var(--seal);outline-offset:2px}
+.isocap{margin-top:8px;min-height:40px;font-size:14px}.isocap span{display:block;font-size:13px;color:var(--ink-3)}
+.isoedit,.isovisit{margin-top:8px}
+.isogb{display:grid;gap:8px}.isogb div{background:var(--card,#fff);border:1px solid var(--line);border-radius:var(--r-s,8px);padding:8px 10px;font-size:14px}
+.isogb span{font-size:12px;color:var(--ink-3)}.isogb p{margin:2px 0 0;color:var(--ink-2)}
 </style>
 
 <div class="wrap">
@@ -2421,13 +2440,25 @@ function bindNotice(){
 const silverTxt=n=>`은자 ${Number(n||0).toLocaleString()}냥`;
 function addSilver(h,n){n=Math.max(0,Math.round(n||0));h.silver=(h.silver||0)+n;if(n)bump(h,"silverIn",n);return n}
 /* 객잔·대장간은 접었다 펼 수 있다 (이 기기에 기억) */
-let shopOpen={};try{shopOpen=JSON.parse(localStorage.getItem("murim-shop")||"{}")}catch(e){}
+let shopOpen={f_bio:false};try{shopOpen={f_bio:false,...JSON.parse(localStorage.getItem("murim-shop")||"{}")}}catch(e){}
 function toggleShop(k){shopOpen[k]=!shopOpen[k];try{localStorage.setItem("murim-shop",JSON.stringify(shopOpen))}catch(e){}render()}
 /* 인물 탭 접기: 기본은 펼침, 접으면 기억한다 */
 const foldOpen=k=>shopOpen["f_"+k]!==false;
 const foldHead=(k,label)=>`<button type="button" class="shoph foldh" data-fold="${k}" aria-expanded="${foldOpen(k)}"><span class="label">${label}</span><i>${foldOpen(k)?"접기 ▴":"펼치기 ▾"}</i></button>`;
 function toggleFold(k){shopOpen["f_"+k]=!foldOpen(k);try{localStorage.setItem("murim-shop",JSON.stringify(shopOpen))}catch(e){}render()}
-const shopHead=(k,label)=>`<button type="button" class="shoph" data-shop="${k}" aria-expanded="${!!shopOpen[k]}"><span class="kicker">${label}</span><i>${shopOpen[k]?"접기 ▴":"펼치기 ▾"}</i></button>`;
+/* 가게 머리 도트 아이콘 (10×10, 장원 도트와 같은 색판) */
+const SHOP_PX={
+  job:["....yy......","...rrrr.....","..rRRRRr....",".rRRrRRRr...","rRRRRRRRRr..","rRrRRRrRRr..","rRRRRRRRRr..","rRRrRRRrRr..",".rRRRRRRr...","..rrrrrr...."],
+  quest:[".cWWWWWWWc..",".cxxxxxxxc..","..xkkkkkx...","..xxxxxxx...","..xkkkxkx...","..xxxxxxx...","..xkkkkxx...","..xxxxxxx...",".cWWWWWWWc..","....rr......"],
+  fish:["............","..bbbbb.....",".bBBBBBb..b.","bBkBBBBBbbb.","bBBBBBBBbbb.",".bbbBbbbb.b.","..bbbbb.....","............"],
+  gather:[".....G......","....GgG.....","...GgGgG....","..GgGgGgG...","...gG.Gg....","....gGg.....",".....g......",".....g......","....ccc.....","...ccccc...."],
+  stable:["......cc....",".....cwc....","....cwwwcc..","...cwkwwwwc.","..cwwwwwwwwc",".cwwwwwwcwwc","cwwwwwcc.cwc","cWwwwc...cwc",".cccc....cwc",".........ccc"],
+  inn:[".....kk.....","....rrrr....","...rRRRRr...","..rRRyRRRr..","..rRyYyRRr..","..rRRyRRRr..","...rRRRRr...","....rrrr....",".....yy.....",".....y......"],
+  decor:["....bb......","...bBBb.....","....bb......","...bBBb.....","..bBxxBb....","..bBxBBb....","..bbBBbb....","...bbbb.....","....bb......"],
+  smith:["..iiii......","..iIIi......","..iiii......","....c.......","....c.......","iiiiiiiiii..",".iIIIIIIi...","...iiii.....","..iiiiii...."]};
+const shopIc=k=>{const S=SHOP_PX[k];if(!S)return "";let r="";S.forEach((row,y)=>{let x=0;while(x<row.length){const ch=row[x];if(ch==="."){x++;continue}let n=1;while(row[x+n]===ch)n++;r+=`<rect x="${x}" y="${y}" width="${n}" height="1" fill="${PX_PAL[ch]}"/>`;x+=n}});
+  const w=Math.max(...S.map(x=>x.length)),hh=S.length;return `<svg viewBox="${-(12-w)/2-1} ${-(12-hh)/2-1} 14 14" width="24" height="24" shape-rendering="crispEdges" aria-hidden="true">${r}</svg>`};
+const shopHead=(k,label)=>`<button type="button" class="shoph" data-shop="${k}" aria-expanded="${!!shopOpen[k]}"><span class="kicker">${SHOP_PX[k]?`<span class="sic">${shopIc(k)}</span>`:""}${label}</span><i>${shopOpen[k]?"접기 ▴":"펼치기 ▾"}</i></button>`;
 /* 객잔: 어느 지역에서나 선물용 물건을 산다 */
 const INN={mandu:12,dongpo:40,samgye:35,longjing:20,puer:20,herb:15,wine:25,zhuye:35,hyang:40,trinket:40,nuer:55,binyeo:65};
 /* 내 문파 근거지의 객잔은 15% 싸게 판다 */
@@ -2684,20 +2715,241 @@ const FURN={
   rack:{n:"무기 거치대",d:"손때 묻은 병기를 걸어 둔다",eff:"atkP",per:2,u:"공격 %",cost:{stone:12,silver:250}},
   lantern:{n:"석등",d:"마당을 밝히는 돌 등",eff:"defP",per:3,u:"방어 %",cost:{stone:10,f_sso:2,silver:200}},
   teatable:{n:"차탁",d:"차를 우리며 깨달음을 곱씹는다",eff:"trainP",per:4,u:"수련 경험치 %",cost:{longjing:2,puer:2,silver:120}},
-  pond:{n:"연못",d:"마당에 판 작은 못. 낚시를 더 자주 한다",eff:"cast",per:1,u:"하루 낚시 횟수",cost:{f_bung:10,f_me:3,silver:300}}};
+  pond:{n:"연못",d:"마당에 판 작은 못. 낚시를 더 자주 한다",eff:"cast",per:1,u:"하루 낚시 횟수",cost:{f_bung:10,f_me:3,silver:300}},
+  /* 채집 재료로 짓는 물건 */
+  well:{n:"우물",d:"맑은 물을 길어 몸을 씻는다",eff:"hpP",per:2,u:"체력 %",cost:{m_pine:8,m_iron:6,silver:200}},
+  bell:{n:"범종",d:"새벽마다 울려 정신을 깨운다",eff:"qi",per:8,u:"기력",cost:{m_copper:10,m_birch:4,silver:300}},
+  target:{n:"과녁",d:"암기를 던지며 눈을 기른다",eff:"shen",per:2,u:"신법",cost:{m_bamboo:8,m_birch:3,silver:150}},
+  stele:{n:"비석",d:"선현의 구결을 새긴 돌",eff:"nei",per:2,u:"내공",cost:{m_okk:3,m_iron:8,silver:250}},
+  pavilion:{n:"정자",d:"바람 드는 정자에서 좌선한다",eff:"trainP",per:3,u:"수련 경험치 %",cost:{m_jadan:2,m_pine:10,silver:400}},
+  furnace:{n:"단련 화로",d:"쇠를 달구며 팔 힘을 기른다",eff:"wai",per:2,u:"외공",cost:{m_iron:12,m_hancheol:2,silver:300}},
+  banner:{n:"문파 깃발",d:"담장 위에 문파의 깃발을 건다",eff:"atkP",per:1,u:"공격 %",cost:{m_bamboo:6,m_chimhyang:1,silver:350}}};
+/* 객잔 가구 거간에게 은자로 사는 물건: 한 번 사면 끝(단계 없음). 대부분 꾸밈이고 몇 개는 작은 효과가 있다 */
+const DECOR={
+  vase:{n:"청자 화병",d:"비취빛 청자에 꽃 한 가지",price:3000,eff:null},
+  hongdeung:{n:"홍등 줄",d:"처마 밑에 붉은 등롱을 줄줄이 단다",price:5000,eff:null},
+  screen:{n:"산수 병풍",d:"먹으로 그린 산수를 펼쳐 둔다",price:8000,eff:"defP",per:2,u:"방어 %"},
+  cat:{n:"장원 고양이",d:"어디선가 와서 눌러앉은 검은 고양이. 가끔 어항을 노려본다",price:10000,eff:null},
+  lion:{n:"돌사자",d:"대문을 지키는 늠름한 돌사자",price:15000,eff:"hpP",per:2,u:"체력 %"},
+  peach:{n:"복숭아나무",d:"신선이 먹는다는 복숭아가 열리는 나무",price:25000,eff:"trainP",per:3,u:"수련 경험치 %"}};
+
 const FURN_MAX=3;
 const furnLv=(h,k)=>h?.manor?.[k]||0;
 const furnCost=(k,lv)=>Object.fromEntries(Object.entries(FURN[k].cost).map(([m,v])=>[m,v*Math.pow(2,lv)]));
-const matName=m=>m==="silver"?"은자":m.startsWith("f_")?fishName(m.slice(2)):ITEMS[m]?.[0]||m;
-const matHave=(h,m)=>m==="silver"?(h.silver||0):m.startsWith("f_")?((h.fish||{})[m.slice(2)]||0):(h.items?.[m]||0);
-function manorBonus(h){const o={nei:0,wai:0,shen:0,hpP:0,qi:0,atkP:0,defP:0,trainP:0,cast:0};for(const k in FURN){const lv=furnLv(h,k);if(lv)o[FURN[k].eff]+=FURN[k].per*lv}return o}
+const matName=m=>m==="silver"?"은자":m.startsWith("f_")?fishName(m.slice(2)):m.startsWith("m_")?matN(m.slice(2)):ITEMS[m]?.[0]||m;
+const matHave=(h,m)=>m==="silver"?(h.silver||0):m.startsWith("f_")?((h.fish||{})[m.slice(2)]||0):m.startsWith("m_")?((h.mats||{})[m.slice(2)]||0):(h.items?.[m]||0);
+function manorBonus(h){const o={nei:0,wai:0,shen:0,hpP:0,qi:0,atkP:0,defP:0,trainP:0,cast:0};for(const k in FURN){const lv=furnLv(h,k);if(lv)o[FURN[k].eff]+=FURN[k].per*lv}for(const k in DECOR){if(furnLv(h,k)&&DECOR[k].eff)o[DECOR[k].eff]+=DECOR[k].per}return o}
 function craftFurn(k){const h=structuredClone(me),lv=furnLv(h,k);if(!FURN[k]||lv>=FURN_MAX)return;const c=furnCost(k,lv);
   const lack=Object.entries(c).filter(([m,v])=>matHave(h,m)<v).map(([m,v])=>`${matName(m)} ${v-matHave(h,m)}`);if(lack.length){toast(`모자라다: ${lack.join(", ")}`);return}
-  for(const [m,v] of Object.entries(c)){if(m==="silver")h.silver-=v;else if(m.startsWith("f_"))h.fish[m.slice(2)]-=v;else h.items[m]-=v}
+  for(const [m,v] of Object.entries(c)){if(m==="silver")h.silver-=v;else if(m.startsWith("f_"))h.fish[m.slice(2)]-=v;else if(m.startsWith("m_"))h.mats[m.slice(2)]-=v;else h.items[m]-=v}
   h.manor={...(h.manor||{}),[k]:lv+1};bump(h,"craft");const F=FURN[k];
   addLog(h,`장원에 「${F.n}」${josa(F.n,"을").slice(F.n.length)} ${lv?`${lv+1}단계로 고쳐 놓았다`:"들여놓았다"}. ${F.u} +${F.per*(lv+1)}`);save(h);toast(`「${F.n}」 ${lv+1}단계 · ${F.u} +${F.per*(lv+1)}`)}
-function manorView(h,mine){const tiles=Object.entries(FURN).map(([k,F])=>{const lv=furnLv(h,k);return `<div class="mtile ${lv?"on":""}"><b>${F.n}</b><span>${lv?"●".repeat(lv)+"○".repeat(FURN_MAX-lv):mine?"아직 없다":"—"}</span></div>`}).join("");
-  return `<div class="manor">${tiles}</div>`}
+/* ───────── 장원 도트 그림: 담장·기와·마당 위에 들인 물건이 그려진다 ───────── */
+const PX_PAL={k:"#2b2622",w:"#8a5a33",W:"#b07a45",c:"#5e3f24",s:"#8d8b84",S:"#bdbab0",T:"#d8d5cb",g:"#4c7a39",G:"#7bab58",h:"#2f5a2a",
+  r:"#b0382a",R:"#dc6a52",y:"#c9952e",Y:"#f0d27a",b:"#3a6c9a",B:"#86b9de",p:"#e8a0b5",P:"#f6cfdb",o:"#e07a2e",O:"#f2a65e",
+  i:"#565c63",I:"#9ca4ad",x:"#f5f0e3",n:"#3a3a3a",N:"#6a6a6a",e:"#e6d7b8",l:"#7a4bb0",u:"#b9a07a"};
+/* 그림 조각: 위에서 아래로. 글자 하나가 한 점, "."은 비움 */
+const PX_SPR={
+  dummy:["...cc...","..cWWc..","cwwWWwwc","...WW...","cwwWWwwc","...WW...","...WW...","...WW...","..cWWc..",".cccccc."],
+  shelf:["kkkkkkkkkk","kcccccccck","krbyrgbrBk","kcccccccck","kygrbyrgyk","kcccccccck","kbrygbrgrk","kcccccccck","kc......ck"],
+  bonsai:["..p.P...",".pPGpP..","pGgPgGp.",".gpgGp..","...c....","..cc....","...c.c..","ruuuuuur",".ruuuur."],
+  tank:["..........",".kBBBBBBk.","kBbobBobBk","kbbbbObbbk","ksbbbbbbsk",".kssssssk.","..kkkkkk.."],
+  censer:["..x.x...","...x....","..x.....","yyyyyyy.",".yYYYy..","yyyyyyy.",".y...y..","yy...yy."],
+  rack:["I.I.I.I.","I.I.I.I.","I.I.I.I.","IkIkIkIk","cwcwcwcw","wwwwwwww","w......w","w......w","w......w"],
+  lantern:["..ss..",".SSSS.","sSYYSs","sSYYSs",".ssss.","..SS..","..SS..",".ssss.","ssssss"],
+  teatable:["..x.x.....",".xB..B....","..xx......","cccccccccc","cWWWWWWWWc","c........c","c........c"],
+  pond:["...gG.......G...","..BBBBBBBBBBBB..",".BbbBbbbobbbBBb.","BbbbbbbbbbbObbbB",".BbbbbbBbbbbbbB.","..sBBBBBBBBBBs..","...ssssssssss..."],
+  well:[".cccccc.","cc....cc",".c.II.c.",".c.Ik.c.",".c....c.","SSSSSSSS","sSsSsSsS","sssBBsss","SSSSSSSS"],
+  bell:["..cccccc..","..c....c..","...yyyy...","..yYYYyy..","..yYYyyy..",".yYYyyyyy.",".yyyyyyyy.","..y....y..","..c....c.."],
+  target:["...rrr...","..rxxxr..",".rxrrrxr.",".rxrYrxr.",".rxrrrxr.","..rxxxr..","...rrr...","...c.c...","..c...c.."],
+  stele:["..ssss..",".sSSSSs.",".sSkSkS.",".sSSSSs.",".sSkSkS.",".sSSSSs.",".sSkSkS.",".sSSSSs.","ssssssss","sSsSsSsS"],
+  pavilion:[".....rr.....","...rrrrrr...",".rrRRRRRRrr.","rrrrrrrrrrrr","..c......c..","..c......c..","..c......c..","..c......c..","..c.cccc.c..","SSSSSSSSSSSS"],
+  furnace:["...nn...","..nNNn..","..nn.n..","iiiiiiii","iRoOoRi.","iRooOoRi","iiiiiiii","ii....ii"],
+  banner:["y.......","crrrrrr.","crRRRRrr","crRyyRr.","crRRRRrr","crrrrrr.","c.......","c.......","c.......","c.......","cc......"],
+  vase:["..bb..",".bBBb.","..bb..",".bBBb.","bBxxBb","bBxBBb","bbBBbb",".bbbb.","..bb.."],
+  screen:["kkkkkkkkkkkk","kxxgxxkxxxxk","kxgGgxkxbbxk","kGxxxGkbBBbk","kxxxxxkxxxxk","kkkkkkkkkkkk","c....cc....c"],
+  lion:["..ssss..","SsSSssS.","sSkSSkSs","sSSrrSSs",".sSSSSs.","sSSsSSSs","sSSSSSSs","ssssssss","SSSSSSSS"],
+  cat:["n...n...","nnnnn...","nYnYn...","nnrnn..n","nnnnn..n",".nnnnnnn",".nnnnnnn",".n.n.n.n"],
+  hongdeung:["k..........k",".kkkkkkkkkk.","..r...r...r.",".rRr.rRr.rRr",".rRr.rRr.rRr","..r...r...r.","..y...y...y."],
+  peach:["..pPp.pPp...",".pPGpPpGPp..","pPgpPgPpGPp.",".pGPpgPpGp..","..pPgPpgP...","....cc......","....cc......","...cccc....."],
+};
+/* 놓는 자리: 담장 앞 뒷줄(y 바닥 26)과 마당 앞줄(y 바닥 46·58) */
+const PX_SLOT={pavilion:[4,26],shelf:[18,26],bell:[30,26],stele:[42,26],banner:[54,26],screen:[62,26],peach:[74,26],
+  dummy:[4,46],target:[14,46],rack:[24,46],furnace:[34,46],well:[46,46],lantern:[58,46],censer:[67,46],vase:[77,46],hongdeung:[62,21],
+  pond:[6,58],tank:[26,58],teatable:[38,58],bonsai:[52,58],lion:[62,58],cat:[74,58]};
+function pxSprite(k,x0,yb,lv,title,flip,sel){const S=PX_SPR[k];if(!S)return "";const h=S.length,y0=yb-h,w=Math.max(...S.map(r=>r.length));let out="";
+  S.forEach((row,yy)=>{let xx=0;while(xx<row.length){const ch=row[xx];if(ch==="."){xx++;continue}let n=1;while(row[xx+n]===ch)n++;
+    out+=`<rect x="${flip?x0+(w-xx-n):x0+xx}" y="${y0+yy}" width="${n}" height="1" fill="${PX_PAL[ch]}"/>`;xx+=n}});
+  const star=(cx,cy)=>`<rect x="${cx}" y="${cy}" width="1" height="1" fill="#fff6c8"/><rect x="${cx-1}" y="${cy}" width="1" height="1" fill="#f0d27a" opacity=".7"/><rect x="${cx+1}" y="${cy}" width="1" height="1" fill="#f0d27a" opacity=".7"/><rect x="${cx}" y="${cy-1}" width="1" height="1" fill="#f0d27a" opacity=".7"/><rect x="${cx}" y="${cy+1}" width="1" height="1" fill="#f0d27a" opacity=".7"/>`;
+  if(lv>=2)out+=star(x0+w-1,y0+1);if(lv>=3)out+=star(x0,y0+2);
+  const hit=`<rect x="${x0-1}" y="${y0-1}" width="${w+2}" height="${h+2}" fill="transparent"${sel?` stroke="#b0382a" stroke-width=".6" stroke-dasharray="1 .6"`:""}/>`;
+  return `<g data-mk="${k}"><title>${title}</title>${out}${hit}</g>`}
+/* 배치: h.mpos[k]=[x,바닥y,뒤집기]. 없으면 기본 자리(PX_SLOT) */
+const MANOR_W=96,MANOR_H=60;
+const mposOf=(h,k,draft)=>{const P=(draft||h.mpos||{})[k];return P?[P[0],P[1],!!P[2]]:[...PX_SLOT[k],false]};
+function manorScene(h,edit){const W=MANOR_W,H=MANOR_H;let bg="";
+  const R=(x,y,w,hh,c,o)=>bg+=`<rect x="${x}" y="${y}" width="${w}" height="${hh}" fill="${c}"${o?` opacity="${o}"`:""}/>`;
+  R(0,0,W,9,"#dbe7ee");R(0,0,W,3,"#cfe0ea");                        /* 하늘 */
+  R(0,9,W,2,"#3d4148");for(let x=0;x<W;x+=3)R(x,11,2,2,"#565c63");R(0,13,W,1,"#2b2e33"); /* 기와 */
+  R(0,14,W,13,"#efe9dc");for(let x=0;x<W;x+=16)R(x,14,1,13,"#b5946a");R(0,26,W,1,"#a9927a");    /* 담장 */
+  R(88,15,7,12,"#7a2b22");R(89,16,5,11,"#9a3a2c");R(91,16,1,11,"#5e2019");R(86,13,11,2,"#3d4148"); /* 대문 */
+  R(0,27,W,33,"#d8c9a6");for(let y=29;y<H;y+=4)for(let x=(y%8?0:4);x<W;x+=8)R(x,y,3,1,"#cbb991");  /* 마당 */
+  R(0,27,W,1,"#c2b089");
+  let fg="";const all={...FURN,...DECOR},draft=edit?manorDraft:null;
+  const keys=Object.keys(PX_SLOT).filter(k=>furnLv(h,k)&&all[k]).map(k=>[k,mposOf(h,k,draft)]).sort((a,b)=>a[1][1]-b[1][1]);
+  for(const [k,[x,y,f]] of keys){const lv=furnLv(h,k);fg+=pxSprite(k,x,y,DECOR[k]?1:lv,`${all[k].n}${DECOR[k]?"":` ${lv}단계`}`,f,edit&&manorSel===k)}
+  return `<div class="mscene ${edit?"edit":""}"><svg viewBox="0 0 ${W} ${H}" shape-rendering="crispEdges" role="img" aria-label="장원 그림" ${edit?'id="manorSvg"':""}>${bg}${fg}${!keys.length?`<text x="48" y="44" text-anchor="middle" font-size="4" fill="#8a7a5a" font-family="serif">아직 텅 빈 마당이다</text>`:""}</svg></div>`}
+let manorEdit=false,manorDraft=null,manorSel=null;
+document.addEventListener("click",e=>{const b=e.target.closest?.("[data-manor]");if(b){e.preventDefault();openManor(b.dataset.manor)}});
+function manorPlace(k,cx,cy){const S=PX_SPR[k];if(!S)return;const w=Math.max(...S.map(r=>r.length)),hh=S.length;
+  const x=Math.max(0,Math.min(MANOR_W-w,Math.round(cx-w/2))),y=Math.max(k==="hongdeung"?16:24,Math.min(MANOR_H,Math.round(cy+hh/2)));
+  const f=mposOf(me,k,manorDraft)[2];manorDraft={...manorDraft,[k]:[x,y,f]}}
+function manorWire(){const svg=document.getElementById("manorSvg");if(!svg)return;
+  svg.onclick=e=>{const g=e.target.closest("[data-mk]"),r=svg.getBoundingClientRect(),cx=(e.clientX-r.left)/r.width*MANOR_W,cy=(e.clientY-r.top)/r.height*MANOR_H;
+    if(g&&g.dataset.mk!==manorSel){manorSel=g.dataset.mk;render();return}
+    if(manorSel){manorPlace(manorSel,cx,cy);render()}}}
+function manorEditBar(h){const all={...FURN,...DECOR},n=manorSel?all[manorSel]?.n:"";
+  return `<div class="medit">${manorSel?`<span>「${esc(n)}」 고름 · 마당의 빈 곳을 누르면 옮겨진다</span>`:`<span>옮길 물건을 눌러 고른다</span>`}
+    <div class="row" style="margin-top:6px"><button class="btn sm" type="button" id="mFlip" ${manorSel?"":"disabled"}>좌우 뒤집기</button><button class="btn sm ghost" type="button" id="mReset" ${manorSel?"":"disabled"}>원래 자리로</button>
+    <button class="btn sm sealb" type="button" id="mSave">배치 저장</button><button class="btn sm ghost" type="button" id="mCancel">그만두기</button></div></div>`}
+function manorSaveArr(){const h=structuredClone(me);h.mpos={...(manorDraft||{})};manorEdit=false;manorDraft=null;manorSel=null;addLog(h,"장원의 물건들을 새로 놓았다.");save(h);toast("장원 배치를 저장했다.")}
+function buyDecor(k){const D=DECOR[k],h=structuredClone(me);if(!D||furnLv(h,k))return;if((h.silver||0)<D.price){toast(`은자가 모자라다. (${silverTxt(D.price)})`);return}
+  h.silver-=D.price;h.manor={...(h.manor||{}),[k]:1};addLog(h,`객잔 가구 거간에게서 「${D.n}」${pj(D.n,"을")} 사서 장원에 들였다. (${silverTxt(D.price)})${D.eff?` ${D.u} +${D.per}`:""}`);save(h);toast(`「${D.n}」${pj(D.n,"을")} 장원에 들였다`)}
+const shopGroup=(t,html)=>html.trim()?`<div class="sgrp"><div class="label">${t}</div>${html}</div>`:"";
+function decorBox(h){if(h.travel)return "";const n=Object.keys(DECOR).filter(k=>furnLv(h,k)).length;
+  return `<div class="shop">${shopHead("decor",`객잔 가구 거간 · 장원에 들일 물건 ${n}/${Object.keys(DECOR).length}`)}${shopOpen.decor?`<div class="flist">${Object.entries(DECOR).map(([k,D])=>{const own=furnLv(h,k),ok=(h.silver||0)>=D.price;
+    return `<div class="frow"><div><b>${D.n}</b>${own?` <span class="tag">들였다</span>`:""}<span>${D.d}${D.eff?` · ${D.u} +${D.per}`:" · 꾸밈"}</span></div>${own?"":`<button class="btn sm ${ok?"sealb":""}" type="button" data-decor="${k}" ${ok?"":"disabled"}>${silverTxt(D.price)}</button>`}</div>`}).join("")}</div>
+    <p class="note">한 번 사면 장원에 계속 놓인다. 장원 그림은 인물 탭 「내 장원」에서 볼 수 있다.</p>`:""}</div>`}
+/* ───────── 쿼터뷰 장원: 9×9 마당에 물건을 칸으로 놓는다. 장원 가기(전체 화면) · 배치 바꾸기 · 방명록 ───────── */
+const ISO_N=9,ISO_W=176,ISO_H=120,ISO_TW=16,ISO_TH=8,ISO_OX=88,ISO_OY=34;
+/* 물건이 차지하는 칸 (기본 1×1) */
+const ISO_FP={pond:[2,2],pavilion:[2,2]};
+const isoFp=(k,r)=>{const f=ISO_FP[k]||[1,1];return r%2?[f[1],f[0]]:f};
+/* 기본 자리 [x,y,방향] */
+const ISO_SLOT={pavilion:[1,1,0],shelf:[3,0,0],bell:[4,0,0],stele:[7,0,0],banner:[8,0,0],
+  peach:[0,3,0],screen:[0,4,1],hongdeung:[0,5,1],target:[0,6,1],dummy:[0,7,0],rack:[0,8,1],
+  well:[3,3,0],lantern:[5,2,0],censer:[6,3,0],vase:[8,2,0],lion:[7,1,0],
+  pond:[4,5,0],tank:[7,5,0],teatable:[2,5,0],bonsai:[2,7,0],furnace:[8,7,3],cat:[6,8,0]};
+const isoPos=(h,k,draft)=>{const P=(draft||h.mpos2||{})[k];return P?[P[0],P[1],P[2]||0]:[...(ISO_SLOT[k]||[4,4,0])]};
+function isoShade(hx,f){const n=parseInt(hx.slice(1),16),c=[n>>16,(n>>8)&255,n&255].map(v=>Math.max(0,Math.min(255,Math.round(f>1?v+(255-v)*(f-1):v*f))));return "#"+c.map(v=>v.toString(16).padStart(2,"0")).join("")}
+/* 그리는 판: 낮은 해상도 픽셀 버퍼에 다각형을 칠한다 */
+function isoCanvas(){const buf=new Uint8ClampedArray(ISO_W*ISO_H*4);
+  const px=(x,y,col)=>{x|=0;y|=0;if(x<0||y<0||x>=ISO_W||y>=ISO_H)return;const i=(y*ISO_W+x)*4,n=parseInt(col.slice(1),16);buf[i]=n>>16;buf[i+1]=(n>>8)&255;buf[i+2]=n&255;buf[i+3]=255};
+  const poly=(P,col)=>{const ys=P.map(p=>p[1]),y0=Math.floor(Math.min(...ys)),y1=Math.ceil(Math.max(...ys));
+    for(let y=y0;y<=y1;y++){const cy=y+.5,xs=[];for(let i=0;i<P.length;i++){const [ax,ay]=P[i],[bx,by]=P[(i+1)%P.length];if((ay<=cy&&by>cy)||(by<=cy&&ay>cy))xs.push(ax+(cy-ay)/(by-ay)*(bx-ax))}
+      xs.sort((a,b)=>a-b);for(let k=0;k+1<xs.length;k+=2)for(let x=Math.round(xs[k]);x<Math.round(xs[k+1]);x++)px(x,y,col)}};
+  return {buf,px,poly}}
+const isoP=(x,y,z)=>[ISO_OX+(x-y)*ISO_TW/2,ISO_OY+(x+y)*ISO_TH/2-z];
+/* 물건 그리기: 물건 안 좌표(0..fw, 0..fd)로 상자를 쌓는다. 방향(r)에 따라 돌린다 */
+function isoDrawItem(C,k,gx,gy,r,lv){const [fw0,fd0]=ISO_FP[k]||[1,1];
+  const rot=(x,y,w,d)=>r===1?[fd0-(y+d),x,d,w]:r===2?[fw0-(x+w),fd0-(y+d),w,d]:r===3?[y,fw0-(x+w),d,w]:[x,y,w,d];
+  const B=(x,y,w,d,h,col,z0=0,fl)=>{const [rx,ry,rw,rd]=rot(x,y,w,d),X=gx+rx,Y=gy+ry,top=fl?.t||isoShade(col,1.18),left=fl?.l||col,right=fl?.r||isoShade(col,.78);
+    C.poly([isoP(X,Y+rd,z0),isoP(X+rw,Y+rd,z0),isoP(X+rw,Y+rd,z0+h),isoP(X,Y+rd,z0+h)],left);
+    C.poly([isoP(X+rw,Y,z0),isoP(X+rw,Y+rd,z0),isoP(X+rw,Y+rd,z0+h),isoP(X+rw,Y,z0+h)],right);
+    C.poly([isoP(X,Y,z0+h),isoP(X+rw,Y,z0+h),isoP(X+rw,Y+rd,z0+h),isoP(X,Y+rd,z0+h)],top)};
+  const dot=(x,y,z,col)=>{const [rx,ry]=rot(x,y,0,0),[sx,sy]=isoP(gx+rx,gy+ry,z);C.px(sx,sy,col)};
+  const W="#8a5a33",WL="#b07a45",WD="#5e3f24",ST="#a4a199",STL="#bdbab0",RED="#b0382a",GOLD="#c9952e",IR="#5a5f66",WA="#3a6c9a";
+  ({dummy:()=>{B(.3,.3,.4,.4,1.5,WD);B(.42,.42,.16,.16,14,W,1.5);B(.15,.45,.7,.1,1.2,WL,10);B(.45,.15,.1,.7,1.2,WL,6.5)},
+   shelf:()=>{B(.1,.3,.8,.35,15,WD);const cols=["#b0382a","#3a6c9a","#c9952e","#4c7a39","#7a4bb0","#dc6a52"];for(const z of [2,6,10])for(let i=0;i<7;i++)B(.14+i*.105,.62,.08,.04,3,cols[(i*3+z)%6],z)},
+   bonsai:()=>{B(.25,.25,.5,.5,3,"#9a5a3a");B(.45,.45,.1,.1,4,WD,3);B(.2,.25,.5,.45,3,"#e8a0b5",6);B(.35,.3,.35,.35,2.5,"#4c7a39",8);B(.4,.4,.25,.25,2,"#f6cfdb",10)},
+   tank:()=>{B(.12,.12,.76,.76,5,"#6b6f76");B(.22,.22,.56,.56,.3,WA,5,{t:"#5b8fbf"});dot(.4,.5,5.4,"#e07a2e");dot(.6,.35,5.4,"#f2a65e")},
+   censer:()=>{for(const [x,y] of [[.3,.3],[.62,.3],[.46,.62]])B(x,y,.08,.08,1.5,GOLD);B(.27,.27,.46,.46,3,GOLD,1.5);B(.34,.34,.32,.32,1.4,"#e0b54a",4.5);B(.45,.45,.1,.1,1,GOLD,5.9);
+     [[.5,.5,8],[.48,.5,10],[.52,.5,12],[.5,.5,14]].forEach(([x,y,z])=>dot(x,y,z,"#f5f0e3"))},
+   rack:()=>{B(.1,.4,.1,.15,11,W);B(.8,.4,.1,.15,11,W);B(.05,.38,.9,.2,1,WL,10);B(.05,.38,.9,.2,1,WL,2);for(const x of [.28,.45,.62])B(x,.46,.05,.05,10,"#9ca4ad",1)},
+   lantern:()=>{B(.25,.25,.5,.5,2,ST);B(.4,.4,.2,.2,6,ST,2);B(.3,.3,.4,.4,4,ST,8,{t:STL,l:"#f0d27a",r:GOLD});B(.2,.2,.6,.6,1.5,"#8d8b84",12);B(.4,.4,.2,.2,1.5,"#8d8b84",13.5)},
+   teatable:()=>{for(const [x,y] of [[.18,.28],[.76,.28],[.18,.66],[.76,.66]])B(x,y,.06,.06,3,WD);B(.15,.25,.7,.5,1,WL,3);B(.42,.4,.16,.16,1.6,"#f5f0e3",4);B(.25,.35,.08,.08,.8,"#f5f0e3",4);B(.65,.55,.08,.08,.8,"#f5f0e3",4)},
+   pond:()=>{B(.08,.08,1.84,1.84,1.5,"#9d9a92");B(.25,.25,1.5,1.5,.3,WA,1.5,{t:"#5b8fbf"});[[.6,.6],[1.2,.9],[.8,1.3]].forEach(([x,y])=>{B(x,y,.22,.22,.2,"#4c7a39",1.8)});dot(.7,.7,2.4,"#f6cfdb");dot(1.3,1,2.4,"#e8a0b5");dot(1.0,.5,2.0,"#e07a2e")},
+   well:()=>{B(.1,.1,.15,.15,13,W);B(.85,.1,.15,.15,13,W);B(0,0,1.1,1.1,5,ST);B(.2,.2,.7,.7,.2,WA,5,{t:WA});B(.1,.85,.15,.15,13,W);B(.85,.85,.15,.15,13,W);B(-.1,-.05,1.3,1.2,1.5,"#7a2b22",13,{t:"#9a3a2c"});B(.1,.3,.9,.5,1,RED,14.5)},
+   bell:()=>{B(.1,.4,.12,.2,15,W);B(.78,.4,.12,.2,15,W);B(.05,.35,.9,.3,1.5,WL,15);B(.3,.33,.4,.34,6,GOLD,7);B(.36,.38,.28,.24,1.5,"#e0b54a",13);B(.47,.47,.06,.06,1.5,GOLD,14.5)},
+   target:()=>{B(.25,.45,.08,.1,6,W);B(.67,.45,.08,.1,6,W);B(.15,.42,.7,.1,9,"#f5f0e3",3);B(.27,.52,.46,.02,6,RED,4.5);B(.38,.53,.24,.02,3,"#f5f0e3",6);B(.45,.54,.1,.02,1.2,"#f0d27a",6.9)},
+   stele:()=>{B(.12,.25,.76,.5,2,"#8d8b84");B(.25,.38,.5,.24,12,STL,2);B(.2,.33,.6,.34,1.5,"#8d8b84",14);[[.4,9],[.6,9],[.4,6],[.6,6]].forEach(([x,z])=>dot(x,.62,z,"#4a4a43"))},
+   pavilion:()=>{B(-.1,-.1,2.2,2.2,2,WL);for(const [x,y] of [[0,0],[1.8,0],[0,1.8],[1.8,1.8]])B(x,y,.2,.2,11,RED,2);B(-.4,-.4,2.8,2.8,2,"#3d4148",13,{t:"#4a4f57"});B(0,0,2,2,2,"#3d4148",15,{t:"#565c63"});B(.5,.5,1,1,2,"#3d4148",17,{t:"#565c63"});B(.85,.85,.3,.3,2,GOLD,19)},
+   furnace:()=>{B(.12,.12,.76,.76,6,IR);B(.3,.86,.4,.03,3,"#e07a2e",1,{l:"#f2a65e"});B(.22,.22,.56,.56,.3,"#e07a2e",6,{t:"#f2a65e"});B(.6,.15,.2,.2,7,"#3a3a3a",6)},
+   banner:()=>{B(.18,.45,.08,.08,24,WD);B(.26,.47,.62,.04,8,RED,14,{l:RED});B(.48,.5,.18,.02,3,"#f0d27a",16.5)},
+   vase:()=>{B(.32,.32,.36,.36,4,"#6fa896");B(.42,.42,.16,.16,2,"#6fa896",4);B(.38,.38,.24,.24,.8,"#8cc0ad",6);dot(.5,.5,9,"#e8a0b5");dot(.52,.5,8,"#4c7a39")},
+   hongdeung:()=>{B(.1,.45,.08,.08,16,WD);B(.85,.45,.08,.08,16,WD);for(let i=0;i<8;i++)dot(.15+i*.1,.48,15.5-Math.sin(i/7*Math.PI)*2,"#2b2622");for(const x of [.3,.5,.7]){B(x-.06,.44,.14,.12,3,RED,10.5,{l:"#dc6a52"});B(x-.02,.47,.06,.06,.6,"#f0d27a",10)}},
+   screen:()=>{for(let i=0;i<4;i++)B(.08+i*.21,.44+(i%2)*.06,.2,.06,10,"#f5f0e3",0,{t:WD,l:i%2?"#efe9dc":"#f5f0e3"});[[.2,7],[.3,6],[.55,8],[.7,6.5]].forEach(([x,z])=>dot(x,.56,z,"#4c7a39"));dot(.6,.56,4,"#3a6c9a")},
+   lion:()=>{B(.15,.15,.7,.7,3,"#8d8b84");B(.28,.25,.44,.5,4,STL,3);B(.28,.55,.44,.32,4,STL,6);B(.33,.6,.34,.3,1,"#8d8b84",10);dot(.5,.9,8,"#b0382a");dot(.4,.88,9,"#2b2622");dot(.6,.88,9,"#2b2622")},
+   cat:()=>{const S=["n...n...","nnnnn...","nYnYn...","nnrnn..n","nnnnn..n",".nnnnnnn",".nnnnnnn",".n.n.n.n"],Cc={n:"#3a3a3a",Y:"#f0d27a",r:"#b0382a"},fl=r%2===1;
+     const [sx,sy]=isoP(gx+.5,gy+.5,0);S.forEach((row,y)=>[...row].forEach((ch,x)=>{if(ch!==".")C.px(sx-4+(fl?7-x:x),sy-8+y,Cc[ch])}))},
+   peach:()=>{B(.4,.4,.2,.2,9,"#7a4f2c");B(0,0,1,1,5,"#e8a0b5",8);B(.2,-.1,.8,.8,4,"#e8a0b5",12);B(-.1,.25,.8,.8,4,"#e8a0b5",11);B(.25,.25,.5,.5,3,"#e8a0b5",15);dot(.3,0,15,"#7bab58");dot(0,.5,13,"#4c7a39");dot(.7,.3,13,"#f6cfdb")}
+  })[k]?.();
+  /* 단계 반짝임 */
+  if(lv>=2){const [sx,sy]=isoP(gx+.9,gy+.1,14);C.px(sx,sy,"#fff6c8");C.px(sx-1,sy,"#f0d27a");C.px(sx+1,sy,"#f0d27a");C.px(sx,sy-1,"#f0d27a");C.px(sx,sy+1,"#f0d27a")}
+  if(lv>=3){const [sx,sy]=isoP(gx+.1,gy+.9,12);C.px(sx,sy,"#fff6c8");C.px(sx-1,sy,"#f0d27a");C.px(sx+1,sy,"#f0d27a");C.px(sx,sy-1,"#f0d27a");C.px(sx,sy+1,"#f0d27a")}}
+function isoDrawScene(cv,h,draft,sel){const C=isoCanvas(),N=ISO_N;
+  const bgTop="#dfe9ef",bgBot="#f6f4ee";for(let y=0;y<ISO_H;y++)for(let x=0;x<ISO_W;x++)C.px(x,y,bgBot);
+  for(let gx=0;gx<N;gx++)for(let gy=0;gy<N;gy++)C.poly([isoP(gx,gy,0),isoP(gx+1,gy,0),isoP(gx+1,gy+1,0),isoP(gx,gy+1,0)],(gx+gy)%2?"#d9caa6":"#d2c29c");
+  C.poly([isoP(0,N,0),isoP(N,N,0),isoP(N,N,-3),isoP(0,N,-3)],"#b9a67e");C.poly([isoP(N,0,0),isoP(N,N,0),isoP(N,N,-3),isoP(N,0,-3)],"#a8946c");
+  const WB=(x,y,w,d,h,t,l,r,z0=0)=>{C.poly([isoP(x,y+d,z0),isoP(x+w,y+d,z0),isoP(x+w,y+d,z0+h),isoP(x,y+d,z0+h)],l);C.poly([isoP(x+w,y,z0),isoP(x+w,y+d,z0),isoP(x+w,y+d,z0+h),isoP(x+w,y,z0+h)],r);C.poly([isoP(x,y,z0+h),isoP(x+w,y,z0+h),isoP(x+w,y+d,z0+h),isoP(x,y+d,z0+h)],t)};
+  const WH=16;WB(-.35,0,.35,N,WH,"#cfc8b8","#efe9dc","#efe9dc");WB(0,-.35,N,.35,WH,"#cfc8b8","#e6dfd0","#e6dfd0");WB(-.35,-.35,.35,.35,WH,"#cfc8b8","#efe9dc","#e6dfd0");
+  for(let i=0;i<=N;i+=3){WB(-.35,i-.08,.36,.16,WH,"#8a5a33","#8a5a33","#6e4527");WB(i-.08,-.35,.16,.36,WH,"#8a5a33","#8a5a33","#6e4527")}
+  for(let i=0;i<N;i+=.5){const t=i*2%2?"#4a4f57":"#3d4148";WB(-.6,i,.7,.5,3,t,"#2b2e33","#2b2e33",WH);WB(i,-.6,.5,.7,3,t,"#2b2e33","#2b2e33",WH)}WB(-.6,-.6,.7,.7,3,"#3d4148","#2b2e33","#2b2e33",WH);
+  C.poly([isoP(5.2,0,0),isoP(6.6,0,0),isoP(6.6,0,12),isoP(5.2,0,12)],"#8f3326");C.poly([isoP(5.85,0,0),isoP(5.95,0,0),isoP(5.95,0,12),isoP(5.85,0,12)],"#5e2019");WB(5,-.6,1.8,.7,2,"#3d4148","#2b2e33","#2b2e33",13);
+  /* 고른 물건의 칸 표시 */
+  const all={...FURN,...DECOR},ks=Object.keys(ISO_SLOT).filter(k=>furnLv(h,k)&&all[k]).map(k=>[k,isoPos(h,k,draft)]);
+  if(sel){const it=ks.find(x=>x[0]===sel);if(it){const [x,y,r]=it[1],[fw,fd]=isoFp(sel,r);const A=isoP(x,y,0),B2=isoP(x+fw,y,0),C2=isoP(x+fw,y+fd,0),D=isoP(x,y+fd,0);C.poly([A,B2,C2,D],"#e9b3a6")}}
+  ks.sort((a,b)=>{const [ax,ay,ar]=a[1],[bx,by,br]=b[1],fa=isoFp(a[0],ar),fb=isoFp(b[0],br);return (ax+fa[0]/2+ay+fa[1]/2)-(bx+fb[0]/2+by+fb[1]/2)});
+  const boxes=[];
+  for(const [k,[x,y,r]] of ks){const before=C.buf.slice();isoDrawItem(C,k,x,y,r,DECOR[k]?1:furnLv(h,k));
+    let x0=ISO_W,y0=ISO_H,x1=-1,y1=-1;for(let i=0;i<C.buf.length;i+=4){if(C.buf[i]!==before[i]||C.buf[i+1]!==before[i+1]||C.buf[i+2]!==before[i+2]){const p=i/4,xx=p%ISO_W,yy=(p/ISO_W)|0;if(xx<x0)x0=xx;if(xx>x1)x1=xx;if(yy<y0)y0=yy;if(yy>y1)y1=yy}}
+    if(x1>=0)boxes.push({k,x0,y0,x1,y1})}
+  cv.width=ISO_W;cv.height=ISO_H;const g=cv.getContext("2d");g.putImageData(new ImageData(C.buf,ISO_W,ISO_H),0,0);cv._boxes=boxes;return boxes}
+/* 화면 좌표 → 물건 / 칸 */
+function isoHit(cv,e){const r=cv.getBoundingClientRect(),sx=(e.clientX-r.left)/r.width*ISO_W,sy=(e.clientY-r.top)/r.height*ISO_H;
+  const b=[...(cv._boxes||[])].reverse().find(b=>sx>=b.x0-1&&sx<=b.x1+1&&sy>=b.y0-1&&sy<=b.y1+1);
+  const ux=(sx-ISO_OX)/(ISO_TW/2),uy=(sy-ISO_OY)/(ISO_TH/2),gx=Math.floor((ux+uy)/2),gy=Math.floor((uy-ux)/2);
+  return {item:b?.k||null,gx,gy}}
+/* 놓을 수 있나: 마당 안, 다른 물건과 겹치지 않음, 대문 앞(5~6,0)은 비운다 */
+function isoFree(h,draft,k,x,y,r){const [fw,fd]=isoFp(k,r);if(x<0||y<0||x+fw>ISO_N||y+fd>ISO_N)return false;
+  const all={...FURN,...DECOR};for(const o of Object.keys(ISO_SLOT)){if(o===k||!furnLv(h,o)||!all[o])continue;const [ox,oy,or]=isoPos(h,o,draft),[ow,od]=isoFp(o,or);if(x<ox+ow&&ox<x+fw&&y<oy+od&&oy<y+fd)return false}
+  return true}
+/* 장원 가기 (전체 화면) */
+let isoView=null,isoSel=null,isoEdit=false,isoDraft=null,isoMsg="",visits={};
+const visitsTo=id=>Object.values(visits).filter(v=>v.host===id).sort((a,b)=>b.t-a.t);
+const myVisitToday=host=>Object.values(visits).some(v=>v.host===host&&v.visitor===myId()&&v.day===dayKey());
+function openManor(id){const o=id===myId()?me:heroById(id);if(!o)return;isoView=id;isoSel=null;isoEdit=false;isoDraft=null;isoMsg="";
+  if(id===myId()&&mode==="db"){const h=structuredClone(me),seen=h.visitSeen||0,news=visitsTo(myId()).filter(v=>v.t>seen&&v.visitor!==myId());
+    if(news.length){news.forEach(v=>addBond(h,v.visitor,5));h.visitSeen=Date.now();addLog(h,`${news.map(v=>v.vname).join(", ")}${pj(news[news.length-1].vname,"이")} 장원에 다녀갔다. (인연 +5)`);save(h)}}
+  paintManor()}
+function closeManor(){isoView=null;isoEdit=false;isoDraft=null;isoSel=null;paintManor()}
+async function leaveVisit(host){if(mode!=="db"||host===myId()||myVisitToday(host))return;const o=heroById(host);if(!o)return;
+  const v={host,visitor:myId(),vname:me.name,t:Date.now(),day:dayKey(),msg:String(isoMsg||"").trim().slice(0,40)},id=`${host}__${myId()}`.replace(/[^A-Za-z0-9_-]/g,"").slice(0,120);
+  try{await db.doc("visits/"+id).set(v);visits[id]={...v,id}}catch(e){toast("발자국을 남기지 못했어요. 잠시 뒤 다시 해 주세요.");return}
+  const h=structuredClone(me);addBond(h,host,5);addLog(h,`${josa(o.name,"의")} 장원에 놀러 가 발자국을 남겼다. (인연 +5)${v.msg?` "${v.msg}"`:""}`);save(h);isoMsg="";toast(`${josa(o.name,"의")} 장원에 발자국을 남겼다 · 인연 +5`);paintManor()}
+function paintManor(){let el=document.getElementById("isoWrap");if(!isoView){if(el)el.remove();document.body.classList.remove("noscroll");return}
+  const mine=isoView===myId(),h=mine?me:heroById(isoView);if(!h){closeManor();return}
+  if(!el){el=document.createElement("div");el.id="isoWrap";el.className="isowrap";document.body.appendChild(el)}document.body.classList.add("noscroll");
+  const all={...FURN,...DECOR},L=Object.keys(ISO_SLOT).filter(k=>furnLv(h,k)&&all[k]),sel=isoSel&&all[isoSel]?isoSel:null;
+  const V=visitsTo(isoView).slice(0,12),visited=!mine&&myVisitToday(isoView);
+  el.innerHTML=`<div class="isobox" role="dialog" aria-modal="true" aria-label="${esc(h.name)}의 장원">
+    <div class="isohead"><b>${esc(josa(h.name,"의"))} 장원</b><button type="button" class="btn sm ghost" id="isoClose">돌아가기</button></div>
+    <canvas id="isoCv" class="isocv ${isoEdit?"edit":""}"></canvas>
+    <div class="isocap">${sel?`<b>${all[sel].n}</b>${FURN[sel]?` · ${furnLv(h,sel)}단계 · ${FURN[sel].u} +${FURN[sel].per*furnLv(h,sel)}`:DECOR[sel].eff?` · ${DECOR[sel].u} +${DECOR[sel].per}`:" · 꾸밈"}<span>${esc(all[sel].d)}</span>`:L.length?`<span>${isoEdit?"옮길 물건을 누른다.":"물건을 누르면 이름이 보인다."}</span>`:`<span>${mine?"아직 텅 빈 마당이다. 재료를 모아 물건을 들여 보자.":"아직 텅 빈 마당이다."}</span>`}</div>
+    ${mine?(isoEdit?`<div class="isoedit"><p class="note" style="margin:0 0 6px">${sel?`「${all[sel].n}」 고름 · 빈 칸을 누르면 옮겨진다`:"옮길 물건을 먼저 누른다"}</p><div class="row"><button class="btn sm" type="button" id="isoRot" ${sel?"":"disabled"}>방향 돌리기</button><button class="btn sm ghost" type="button" id="isoBack" ${sel?"":"disabled"}>원래 자리로</button><button class="btn sm sealb" type="button" id="isoSave">배치 저장</button><button class="btn sm ghost" type="button" id="isoCancel">그만두기</button></div></div>`
+      :L.length?`<div class="row" style="margin-top:8px"><button class="btn sm" type="button" id="isoEditBtn">배치 바꾸기</button></div>`:"")
+     :`<div class="isovisit">${visited?`<p class="note" style="margin:0">오늘 이미 발자국을 남겼다. 내일 또 놀러 오자.</p>`:`<div class="mailf" style="margin:0"><label>한마디 (선택)<input id="isoMsg" maxlength="40" value="${esc(isoMsg)}" placeholder="장원이 멋지네!"></label></div><button class="btn sm sealb" type="button" id="isoVisit" style="margin-top:6px">발자국 남기기 · 서로 인연 +5</button>`}</div>`}
+    <div class="label" style="margin-top:16px">방명록</div>
+    ${V.length?`<div class="isogb">${V.map(v=>`<div><b>${esc(v.vname)}</b> <span>${hhmm(v.t)}</span>${v.msg?`<p>"${esc(v.msg)}"</p>`:""}</div>`).join("")}</div>`:`<p class="note">아직 다녀간 사람이 없다.</p>`}
+    ${mine?`<p class="note">친구가 내 장원에 발자국을 남기면, 내가 장원에 들어올 때 그 친구와의 인연도 +5 오른다.</p>`:""}</div>`;
+  const cv=el.querySelector("#isoCv");isoDrawScene(cv,h,isoEdit?isoDraft:null,sel);
+  cv.onclick=e=>{const t=isoHit(cv,e);
+    if(!isoEdit){isoSel=t.item;paintManor();return}
+    if(t.item&&t.item!==isoSel){isoSel=t.item;paintManor();return}
+    if(isoSel){const [,,r]=isoPos(me,isoSel,isoDraft),[fw,fd]=isoFp(isoSel,r),x=t.gx-Math.floor((fw-1)/2),y=t.gy-Math.floor((fd-1)/2);
+      if(!isoFree(me,isoDraft,isoSel,x,y,r)){toast("거기엔 놓을 수 없다.");return}isoDraft={...isoDraft,[isoSel]:[x,y,r]};paintManor()}};
+  const on2=(s,f)=>{const b=el.querySelector(s);if(b)b.onclick=f};
+  on2("#isoClose",closeManor);on2("#isoEditBtn",()=>{isoEdit=true;isoDraft={...(me.mpos2||{})};isoSel=null;paintManor()});
+  on2("#isoCancel",()=>{isoEdit=false;isoDraft=null;isoSel=null;paintManor()});
+  on2("#isoSave",()=>{const h2=structuredClone(me);h2.mpos2={...(isoDraft||{})};isoEdit=false;isoDraft=null;isoSel=null;addLog(h2,"장원의 물건들을 새로 놓았다.");save(h2);toast("장원 배치를 저장했다.");setTimeout(paintManor,50)});
+  on2("#isoRot",()=>{if(!isoSel)return;const [x,y,r]=isoPos(me,isoSel,isoDraft),nr=(r+1)%4;if(!isoFree(me,isoDraft,isoSel,x,y,nr)){toast("돌리면 옆 물건과 겹친다.");return}isoDraft={...isoDraft,[isoSel]:[x,y,nr]};paintManor()});
+  on2("#isoBack",()=>{if(!isoSel)return;const [x,y,r]=ISO_SLOT[isoSel];if(!isoFree(me,isoDraft,isoSel,x,y,r)){toast("원래 자리에 다른 물건이 있다.");return}const d={...isoDraft};delete d[isoSel];isoDraft=d;paintManor()});
+  on2("#isoVisit",()=>leaveVisit(isoView));const mi=el.querySelector("#isoMsg");if(mi)mi.oninput=()=>isoMsg=mi.value;
+  el.onkeydown=e=>{if(e.key==="Escape")closeManor()}}
+
+function manorView(h,mine){const all={...FURN,...DECOR},L=Object.keys(ISO_SLOT).filter(k=>furnLv(h,k)&&all[k]),id=mine?myId():h._id,nv=visitsTo(id).length;
+  return `<div class="mgo"><button class="btn sm sealb" type="button" data-manor="${id}">${mine?"내 장원 가기":`${esc(josa(h.name,"의"))} 장원 가기`}</button>
+    <span class="note">${L.length?`물건 ${L.length}개 · ${L.slice(0,3).map(k=>all[k].n).join(", ")}${L.length>3?" …":""}`:"아직 텅 빈 마당"}${nv?` · 발자국 ${nv}`:""}</span></div>`}
 function manorSection(h){const B=manorBonus(h),parts=Object.entries(FURN).filter(([k])=>furnLv(h,k)).map(([k,F])=>`${F.u} +${F.per*furnLv(h,k)}`);
   const rows=Object.entries(FURN).map(([k,F])=>{const lv=furnLv(h,k);if(lv>=FURN_MAX)return `<div class="frow"><div><b>${F.n}</b> <span class="tag">${lv}단계 · 다 지었다</span><span>${F.d} · ${F.u} +${F.per*lv}</span></div></div>`;
     const c=furnCost(k,lv),ok=Object.entries(c).every(([m,v])=>matHave(h,m)>=v);
@@ -2706,7 +2958,7 @@ function manorSection(h){const B=manorBonus(h),parts=Object.entries(FURN).filter
       <button class="btn sm ${ok?"sealb":""}" type="button" data-craft="${k}" ${ok?"":"disabled"}>${lv?"고친다":"만든다"}</button></div>`}).join("");
   return `<section>${foldHead("manor",`내 장원${parts.length?` · ${parts.length}가지 효과`:""}`)}<div class="foldb" ${foldOpen("manor")?"":"hidden"}>
     ${manorView(h,true)}
-    <p class="note">${parts.length?`장원에서 받는 효과: ${parts.join(" · ")}`:"장원이 비어 있다. 재료를 모아 물건을 들이면 능력치가 오른다."} 물건마다 세 단계까지 고칠 수 있고, 단계가 오를수록 재료가 두 배씩 든다. 다른 사람이 인물 카드에서 내 장원을 구경할 수 있다.</p>
+    <p class="note">${parts.length?`장원에서 받는 효과: ${parts.join(" · ")}`:"장원이 비어 있다. 재료를 모아 물건을 들이면 능력치가 오른다."} 「내 장원 가기」로 장원을 보고 배치를 바꿀 수 있다. 물건마다 세 단계까지 고칠 수 있고(단계가 오르면 반짝임이 붙는다), 단계가 오를수록 재료가 두 배씩 든다. 객잔 가구 거간에게서 은자로 꾸밈 물건을 살 수도 있다. 다른 사람이 인물 카드에서 내 장원을 구경할 수 있다.</p>
     <div class="flist">${rows}</div></div></section>`}
 
 /* ───────── 무림 비경: 층을 하나씩 오르는 탑. 5층마다 주인이 있고, 층마다 저주가 붙는다. 매주 월요일에 지난주 기록의 절반부터 다시 ───────── */
@@ -3293,7 +3545,7 @@ function paintProfile(){
     <div class="label" style="margin-top:14px">인물 설정</div>
     ${bio.origin||bio.age||bio.note||traitsOf(o).length?`<div class="pfrows">${row("출신",esc(bio.origin||""))}${row("나이",esc(bio.age||""))}${row("성격",traitsOf(o).map(k=>`<span class="trt on sm">${k}</span>`).join(" "))}</div>${bio.note?`<p class="pfnote">${esc(bio.note).replace(/\n/g,"<br>")}</p>`:""}`
       :`<p class="note">${mine?"아직 적어 둔 설정이 없다. 인물 탭에서 출신, 나이, 특이사항을 적을 수 있다.":"아직 적어 둔 설정이 없다."}</p>`}
-    ${Object.keys(FURN).some(k=>furnLv(o,k))?`<div class="kicker" style="margin-top:12px">장원</div>${manorView(o,false)}`:""}
+    <div class="kicker" style="margin-top:12px">장원</div>${manorView(o,false)}
     <div class="row" style="margin-top:12px">${mine?`<button class="btn sm" type="button" data-pfgo="self">인물 탭에서 고치기</button>`:`<button class="btn sm" type="button" data-pfgo="mates">인연 탭에서 보기</button>${mode==="db"&&!myDuel()&&duelDayN(me)<DUEL_DAY?`<button class="btn sm ghost" type="button" data-pfduel="${profileId}">논검 청하기</button>`:""}${mode==="db"?`<button class="btn sm ghost" type="button" id="pfGive">건네주기</button>`:""}`}</div>${!mine&&giveOpen?giveBox(profileId):""}</div>`;
   el.querySelector(".pfx").onclick=()=>{profileId=null;paintProfile()};
   el.querySelectorAll("[data-pfgo]").forEach(b=>b.onclick=()=>{tab=b.dataset.pfgo;profileId=null;paintProfile();try{const cb=document.querySelector(".chat-box");if(cb&&innerWidth<700)cb.hidden=true}catch(e){}render()});
@@ -3321,11 +3573,11 @@ function bioSection(){const b=bioDraft||(bioDraft={origin:me.bio?.origin||"",age
   return `<section><div class="label">이름 바꾸기</div><div class="mailf"><div class="row" style="align-items:flex-end"><label style="flex:1;min-width:0">새 이름 (12자까지)<input data-rename maxlength="12" value="${esc(renameDraft)}" placeholder="${esc(me.name)}"></label>
       <button class="btn sm solid" type="button" id="renameBtn" ${rl>0?"disabled":""}>바꾸기</button></div>
       <p class="note" style="margin:0">${rl>0?`<span data-until="${(me.renameT||0)+RENAME_GAP}"></span> 뒤에 다시 바꿀 수 있다.`:"이름은 48시간에 한 번 바꿀 수 있다. 예전 이름은 인물 카드에 남는다."}</p></div></section>
-  <section><div class="label">인물 설정</div><p class="note" style="margin-top:0">다른 사람이 대화창이나 인연에서 내 이름을 누르면 보이는 설정이다.</p>
+  <section>${foldHead("bio","인물 설정")}<div class="foldb" ${foldOpen("bio")?"":"hidden"}><p class="note" style="margin-top:0">다른 사람이 대화창이나 인연에서 내 이름을 누르면 보이는 설정이다.</p>
     <div class="mailf"><div class="mailg" style="grid-template-columns:2fr 1fr"><label>출신 · 가문<input data-bio="origin" maxlength="40" value="${esc(b.origin)}" placeholder="예: 낙양 객잔집 막내"></label><label>나이<input data-bio="age" maxlength="12" value="${esc(b.age)}" placeholder="예: 스물"></label></div>
     <div><div class="label" style="margin:4px 0 6px">성격 · 두 개까지 (탐문·전투·논검 문구에 가끔 섞여 나온다)</div><div class="traitl">${TRAIT_KEYS.map(k=>`<button type="button" class="trt ${b.traits.includes(k)?"on":""}" data-trait="${k}">${k}</button>`).join("")}</div></div>
     <label>특이사항<textarea data-bio="note" rows="3" maxlength="300" placeholder="예: 술을 못 마신다. 매화를 보면 걸음을 멈춘다.">${esc(b.note)}</textarea></label>
-    <div class="row"><button class="btn sm solid" type="button" id="bioSave">설정 저장</button><button class="btn sm ghost" type="button" data-pf="${myId()}">내 인물 카드 보기</button></div></div></section>`}
+    <div class="row"><button class="btn sm solid" type="button" id="bioSave">설정 저장</button><button class="btn sm ghost" type="button" data-pf="${myId()}">내 인물 카드 보기</button></div></div></div></section>`}
 function saveBio(){const h=structuredClone(me),b=bioDraft||{};h.bio={origin:String(b.origin||"").trim().slice(0,40),age:String(b.age||"").trim().slice(0,12),note:String(b.note||"").trim().slice(0,300),traits:(b.traits||[]).filter(k=>TRAITS[k]).slice(0,TRAIT_MAX)};save(h);toast("인물 설정을 저장했습니다.")}
 
 /* ───────── 프로필 사진: 128×128로 줄여 avatars/내 번호 에 글자로 저장 ───────── */
@@ -4346,7 +4598,7 @@ function worldTab(){
     else if(direct) regionBox+=`<div class="row" style="margin-top:6px"><button class="btn solid" id="goBtn" type="button" ${a?"disabled":""}>${josa(R.n,"로")} 떠나기 · ${hrsTxt(direct)}${tg.length?` (${tg.join(", ")})`:""}</button>${realMates().length?`<button class="btn ghost" type="button" data-callgo="${dest}">무리에게 같이 가자고 하기</button>`:""}${a?`<span class="note" style="margin:0">${busyText[a]} 떠날 수 없다.</span>`:""}</div>`;
     else{const rt=route(h.loc,dest);regionBox+=`<p class="note">바로 가는 길이 없다. ${rt.path.map(p=>REGIONS[p].n).join(" → ")} (모두 ${hrsTxt(teaHrs(h,hrsFor(h,rt.hours)))}${speedTags(h,null).length?`, ${speedTags(h,null).join(" · ")}`:""}) 순으로 한 곳씩 이동해야 한다.</p>`}
   }
-  regionBox+=(focus===h.loc?regionSectBox(focus)+ililBox(h)+jobBox(h)+fishBox(h)+gatherBox(h)+stableBox(h)+innBox(h)+smithBox(h):"")+`</div>`;
+  regionBox+=(focus===h.loc?regionSectBox(focus)+ililBox(h)+shopGroup("생업 · 일하고 거두기",jobBox(h)+fishBox(h)+gatherBox(h))+shopGroup("가게 · 사고 고치기",stableBox(h)+innBox(h)+decorBox(h)+smithBox(h)):"")+`</div>`;
   return `${nemBox(h)}${happenBox(h)}${invBox(h)}${questBox(h)}<section><div class="label">지도</div>${mapSvg()}
     <p class="note">지역을 누르면 정보가 보이고, 이어진 곳이면 바로 떠날 수 있다.</p>${regionBox}${caravanBox(h)}</section>
     ${travelBox?`<section style="margin-top:20px">${travelBox}</section>`:""}
@@ -4534,9 +4786,11 @@ function bind(){
   document.querySelectorAll("[data-hdig]").forEach(b=>b.addEventListener("click",()=>happenDig(b.dataset.hdig)));
   document.querySelectorAll("[data-hduel]").forEach(b=>b.addEventListener("click",()=>happenDuel(b.dataset.hduel)));
   document.querySelectorAll("[data-hgo]").forEach(b=>b.addEventListener("click",()=>{dest=b.dataset.hgo;tab="world";render();try{document.querySelector(".region")?.scrollIntoView({block:"start"})}catch(e){}}));
-  on("#dexBtn",()=>{dexOpen=!dexOpen;render()});on("#fishCast",fishCast);on("#ililClaim",ililClaim);document.querySelectorAll("[data-maehwa]").forEach(b=>b.onclick=()=>maehwaStart(b.dataset.maehwa));on("#fishBuy",fishBuy);on("#fishPull",()=>fishPull(false));on("#fishSell",fishSell);on("#rbAsk",()=>{rbAsk=true;render()});on("#rbNo",()=>{rbAsk=false;render()});on("#rbGo",doRebirth);on("#fishSellT",()=>{fishSellOpen=!fishSellOpen;render()});
+  on("#dexBtn",()=>{dexOpen=!dexOpen;render()});on("#fishCast",fishCast);on("#mEdit",()=>{manorEdit=true;manorDraft={...(me.mpos||{})};manorSel=null;render()});on("#mCancel",()=>{manorEdit=false;manorDraft=null;manorSel=null;render()});on("#mSave",manorSaveArr);
+  on("#mFlip",()=>{if(!manorSel)return;const P=mposOf(me,manorSel,manorDraft);manorDraft={...manorDraft,[manorSel]:[P[0],P[1],!P[2]]};render()});
+  on("#mReset",()=>{if(!manorSel)return;const d={...manorDraft};delete d[manorSel];manorDraft=d;render()});manorWire();on("#ililClaim",ililClaim);document.querySelectorAll("[data-maehwa]").forEach(b=>b.onclick=()=>maehwaStart(b.dataset.maehwa));on("#fishBuy",fishBuy);on("#fishPull",()=>fishPull(false));on("#fishSell",fishSell);on("#rbAsk",()=>{rbAsk=true;render()});on("#rbNo",()=>{rbAsk=false;render()});on("#rbGo",doRebirth);on("#fishSellT",()=>{fishSellOpen=!fishSellOpen;render()});
   document.querySelectorAll("[data-fsell]").forEach(b=>b.onclick=()=>{const k=b.dataset.fsell,i=document.querySelector(`[data-fsq="${k}"]`);fishSellOne(k,+(i?.value||1))});
-  document.querySelectorAll("[data-craft]").forEach(b=>b.addEventListener("click",()=>craftFurn(b.dataset.craft)));
+  document.querySelectorAll("[data-craft]").forEach(b=>b.addEventListener("click",()=>craftFurn(b.dataset.craft)));document.querySelectorAll("[data-decor]").forEach(b=>b.addEventListener("click",()=>buyDecor(b.dataset.decor)));
   document.querySelectorAll("[data-fold]").forEach(b=>b.addEventListener("click",()=>toggleFold(b.dataset.fold)));
   document.querySelectorAll("[data-reroll]").forEach(b=>b.addEventListener("click",()=>rerollOpt(gsel,+b.dataset.reroll)));
   document.querySelectorAll("[data-job]").forEach(b=>b.addEventListener("click",()=>{jobPick.k=b.dataset.job;render()}));
@@ -4654,6 +4908,7 @@ async function boot(){
   db.collection("duels").onSnapshot(snap=>{sweep("duels",snap.docs.filter(d=>d.exists));duels={};snap.docs.forEach(d=>{if(d.exists)duels[d.id]=structuredClone(d.data())});if(ready)render();maybeResolveDuel()},()=>{});
   db.collection("events").onSnapshot(snap=>{const d=snap.docs.find(x=>x.id==="invasion"&&x.exists);invasion=d?structuredClone(d.data()):null;if(ready)render()},()=>{});
   db.collection("notices").onSnapshot(snap=>{notices={};snap.docs.forEach(d=>{if(d.exists)notices[d.id]=structuredClone(d.data())});if(ready)render()},()=>{});
+  db.collection("visits").onSnapshot(snap=>{visits={};snap.docs.forEach(d=>{if(d.exists)visits[d.id]={...structuredClone(d.data()),id:d.id}});if(isoView&&!isoEdit)paintManor();if(ready)render()},()=>{});
   db.collection("parcels").onSnapshot(snap=>{parcels={};snap.docs.forEach(d=>{if(d.exists)parcels[d.id]={...structuredClone(d.data()),id:d.id}});if(ready)render()},()=>{});
   db.collection("mail").onSnapshot(snap=>{mails={};snap.docs.forEach(d=>{if(d.exists)mails[d.id]=structuredClone(d.data())});if(ready)render()},()=>{});
   db.collection("avatars").onSnapshot(snap=>{avatars={};snap.docs.forEach(d=>{if(d.exists)avatars[d.id]=d.data().img});if(ready)render()},()=>{});
