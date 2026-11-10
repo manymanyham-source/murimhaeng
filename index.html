@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261111022103">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261111025627">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -135,8 +135,7 @@ section{margin-top:30px}
 .disc.up{color:#7C1F2A}.buffn{margin:6px 0 0;color:var(--c-dang)}
 .hall{margin-top:10px;padding:10px 12px;border:1px solid var(--line);background:var(--paper)}.hallh{display:flex;gap:8px;align-items:center}.hallh b{display:block}.hallh span{font-size:12px;color:var(--ink-2)}
 .hall .say{margin:8px 0;font-size:14px}.hall .say b{margin-right:4px}.sq{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}.sq p{margin:6px 0}.sq.done p:first-of-type{color:var(--ink)}
-.nem{border:1px solid #4A2A5C;background:rgba(74,42,92,.07);padding:12px 14px}.nem h3{margin:4px 0}.nem p{margin:6px 0}.nem .say{font-style:normal;color:var(--ink)}
-.givebox{margin-top:12px;padding:10px 12px;border:1px solid var(--line);background:var(--paper)}.givebox .seg button{margin-bottom:4px}
+.nem{border:1px solid #4A2A5C;background:rgba(74,42,92,.07);padding:12px 14px}.nem h3{margin:4px 0}.nem p{margin:6px 0}.givebox{margin-top:12px;padding:10px 12px;border:1px solid var(--line);background:var(--paper)}.givebox .seg button{margin-bottom:4px}
 .qlist{display:grid;gap:8px;margin-top:8px}.qrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);background:var(--paper)}
 .qrow>div{flex:1;min-width:0}.qrow b{display:block}.qrow span{font-size:12px;color:var(--ink-2)}.qrow em{font-style:normal;font-size:12px;color:var(--ink-3)}.qrow.done{opacity:.55}.qrow.week{margin-top:8px;border-color:var(--ink)}
 .qbar{height:4px;background:var(--line);margin-top:6px}.qbar i{display:block;height:100%;background:var(--seal)}
@@ -540,6 +539,53 @@ body.noscroll{overflow:hidden}
 .isoedit,.isovisit{margin-top:8px}
 .isogb{display:grid;gap:8px}.isogb div{background:var(--card,#fff);border:1px solid var(--line);border-radius:var(--r-s,8px);padding:8px 10px;font-size:14px}
 .isogb span{font-size:12px;color:var(--ink-3)}.isogb p{margin:2px 0 0;color:var(--ink-2)}
+.nem{position:relative;overflow:hidden;border:0;border-radius:var(--r,12px);padding:16px 16px 14px;color:#ece6da;background:radial-gradient(120% 90% at 100% 0%,#4a2633 0%,transparent 60%),linear-gradient(160deg,#1f1b24,#151318);box-shadow:0 6px 20px rgba(20,10,20,.25)}
+.nem::after{content:"仇";position:absolute;right:-6px;bottom:-30px;font-family:var(--f-brush);font-size:130px;line-height:1;color:rgba(255,255,255,.05);pointer-events:none}
+.nem.final{background:radial-gradient(120% 90% at 100% 0%,#7a2b22 0%,transparent 65%),linear-gradient(160deg,#241416,#150f10)}
+.nemtop{display:flex;justify-content:space-between;align-items:center}
+.nem .nk{font-size:12px;letter-spacing:.24em;color:#e58a78}
+.npips{display:inline-flex;gap:5px}.npips i{width:9px;height:9px;border-radius:50%;border:1px solid #e58a78}.npips i.on{background:#e58a78}
+.nemname{margin:10px 0 6px;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.nemname small{width:100%;font-size:12px;color:#b9aeb6;letter-spacing:.12em}
+.nemname b{font-family:var(--f-brush);font-weight:400;font-size:32px;letter-spacing:.08em;line-height:1.1}
+.ntag{font-size:12px;color:#d8cdd4;border:1px solid rgba(255,255,255,.2);border-radius:99px;padding:1px 9px}
+.nemsay{margin:8px 0 4px;font-size:15px;color:#f4eee4}
+.nemrec{font-size:12px;color:#a99ea8;margin-bottom:12px}
+.nem .btn.nemgo{background:#b0382a;border-color:#b0382a;color:#fff}.nem .btn.nemgo:hover{background:#c9442f}
+.nem .btn.nemno{background:transparent;border-color:rgba(255,255,255,.35);color:#ece6da}
+.nemnote{margin:10px 0 0;font-size:12px;color:#a99ea8}
+.nem .bub{position:relative;margin:10px 0 0;padding:9px 12px;border-radius:12px;background:rgba(255,255,255,.08);color:#f4eee4;font-size:14px;max-width:92%}
+.nem .nemmid{margin:8px 4px 0;font-size:13px;color:#b9aeb6;font-style:italic}
+.nemstamp{position:absolute;top:44px;right:14px;transform:rotate(8deg);font-family:var(--f-brush);font-size:20px;padding:4px 10px;border:2px solid;border-radius:6px;z-index:1}
+.nem.win .nemstamp{color:#f0d27a;border-color:#f0d27a}.nem.lose .nemstamp{color:#a99ea8;border-color:#a99ea8}
+.scroll{margin:8px 0 2px}
+.scroll .rod{height:12px;margin:0 -4px;border-radius:6px;background:linear-gradient(180deg,#a8743f,#6e4527 70%,#4e3019);position:relative;box-shadow:0 2px 3px rgba(0,0,0,.18)}
+.scroll .rod::before,.scroll .rod::after{content:"";position:absolute;top:-3px;width:10px;height:18px;border-radius:4px;background:linear-gradient(180deg,#c9952e,#8a6420)}
+.scroll .rod::before{left:-6px}.scroll .rod::after{right:-6px}
+.scroll .paper{background:linear-gradient(90deg,rgba(150,120,70,.10),transparent 8%,transparent 92%,rgba(150,120,70,.10)),#f3e8cf;padding:12px 14px 8px;margin:0 2px;color:#2b2622;transform-origin:top}
+.scroll.unroll .paper{animation:unroll .6s cubic-bezier(.2,.7,.2,1)}
+.scroll.unroll .rod:last-child{animation:rodDown .6s cubic-bezier(.2,.7,.2,1)}
+@keyframes unroll{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 0 0)}}
+@keyframes rodDown{from{transform:translateY(-40px)}to{transform:none}}
+@media (prefers-reduced-motion:reduce){.scroll.unroll .paper,.scroll.unroll .rod:last-child{animation:none}}
+.scroll .qrow{position:relative;background:transparent;border:0;border-bottom:1px dashed rgba(90,60,30,.25);border-radius:0;padding:10px 2px}
+.scroll .qrow.week{border:0;border-top:2px solid rgba(90,60,30,.35);margin-top:4px}
+.scroll .qrow b{font-family:var(--f-brush);font-weight:400;font-size:17px;color:#2b2622}
+.scroll .qrow span{color:#5a4a3a}
+.scroll .qbar{background:rgba(90,60,30,.12)}
+.scroll .qbar i{background:#b0382a}
+.scroll .qrow.done{opacity:.6}
+.qstamp{position:absolute;right:70px;top:6px;font-family:var(--f-brush);color:#b0382a;border:2px solid #b0382a;border-radius:4px;padding:0 4px;transform:rotate(-10deg);opacity:.75;font-size:15px;line-height:1.3}
+.qnote{font-size:12px;color:#7a6a58;margin:8px 0 2px}
+.scroll .btn{background:#fffaf0}
+.innseg{display:flex;gap:0;margin:8px 0 10px;border:1px solid var(--line);border-radius:var(--r-s,8px);overflow:hidden;background:var(--card,#fff)}
+.innseg button{flex:1;padding:9px 6px;border:0;background:none;font:inherit;font-size:14px;color:var(--ink-2);cursor:pointer;border-right:1px solid var(--line)}
+.innseg button:last-child{border-right:0}
+.innseg button.on{background:var(--ink);color:var(--paper)}
+.shopi.own{opacity:.6}
+.pxscene{display:block;width:100%;height:auto;aspect-ratio:64/20;max-height:150px;border-radius:var(--r-s,8px);margin:0 0 10px;image-rendering:pixelated;border:1px solid var(--line)}
+.gact{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.innseg button:disabled{opacity:.4;cursor:default}
 </style>
 
 <div class="wrap">
@@ -1859,10 +1905,10 @@ function sectTabSection(){
   const opts=Object.keys(SECTS).filter(k=>k!==cur);
   const move=sectConfirm&&sectPick?`<div class="wall"><div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px">${emblem(sectPick,"sm")}<div style="flex:1;min-width:0"><b>${SECTS[sectPick].n}</b> · ${SECTS[sectPick].role}<br><span class="note" style="margin:0">${esc(SECTS[sectPick].desc)} 주력 ${SECTS[sectPick].main.map(m=>STATS[m].n).join("+")} · 설 수 있는 자리: ${SECT_ROLES[sectPick].map(r=>ROLE_N[r]).join(", ")}</span></div></div><p><b>${SECTS[cur].n}</b>${pj(SECTS[cur].n,"을")} 떠나 <b>${SECTS[sectPick].n}</b>로 옮긴다. ${SECTS[cur].n} 우호도가 70% 줄고, 7일 동안 다시 들어갈 수 없다.${h.post?" 직위도 잃는다.":""}</p>
       <div class="row"><button class="btn sealb" id="sectYes" type="button">파문을 감수하고 옮긴다</button><button class="btn ghost" id="sectNo" type="button">그만둔다</button></div></div>`
-    :`<div class="label" style="margin-top:14px">문파 옮기기</div><div class="sectmv">${opts.map(k=>{const S=SECTS[k],until=(h.leftSects?.[k]||0)+7*86400e3,ban=Date.now()<until;
-        return `<button class="smv" type="button" data-sect="${k}" ${ban?"disabled":""}>${emblem(k,"sm")}<span><b>${S.n}</b><em>${S.role} · 주력 ${S.main.map(m=>STATS[m].n).join("+")}${homeOf(k)?` · 근거지 ${homeOf(k).n}`:""}</em><small>${SKILL_NAME[k]} — ${esc(S.sk[0][2])}</small>${ban?`<small class="ban">${fmtDays(until-Date.now())} 뒤에 다시 들어갈 수 있다</small>`:""}</span></button>`}).join("")}</div>`;
-  return `<section><div class="label">문파 우호도</div>${offerBox}<div class="favs">${rows}</div>${post}
-    <p class="note">우호도는 그 문파 근처의 사건 해결(+20), 문파에 선물(강호 탭에서, +10~25), 그 문파 NPC와 함께 이긴 싸움(+15)으로 오른다.</p>${move}</section>`;
+    :`<div style="margin-top:14px">${foldHead("sectmv","문파 옮기기")}</div><div class="foldb" ${foldOpen("sectmv")?"":"hidden"}><div class="sectmv">${opts.map(k=>{const S=SECTS[k],until=(h.leftSects?.[k]||0)+7*86400e3,ban=Date.now()<until;
+        return `<button class="smv" type="button" data-sect="${k}" ${ban?"disabled":""}>${emblem(k,"sm")}<span><b>${S.n}</b><em>${S.role} · 주력 ${S.main.map(m=>STATS[m].n).join("+")}${homeOf(k)?` · 근거지 ${homeOf(k).n}`:""}</em><small>${SKILL_NAME[k]} — ${esc(S.sk[0][2])}</small>${ban?`<small class="ban">${fmtDays(until-Date.now())} 뒤에 다시 들어갈 수 있다</small>`:""}</span></button>`}).join("")}</div></div>`;
+  return `<section>${foldHead("favor",`문파 우호도 · ${SECTS[cur].n} ${favorStage(favorOf(h,cur))[1]}`)}${offerBox}<div class="foldb" ${foldOpen("favor")?"":"hidden"}><div class="favs">${rows}</div>${post}
+    <p class="note">우호도는 그 문파 근처의 사건 해결(+20), 문파에 선물(강호 탭에서, +10~25), 그 문파 NPC와 함께 이긴 싸움(+15)으로 오른다.</p></div>${move}</section>`;
 }
 /* 인연 탭 */
 function bondTab(){
@@ -2395,8 +2441,10 @@ function bindDuel(){
   document.querySelectorAll("[data-duelno]").forEach(b=>b.addEventListener("click",()=>duelDecline(b.dataset.duelno)));
   document.querySelectorAll("[data-duelact]").forEach(b=>b.addEventListener("click",()=>duelChoose(b.dataset.duelact)));
   on("#duelClaim",duelClaim);
-  const f=$("#duelFeed");if(f)f.scrollTop=f.scrollHeight;
+  /* 다시 그릴 때마다 맨 위에서부터 부드럽게 굴러 내려가지 않게: 읽던 자리를 지키고, 새 줄이 생겼거나 맨 아래를 보고 있었을 때만 바닥으로 */
+  const f=$("#duelFeed");if(f){const S=duelFeedSt;f.style.scrollBehavior="auto";f.scrollTop=!S||S.at||f.children.length>S.n?f.scrollHeight:S.st;f.style.scrollBehavior=""}
 }
+let duelFeedSt=null;
 
 
 /* ───────── 공지(무림맹 방문): 관리자만 쓰고 모두가 본다. 쓴 사람 이름 대신 [무림맹]으로 나온다 ─────────
@@ -2448,7 +2496,7 @@ function bindNotice(){
 const silverTxt=n=>`은자 ${Number(n||0).toLocaleString()}냥`;
 function addSilver(h,n){n=Math.max(0,Math.round(n||0));h.silver=(h.silver||0)+n;if(n)bump(h,"silverIn",n);return n}
 /* 객잔·대장간은 접었다 펼 수 있다 (이 기기에 기억) */
-let shopOpen={f_bio:false};try{shopOpen={f_bio:false,...JSON.parse(localStorage.getItem("murim-shop")||"{}")}}catch(e){}
+let shopOpen={f_bio:false,f_sectmv:false};try{shopOpen={f_bio:false,f_sectmv:false,...JSON.parse(localStorage.getItem("murim-shop")||"{}")}}catch(e){}
 function toggleShop(k){shopOpen[k]=!shopOpen[k];try{localStorage.setItem("murim-shop",JSON.stringify(shopOpen))}catch(e){}render()}
 /* 인물 탭 접기: 기본은 펼침, 접으면 기억한다 */
 const foldOpen=k=>shopOpen["f_"+k]!==false;
@@ -2456,6 +2504,7 @@ const foldHead=(k,label)=>`<button type="button" class="shoph foldh" data-fold="
 function toggleFold(k){shopOpen["f_"+k]=!foldOpen(k);try{localStorage.setItem("murim-shop",JSON.stringify(shopOpen))}catch(e){}render()}
 /* 가게 머리 도트 아이콘 (10×10, 장원 도트와 같은 색판) */
 const SHOP_PX={
+  nature:[".....G......","....GgG.....","...GgGgG....","..GgGgGgG...","...gG.Gg....","....gGg.....",".....g......","bbbbbbbbbbbb",".bBbbBbbBbb.","bbbbbbbbbbbb"],
   job:["....yy......","...rrrr.....","..rRRRRr....",".rRRrRRRr...","rRRRRRRRRr..","rRrRRRrRRr..","rRRRRRRRRr..","rRRrRRRrRr..",".rRRRRRRr...","..rrrrrr...."],
   quest:[".cWWWWWWWc..",".cxxxxxxxc..","..xkkkkkx...","..xxxxxxx...","..xkkkxkx...","..xxxxxxx...","..xkkkkxx...","..xxxxxxx...",".cWWWWWWWc..","....rr......"],
   fish:["............","..bbbbb.....",".bBBBBBb..b.","bBkBBBBBbbb.","bBBBBBBBbbb.",".bbbBbbbb.b.","..bbbbb.....","............"],
@@ -2476,6 +2525,62 @@ const mkt=h=>h?.travel?1:(happenHere("market",h?.loc)?.7:1)*(occupied(h?.loc)?1.
 const innPrice=(h,k)=>Math.round(INN[k]*(atHome(h)?.85:1)*mkt(h));
 function innBuy(k){const h=structuredClone(me),p=INN[k]&&innPrice(h,k);if(!p||h.travel)return;if((h.silver||0)<p){toast(`은자가 ${p-(h.silver||0)}냥 모자랍니다.`);return}
   h.silver-=p;h.items[k]++;addLog(h,`객잔에서 ${josa(ITEMS[k][0],"을")} 샀다. (${silverTxt(p)})`);save(h);toast(`${ITEMS[k][0]} +1 · ${silverTxt(h.silver)} 남음`)}
+/* ───────── 가게·자연 머리 도트 그림 (64×20) ───────── */
+function pxScene(k){let o="";const R=(x,y,w,h,c)=>{o+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`};
+  const sky=(a,b)=>{R(0,0,64,20,a);R(0,0,64,4,b)};
+  const hills=(c)=>{for(let x=0;x<64;x++){const y=7+Math.round(Math.sin(x/6)*1.5+Math.sin(x/2.7)*.8);R(x,y,1,20-y,c)}};
+  const S={
+  fish:()=>{sky("#dbe9ef","#cbe0ea");hills("#a9c2b0");R(0,10,64,10,"#5b8fbf");for(let i=0;i<9;i++)R(3+i*7,12+(i%3)*2,3,1,"#86b9de");
+    R(36,9,28,2,"#8a5a33");for(const x of [38,46,54,62])R(x,11,1,5,"#5e3f24");   /* 나루 */
+    R(43,2,6,1,"#c9952e");R(44,1,4,1,"#c9952e");R(45,0,2,1,"#d9b04a");R(42,3,8,1,"#a8792a");   /* 삿갓 */
+    R(45,4,2,1,"#e8c9a0");R(44,5,4,3,"#3d6f9e");R(45,5,2,1,"#4f82b3");R(48,6,1,1,"#e8c9a0");   /* 낚시꾼 */
+    R(45,8,1,3,"#2b2622");R(47,8,1,3,"#2b2622");
+    for(let i=0;i<9;i++)R(49+i,6-Math.floor(i*5/8),1,1,"#5e3f24");          /* 낚싯대 */
+    for(let y=1;y<12;y++)R(57,y,1,1,"#e6e1d4");                               /* 줄 */
+    R(56,13,2,1,"#b0382a");R(56,12,2,1,"#f5f0e3")},
+  herb:()=>{sky("#e3eedd","#d4e6cc");hills("#8fb07a");R(0,12,64,8,"#6f9a54");for(let x=0;x<64;x+=3)R(x,11+(x%2),1,1,"#7bab58");
+    const plant=(x,c)=>{R(x,10,1,4,"#3e6a2e");R(x-1,11,1,1,"#5d8d44");R(x+1,10,1,1,"#5d8d44");R(x,9,1,1,c);R(x+1,9,1,1,c)};
+    [[6,"#b0382a"],[14,"#f0d27a"],[22,"#b0382a"],[33,"#e8a0b5"],[41,"#f0d27a"],[55,"#b0382a"]].forEach(([x,c])=>plant(x,c));
+    R(46,12,7,4,"#b07a45");R(47,11,5,1,"#8a5a33");R(46,13,7,1,"#8a5a33");R(48,10,1,1,"#4c7a39");R(50,9,1,2,"#4c7a39");   /* 바구니 */
+    R(26,14,6,1,"#5e3f24");R(31,12,1,3,"#9ca4ad")},                                          /* 호미 */
+  wood:()=>{sky("#e6ecdf","#d8e3cf");hills("#8fae86");R(0,14,64,6,"#7a8f4f");
+    const pine=(x,h)=>{for(let i=0;i<h;i++){const w=1+Math.floor(i/1.6);R(x-w,14-h-1+i,w*2+1,1,i%2?"#2f5a2a":"#3e7034")}R(x,13,1,2,"#5e3f24")};
+    pine(6,10);pine(15,12);pine(52,11);pine(60,9);
+    R(30,12,8,3,"#8a5a33");R(30,12,8,1,"#c9a06a");R(32,12,4,1,"#e2c28f");    /* 그루터기 */
+    R(35,8,1,5,"#7a4f2c");R(34,7,3,2,"#9ca4ad");R(33,7,1,1,"#cfd5db");        /* 도끼 */
+    R(40,14,10,2,"#8a5a33");R(41,13,9,1,"#a8743f");R(49,13,1,3,"#e2c28f");R(40,13,1,3,"#e2c28f")},  /* 통나무 */
+  ore:()=>{sky("#e2e2df","#d6d6d2");R(0,4,64,16,"#7d7a72");for(let i=0;i<14;i++)R((i*13)%60,5+(i*7)%12,3,2,"#6a675f");
+    R(20,8,14,12,"#2b2622");R(22,7,10,1,"#2b2622");R(19,8,1,12,"#5e3f24");R(34,8,1,12,"#5e3f24");R(19,7,16,1,"#7a4f2c");  /* 굴 */
+    [[8,8,"#f0d27a"],[10,11,"#c9952e"],[44,7,"#86b9de"],[50,12,"#f0d27a"],[56,9,"#86b9de"],[6,15,"#b9b3a6"]].forEach(([x,y,c])=>{R(x,y,2,1,c);R(x+1,y+1,1,1,c)});
+    R(38,16,10,3,"#5a5f66");R(39,15,8,1,"#3d4148");R(39,19,2,1,"#2b2622");R(45,19,2,1,"#2b2622");R(40,14,2,1,"#c9952e");R(43,14,2,1,"#9ca4ad");  /* 수레 */
+    R(12,17,6,1,"#7a4f2c");R(11,15,2,1,"#9ca4ad");R(17,15,2,1,"#9ca4ad");R(13,16,4,1,"#9ca4ad")},           /* 곡괭이 */
+  buy:()=>{sky("#ece4d6","#e2d6c2");R(6,8,52,12,"#efe6d4");R(4,5,56,3,"#3d4148");R(2,7,60,1,"#2b2622");for(let x=6;x<58;x+=8)R(x,8,1,12,"#8a5a33");
+    R(26,11,12,9,"#7a2b22");R(31,11,1,9,"#5e2019");R(22,2,20,3,"#2b2622");R(23,3,18,1,"#c9952e");
+    for(const x of [12,50]){R(x,9,3,4,"#b0382a");R(x+1,8,1,1,"#2b2622");R(x+1,13,1,1,"#f0d27a")}R(10,15,5,3,"#8a5a33");R(49,15,5,3,"#8a5a33")},
+  smith:()=>{sky("#e6dfd6","#dcd2c4");R(0,15,64,5,"#8a7a62");R(8,6,14,9,"#5a5f66");R(10,8,10,4,"#e07a2e");R(11,9,8,2,"#f2a65e");R(13,3,4,3,"#3d4148");  /* 화로 */
+    R(32,12,14,3,"#3d4148");R(30,11,18,1,"#5a5f66");R(36,15,6,4,"#3d4148");R(34,19,10,1,"#2b2622");   /* 모루 */
+    R(44,6,2,6,"#7a4f2c");R(42,5,6,2,"#9ca4ad");[[38,8],[41,6],[49,8],[37,5]].forEach(([x,y])=>R(x,y,1,1,"#f0d27a"))},
+  decor:()=>{sky("#efe9e0","#e6ddd0");R(0,15,64,5,"#c9b48e");R(6,4,20,11,"#f5f0e3");R(6,4,20,1,"#5e3f24");R(6,14,20,1,"#5e3f24");for(const x of [6,11,16,21,25])R(x,4,1,11,"#5e3f24");
+    R(8,10,4,2,"#4c7a39");R(13,8,3,4,"#3a6c9a");R(18,9,5,3,"#4c7a39");                 /* 병풍 */
+    R(33,10,4,5,"#6fa896");R(34,8,2,2,"#6fa896");R(33,7,4,1,"#8cc0ad");R(35,5,1,2,"#4c7a39");R(34,4,3,1,"#e8a0b5");   /* 화병 */
+    R(44,9,8,6,"#bdbab0");R(45,6,6,3,"#bdbab0");R(46,7,1,1,"#2b2622");R(49,7,1,1,"#2b2622");R(47,8,2,1,"#b0382a");R(43,14,10,1,"#8d8b84")}  /* 돌사자 */
+  };S[k]?.();return `<svg class="pxscene" viewBox="0 0 64 20" shape-rendering="crispEdges" aria-hidden="true">${o}</svg>`}
+
+let innTab="buy";
+function innHub(h){if(h.travel)return "";const home=atHome(h);
+  const head=shopHead("inn",`${REGIONS[h.loc].n} 객잔 · 가진 돈 ${silverTxt(h.silver)}${home?` · <span class="disc">${SECTS[h.sect].n} 사람이라 15% 싸게</span>`:""}${priceTags(h)}`);
+  if(!shopOpen.inn)return `<div class="shop">${head}</div>`;
+  const T={buy:"물건 사기",smith:"대장간",decor:"가구"};
+  let body="";
+  if(innTab==="buy")body=`<div class="shopl">${Object.keys(INN).map(k=>[k,innPrice(h,k)]).map(([k,p])=>`<button class="shopi" type="button" data-inn="${k}" ${(h.silver||0)<p?"disabled":""}><b>${ITEMS[k][0]}</b><span>${GIFT_VAL[k]?`${ITEMS[k][1]} · 인연 +${GIFT_VAL[k]}`:ITEMS[k][1]}</span><em>${home?`<s>${INN[k]}</s> `:""}${p}냥</em></button>`).join("")}</div>`;
+  else if(innTab==="smith"){const sp=smithSpec||SECT_SPEC[h.sect]||"dps";
+    const cell=(slot,g)=>{const it=makeItem(slot,g,sp),p=SMITH[g][slot],lock=g>h.realm;return `<button class="shopi" type="button" data-smith="${slot}|${g}|${sp}" ${lock||(h.silver||0)<p?"disabled":""}><b>${it.name}</b><span>${statLine(it)}${lock?` · ${REALMS[g].n}부터`:""}</span><em>${p}냥</em></button>`};
+    body=`<p class="note" style="margin:4px 0 6px">일류 전까지 쓰는 기본 장비. 뒷마당 대장장이가 두드려 준다.</p><div class="chips" style="margin:0 0 8px">${SPECS.map(k=>`<button type="button" class="btn sm ${k===sp?"sealb":"ghost"}" data-smsp="${k}">${SPEC[k].n}</button>`).join("")}</div>
+      <div class="shopl">${cell("weapon",0)}${cell("armor",0)}${cell("weapon",1)}${cell("armor",1)}</div>`}
+  else body=`<div class="shopl">${Object.entries(DECOR).map(([k,D])=>{const own=furnLv(h,k),ok=(h.silver||0)>=D.price;
+      return `<button class="shopi ${own?"own":""}" type="button" data-decor="${k}" ${own||!ok?"disabled":""}><b>${D.n}</b><span>${D.d}${D.eff?` · ${D.u} +${D.per}`:" · 꾸밈"}</span><em>${own?"들였다":silverTxt(D.price)}</em></button>`}).join("")}</div>
+      <p class="note">가구 거간이 객잔 한쪽에 물건을 펼쳐 두었다. 한 번 사면 장원에 계속 놓인다.</p>`;
+  return `<div class="shop">${head}<div class="innseg" role="tablist">${Object.entries(T).map(([k,n])=>`<button type="button" role="tab" aria-selected="${innTab===k}" class="${innTab===k?"on":""}" data-innt="${k}">${n}</button>`).join("")}</div>${pxScene(innTab)}${body}</div>`}
 function innBox(h){if(h.travel)return "";
   const home=atHome(h);
   return `<div class="shop">${shopHead("inn",`${REGIONS[h.loc].n} 객잔 · 가진 돈 ${silverTxt(h.silver)}${home?` · <span class="disc">${SECTS[h.sect].n} 사람이라 15% 싸게</span>`:""}${priceTags(h)}`)}${!shopOpen.inn?"</div>":""}${shopOpen.inn?`<div class="shopl">${Object.keys(INN).map(k=>[k,innPrice(h,k)]).map(([k,p])=>`<button class="shopi" type="button" data-inn="${k}" ${(h.silver||0)<p?"disabled":""}><b>${ITEMS[k][0]}</b><span>${GIFT_VAL[k]?`${ITEMS[k][1]} · 인연 +${GIFT_VAL[k]}`:ITEMS[k][1]}</span><em>${home?`<s>${INN[k]}</s> `:""}${p}냥</em></button>`).join("")}</div></div>`:""}`}
@@ -2566,16 +2671,17 @@ function claimWeek(){const h=ensureQuests(structuredClone(me));if(h.qweek.claime
   const got=[silverTxt(addSilver(h,300)),"강화석 +10","비급 단서 +5"];h.items.stone+=10;h.items.clue+=5;
   {const it=makeItem(pickOne(["weapon","armor","acc"]),Math.min(6,h.realm),pickOne(SPECS));if(h.realm>=3)setRar(it,Math.random()<.25?2:1);got.push(`장비 「${gainItem(h,it)}」`)}
   addLog(h,`이번 주 의뢰 ${QWEEK_NEED}건을 모두 마쳐 무림맹의 상자를 받았다. ${got.join(", ")}`);save(h);toast("주간 상자를 열었다!")}
+let questOpenT=0;
 function questBox(h){h=ensureQuests(structuredClone(h));const head=shopHead("quest",`의뢰판 · 오늘 ${h.quests.list.filter(q=>q.claimed).length}/3 · 이번 주 ${Math.min(h.qweek.n,QWEEK_NEED)}/${QWEEK_NEED}`);
   if(!shopOpen.quest)return `<section><div class="shop">${head}</div></section>`;
   const rows=h.quests.list.map((q,i)=>{const Q=QPOOL.find(x=>x.k===q.k),pr=qProg(h,q),ok=pr>=q.need;
-    return `<div class="qrow ${q.claimed?"done":""}"><div><b>${Q.n}</b><span>${Q.d(q.need)}</span><div class="qbar"><i style="width:${pr/q.need*100}%"></i></div></div>
+    return `<div class="qrow ${q.claimed?"done":""}">${q.claimed?`<span class="qstamp">完</span>`:""}<div><b>${Q.n}</b><span>${Q.d(q.need)}</span><div class="qbar"><i style="width:${pr/q.need*100}%"></i></div></div>
       ${q.claimed?`<em>받음</em>`:`<button class="btn sm ${ok?"sealb":""}" type="button" data-quest="${i}" ${ok?"":"disabled"}>${ok?"보상 받기":`${pr}/${q.need}`}</button>`}</div>`}).join("");
   const wk=h.qweek,wok=wk.n>=QWEEK_NEED;
-  return `<section><div class="shop">${head}<div class="qlist">${rows}</div>
-    <div class="qrow week ${wk.claimed?"done":""}"><div><b>무림맹의 주간 상자</b><span>이번 주 의뢰 ${QWEEK_NEED}건 · 은자 300냥, 강화석 10, 비급 단서 5, 장비 하나</span><div class="qbar"><i style="width:${Math.min(1,wk.n/QWEEK_NEED)*100}%"></i></div></div>
+  return `<section><div class="shop">${head}<div class="scroll ${Date.now()-questOpenT<700?"unroll":""}"><div class="rod"></div><div class="paper"><div class="qlist">${rows}</div>
+    <div class="qrow week ${wk.claimed?"done":""}">${wk.claimed?`<span class="qstamp">完</span>`:""}<div><b>무림맹의 주간 상자</b><span>이번 주 의뢰 ${QWEEK_NEED}건 · 은자 300냥, 강화석 10, 비급 단서 5, 장비 하나</span><div class="qbar"><i style="width:${Math.min(1,wk.n/QWEEK_NEED)*100}%"></i></div></div>
       ${wk.claimed?`<em>받음</em>`:`<button class="btn sm ${wok?"sealb":""}" type="button" id="qWeek" ${wok?"":"disabled"}>${wok?"상자 열기":`${wk.n}/${QWEEK_NEED}`}</button>`}</div>
-    <p class="note">의뢰는 자정마다 세 건씩 새로 붙고, 주간 상자는 월요일에 새로 시작한다. 의뢰가 붙은 뒤에 한 일만 센다.</p></div></section>`}
+    <p class="qnote">의뢰는 자정마다 세 건씩 새로 붙고, 주간 상자는 월요일에 새로 시작한다. 의뢰가 붙은 뒤에 한 일만 센다.</p></div><div class="rod"></div></div></div></section>`}
 
 /* ───────── 강호 돌발 사건: 하루 두 번, 정해진 때 저절로 터진다 (모두에게 똑같이 보인다) ───────── */
 const HAPPEN_T={
@@ -2694,18 +2800,18 @@ function fishSellBox(h){const L=Object.entries(h.fish||{}).filter(([k,v])=>v>0&&
 function fishSell(){const h=structuredClone(me),f=h.fish||{};let sum=0,n=0;const keep=new Set(Object.keys(FISHDB).filter(k=>FISHDB[k][3]>=2));
   for(const k in f){if(keep.has(k)||!f[k])continue;sum+=fishPrice(k)*f[k];n+=f[k];f[k]=0}if(!n){toast("팔 물고기가 없다. (귀함·전설 고기는 팔지 않고 남겨 둔다)");return}
   addSilver(h,sum);addLog(h,`객잔에 물고기 ${n}마리를 팔았다. (${silverTxt(sum)})`);save(h);toast(`물고기 ${n}마리 · ${silverTxt(sum)}`)}
-function fishBox(h){if(h.travel)return "";const used=fishUsed(h),max=fishCasts(h),left=Math.max(0,max-used),ex=Object.keys(FISHDB).filter(k=>FISHDB[k][4]?.includes(h.loc)),bloom=happenHere("fishing",h.loc);
+function fishBox(h,inner){if(h.travel)return "";const used=fishUsed(h),max=fishCasts(h),left=Math.max(0,max-used),ex=Object.keys(FISHDB).filter(k=>FISHDB[k][4]?.includes(h.loc)),bloom=happenHere("fishing",h.loc);
   const wk=weatherOf(h.loc),W=WEATHER[wk];
   const head=shopHead("fish",`${REGIONS[h.loc].n} 물가 · ${W.ch} ${W.n} · 오늘 ${left}/${max}번${bloom?" · 대풍어!":""}`);
-  if(!shopOpen.fish&&!fishState)return `<div class="shop">${head}</div>`;
+  if(!inner&&!shopOpen.fish&&!fishState)return `<div class="shop">${head}</div>`;
   const f=h.fish||{},bag=Object.entries(f).filter(([,v])=>v>0).map(([k,v])=>`${fishName(k)} ${v}`).join(" · ");
   const stage=fishState?.phase==="wait"?`<div class="fishpond wait"><span>찌가 고요히 떠 있다…</span></div><button class="btn" type="button" id="fishPull">챈다!</button>`
     :fishState?.phase==="bite"?`<div class="fishpond bite"><span>찌가 쑥 들어갔다! 입질이다!</span></div><button class="btn sealb" type="button" id="fishPull">챈다!</button>`
     :`<div class="fishpond"><span>${fishLast?esc(fishLast.text):"물결이 잔잔하다."}</span></div>${left>0?`<button class="btn sealb" type="button" id="fishCast">${fishUsed(h)>=fishBase(h)?"산 미끼로 던진다":"낚싯대를 던진다"}</button>`:`<button class="btn" type="button" id="fishBuy" ${(h.silver||0)<fishBuyCost(h)?"disabled":""}>미끼 더 사기 · ${silverTxt(fishBuyCost(h))}</button><p class="note" style="margin:6px 0 0">오늘 횟수를 다 썼다. 산 미끼는 30% 확률로 줄이 끊긴다. 살 때마다 값이 두 배가 되고 자정에 처음 값으로 돌아간다.</p>`}`;
-  return `<div class="shop">${head}${stage}
+  return `${inner?"":`<div class="shop">${head}`}${stage}
     <p class="note">오늘 ${REGIONS[h.loc].n} 날씨는 <b>${W.n}</b> · ${W.tip}.${ex.length?` 이 지역에서만: ${ex.map(k=>h.fdex?.[k]?fishName(k):"???").join(", ")}.`:""} 찌가 쑥 들어가면 1.5초 안에 챈다. 너무 일찍 채도, 늦어도 놓친다.</p>
     <div class="row" style="margin-top:6px"><span class="note" style="margin:0;flex:1">어망: ${bag||"비었다"}</span><button class="btn sm ghost" type="button" id="fishSellT">${fishSellOpen?"팔기 접기":"물고기 팔기"}</button></div>${fishSellOpen?fishSellBox(h):""}
-    <button type="button" class="shoph" id="dexBtn" style="margin-top:8px"><span class="kicker">어보 · ${Object.keys(h.fdex||{}).filter(k=>FISHDB[k]).length}/${FISH_N}종 · 지금까지 ${cnt(h,"fish")}마리</span><i>${dexOpen?"접기 ▴":"펼치기 ▾"}</i></button>${dexOpen?dexView(h):""}</div>`}
+    <button type="button" class="shoph" id="dexBtn" style="margin-top:8px"><span class="kicker">어보 · ${Object.keys(h.fdex||{}).filter(k=>FISHDB[k]).length}/${FISH_N}종 · 지금까지 ${cnt(h,"fish")}마리</span><i>${dexOpen?"접기 ▴":"펼치기 ▾"}</i></button>${dexOpen?dexView(h):""}${inner?"":"</div>"}`}
 let dexOpen=false;
 const RN=k=>REGIONS[k]?.n||k;
 function dexView(h){const d=h.fdex||{};return `<div class="dex">${Object.entries(FISHDB).sort((a,b)=>a[1][3]-b[1][3]).map(([k,f])=>{const got=d[k];
@@ -3126,13 +3232,17 @@ function nemFight(fight){const h=structuredClone(me),N=h.nemesis;if(!N?.pending)
   const end=win?(fin?nemLine("die",h,N):nemLine("flee",h,N)):nemLine("win",h,N);
   N.log=[{t:Date.now(),open,mid,end,win,fin},...(N.log||[])].slice(0,6);
   addLog(h,`숙적 ${josa(nemFull(N),"와")}${fin?"의 결전":" 마주쳤다"} · ${win?(fin?"끝내 쓰러뜨렸다!":"이겼다. 숙적은 달아났다."):"졌다."} ${got.join(", ")}`);save(h);toast(win?(fin?`숙적 ${josa(nemFull(N),"을")} 쓰러뜨렸다!`:"숙적을 물리쳤다!"):"숙적에게 졌다…")}
-function nemBox(h){const N=h.nemesis;if(!N)return "";const last=N.log?.[0];
-  if(N.pending)return `<section><div class="nem"><div class="kicker">숙적 · ${N.pending.final?"결전":"출현"}</div><h3>${esc(nemFull(N))}</h3>
-    <p>${N.pending.final?`세 번 꺾인 ${josa(N.name,"이")} 이번에는 물러서지 않을 기세로 길을 막았다. 결전이다.`:N.met===0?`처음 보는 사파 ${N.sex==="f"?"여고수":"고수"}가 길을 막았다. 눈빛이 예사롭지 않다.`:`${josa(N.name,"이")} 또 나타났다. (${N.wins}승 ${N.lost}패)`}</p>
-    <div class="row"><button class="btn sealb" type="button" data-nem="1">맞선다</button><button class="btn ghost" type="button" data-nem="0">피한다</button></div>
-    <p class="note" style="margin:6px 0 0">${N.pending.final?"이기면 숙적을 영영 쓰러뜨리고 전설 장비와 칭호를 얻는다.":`세 번 이기면 결전이 열린다. 지면 은자를 조금 빼앗긴다. 만날수록 숙적도 강해진다.`}</p></div></section>`;
-  if(last&&Date.now()-last.t<6*3600e3)return `<section><div class="nem done"><div class="kicker">숙적 · ${esc(nemFull(N))} · ${last.win?(last.fin?"결전 승리":"승리"):"패배"}</div>
-    <p class="say">${esc(last.open)}</p><p>${esc(last.mid)}</p><p class="say">${esc(last.end)}</p></div></section>`;
+function nemPips(N){return `<span class="npips" title="결전까지 세 번">${[0,1,2].map(i=>`<i class="${i<Math.min(3,N.wins)?"on":""}"></i>`).join("")}</span>`}
+function nemBox(h){const N=h.nemesis;if(!N)return "";const last=N.log?.[0],ep=N.ep.replace(/\(.*\)/,""),hj=(N.ep.match(/\((.*)\)/)||[])[1]||"";
+  const top=(k)=>`<div class="nemtop"><span class="nk">${k}</span>${nemPips(N)}</div>
+    <div class="nemname"><small>${esc(ep)}${hj?` · ${esc(hj)}`:""}</small><b>${esc(N.name)}</b><span class="ntag">${nemSex(N)} · ${NEM_P[nemP(N)].n}</span></div>`;
+  if(N.pending)return `<section><div class="nem ${N.pending.final?"final":""}">${top(N.pending.final?"숙적 · 결전":"숙적 · 출현")}
+    <p class="nemsay">${N.pending.final?`세 번 꺾인 ${josa(N.name,"이")} 이번에는 물러서지 않을 기세로 길을 막았다. 결전이다.`:N.met===0?`처음 보는 사파 ${N.sex==="f"?"여고수":"고수"}가 길을 막았다. 눈빛이 예사롭지 않다.`:`${josa(N.name,"이")} 또 나타났다.`}</p>
+    <div class="nemrec">${N.wins}승 ${N.lost}패 · ${N.met}번 마주침</div>
+    <div class="row"><button class="btn nemgo" type="button" data-nem="1">맞선다</button><button class="btn nemno" type="button" data-nem="0">피한다</button></div>
+    <p class="nemnote">${N.pending.final?"이기면 숙적을 영영 쓰러뜨리고 전설 장비와 칭호를 얻는다.":"세 번 이기면 결전이 열린다. 지면 은자를 조금 빼앗긴다. 만날수록 숙적도 강해진다."}</p></div></section>`;
+  if(last&&Date.now()-last.t<6*3600e3)return `<section><div class="nem done ${last.win?"win":"lose"}">${top("숙적")}<span class="nemstamp">${last.win?(last.fin?"결전 승":"승"):"패"}</span>
+    <p class="bub">${esc(last.open)}</p><p class="nemmid">${esc(last.mid)}</p><p class="bub">${esc(last.end)}</p></div></section>`;
   return ""}
 function nemSection(h){const N=h.nemesis;if(!N)return (h.realm||0)>=3?`<p class="note">아직 숙적이 없다. 탐문이나 소굴을 다니다 보면 누군가 그대를 노리기 시작할 것이다.</p>`:"";
   return `<div class="fav"><span>⚔</span><div><b>숙적 · ${esc(nemFull(N))}${N.done?" (쓰러뜨림)":""}</b><span>${nemSex(N)} · 성격 ${NEM_P[nemP(N)].n} · ${N.met}번 마주침 · ${N.wins}승 ${N.lost}패${N.done?"":` · 결전까지 ${Math.max(0,3-N.wins)}승`}${(h.nemSlain||[]).length?` · 지금까지 꺾은 숙적 ${h.nemSlain.length}`:""}</span></div></div>`}
@@ -3161,14 +3271,24 @@ function gather(kind){const h=structuredClone(me);if(!GATHER[kind])return;if(h.t
   if(kind==="herb"&&Math.random()<.5)h.items.herb=(h.items.herb||0)+1;
   const text=`${matN(k)} ${q}개${M[2]===3?" — 전설 속 재료다!!":M[2]===2?" — 귀한 재료다!":""}${first?` (처음 얻은 재료라 도감에 올렸다 · ${Object.keys(h.gdex).length}/${MAT_N})`:""}`;
   gLast={kind,text};addLog(h,`${REGIONS[h.loc].n} · ${GATHER[kind].n} · ${text}`);save(h)}
-function gatherBox(h){if(h.travel)return "";const used=stUsed(h),left=STAMINA-used,wx=WEATHER[weatherOf(h.loc)],loc=Object.entries(MATS).filter(([,m])=>m[3]?.includes(h.loc));
-  const head=shopHead("gather",`${REGIONS[h.loc].n} 산과 들 · 활력 ${left}/${STAMINA}`);if(!shopOpen.gather)return `<div class="shop">${head}</div>`;
+function gatherBox(h,inner,kind){if(h.travel)return "";const used=stUsed(h),left=STAMINA-used,wx=WEATHER[weatherOf(h.loc)],loc=Object.entries(MATS).filter(([,m])=>m[3]?.includes(h.loc));
+  const head=shopHead("gather",`${REGIONS[h.loc].n} 산과 들 · 활력 ${left}/${STAMINA}`);if(!inner&&!shopOpen.gather)return `<div class="shop">${head}</div>`;
   const tips=Object.entries(GATHER_W[weatherOf(h.loc)]||{}).map(([k,v])=>`${GATHER[k].n} ${v>1?"잘 됨":"잘 안 됨"}`).join(" · ");
-  return `<div class="shop">${head}<div class="shopl">${Object.entries(GATHER).map(([k,G])=>`<button class="shopi" type="button" data-gather="${k}" ${left<=0?"disabled":""}><b>${G.n}</b><span>${G.say} · ${josa(STATS[G.st].n,"이")} 높을수록 귀한 게 나온다</span><em>활력 1</em></button>`).join("")}</div>
-    ${gLast?`<div class="fishpond"><span>${esc(gLast.text)}</span></div>`:""}
+  const G1=kind&&GATHER[kind];
+  return `${inner?"":`<div class="shop">${head}`}${G1?`<div class="gact"><button class="btn sealb" type="button" data-gather="${kind}" ${left<=0?"disabled":""}>${G1.n} · 활력 1</button><span class="note" style="margin:0">${G1.say} · ${josa(STATS[G1.st].n,"이")} 높을수록 귀한 게 나온다 · 남은 활력 ${left}/${STAMINA}</span></div>`
+      :`<div class="shopl">${Object.entries(GATHER).map(([k,G])=>`<button class="shopi" type="button" data-gather="${k}" ${left<=0?"disabled":""}><b>${G.n}</b><span>${G.say} · ${josa(STATS[G.st].n,"이")} 높을수록 귀한 게 나온다</span><em>활력 1</em></button>`).join("")}</div>`}
+    ${gLast&&(!kind||gLast.kind===kind)?`<div class="fishpond"><span>${esc(gLast.text)}</span></div>`:""}
     <p class="note">오늘 날씨 ${wx.n}${tips?` · ${tips}`:""}. ${loc.length?`이 지역에서만: ${loc.map(([k])=>h.gdex?.[k]?matN(k):"???").join(", ")}.`:""} 활력은 자정에 다시 찬다.</p>
     <button type="button" class="shoph" id="gDexBtn" style="margin-top:6px"><span class="kicker">채집 도감 · ${Object.keys(h.gdex||{}).filter(k=>MATS[k]).length}/${MAT_N}종</span><i>${gDex?"접기 ▴":"펼치기 ▾"}</i></button>
-    ${gDex?`<div class="dex">${Object.entries(MATS).sort((a,b)=>a[1][1].localeCompare(b[1][1])||a[1][2]-b[1][2]).map(([k,m])=>`<div class="dx t${m[2]} ${h.gdex?.[k]?"got":""}"><b>${h.gdex?.[k]?m[0]:"???"}</b><span>${GATHER[m[1]].n} · ${MAT_TIER[m[2]]} · ${h.gdex?.[k]?`가진 것 ${(h.mats||{})[k]||0}`:m[3]?m[3].map(r=>REGIONS[r].n).join("·"):"어디서나"}</span></div>`).join("")}</div>`:""}</div>`}
+    ${gDex?`<div class="dex">${Object.entries(MATS).filter(([,m])=>!kind||m[1]===kind).sort((a,b)=>a[1][1].localeCompare(b[1][1])||a[1][2]-b[1][2]).map(([k,m])=>`<div class="dx t${m[2]} ${h.gdex?.[k]?"got":""}"><b>${h.gdex?.[k]?m[0]:"???"}</b><span>${GATHER[m[1]].n} · ${MAT_TIER[m[2]]} · ${h.gdex?.[k]?`가진 것 ${(h.mats||{})[k]||0}`:m[3]?m[3].map(r=>REGIONS[r].n).join("·"):"어디서나"}</span></div>`).join("")}</div>`:""}${inner?"":"</div>"}`}
+let natTab="fish";
+function natureHub(h){if(h.travel)return "";const W=WEATHER[weatherOf(h.loc)],fl=Math.max(0,fishCasts(h)-fishUsed(h)),sl=STAMINA-stUsed(h),bloom=happenHere("fishing",h.loc);
+  if(fishState)natTab="fish";
+  const head=shopHead("nature",`${REGIONS[h.loc].n} 산과 물가 · ${W.ch} ${W.n} · 낚시 ${fl}/${fishCasts(h)} · 활력 ${sl}/${STAMINA}${bloom?" · 대풍어!":""}`);
+  if(!shopOpen.nature&&!fishState)return `<div class="shop">${head}</div>`;
+  const T={fish:"낚시",herb:"약초",wood:"벌목",ore:"채광"};
+  return `<div class="shop">${head}<div class="innseg" role="tablist">${Object.entries(T).map(([k,n])=>`<button type="button" role="tab" aria-selected="${natTab===k}" class="${natTab===k?"on":""}" data-natt="${k}" ${fishState&&k!=="fish"?"disabled":""}>${n}</button>`).join("")}</div>
+    ${pxScene(natTab)}${natTab==="fish"?fishBox(h,true):gatherBox(h,true,natTab)}</div>`}
 
 /* ───────── 공방: 재료로 장비·단약·도구를 만든다. 만들수록 숙련도가 올라 좋은 결과가 나온다 ───────── */
 const craftLv=h=>Math.floor(Math.sqrt((h.craftXp||0)/12));
@@ -3308,7 +3428,7 @@ function bindEcon(){
   if(profileId)paintProfile();
   {const fr=document.querySelector(".fres[data-n]");if(fr)gmsgShown=+fr.dataset.n}
   document.querySelectorAll("[data-eat]").forEach(b=>b.addEventListener("click",()=>eatFood(b.dataset.eat)));
-  document.querySelectorAll("[data-shop]").forEach(b=>b.addEventListener("click",()=>toggleShop(b.dataset.shop)));
+  document.querySelectorAll("[data-shop]").forEach(b=>b.addEventListener("click",()=>{if(b.dataset.shop==="quest"&&!shopOpen.quest)questOpenT=Date.now();toggleShop(b.dataset.shop)}));
   document.querySelectorAll("[data-smith]").forEach(b=>b.addEventListener("click",()=>smithBuy(b.dataset.smith)));
   document.querySelectorAll("[data-smsp]").forEach(b=>b.addEventListener("click",()=>{smithSpec=b.dataset.smsp;render()}));
   document.querySelectorAll("[data-cv]").forEach(b=>b.addEventListener("click",()=>cvBuy(b.dataset.cv)));
@@ -4452,6 +4572,7 @@ function fastForward(){
 let lastView=null, fadeNext=true;
 function render(){
   const ae=document.activeElement;if(ae&&ae.closest?.(".mailf")&&/^(INPUT|TEXTAREA)$/.test(ae.tagName)&&ae.type!=="checkbox"&&ae.type!=="radio"){if(!render.pend){render.pend=true;ae.addEventListener("blur",()=>{render.pend=false;setTimeout(render,0)},{once:true})}return}
+  {const d0=$("#duelFeed");duelFeedSt=d0?{at:d0.scrollHeight-d0.scrollTop-d0.clientHeight<30,st:d0.scrollTop,n:d0.children.length}:null}
   const app=$("#app"),fb0=$("#inlineFeed"),fbAt=!fb0||fb0.scrollHeight-fb0.scrollTop-fb0.clientHeight<30,fbSt=fb0?.scrollTop||0;
   if(!ready){app.innerHTML="";return}
   $("#status").textContent = mode==="db"
@@ -4608,7 +4729,7 @@ function worldTab(){
     else if(direct) regionBox+=`<div class="row" style="margin-top:6px"><button class="btn solid" id="goBtn" type="button" ${a?"disabled":""}>${josa(R.n,"로")} 떠나기 · ${hrsTxt(direct)}${tg.length?` (${tg.join(", ")})`:""}</button>${realMates().length?`<button class="btn ghost" type="button" data-callgo="${dest}">무리에게 같이 가자고 하기</button>`:""}${a?`<span class="note" style="margin:0">${busyText[a]} 떠날 수 없다.</span>`:""}</div>`;
     else{const rt=route(h.loc,dest);regionBox+=`<p class="note">바로 가는 길이 없다. ${rt.path.map(p=>REGIONS[p].n).join(" → ")} (모두 ${hrsTxt(teaHrs(h,hrsFor(h,rt.hours)))}${speedTags(h,null).length?`, ${speedTags(h,null).join(" · ")}`:""}) 순으로 한 곳씩 이동해야 한다.</p>`}
   }
-  regionBox+=(focus===h.loc?regionSectBox(focus)+ililBox(h)+shopGroup("생업 · 일하고 거두기",jobBox(h)+fishBox(h)+gatherBox(h))+shopGroup("가게 · 사고 고치기",stableBox(h)+innBox(h)+decorBox(h)+smithBox(h)):"")+`</div>`;
+  regionBox+=(focus===h.loc?regionSectBox(focus)+ililBox(h)+shopGroup("생업 · 일하고 거두기",jobBox(h)+natureHub(h))+shopGroup("가게 · 사고 고치기",stableBox(h)+innHub(h)):"")+`</div>`;
   return `${nemBox(h)}${happenBox(h)}${invBox(h)}${questBox(h)}<section><div class="label">지도</div>${mapSvg()}
     <p class="note">지역을 누르면 정보가 보이고, 이어진 곳이면 바로 떠날 수 있다.</p>${regionBox}${caravanBox(h)}</section>
     ${travelBox?`<section style="margin-top:20px">${travelBox}</section>`:""}
@@ -4796,7 +4917,7 @@ function bind(){
   document.querySelectorAll("[data-hdig]").forEach(b=>b.addEventListener("click",()=>happenDig(b.dataset.hdig)));
   document.querySelectorAll("[data-hduel]").forEach(b=>b.addEventListener("click",()=>happenDuel(b.dataset.hduel)));
   document.querySelectorAll("[data-hgo]").forEach(b=>b.addEventListener("click",()=>{dest=b.dataset.hgo;tab="world";render();try{document.querySelector(".region")?.scrollIntoView({block:"start"})}catch(e){}}));
-  on("#dexBtn",()=>{dexOpen=!dexOpen;render()});on("#fishCast",fishCast);on("#mEdit",()=>{manorEdit=true;manorDraft={...(me.mpos||{})};manorSel=null;render()});on("#mCancel",()=>{manorEdit=false;manorDraft=null;manorSel=null;render()});on("#mSave",manorSaveArr);
+  on("#dexBtn",()=>{dexOpen=!dexOpen;render()});on("#fishCast",fishCast);document.querySelectorAll("[data-innt]").forEach(b=>b.onclick=()=>{innTab=b.dataset.innt;render()});document.querySelectorAll("[data-natt]").forEach(b=>b.onclick=()=>{natTab=b.dataset.natt;render()});on("#mEdit",()=>{manorEdit=true;manorDraft={...(me.mpos||{})};manorSel=null;render()});on("#mCancel",()=>{manorEdit=false;manorDraft=null;manorSel=null;render()});on("#mSave",manorSaveArr);
   on("#mFlip",()=>{if(!manorSel)return;const P=mposOf(me,manorSel,manorDraft);manorDraft={...manorDraft,[manorSel]:[P[0],P[1],!P[2]]};render()});
   on("#mReset",()=>{if(!manorSel)return;const d={...manorDraft};delete d[manorSel];manorDraft=d;render()});manorWire();on("#ililClaim",ililClaim);document.querySelectorAll("[data-maehwa]").forEach(b=>b.onclick=()=>maehwaStart(b.dataset.maehwa));on("#fishBuy",fishBuy);on("#fishPull",()=>fishPull(false));on("#fishSell",fishSell);on("#rbAsk",()=>{rbAsk=true;render()});on("#rbNo",()=>{rbAsk=false;render()});on("#rbGo",doRebirth);on("#fishSellT",()=>{fishSellOpen=!fishSellOpen;render()});
   document.querySelectorAll("[data-fsell]").forEach(b=>b.onclick=()=>{const k=b.dataset.fsell,i=document.querySelector(`[data-fsq="${k}"]`);fishSellOne(k,+(i?.value||1))});
@@ -5209,6 +5330,15 @@ addEventListener("murim-ready",()=>{
   .chat .m.mine .who{color:var(--seal)}
   .chat .empty2{color:var(--ink-3);font-size:13px;text-align:center;margin:auto}
   .chat form{display:flex;gap:6px;padding:8px;border-top:1px solid var(--line)}
+  .chat form .dice{background:none;border:1px solid var(--line);color:inherit;padding:0 8px;display:grid;place-items:center;cursor:pointer}
+  .chat .tx.roll{display:inline-flex;align-items:center;gap:10px;padding:6px 14px 6px 8px;border-radius:12px;border:1px solid color-mix(in srgb,var(--seal) 35%,transparent);background:color-mix(in srgb,var(--seal) 7%,var(--paper))}
+  .chat .tx.roll.fresh{animation:rollIn .45s cubic-bezier(.2,.8,.2,1)}
+  .chat .tx.roll .rd{display:grid;place-items:center;width:34px;height:34px;border-radius:8px;background:var(--paper);border:1px solid var(--line)}
+  .chat .tx.roll .rd svg{width:24px;height:24px}
+  .chat .tx.roll .rn{font-family:var(--f-brush,serif);font-size:30px;line-height:1;color:var(--seal);min-width:1.2em;text-align:center}
+  .chat .tx.roll .rs{font-size:12px;color:var(--ink-3);letter-spacing:.06em}
+  @keyframes rollIn{0%{transform:rotate(-8deg) scale(.85);opacity:0}100%{transform:none;opacity:1}}
+  @media (prefers-reduced-motion:reduce){.chat .tx.roll.fresh{animation:none}}
   .chat input{flex:1;min-width:0;font:inherit;font-size:14px;padding:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink)}
   .chat form button{border:1px solid var(--ink);background:var(--ink);color:var(--paper);padding:0 14px;font:inherit;font-size:13px}
   .chat .ppl{display:grid}.chat .ppl button{display:flex;justify-content:space-between;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:12px;font:inherit;font-size:14px;color:var(--ink)}
@@ -5252,17 +5382,18 @@ addEventListener("murim-ready",()=>{
     if(tab==="dm"&&!dmWith){canSend=false;const ps=peers();
       /* 1:1 목록에는 귓속말을 나눈 사람만, 최근 순으로. 새 대화는 아래 고르기로 연다 */
       const lastT=o=>Math.max(0,...latest(keyOf("dm",o._id)).map(m=>m.t||0)),talked=ps.filter(o=>lastT(o)>0).sort((a,b)=>lastT(b)-lastT(a)),rest=ps.filter(o=>!lastT(o)).sort((a,b)=>String(a.name).localeCompare(String(b.name),"ko"));
-      body=`<div class="ppl">${talked.length?talked.map(o=>`<button type="button" data-dm="${o._id}">${o.name}<span>${unread(keyOf("dm",o._id))?"<b>새 귓속말</b>":(latest(keyOf("dm",o._id)).sort((a,b)=>a.t-b.t).slice(-1)[0]?.text||"").slice(0,18)}</span></button>`).join(""):`<p class="empty2" style="padding:20px 12px">아직 귓속말을 나눈 사람이 없다.</p>`}</div>
+      body=`<div class="ppl">${talked.length?talked.map(o=>`<button type="button" data-dm="${o._id}">${o.name}<span>${unread(keyOf("dm",o._id))?"<b>새 귓속말</b>":(latest(keyOf("dm",o._id)).sort((a,b)=>a.t-b.t).slice(-1)[0]?.text||"").replace(/^\u2063d(\d+):(\d+)$/,"주사위 d$1 → $2").slice(0,18)}</span></button>`).join(""):`<p class="empty2" style="padding:20px 12px">아직 귓속말을 나눈 사람이 없다.</p>`}</div>
         ${rest.length?`<div class="dmnew"><select id="dmPick" aria-label="귓속말할 사람"><option value="">새 귓속말 보낼 사람…</option>${rest.map(o=>`<option value="${o._id}">${o.name}</option>`).join("")}</select><button type="button" id="dmPickGo">대화 열기</button></div>`:""}`}
     else{if(tab==="dm"){const o=peers().find(x=>x._id===dmWith);sub=`<div class="sub"><span>${o?(typeof josa==="function"?josa(o.name,"와"):o.name):"?"} 귓속말</span><button type="button" id="dmBack">목록</button></div>`}
       const list=k?msgs[k]||[]:[];
       body=`<div class="msgs" id="chatMsgs">${list.length?list.map(m=>{const d=new Date(m.t);return `<div class="m ${m.from===uid?"mine":""}"><span class="cavw"></span><div><span class="who"></span><span class="tx"></span><span class="tm">${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}</span></div></div>`}).join(""):`<p class="empty2">${k?"아직 아무 말도 없다. 먼저 말을 걸어 보자.":""}</p>`}</div>`}
-    const form=canSend?`<form id="chatForm"><input id="chatIn" maxlength="200" autocomplete="off" placeholder="${tab==="dm"?"귓속말":"말하기"} (200자까지)" aria-label="보낼 말"><button type="submit">보내기</button></form>`:"";
+    const DIE=`<svg viewBox="0 0 12 12" width="20" height="20" shape-rendering="crispEdges" aria-hidden="true"><rect x="1" y="1" width="10" height="10" fill="#f5f0e3"/><rect x="1" y="1" width="10" height="1" fill="#2b2622"/><rect x="1" y="10" width="10" height="1" fill="#2b2622"/><rect x="1" y="1" width="1" height="10" fill="#2b2622"/><rect x="10" y="1" width="1" height="10" fill="#2b2622"/><rect x="3" y="3" width="2" height="2" fill="#b0382a"/><rect x="7" y="7" width="2" height="2" fill="#b0382a"/><rect x="5" y="5" width="2" height="2" fill="#b0382a"/></svg>`;
+    const form=canSend?`<form id="chatForm">${tab==="dm"?`<button type="button" id="chatDice" class="dice" title="d10 굴리기" aria-label="주사위 d10 굴리기">${DIE}</button>`:""}<input id="chatIn" maxlength="200" autocomplete="off" placeholder="${tab==="dm"?"귓속말":"말하기"} (200자까지)" aria-label="보낼 말"><button type="submit">보내기</button></form>`:"";
     const keepDraft=$c("#chatIn")?.value||"";const hadFocus=document.activeElement?.id==="chatIn";
     box.innerHTML=tabs+sub+body+form;
     const list=k?msgs[k]||[]:[];box.querySelectorAll(".m").forEach((el,i)=>{el.querySelector(".who").textContent=list[i].name||"?";
       try{const H=typeof heroById==="function"?heroById(list[i].from):null;const bd=H&&typeof titleBadge==="function"?titleBadge(H):"";if(bd)el.querySelector(".who").insertAdjacentHTML("afterbegin",bd)}catch(e){}
-      const op=()=>{if(typeof openProfile==="function")openProfile(list[i].from)};el.querySelector(".who").onclick=op;el.querySelector(".cavw").onclick=op;el.querySelector(".tx").textContent=list[i].text;const a=typeof avatars!=="undefined"&&avatars[list[i].from],cw=el.querySelector(".cavw");
+      const op=()=>{if(typeof openProfile==="function")openProfile(list[i].from)};el.querySelector(".who").onclick=op;el.querySelector(".cavw").onclick=op;{const dm=/^\u2063d(\d+):(\d+)$/.exec(list[i].text||"");const tx=el.querySelector(".tx");if(dm){tx.classList.add("roll");if(Date.now()-(list[i].t||0)<3000)tx.classList.add("fresh");tx.innerHTML=`<span class="rd">${DIE}</span><span class="rn">${dm[2]}</span><span class="rs">d${dm[1]} 굴림</span>`}else tx.textContent=list[i].text}const a=typeof avatars!=="undefined"&&avatars[list[i].from],cw=el.querySelector(".cavw");
       if(typeof okImg==="function"&&okImg(a)){const im=document.createElement("img");im.className="cav";im.alt="";im.src=a;cw.appendChild(im)}
       else{try{const H=typeof heroById==="function"?heroById(list[i].from):null;if(H&&typeof emblem==="function")cw.innerHTML=emblem(H.sect in SECTS?H.sect:"sorim","cav")}catch(e){}}});
     const ml=$c("#chatMsgs");if(ml)ml.scrollTop=ml.scrollHeight;
@@ -5274,6 +5405,9 @@ addEventListener("murim-ready",()=>{
     if($c("#dmBack"))$c("#dmBack").onclick=()=>{dmWith=null;paint()};
     if($c("#dmPickGo"))$c("#dmPickGo").onclick=()=>{const v=$c("#dmPick").value;if(v){dmWith=v;paint()}};
     if($c("#dmPick"))$c("#dmPick").onchange=()=>{const v=$c("#dmPick").value;if(v){dmWith=v;paint()}};
+    if($c("#chatDice"))$c("#chatDice").onclick=async()=>{if(Date.now()-last<1200){alertLine("주사위는 천천히 굴려 주세요.");return}last=Date.now();
+      const v=1+Math.floor((crypto.getRandomValues(new Uint32Array(1))[0]/4294967296)*10);
+      try{await fs.collection(`dm/${pair(dmWith)}/msgs`).add({from:uid,name:heroName(),text:`\u2063d10:${v}`,t:Date.now(),st:firebase.firestore.FieldValue.serverTimestamp()})}catch(x){alertLine("굴리지 못했어요. 잠시 뒤 다시 해 주세요.")}};
     if($c("#chatForm"))$c("#chatForm").onsubmit=async e=>{e.preventDefault();const inp=$c("#chatIn"),text=inp.value.trim().slice(0,200);if(!text)return;
       if(Date.now()-last<600){alertLine("조금만 천천히 보내 주세요.");return}last=Date.now();inp.value="";
       const ref=tab==="dm"?fs.collection(`dm/${pair(dmWith)}/msgs`):fs.collection(`chat/${tab==="server"?"server":myLoc()}/msgs`);
