@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261111223919">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261112014334">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1797,6 +1797,7 @@ function maybeResolve(){
   const r=myRoom();if(!r||r.status!=="fight"||gateResolving)return;
   const ps=r.party.filter(x=>x.player&&x.hp>0),allIn=ps.every(m=>playerReady(r,m));
   if(!allIn&&sNow()<r.deadline)return;
+  if(!mayTry("g:"+r.id+":"+r.act))return;
   gateResolving=true;
   (async()=>{try{if(!(await GS.lease(r.id)))return;const fresh=await GS.getRoom(r.id);
       if(!fresh||fresh.status!=="fight"||fresh.act!==r.act)return;await GS.setRoom(r.id,resolveGate(fresh))}
@@ -2597,7 +2598,7 @@ function duelChoose(act){const d=myDuel();if(!d||d.status!=="fight")return;GS.se
 const duelActOf=(d,id)=>{const a=(id===myId()?myAct():gateActs[id])||{};return a.dr===d.id&&a.dt===d.round?a.da:null};
 function maybeResolveDuel(){const d=myDuel();if(!d||d.status!=="fight"||duelBusy)return;
   const both=duelActOf(d,d.a)&&duelActOf(d,d.b);if(!both&&sNow()<d.deadline)return;
-  const r=d.round;duelEdit(d.id,f=>f.status==="fight"&&f.round===r,f=>duelRound(f)).catch(()=>{})}
+  const r=d.round;if(!mayTry("d:"+d.id+":"+r))return;duelEdit(d.id,f=>f.status==="fight"&&f.round===r,f=>duelRound(f)).catch(()=>{})}
 function duelAuto(p){return pickOne(["nei","wai","shen"])}
 function duelRound(f){
   const ids=[f.a,f.b],P=f.p,act={},log=f.log,nm=id=>`\u0001${P[id].name}\u0002`;
@@ -2726,7 +2727,7 @@ function bindQna(){if(tab!=="qna")return;
   qnaMark()}
 function noticeTab(){
   const list=noticeList(),seen=me.noticeSeen||0;
-  const items=list.length?list.map((n,i)=>{const open=noticeOpen===n.id||(noticeOpen===null&&i===0);
+  const items=list.length?list.map((n,i)=>{const open=noticeOpen===n.id;
     return `<div class="mail notice ${n.t>seen?"new":""}"><button class="mailh" type="button" data-nopen="${n.id}"><b>${n.pin?`<span class="pin">고정</span>`:""}${esc(n.title)}</b><span>[${NOTICE_BY}] · ${hhmm(n.t)}</span></button>
       ${open?`<div class="mailb"><p>${esc(n.body||"").replace(/\n/g,"<br>")}</p><p class="note sig" style="margin:0">— ${NOTICE_BY}</p>
         ${isOwner&&mode==="db"?`<div class="row"><button class="btn ghost sm" type="button" data-npin="${n.id}">${n.pin?"고정 풀기":"맨 위에 고정"}</button><button class="btn ghost sm" type="button" data-ndel="${n.id}">공지 내리기</button></div>`:""}</div>`:""}</div>`}).join("")
@@ -2737,8 +2738,14 @@ function noticeTab(){
     <label class="chk"><input type="checkbox" data-npinc ${noticeDraft.pin?"checked":""}> 맨 위에 고정</label>
     <p class="note" style="margin:0">쓴 사람은 [${NOTICE_BY}]로 나온다. 내걸면 모두에게 알림이 간다.</p>
     <div class="row"><button class="btn solid" type="button" id="noticePost" ${noticeBusy?"disabled":""}>내걸기</button></div></div></section>`:"";
-  return `<section><div class="label">무림맹 방문(榜文)</div>${items}${mode!=="db"?`<p class="note">공지는 여럿이 함께 쓰는 강호에서만 보인다.</p>`:""}</section>${form}${invAdminBox()}`;
+  const RM=window.__reads,rmL=RM?Object.entries(RM.by).sort((a,b)=>b[1]-a[1]):[],rmT=rmL.reduce((a,x)=>a+x[1],0);
+  const meter=isOwner&&RM?`<section><div class="label">읽기 계측 · 관리자 · 이 기기만</div><p class="note" style="margin-top:0">${hhmm(RM.since)}부터 이 기기가 서버에서 읽은 문서 ${rmT.toLocaleString()}개 (분당 ${(rmT/Math.max(1,(Date.now()-RM.since)/60e3)).toFixed(1)})</p>
+    <ul class="log">${rmL.slice(0,14).map(([k,v])=>`<li><time>${v.toLocaleString()}</time>${esc(READ_N[k.replace(/\(get\)$/,"")]||k)}${k.endsWith("(get)")?" (한 번 읽기)":""}</li>`).join("")||"<li>아직 없다</li>"}</ul>
+    <p class="note" style="margin:4px 0 0">한 갈래만 유난히 빨리 늘면 거기서 새는 것이다. 새로고침하면 처음부터 다시 센다.</p></section>`:"";
+  return `<section><div class="label">무림맹 방문(榜文)</div>${items}${mode!=="db"?`<p class="note">공지는 여럿이 함께 쓰는 강호에서만 보인다.</p>`:""}</section>${form}${meter}${invAdminBox()}`;
 }
+const READ_N={heroes:"인물 정보",avatars:"초상화",gateacts:"관문·소굴·논검 행동",gates:"관문 방",lairs:"동행 소굴",duels:"논검",parcels:"꾸러미",visits:"방명록",notices:"공지",mail:"우편",events:"마교 침공",qna:"문답 글",qnac:"문답 댓글",journals:"지난 일지",users:"계정",happen:"강호 사건",
+  "chat:server":"서버 대화","chat:region":"지역 대화","chat:dm":"1:1 대화","lease:gates":"관문 결판 자물쇠","lease:lairs":"소굴 결판 자물쇠","lease:duels":"논검 결판 자물쇠","lease:parcels":"꾸러미 자물쇠","lease:happen":"사건 자물쇠"};
 function bindNotice(){
   document.querySelectorAll("[data-nopen]").forEach(b=>b.addEventListener("click",()=>{noticeOpen=noticeOpen===b.dataset.nopen?"":b.dataset.nopen;render()}));
   document.querySelectorAll("[data-ndel]").forEach(b=>b.addEventListener("click",()=>delNotice(b.dataset.ndel)));
@@ -4368,7 +4375,7 @@ function maybeResolveLair(){
   const r=myRun();if(!r||r.status!=="active"||r.phase!=="boss"||coBusy)return;
   const party=coParty(r),ps=party.filter(x=>x.player&&x.hp>0);
   if(!ps.every(m=>coReady(r,m))&&sNow()<r.boss.deadline)return;
-  const t=r.boss.t;coEdit(f=>f.status==="active"&&f.phase==="boss"&&f.boss.t===t,f=>coBossTurn(f)).catch(()=>{});
+  const t=r.boss.t;if(!mayTry("l:"+r.id+":"+t))return;coEdit(f=>f.status==="active"&&f.phase==="boss"&&f.boss.t===t,f=>coBossTurn(f)).catch(()=>{});
 }
 function coBossTurn(f){
   const b=f.boss,B=bossFor(f.period),party=coParty(f),log=f.log,om=b.omen;if(b.vuln)b.vuln--;
@@ -5547,6 +5554,11 @@ function curPhase(){
   const fc=me?.mission?.phase==="wait"?feedFor(me,me.mission,companionFor(me.mission)).filter(x=>x.t<=n).length:0;
   return me?[e(me.training),e(me.travel),e(me.mission),fc,...others.map(o=>e(o.training)+e(o.travel))].join(""):"";
 }
+/* 관문·소굴·논검 결판은 1초마다 살피지만, 같은 판을 되풀이해 시도하면 점점 뜸하게 한다 (읽기 새는 것 막기).
+   창을 내려 둔 기기는 결판을 내지 않는다 (보고 있는 사람이 낸다) */
+const RTRY={};
+function mayTry(key){if(document.hidden)return false;const now=Date.now(),r=RTRY[key]||(RTRY[key]={n:0,t:0});const gap=r.n?Math.min(60e3,3e3*2**(r.n-1)):0;
+  if(now-r.t<gap)return false;r.n++;r.t=now;for(const k in RTRY)if(now-RTRY[k].t>600e3)delete RTRY[k];return true}
 function tick(){
   maybeResolve();maybeResolveLair();try{maybeResolveDuel()}catch(e){}
   if(!me) return;
@@ -5682,22 +5694,27 @@ window.FIREBASE_CONFIG = {
     await r.set({t:firebase.firestore.FieldValue.serverTimestamp()});const s=await r.get({source:"server"}),t1=Date.now();
     const st=s.data().t;const ms=st?.toMillis?st.toMillis():+st;if(ms)skew=Math.round(ms-(t0+t1)/2)}catch(e){}}
 
+  /* 읽기 계측: 이 기기가 서버에서 받은 문서 수를 갈래별로 센다 (관리자 화면에서 본다) */
+  const RM=window.__reads={since:Date.now(),by:{}};
+  const rd=window.__rd=(k,n)=>{if(n>0)RM.by[k]=(RM.by[k]||0)+n};
+  const rkey=p=>{const a=p.split("/");return a[0]==="chat"?"chat:"+(a[1]==="server"?"server":a[1].startsWith("dm")||a[1].includes("__")?"dm":"region"):a[0]};
+  const snapN=window.__snapN=s=>{try{return s.metadata?.fromCache||s.metadata?.hasPendingWrites?0:(s.docChanges?s.docChanges().length:(s.size||0))}catch(e){return 0}};
   function adapter(){
     const wrap=d=>({id:d.id,exists:d.exists,data:()=>d.data(),metadata:{hasPendingWrites:d.metadata.hasPendingWrites,fromCache:d.metadata.fromCache}});
     const api={
       doc(path){const ref=fs.doc(path);return{
         set:data=>ref.set(data),update:data=>ref.update(data),delete:()=>ref.delete(),
-        get:async()=>wrap(await ref.get()),
-        onSnapshot:(n,e)=>ref.onSnapshot({includeMetadataChanges:true},s=>n(wrap(s)),e),
+        get:async()=>{rd(rkey(path)+"(get)",1);return wrap(await ref.get())},
+        onSnapshot:(n,e)=>{let last=null;return ref.onSnapshot({includeMetadataChanges:true},s=>{try{if(!s.metadata?.fromCache&&!s.metadata?.hasPendingWrites){const j=JSON.stringify(s.data()??null);if(j!==last){last=j;rd(rkey(path),1)}}}catch(e){}n(wrap(s))},e)},
         acquire:async({holder,ttlMs})=>{const lr=fs.doc("leases/"+path.replace(/\//g,"__"));
-          try{return await fs.runTransaction(async tx=>{const s=await tx.get(lr),now=srvNow();
+          try{return await fs.runTransaction(async tx=>{const s=await tx.get(lr),now=srvNow();rd("lease:"+rkey(path),1);
             if(s.exists&&s.data().exp>now&&s.data().holder!==holder)return{acquired:false};
             tx.set(lr,{holder,exp:now+(ttlMs||30000)});return{acquired:true}})}catch(e){return{acquired:false}}}}},
       collection(path){const ref=fs.collection(path);
         /* 조건(where)·순서·개수 제한으로 필요한 문서만 읽는다 */
         const Q=r=>({where:(f,op,v)=>Q(r.where(f,op,v)),orderBy:(f,d)=>Q(r.orderBy(f,d)),limit:n=>Q(r.limit(n)),
-          get:async()=>{const s=await r.get();return{docs:s.docs.map(wrap)}},
-          onSnapshot:(n,e)=>r.onSnapshot({includeMetadataChanges:true},s=>n({docs:s.docs.map(wrap),size:s.size,empty:s.empty,fromCache:s.metadata?.fromCache}),e)});
+          get:async()=>{const s=await r.get();rd(rkey(path)+"(get)",s.size||1);return{docs:s.docs.map(wrap)}},
+          onSnapshot:(n,e)=>r.onSnapshot({includeMetadataChanges:true},s=>{rd(rkey(path),snapN(s));n({docs:s.docs.map(wrap),size:s.size,empty:s.empty,fromCache:s.metadata?.fromCache})},e)});
         return{doc:id=>api.doc(path+"/"+id),...Q(ref)}}};
     return api;
   }
@@ -5959,7 +5976,7 @@ addEventListener("murim-ready",()=>{
   let pq=false;const later=()=>{if(pq)return;pq=true;setTimeout(()=>{pq=false;paint()},0)};
   /* 귓속말은 평소엔 마지막 한 마디만 엿본다(새 귓속말 표시용). 대화를 열었을 때만 최근 20마디를 읽는다 */
   const peek={};
-  function listen(key,ref,lim,store){const sk=(store===peek?"peek|":"")+key;if(unsub[sk])return;unsub[sk]=true;store=store||msgs;unsub[sk]=ref.orderBy("st","desc").limit(lim||(key.startsWith("dm:")?20:30)).onSnapshot(s=>{store[key]=s.docs.map(d=>{const x=d.data({serverTimestamps:"estimate"})||{},st=x.st&&x.st.toMillis?x.st.toMillis():(typeof x.st==="number"?x.st:Date.now());return {...x,id:d.id,t:st}}).reverse();later()},()=>{})}
+  function listen(key,ref,lim,store){const sk=(store===peek?"peek|":"")+key;if(unsub[sk])return;unsub[sk]=true;store=store||msgs;unsub[sk]=ref.orderBy("st","desc").limit(lim||(key.startsWith("dm:")?20:30)).onSnapshot(s=>{window.__rd(key.startsWith("dm:")?"chat:dm":key==="ch:server"?"chat:server":"chat:region",window.__snapN(s));store[key]=s.docs.map(d=>{const x=d.data({serverTimestamps:"estimate"})||{},st=x.st&&x.st.toMillis?x.st.toMillis():(typeof x.st==="number"?x.st:Date.now());return {...x,id:d.id,t:st}}).reverse();later()},()=>{})}
   /* 서버·지역 대화도 창을 열기 전에는 마지막 한 마디만 엿본다 (새 말 표시용). 그 탭을 처음 열 때 최근 30마디를 읽는다.
      지역을 옮기면 예전 지역 대화는 더 듣지 않는다 */
   function ensure(){const open=!box.hidden;
