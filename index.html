@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261111110006">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261111153951">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -670,6 +670,8 @@ section.inv.mini::after{font-size:70px;bottom:-16px;right:-2px}
 .stip b{display:block;font-size:14px}.stip span{font-size:12px;color:var(--muted,#8a8378)}.stip .btn{white-space:nowrap;flex:none}.stip em{font-style:normal;font-size:12px;color:var(--muted,#8a8378);white-space:nowrap}
 .esc{margin:0 0 10px;padding:10px 12px;border-radius:var(--r-s,8px);border:1px solid var(--line);border-left:3px solid #c9952e;background:var(--card,#fff)}
 .esc p{margin:2px 0 0}.esc.late{border-left-color:var(--seal,#b0382a)}
+
+.contrib .csub{display:block;font-size:11px;font-weight:400;color:var(--muted,#8a8378);white-space:nowrap}
 </style>
 
 <div class="wrap">
@@ -1301,10 +1303,12 @@ function simulate(h,role,B,quiet,rnd=Math.random){
   return {dmg:dmgTotal,log,standing};
 }
 function hpShareFor(h,role,B){let s=0;const R=seeded(h.level*7919+3);for(let i=0;i<20;i++)s+=simulate(h,role,B,true,R).dmg;return Math.round(s/20*7.5)}
+/* 토벌 기여 = 보스에게 준 피해 + 지원(치유량 + 보호막·약화로 막아 낸 피해). 보스 체력은 피해로만 깎인다 */
+const raidScore=x=>(x.raid?.dmg||0)+(x.raid?.sup||0);
 function raidState(p){
   const ppl=[me,...others].filter(x=>x?.raid?.period===p);
   const hp=ppl.reduce((a,x)=>a+(x.raid.share||0),0),dmg=ppl.reduce((a,x)=>a+(x.raid.dmg||0),0);
-  return {ppl:ppl.sort((a,b)=>b.raid.dmg-a.raid.dmg),hp,dmg,down:hp>0&&dmg>=hp};
+  return {ppl:ppl.sort((a,b)=>raidScore(b)-raidScore(a)),hp,dmg,down:hp>0&&dmg>=hp};
 }
 function battleLine(l){
   const body=esc(l.x).replace(/\u0001(.*?)\u0002/g,"<b>$1</b>");
@@ -1486,7 +1490,7 @@ function bossTurn(action){
     if(String(action).startsWith("adv:")&&advUse(C,mm,action.slice(4))){}
     else if(action==="def"){guard=true;if(run.role==="tank")taunt=mm;const d=deal(mm.atk,.3,1,mm.crit);turn+=d;log.push({k:"ev2",sub:"act",x:`${nmjx(mm,"이")} 자세를 낮추고 막아선다${run.role==="tank"?" · 보스의 시선을 끈다":""} · 반격 ${d}`})}
     else if(action==="skill"&&!b.cd&&b.qi>=25){b.qi-=25;b.cd=2;advNote(C,mm);const s=h.sect,nmS=SKILL_NAME[s];
-      if(s==="ami"){const parts=[];party.filter(x=>x.hp>0).forEach(x=>{const a=Math.round(Math.max(mm.atk*1.1,20+L*5)*(W==="ami"?1.15:1)*ghl(mm));x.hp=Math.min(x.max,x.hp+a);parts.push(`${nmx(x)} +${a}`)});log.push({k:"ev2",sub:"act",x:`${nmx(mm)}의 회춘수!${W==="ami"?" (자운불진)":""} ${parts.join(" · ")}`})}
+      if(s==="ami"){const parts=[];party.filter(x=>x.hp>0).forEach(x=>{const a=Math.round(Math.max(mm.atk*1.1,20+L*5)*(W==="ami"?1.15:1)*ghl(mm)),be=x.hp;x.hp=Math.min(x.max,x.hp+a);b.sup=(b.sup||0)+(x.hp-be);parts.push(`${nmx(x)} +${a}`)});log.push({k:"ev2",sub:"act",x:`${nmx(mm)}의 회춘수!${W==="ami"?" (자운불진)":""} ${parts.join(" · ")}`})}
       else{const spec=WSP(s,W),d=deal(mm.atk,spec[0]*gsk(mm),spec[1],mm.crit);turn+=d;
         if(s==="sorim"||((s==="namgung"||s==="akga")&&run.role==="tank"))taunt=mm;iron=Math.min(iron,ironOf(s,W));if(s==="kunlun"){b.vuln=2+(advHasM(mm,"unmu")?1:0);b.vulnM=vulnOf(W)}if(s==="mudang")pshield=W==="mudang"?.7:.75;if(s==="dang")weak=.8;
         log.push({k:"ev2",sub:"act",x:`${nmx(mm)}의 ${nmS}!${spec[1]>1?` ${spec[1]}연타`:""} · ${d} 피해${s==="sorim"?" · 보스의 시선이 쏠린다":s==="mudang"?" · 파티에 태극의 막이 둘러진다":s==="dang"?" · 보스의 손끝이 저린다":s==="namgung"?" · 검을 세운 채 버틴다":s==="akga"?" · 창끝이 적진을 꿰뚫는다":s==="kunlun"?" · 보스의 허점이 드러났다":s==="jegal"?" · 화살비가 쏟아진다":""}${wTag(W)}${wHeal(W,party,nmx)}`})}}
@@ -1498,9 +1502,11 @@ function bossTurn(action){
     if(a.role==="heal"){const low=party.filter(x=>x.hp>0).sort((x,y)=>x.hp/x.max-y.hp/y.max)[0];if(low&&low.hp/low.max<.65){const amt=Math.round(Math.max(a.atk*1.3,20+L*5));low.hp=Math.min(low.max,low.hp+amt);log.push({k:"ev2",sub:"act",x:`${a.name}의 회춘수 · ${nmx(low)} +${amt}`});continue}}
     const d=deal(a.atk,roleMul(a.role),1,a.crit);turn+=d;if(a.role==="tank"&&!taunt&&Math.random()<.6)taunt=a;
     log.push({k:"ev2",sub:"act",x:`${a.role==="tank"?`${josa(a.name,"이")} 앞을 막아서며 친다`:`${a.name}의 일격`} · ${d?`${d} 피해`:"빗나갔다"}`})}
+  /* 지원 기여: 내 보호막(무당)·약화(당가)로 줄인 피해를 센다 */
+  const mySh=pshield<1?pshield:1,myWk=weak<1?weak:1,supK=(1/mySh-1)+(1/myWk-1);
   const AP=advPre(C);if(AP.taunt)taunt=AP.taunt;pshield*=AP.sh;weak*=AP.bm;
   const bp=bAtk*(b.rage?1.5:1)*weak;b.rage=false;
-  const take=(x,base,kind)=>{if(x.isMe&&Math.random()*100<x.eva)return -1;let d=Math.max(1,Math.round(base*100/(100+x.def)*(.9+Math.random()*.2)*pshield));if(x.isMe&&guard)d=Math.round(d*.4);if(x.isMe&&iron<1)d=Math.round(d*iron);d=Math.round(d*tankMul(x));d=advTake(C,x,d,kind);if(d<0)return d;x.hp=Math.max(0,x.hp-d);return d};
+  const take=(x,base,kind)=>{if(x.isMe&&Math.random()*100<x.eva)return -1;let d=Math.max(1,Math.round(base*100/(100+x.def)*(.9+Math.random()*.2)*pshield));if(x.isMe&&guard)d=Math.round(d*.4);if(x.isMe&&iron<1)d=Math.round(d*iron);d=Math.round(d*tankMul(x));d=advTake(C,x,d,kind);if(d<0)return d;x.hp=Math.max(0,x.hp-d);if(supK)b.sup=(b.sup||0)+Math.round(d*supK);return d};
   if(b.t===1&&hasMod(run,"ambush"))log.push({k:"ev2",sub:"hit",x:`${josa(B.n,"이")} 함정에 걸려 비틀거린다. 이번 합은 공격하지 못했다.`});
   else if(om.type==="aoe"){const parts=party.filter(x=>x.hp>0).map(x=>{const d=take(x,bp*.6);return `${nmx(x)} ${d<0?"회피":d}${x.hp<=0?"(쓰러짐)":""}`});log.push({k:"ev2",sub:"hit",x:`광역 공격! ${parts.join(" · ")}`})}
   else if(om.type==="smash"){let tg=party.find(x=>x.id===om.target);if(taunt&&taunt.hp>0&&taunt!==tg){log.push({k:"ev2",sub:"act",x:`${nmjx(taunt,"이")} 강타를 대신 받아낸다!`});tg=taunt}
@@ -1518,7 +1524,7 @@ function bossTurn(action){
 }
 function endRun(h,why){
   const run=h.lair,B=bossFor(run.period),loot=run.loot,half=why==="wipe";
-  let dealt=0;if(why==="boss"){dealt=run.boss.dealt;bump(h,"lair");[...new Set(partyFor(h,run.role).filter(x=>!x.isMe).map(x=>x.sect))].forEach(k=>addFavor(h,k,15));loot.exp+=expPerHour(h.level);if(h.raid?.period===run.period)h.raid.dmg+=dealt}
+  let dealt=0;if(why==="boss"){dealt=run.boss.dealt;bump(h,"lair");[...new Set(partyFor(h,run.role).filter(x=>!x.isMe).map(x=>x.sect))].forEach(k=>addFavor(h,k,15));loot.exp+=expPerHour(h.level);if(h.raid?.period===run.period){h.raid.dmg+=dealt;h.raid.sup=(h.raid.sup||0)+(run.boss.sup||0)}}
   const exp=Math.round(loot.exp*(half?.5:1)),stone=Math.floor(loot.stone*(half?.5:1)),herb=Math.floor(loot.herb*(half?.5:1));
   const lv0=h.level,ups=applyExp(h,exp);h.items.stone+=stone;h.items.herb+=herb;const got=[];
   if(exp)got.push(`경험치 +${exp}`);if(stone)got.push(`강화석 +${stone}`);if(herb)got.push(`약초 +${herb}`);
@@ -1599,7 +1605,7 @@ function raidTab(){
     <div class="bar seal-c"><i style="width:${pct}%"></i></div>
     <div class="barnote"><span>${st.hp?`남은 체력 ${Math.max(0,st.hp-st.dmg).toLocaleString()} / ${st.hp.toLocaleString()}`:`예상 체력 ${hpShown.toLocaleString()} (첫 진입 때 정해짐)`}</span><span>참여 ${st.ppl.length}명</span></div>
     ${body}</div></section>
-    <section><div class="label">기여</div>${st.ppl.length?`<div class="contrib">${st.ppl.map((x,i)=>`<div class="cr"><span class="rk">${i+1}</span><span>${esc(x.name)}${x===me?" (나)":""}</span><span class="cbar"><i style="width:${st.dmg?x.raid.dmg/st.dmg*100:0}%"></i></span><b>${x.raid.dmg.toLocaleString()}</b></div>`).join("")}</div>`
+    <section><div class="label">기여</div>${st.ppl.length?`<div class="contrib">${st.ppl.map((x,i)=>`<div class="cr"><span class="rk">${i+1}</span><span>${esc(x.name)}${x===me?" (나)":""}</span><span class="cbar"><i style="width:${Math.min(100,raidScore(x)/Math.max(1,raidScore(st.ppl[0]))*100)}%"></i></span><b>${raidScore(x).toLocaleString()}${x.raid.sup?`<small class="csub">피해 ${x.raid.dmg.toLocaleString()} · 지원 ${x.raid.sup.toLocaleString()}</small>`:""}</b></div>`).join("")}</div><p class="note" style="margin-top:6px">기여 = 보스에게 준 피해 + 지원(치유량, 보호막·약화로 막아 낸 피해). 보스 체력은 피해로만 깎인다.</p>`
       :`<p class="empty">아직 아무도 들어가지 않았다. 첫 도전자가 되어 보자.</p>`}
     <p class="note">보스는 3일 동안 한 지역의 소굴에 머문다. 한 사람이 하루 3번 들어갈 수 있고, 모두가 보스방에서 준 피해를 합쳐 체력을 깎는다. 참여하는 사람이 많을수록 체력도 늘어난다.</p></section>`;
 }
@@ -4225,7 +4231,7 @@ function coBossTurn(f){
   const nm=x=>x.player?`\u0001${x.name}\u0002`:x.name;
   const tg0=party.find(x=>x.id===om.target);
   log.push({k:"sec",x:`${b.t}합`},{k:"ev2",sub:"omen",x:om.type==="aoe"?B.aoe:om.type==="smash"?fill(B.smash,{t:tg0?nm(tg0):"누군가"}):B.spx});
-  let guard={},taunt=null,pshield=1,weak=1,turn=0;const iron={};
+  let guard={},taunt=null,pshield=1,weak=1,turn=0;const iron={},supOf={sh:[],wk:[]};
   const C={fx:fxOf(b),P:party,log,nm,deal,hit:(m,d)=>{turn+=d;if(m)b.dealtBy[m.id]=(b.dealtBy[m.id]||0)+d;return d},vuln:(t,mu)=>{b.vulnM=Math.max(b.vuln>0?(b.vulnM||1.15):1,mu);b.vuln=Math.max(b.vuln||0,t)},qiOf:m=>m.player?(b.p[m.id]=b.p[m.id]||{qi:50,qmax:50,cd:0}):null,prog:()=>(b.t-1)/5};C.hitAll=C.hit;advStart(C);
   for(const m of party){if(m.hp<=0)continue;
     if(!m.player){
@@ -4237,9 +4243,9 @@ function coBossTurn(f){
     if(String(act).startsWith("adv:")&&advUse(C,m,act.slice(4))){}
     else if(act==="def"){guard[m.id]=true;if(m.role==="tank")taunt=m;const d=deal(m.atk,.3,1,m.crit);turn+=d;b.dealtBy[m.id]=(b.dealtBy[m.id]||0)+d;log.push({k:"ev2",sub:"act",x:`${josa(nm(m),"이")} 자세를 낮추고 막아선다 · 반격 ${d}`})}
     else if(act==="skill"&&!ps.cd&&ps.qi>=25){ps.qi-=25;ps.cd=2;advNote(C,m);const W=wfx(heroById(m.id));
-      if(m.sect==="ami"){const parts=party.filter(x=>x.hp>0).map(x=>{const amt=Math.round(Math.max(m.atk*1.1,20+L*5)*(W==="ami"?1.15:1)*ghl(m)*(x.player&&x.id!==m.id&&relMutual(m.id,x.id)==="연인"?1.25:1));x.hp=Math.min(x.max,x.hp+amt);return `${nm(x)} +${amt}`});log.push({k:"ev2",sub:"act",x:`${nm(m)}의 회춘수! ${parts.join(" · ")}`})}
+      if(m.sect==="ami"){b.supBy=b.supBy||{};const parts=party.filter(x=>x.hp>0).map(x=>{const amt=Math.round(Math.max(m.atk*1.1,20+L*5)*(W==="ami"?1.15:1)*ghl(m)*(x.player&&x.id!==m.id&&relMutual(m.id,x.id)==="연인"?1.25:1)),be=x.hp;x.hp=Math.min(x.max,x.hp+amt);b.supBy[m.id]=(b.supBy[m.id]||0)+(x.hp-be);return `${nm(x)} +${amt}`});log.push({k:"ev2",sub:"act",x:`${nm(m)}의 회춘수! ${parts.join(" · ")}`})}
       else{const sp=WSP(m.sect,W),d=deal(m.atk,sp[0]*gsk(m),sp[1],m.crit);turn+=d;b.dealtBy[m.id]=(b.dealtBy[m.id]||0)+d;
-        if(m.sect==="sorim"||((m.sect==="namgung"||m.sect==="akga")&&m.role==="tank"))taunt=m;if(ironOf(m.sect,W)<1)iron[m.id]=ironOf(m.sect,W);if(m.sect==="kunlun"){b.vuln=2+(advHasM(m,"unmu")?1:0);b.vulnM=Math.max(b.vulnM&&b.vuln?b.vulnM:0,vulnOf(W))}if(m.sect==="mudang")pshield=Math.min(pshield,W==="mudang"?.7:.75);if(m.sect==="dang")weak=.8;
+        if(m.sect==="sorim"||((m.sect==="namgung"||m.sect==="akga")&&m.role==="tank"))taunt=m;if(ironOf(m.sect,W)<1)iron[m.id]=ironOf(m.sect,W);if(m.sect==="kunlun"){b.vuln=2+(advHasM(m,"unmu")?1:0);b.vulnM=Math.max(b.vulnM&&b.vuln?b.vulnM:0,vulnOf(W))}if(m.sect==="mudang"){pshield=Math.min(pshield,W==="mudang"?.7:.75);supOf.sh.push([m.id,W==="mudang"?.7:.75])}if(m.sect==="dang"){weak=.8;supOf.wk.push([m.id,.8])}
         log.push({k:"ev2",sub:"act",x:`${nm(m)}의 ${SKILL_NAME[m.sect]}!${sp[1]>1?` ${sp[1]}연타`:""} · ${d} 피해${m.sect==="namgung"?" · 검을 세운 채 버틴다":m.sect==="akga"?" · 창끝이 적진을 꿰뚫는다":m.sect==="kunlun"?" · 보스의 허점이 드러났다":m.sect==="jegal"?" · 화살비가 쏟아진다":""}${wTag(W)}${wHeal(W,party,nm)}`})}}
     else{const d=deal(m.atk,roleMul(m.role),1,m.crit);turn+=d;b.dealtBy[m.id]=(b.dealtBy[m.id]||0)+d;log.push({k:"ev2",sub:"act",x:`${nm(m)}의 공격 · ${d?`${d} 피해`:"빗나갔다"}`})}
   }
@@ -4247,7 +4253,10 @@ function coBossTurn(f){
   const pl=party.filter(x=>x.player&&x.hp>0);if(pl.length>=2&&Math.random()<.3){const sh=[...pl].sort(()=>Math.random()-.5),[x,y]=sh;const pool=COMP.fight[relDir(x.id,y.id)]||COMP.fight.지인;log.push({k:"comp",x:fill(pickOne(pool),{c:nm(x)})})}
   const AP=advPre(C);if(AP.taunt)taunt=AP.taunt;pshield*=AP.sh;weak*=AP.bm;
   const bp=bAtk*(b.rage?1.5:1)*weak;b.rage=false;
-  const take=(x,base,kind)=>{if(x.player&&Math.random()*100<x.eva)return -1;let d=Math.max(1,Math.round(base*100/(100+x.def)*(.9+Math.random()*.2)*pshield));if(guard[x.id])d=Math.round(d*.4);if(iron[x.id])d=Math.round(d*iron[x.id]);d=Math.round(d*tankMul(x));d=advTake(C,x,d,kind);if(d<0)return d;x.hp=Math.max(0,x.hp-d);return d};
+  /* 지원 기여: 보호막(무당)·약화(당가)로 줄인 피해를 건 사람에게 나눠 센다 */
+  const supAdd=d=>{b.supBy=b.supBy||{};const one=(L2,f)=>{if(!L2.length)return;const k=(1/f-1)/L2.length;for(const [id] of L2)b.supBy[id]=(b.supBy[id]||0)+Math.round(d*k)};
+    one(supOf.sh,Math.min(...supOf.sh.map(x=>x[1]),1));one(supOf.wk,.8)};
+  const take=(x,base,kind)=>{if(x.player&&Math.random()*100<x.eva)return -1;let d=Math.max(1,Math.round(base*100/(100+x.def)*(.9+Math.random()*.2)*pshield));if(guard[x.id])d=Math.round(d*.4);if(iron[x.id])d=Math.round(d*iron[x.id]);d=Math.round(d*tankMul(x));d=advTake(C,x,d,kind);if(d<0)return d;x.hp=Math.max(0,x.hp-d);supAdd(d);return d};
   if(b.t===1&&hasMod(f,"ambush"))log.push({k:"ev2",sub:"hit",x:`${josa(B.n,"이")} 함정에 걸려 비틀거린다. 이번 합은 공격하지 못했다.`});
   else if(om.type==="aoe"){const parts=party.filter(x=>x.hp>0).map(x=>{const d=take(x,bp*.6);return `${nm(x)} ${d<0?"회피":d}${x.hp<=0?"(쓰러짐)":""}`});log.push({k:"ev2",sub:"hit",x:`광역 공격! ${parts.join(" · ")}`})}
   else if(om.type==="smash"){let tg=party.find(x=>x.id===om.target);if(taunt&&taunt.hp>0&&taunt!==tg){log.push({k:"ev2",sub:"act",x:`${josa(nm(taunt),"이")} 강타를 대신 받아낸다!`});tg=taunt}
@@ -4275,7 +4284,7 @@ function coFinish(f,why){
 /* 끝난 판에서 각자 자기 몫을 챙긴다 (같은 몫을 각자 받는다) */
 function coClaim(){
   const r=myRun();if(!r||r.phase!=="done")return;const h=structuredClone(me),B=bossFor(r.period),half=r.why==="wipe",lt=r.loot;
-  const mine=r.boss?.dealtBy?.[myId()]||0;if(r.why==="boss"&&h.raid?.period===r.period)h.raid.dmg+=mine;if(r.why==="boss")bump(h,"lair");
+  const mine=r.boss?.dealtBy?.[myId()]||0;if(r.why==="boss"&&h.raid?.period===r.period){h.raid.dmg+=mine;h.raid.sup=(h.raid.sup||0)+(r.boss?.supBy?.[myId()]||0)}if(r.why==="boss")bump(h,"lair");
   const sj=[...new Set(r.members)].filter(x=>x!==myId()).map(x=>sajeRole(myId(),x)).filter(Boolean);
   const exp=Math.round((lt.exp+(r.why==="boss"?expPerHour(h.level):0))*(half?.5:1)*(sj.includes("제자")?1.25:1)),stone=Math.floor(lt.stone*(half?.5:1))+(sj.includes("스승")?1:0),herb=Math.floor(lt.herb*(half?.5:1));
   const lv0=h.level,ups=applyExp(h,exp);h.items.stone+=stone;h.items.herb+=herb;const got=[];
@@ -5235,7 +5244,7 @@ function selfTab(){
     </div></section>
     <section>${foldHead("bag","행낭")}<div class="foldb" ${foldOpen("bag")?"":"hidden"}>
       <div class="bag"><div><b>${(h.silver||0).toLocaleString()}</b>은자 <span>· 냥 · 객잔과 떠돌이 상단에서 쓴다</span></div>${h.horse?`<div><b>🐎</b>${esc(h.horse.n)} <span>· ${horseT(h.horse).n} · 이동 시간 -${Math.round(horseT(h.horse).cut*100)}%</span></div>`:""}${Object.entries(ITEMS).map(([k,[n,sub]])=>`<div><b>${h.items[k]||0}</b>${n} <span>· ${sub}</span>${FOOD[k]&&h.items[k]>0?` <button class="btn sm ghost" type="button" data-eat="${k}" ${h.buff?.[FOOD[k].k]?"disabled":""}>${FOOD[k].v||"먹기"}</button>`:""}</div>`).join("")}</div>
-      ${h.buff&&Object.keys(h.buff).length?`<p class="note">걸려 있는 효과: ${Object.entries(h.buff).map(([k,it])=>Object.values(TOOLS).some(T=>T.buff===k)?`<b>${Object.values(TOOLS).find(T=>T.buff===k).n}</b> (${Object.values(TOOLS).find(T=>T.buff===k).d}${k==="bait"?` · ${it}번 남음`:""})`:k==="cart"?`<b>표국 마차</b> (다음 이동 -${CART_CUT*100}%)`:`<b>${ITEMS[it]?.[0]||it}</b> (${k==="scene"?"다음 사건 조사 +2":k==="atk"?"공격 +15%":k==="hp"?"체력 +20%":k==="travel"?"다음 이동 -20%":"다음 수련 경험치 +15%"})`).join(" · ")}</p>`:""}
+      ${h.buff&&Object.keys(h.buff).filter(k=>h.buff[k]&&(k!=="ilil"||h.buff.ilil>Date.now())).length?`<p class="note">걸려 있는 효과: ${Object.entries(h.buff).filter(([k,v])=>v&&(k!=="ilil"||v>Date.now())).map(([k,it])=>Object.values(TOOLS).some(T=>T.buff===k)?`<b>${Object.values(TOOLS).find(T=>T.buff===k).n}</b> (${Object.values(TOOLS).find(T=>T.buff===k).d}${k==="bait"?` · ${it}번 남음`:""})`:k==="cart"?`<b>표국 마차</b> (다음 이동 -${CART_CUT*100}%)`:k==="ilil"?(it>Date.now()?`<b>꿀막대</b> (경험치 +11% · ${hhmm(it)}까지)`:""):`<b>${ITEMS[it]?.[0]||it}</b> (${k==="scene"?"다음 사건 조사 +2":k==="atk"?"공격 +15%":k==="hp"?"체력 +20%":k==="travel"?"다음 이동 -20%":"다음 수련 경험치 +15%"})`).join(" · ")}</p>`:""}
       <p class="note">강화석은 장비 탭에서 강화에 쓴다. 약초는 소굴에서 회복에 쓴다. 약초·술·향낭·장신구·옥비녀는 인연 탭에서 동료에게, 강호 탭에서 문파에 선물로 쓴다. 음식과 차는 먹기·마시기를 누르면 효과가 걸린다. 착용하는 장신구는 장비 탭에 있다.</p></div></section>${manorSection(h)}${bioSection()}${titleSection()}${sectTabSection()}`;
 }
 
@@ -5820,7 +5829,7 @@ addEventListener("murim-ready",()=>{
     const tabs=`<div class="ct"><button type="button" id="chatNotice" title="공지 탭으로 간다">[공지]${nUn?"<i></i>":""}</button><button type="button" data-t="server" aria-selected="${tab==="server"}">서버${tab!=="server"&&unread("ch:server")?"<i></i>":""}</button><button type="button" data-t="region" aria-selected="${tab==="region"}">지역${tab!=="region"&&l&&unread("ch:"+l)?"<i></i>":""}</button><button type="button" data-t="dm" aria-selected="${tab==="dm"}">1:1${tab!=="dm"&&anyDm?"<i></i>":""}</button><button class="cx" type="button" aria-label="닫기">×</button></div>`;
     let body="",sub="",canSend=!!k;
     if(tab==="server")sub=`<div class="sub"><span>무림 전체에 들리는 이야기</span></div>`;
-    if(tab==="region")sub=`<div class="sub"><span>${l?`${REG[l]}에 있는 사람들만 듣는다`:"길 위에서는 지역 대화를 할 수 없다"}</span></div>`;
+    if(tab==="region")sub=`<div class="sub"><span>${l?`${(typeof REGIONS!=="undefined"&&REGIONS[l]?.n)||REG[l]||l}에 있는 사람들만 듣는다`:"길 위에서는 지역 대화를 할 수 없다"}</span></div>`;
     if(tab==="dm"&&!dmWith){canSend=false;const ps=peers();
       /* 1:1 목록에는 귓속말을 나눈 사람만, 최근 순으로. 새 대화는 아래 고르기로 연다 */
       const lastT=o=>Math.max(0,...latest(keyOf("dm",o._id)).map(m=>m.t||0)),talked=ps.filter(o=>lastT(o)>0).sort((a,b)=>lastT(b)-lastT(a)),rest=ps.filter(o=>!lastT(o)).sort((a,b)=>String(a.name).localeCompare(String(b.name),"ko"));
