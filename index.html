@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261111173150">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261111223919">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -678,6 +678,21 @@ section.inv.mini::after{font-size:70px;bottom:-16px;right:-2px}
 .petc .petimg{flex:none;width:72px;display:grid;place-items:center;image-rendering:pixelated}
 .petx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.petx>span{font-size:12px;color:var(--muted,#8a8378)}.petx b{font-size:14px}
 .petc.mine{background:var(--card2,#f1ece2)}.petc.hungry .petimg{filter:grayscale(.8);opacity:.7}
+
+.gmtag{color:var(--seal,#b0382a);font-weight:700}
+.mail.qna.gm{border-left:3px solid var(--seal,#b0382a)}
+.pin.solved{background:#3f7a3a}
+.qcms{display:flex;flex-direction:column;gap:6px;margin:6px 0 8px;padding-top:8px;border-top:1px dashed var(--line)}
+.qcm{padding:8px 10px;border-radius:var(--r-s,8px);background:var(--card2,#f1ece2)}
+.qcm.gm{background:rgba(176,56,42,.07);box-shadow:inset 3px 0 0 var(--seal,#b0382a)}
+.qcm>div{display:flex;gap:8px;align-items:baseline;font-size:12px}.qcm .who{font-weight:600}.qcm .t{color:var(--muted,#8a8378)}
+.qcm .qx{margin-left:auto;border:0;background:none;color:var(--muted,#8a8378);font:inherit;font-size:11px;cursor:pointer;text-decoration:underline}
+.qcm p{margin:3px 0 0;font-size:14px;line-height:1.55;white-space:normal;word-break:break-word}
+.qcf{display:flex;gap:6px;align-items:flex-end}.qcf textarea{flex:1;min-width:0}
+
+.foldh{display:flex;width:100%;align-items:center;justify-content:space-between;gap:8px;border:0;background:none;padding:0;font:inherit;color:inherit;cursor:pointer;text-align:left}
+.foldh i{font-style:normal;font-size:12px;color:var(--muted,#8a8378);white-space:nowrap}
+.phist li{line-height:1.5}
 </style>
 
 <div class="wrap">
@@ -2261,6 +2276,7 @@ async function sendParcel(to){if(mode!=="db"){toast("여럿이 함께하는 곳�
   const id=myId().replace(/[^A-Za-z0-9_-]/g,"").slice(0,12)+"-"+Date.now().toString(36);
   h.silver=(h.silver||0)-fee;if(kind==="items"&&key==="milbong"&&isIlil()){const E=ililOf(h);E.give+=qty;h.ilil=E}
   try{await db.doc("parcels/"+id).set(p);parcels[id]={...p,id}}catch(e){toast("보내지 못했어요. 잠시 뒤 다시 해 주세요.");return}
+  pHist(h,{d:"out",who:o.name,whoId:to,text:parcelText(p),note:p.note||"",ship:!!ship,t:sNow()});
   addLog(h,ship?`표국에 ${josa(parcelText(p),"을")} 맡겨 ${REGIONS[shipFrom(o)].n}의 ${josa(o.name,"에게")} 보냈다. (수수료 ${fee}냥)${p.note?` "${p.note}"`:""}`:`${josa(o.name,"에게")} ${josa(parcelText(p),"을")} 건넸다.${p.note?` "${p.note}"`:""}`);
   save(h);giveOpen=false;givePick.qty=1;givePick.note="";paintProfile();toast(ship?`표국이 짐을 실었다 · ${parcelText(p)} · 수수료 ${fee}냥`:`${o.name}에게 건넸다 · ${parcelText(p)}`)}
 async function takeParcel(id,back){const p0=parcels[id];if(!p0||mode!=="db")return;const mine=p0.to===myId(),sender=p0.from===myId();if(back?!sender:!mine)return;
@@ -2272,7 +2288,17 @@ async function takeParcel(id,back){const p0=parcels[id];if(!p0||mode!=="db")retu
   if(p.kind==="gear"){h.bag=h.bag||[];h.bag.push(p.item)}else if(p.kind==="silver")h.silver=(h.silver||0)+p.qty;
   else{const src=p.kind==="mats"?(h.mats=h.mats||{}):p.kind==="fish"?(h.fish=h.fish||{}):h.items;src[p.key]=(src[p.key]||0)+p.qty}
   if(!back)bump(h,"parcelGot");if(!back&&p.kind==="items"&&p.key==="milbong"&&isIlil()){const E=ililOf(h);E.got+=p.qty;h.ilil=E}
+  pHist(h,back?{d:"back",who:p.toName,whoId:p.to,text:parcelText(p),note:"",t:sNow()}:{d:"in",who:p.fromName,whoId:p.from,text:parcelText(p),note:p.note||"",ship:!!p.ship,sent:p.t,t:sNow()});
   addLog(h,back?`${josa(p.toName,"에게")} 보낸 꾸러미(${parcelText(p)})를 도로 거두었다.`:`${josa(p.fromName,"이")} 보낸 꾸러미를 받았다 · ${parcelText(p)}${p.note?` · "${p.note}"`:""}`);save(h);toast(back?"꾸러미를 거두었다.":`받았다 · ${parcelText(p)}`)}
+/* 꾸러미 주고받은 기록: 받거나 보내면 사라지는 꾸러미를 최근 30건까지 남겨 둔다 */
+const PHIST_MAX=30;let pHistOpen=false,pHistTab="in";
+function pHist(h,e){h.phist=[e,...(h.phist||[])].slice(0,PHIST_MAX)}
+function parcelHistory(h){const L=h.phist||[];if(!L.length)return "";const inn=L.filter(e=>e.d==="in"),out=L.filter(e=>e.d!=="in");
+  const row=e=>`<li><time>${hhmm(e.t)}</time>${e.d==="in"?`<b>${esc(e.who||"?")}</b>에게서 ${e.ship?"표국으로":"건네"} 받음`:e.d==="back"?`<b>${esc(e.who||"?")}</b>에게 보낸 것을 도로 거둠`:`<b>${esc(e.who||"?")}</b>에게 ${e.ship?"표국으로 부침":"건넴"}`} · ${esc(e.text)}${e.note?` · <i>"${esc(e.note)}"</i>`:""}</li>`;
+  const cur=pHistTab==="in"?inn:out;
+  return `<section>${`<button class="foldh" type="button" id="pHistT" aria-expanded="${pHistOpen}"><span class="label" style="margin:0">꾸러미 기록 · 받은 것 ${inn.length} · 보낸 것 ${out.length}</span><i>${pHistOpen?"접기 ▴":"펼치기 ▾"}</i></button>`}
+    ${pHistOpen?`<div class="innseg" role="tablist" style="margin-top:8px"><button type="button" class="${pHistTab==="in"?"on":""}" data-pht="in">받은 것</button><button type="button" class="${pHistTab!=="in"?"on":""}" data-pht="out">보낸 것</button></div>
+      ${cur.length?`<ul class="log phist">${cur.map(row).join("")}</ul>`:`<p class="note">아직 없다.</p>`}<p class="note" style="margin:4px 0 0">최근 ${PHIST_MAX}건까지 남는다.</p>`:""}</section>`}
 function parcelInbox(){const L=myParcels(),S=sentParcels();if(!L.length&&!S.length)return "";
   return `<section><div class="label">꾸러미 · 받을 것 ${L.length}</div>
     ${L.map(p=>`<div class="mail"><div class="mailh" style="cursor:default"><b>${esc(josa(p.fromName,"이"))} ${p.ship?"표국으로 부친":"건넨"} 꾸러미</b><span>${hhmm(p.t)} · ${esc(parcelText(p))}</span></div>
@@ -2314,9 +2340,10 @@ function mailTab(){
       ${d.to!=="all"?`<div class="chips">${ppl.map(p=>`<label class="chip"><input type="checkbox" data-mpick="${p.id}" ${d.pick[p.id]?"checked":""}><span>${esc(p.name)}${p.id===myId()?" (나)":""}</span></label>`).join("")}</div>`:""}
       <div class="row"><button class="btn solid" type="button" id="mailSend" ${mailBusy?"disabled":""}>보내기</button></div></div>
       ${sent.length?`<div class="label" style="margin-top:14px">내가 받지 않는 보낸 우편</div><ul class="log">${sent.map(m=>`<li><time>${hhmm(m.t)}</time>${esc(m.title)} → ${m.to.map(id=>esc(heroById(id)?.name||"?")).join(", ")} <button class="btn ghost sm" type="button" data-mdel="${m.id}">거두기</button></li>`).join("")}</ul>`:""}</section>`}
-  return `${parcelInbox()}<section><div class="label">우편함</div>${items}${mode!=="db"?`<p class="note">우편은 여럿이 함께 쓰는 강호에서만 온다.</p>`:""}</section>${admin}`;
+  return `${parcelInbox()}${parcelHistory(me)}<section><div class="label">우편함</div>${items}${mode!=="db"?`<p class="note">우편은 여럿이 함께 쓰는 강호에서만 온다.</p>`:""}</section>${admin}`;
 }
 function bindMail(){
+  on("#pHistT",()=>{pHistOpen=!pHistOpen;render()});document.querySelectorAll("[data-pht]").forEach(b=>b.onclick=()=>{pHistTab=b.dataset.pht;render()});
   document.querySelectorAll("[data-mopen]").forEach(b=>b.addEventListener("click",()=>{mailOpen=mailOpen===b.dataset.mopen?"":b.dataset.mopen;render()}));
   document.querySelectorAll("[data-mget]").forEach(b=>b.addEventListener("click",()=>claimMail(b.dataset.mget)));
   document.querySelectorAll("[data-mdel]").forEach(b=>b.addEventListener("click",()=>delMail(b.dataset.mdel)));
@@ -2648,6 +2675,55 @@ async function pinNotice(id){if(!isOwner||mode!=="db")return;const n=notices[id]
 /* 대화창의 [공지] 버튼이 부른다: 공지 탭으로 넘어가기, 안 읽은 공지 수 */
 window.goTab=t=>{tab=t;try{localStorage.setItem("murim-tab",tab)}catch(e){};render();document.querySelector(".tabs")?.scrollIntoView({block:"start",behavior:"smooth"})};
 window.noticeUnread=()=>{try{return me?noticeList().filter(n=>n.t>(me.noticeSeen||0)).length:0}catch(e){return 0}};
+/* ───────── 문답: 누구나 글을 쓰고 댓글을 단다. GM이 쓰면 [GM 상제]로 나온다 ─────────
+   qna/{id} = {uid,name,gm,title,body,t,n,last,solved}  ·  qnac/{id} = {post,uid,name,gm,text,t}
+   글 목록은 최근 30개만 지켜보고, 댓글은 글을 펼쳤을 때 그 글 것만 읽는다 (읽기 아끼기) */
+const QNA_GM="GM 상제",QNA_LIM=30;
+let qnas={},qnaOpen=null,qnaCm={},qnaCmUnsub=null,qnaDraft={title:"",body:""},qnaCDraft="",qnaBusy=false,qnaWrite=false,qnaDelAsk=null;
+const qnaOK=()=>mode==="db"&&typeof db?.collection==="function"&&typeof db.collection("qna").where==="function";
+const qnaWho=x=>x.gm?`<b class="gmtag">[${QNA_GM}]</b>`:esc(x.name||"무명");
+const qnaSeen=()=>{try{return +localStorage.getItem("murim-qna-seen-"+uid)||0}catch(e){return 0}};
+const qnaMark=()=>{const t=Object.values(qnas).reduce((a,x)=>Math.max(a,x.last||x.t||0),0);try{localStorage.setItem("murim-qna-seen-"+uid,String(t))}catch(e){}};
+const qnaUnread=()=>Object.values(qnas).some(x=>(x.last||x.t||0)>qnaSeen()&&(x.lastBy||x.uid)!==uid);
+function qnaListen(){if(!qnaOK())return;db.collection("qna").orderBy("t","desc").limit(QNA_LIM).onSnapshot(snap=>{qnas={};snap.docs.forEach(d=>{if(d.exists)qnas[d.id]={...d.data(),id:d.id}});if(tab==="qna")qnaMark();if(ready)render()},()=>{})}
+function qnaOpenPost(id){if(qnaCmUnsub){try{qnaCmUnsub()}catch(e){}qnaCmUnsub=null}qnaCm={};qnaCDraft="";qnaDelAsk=null;qnaOpen=qnaOpen===id?null:id;
+  if(qnaOpen&&qnaOK())qnaCmUnsub=db.collection("qnac").where("post","==",qnaOpen).onSnapshot(snap=>{qnaCm={};snap.docs.forEach(d=>{if(d.exists)qnaCm[d.id]={...d.data(),id:d.id}});if(ready)render()},()=>{});render()}
+async function qnaPost(){if(!qnaOK()||qnaBusy)return;const title=qnaDraft.title.trim().slice(0,80),body=qnaDraft.body.trim().slice(0,2000);if(!title){toast("제목을 적어 주세요.");return}
+  const id="q"+sNow().toString(36)+Math.random().toString(36).slice(2,5),t=sNow(),doc={uid,name:me.name,gm:!!isOwner,title,body,t,n:0,last:t,lastBy:uid,solved:false};qnaBusy=true;
+  try{await db.doc("qna/"+id).set(doc);qnas[id]={...doc,id};qnaDraft={title:"",body:""};qnaWrite=false;toast("글을 올렸습니다.");qnaOpenPost(id)}catch(e){toast("글을 올리지 못했습니다. 잠시 뒤 다시 해 주세요.")}qnaBusy=false;render()}
+async function qnaComment(){const P=qnas[qnaOpen];if(!P||!qnaOK()||qnaBusy)return;const text=qnaCDraft.trim().slice(0,1000);if(!text)return;
+  const id="c"+sNow().toString(36)+Math.random().toString(36).slice(2,5),t=sNow(),doc={post:P.id,uid,name:me.name,gm:!!isOwner,text,t};qnaBusy=true;
+  try{await db.doc("qnac/"+id).set(doc);qnaCm[id]={...doc,id};qnaCDraft="";await db.doc("qna/"+P.id).update({n:(P.n||0)+1,last:t,lastBy:uid}).catch(()=>{})}catch(e){toast("댓글을 달지 못했습니다.")}qnaBusy=false;render()}
+async function qnaDel(kind,id){if(!qnaOK())return;try{if(kind==="post"){for(const c of Object.values(qnaCm))if(c.post===id)await db.doc("qnac/"+c.id).delete().catch(()=>{});await db.doc("qna/"+id).delete();delete qnas[id];qnaOpenPost(null)}
+  else{await db.doc("qnac/"+id).delete();delete qnaCm[id];const P=qnas[qnaOpen];if(P)await db.doc("qna/"+P.id).update({n:Math.max(0,(P.n||1)-1),last:P.last||P.t,lastBy:P.lastBy||P.uid}).catch(()=>{})}toast("지웠습니다.")}catch(e){toast("지우지 못했습니다.")}qnaDelAsk=null;render()}
+async function qnaSolve(id){const P=qnas[id];if(!P||!qnaOK())return;try{await db.doc("qna/"+id).set({...Object.fromEntries(Object.entries(P).filter(([k])=>k!=="id")),solved:!P.solved})}catch(e){toast("바꾸지 못했습니다.")}}
+function qnaTab(){if(!qnaOK())return `<section><div class="label">문답</div><p class="note">문답은 여럿이 함께 쓰는 강호(사이트)에서만 쓸 수 있다.</p></section>`;
+  const L=Object.values(qnas).sort((a,b)=>(b.t||0)-(a.t||0)),seen=qnaSeen();
+  const form=qnaWrite?`<div class="mailf qnaf"><label>제목<input data-qd="title" maxlength="80" value="${esc(qnaDraft.title)}" placeholder="예: 관문은 몇 명이서 가야 하나요?"></label>
+      <label>내용<textarea data-qd="body" rows="5" maxlength="2000" placeholder="묻고 싶은 것, 알려 주고 싶은 것">${esc(qnaDraft.body)}</textarea></label>
+      <p class="note" style="margin:0">${isOwner?`GM이 쓴 글은 [${QNA_GM}]로 나온다.`:"모두가 볼 수 있다. 댓글로 서로 답해 주자."}</p>
+      <div class="row"><button class="btn solid" type="button" id="qnaPost" ${qnaBusy?"disabled":""}>올리기</button><button class="btn ghost" type="button" id="qnaCancel">그만두기</button></div></div>`
+    :`<div class="row" style="margin-bottom:10px"><button class="btn sealb" type="button" id="qnaNew">글 쓰기</button></div>`;
+  const items=L.length?L.map(P=>{const open=qnaOpen===P.id,mine=P.uid===uid,can=mine||isOwner,newer=(P.last||P.t)>seen&&(P.lastBy||P.uid)!==uid;
+    const cms=open?Object.values(qnaCm).sort((a,b)=>a.t-b.t):[];
+    return `<div class="mail qna ${newer?"new":""} ${P.gm?"gm":""}"><button class="mailh" type="button" data-qopen="${P.id}"><b>${P.solved?`<span class="pin solved">해결</span>`:""}${esc(P.title)}</b><span>${qnaWho(P)} · ${hhmm(P.t)}${P.n?` · 댓글 ${P.n}`:""}</span></button>
+      ${open?`<div class="mailb">${P.body?`<p>${esc(P.body).replace(/\n/g,"<br>")}</p>`:""}
+        ${can?`<div class="row" style="margin:4px 0 8px"><button class="btn ghost sm" type="button" data-qsolve="${P.id}">${P.solved?"해결 표시 풀기":"해결됨으로 표시"}</button>${qnaDelAsk===P.id?`<button class="btn sm sealb" type="button" data-qdelp="${P.id}">정말 지운다</button><button class="btn ghost sm" type="button" data-qdelno>그만둔다</button>`:`<button class="btn ghost sm" type="button" data-qdelask="${P.id}">글 지우기</button>`}</div>`:""}
+        <div class="qcms">${cms.length?cms.map(c=>`<div class="qcm ${c.gm?"gm":""}"><div><span class="who">${qnaWho(c)}</span><span class="t">${hhmm(c.t)}</span>${c.uid===uid||isOwner?`<button class="qx" type="button" data-qdelc="${c.id}" aria-label="댓글 지우기">지우기</button>`:""}</div><p>${esc(c.text).replace(/\n/g,"<br>")}</p></div>`).join(""):`<p class="note" style="margin:0">아직 댓글이 없다.</p>`}</div>
+        <div class="qcf"><textarea data-qc rows="2" maxlength="1000" placeholder="${isOwner?`[${QNA_GM}]로 답하기`:"댓글 달기"}">${esc(qnaCDraft)}</textarea><button class="btn sm solid" type="button" id="qnaCm" ${qnaBusy?"disabled":""}>달기</button></div></div>`:""}</div>`}).join("")
+    :`<p class="empty">아직 글이 없다. 궁금한 걸 먼저 물어보자.</p>`;
+  return `<section><div class="label">문답 · 묻고 답하기</div>${form}${items}<p class="note">최근 ${QNA_LIM}개 글까지 보인다.</p></section>`}
+function bindQna(){if(tab!=="qna")return;
+  on("#qnaNew",()=>{qnaWrite=true;render()});on("#qnaCancel",()=>{qnaWrite=false;render()});on("#qnaPost",qnaPost);on("#qnaCm",qnaComment);
+  document.querySelectorAll("[data-qd]").forEach(i=>i.addEventListener("input",()=>qnaDraft[i.dataset.qd]=i.value));
+  document.querySelectorAll("[data-qc]").forEach(i=>i.addEventListener("input",()=>qnaCDraft=i.value));
+  document.querySelectorAll("[data-qopen]").forEach(b=>b.addEventListener("click",()=>qnaOpenPost(b.dataset.qopen)));
+  document.querySelectorAll("[data-qsolve]").forEach(b=>b.addEventListener("click",()=>qnaSolve(b.dataset.qsolve)));
+  document.querySelectorAll("[data-qdelask]").forEach(b=>b.addEventListener("click",()=>{qnaDelAsk=b.dataset.qdelask;render()}));
+  document.querySelectorAll("[data-qdelno]").forEach(b=>b.addEventListener("click",()=>{qnaDelAsk=null;render()}));
+  document.querySelectorAll("[data-qdelp]").forEach(b=>b.addEventListener("click",()=>qnaDel("post",b.dataset.qdelp)));
+  document.querySelectorAll("[data-qdelc]").forEach(b=>b.addEventListener("click",()=>qnaDel("c",b.dataset.qdelc)));
+  qnaMark()}
 function noticeTab(){
   const list=noticeList(),seen=me.noticeSeen||0;
   const items=list.length?list.map((n,i)=>{const open=noticeOpen===n.id||(noticeOpen===null&&i===0);
@@ -4109,7 +4185,7 @@ function paintProfile(){
   const row=(k,v)=>v?`<div class="pfr"><span>${k}</span><b>${v}</b></div>`:"";
   el.hidden=false;el.innerHTML=`<div class="pfcard"><button type="button" class="pfx" aria-label="닫기">닫기</button>
     <div class="pfhead">${face(profileId,o.sect,"big")}<div><h3>${titleBadge(o)}${esc(o.name)}</h3><span class="pfsub">${emblem(o.sect,"sm")} ${S.n} · ${REALMS[o.realm]?.n||""}${rbLabel(o)?`(${rbLabel(o)})`:""} Lv.${o.level}${o.post?` · ${o.post==="elder"?"장로":headN(o.sect)}`:""}</span></div></div>
-    <div class="pfrows">${row("지금",mine?(activity(o)?busyText[activity(o)].replace(/에는$/,"")+" 중":REGIONS[o.loc]?.n):mateAct(o))}
+    <div class="pfrows">${row("지금",mine?(activity(o)?({job:"일하는 중",train:"수련 중",travel:"이동 중",mission:"임무 중",lair:"소굴 안"}[activity(o)]||"바쁨"):REGIONS[o.loc]?.n):mateAct(o))}
       ${row("관계",!mine&&rel!=="지인"?`${rel} · 인연 ${tot}`:(!mine?`인연 ${tot}`:""))}${row("무리",!mine&&following(profileId)?"같은 무리":"")}
       ${row("예전 이름",(o.oldNames||[]).length?o.oldNames.map(esc).join(", "):"")}${row("논검",`${cnt(o,"duelW")}승 ${cnt(o,"duelL")}패`)}${row("칭호",`${Object.keys(o.titles||{}).filter(k=>TITLE_BY[k]).length}개`)}</div>
     <div class="label" style="margin-top:14px">인물 설정</div>
@@ -5101,8 +5177,8 @@ function introView(){
 function heroView(){
   const h=me,s=SECTS[h.sect],r=REALMS[h.realm],next=REALMS[h.realm+1],wall=atWall(h);
   const pct=Math.min(100,h.exp/need(h.level)*100);
-  const tabs=[["train","수련"],["world","강호"],["raid","토벌"],["gate","관문"],["self","인물"],["gear","장비"],["alarm","알림"],["mates","인연"],["mail","우편"],["notice","공지"]];
-  const dot={world2:0,notice:mode==="db"&&noticeUnread()>0,alarm:mode==="db"&&alarmUnread()>0,mail:mode==="db"&&(mailUnread()>0||myParcels().length>0),train:h.training&&Date.now()>=h.training.end,world:(h.travel&&Date.now()>=h.travel.end)||(h.mission&&(h.mission.phase==="scene"||Date.now()>=h.mission.end)),self:h.points>0||!!h.respec||!!postOffer(h),mates:giftsToMe().some(g=>g.t>(h.seenGift||0))||others.some(o=>{const B=bondOf(o._id,myId()),A=bondOf(myId(),o._id);return (B.want&&B.want!=="지인"&&!relMatch(B.want,A.want)&&relNorm(B.want)!==relMutual(myId(),o._id))||false})||partyCallsForMe().length>0||duelInvitesForMe().length>0||(()=>{const d=myDuel();return !!d&&(d.status==="done"||(d.status==="fight"&&!duelActOf(d,myId())))})(),gate:(()=>{const r=myRoom();if(r&&r.status==="fight"){const m=r.party.find(x=>x.id===myId());return !!(m&&m.hp>0&&!playerReady(r,m))}if(r&&(r.status==="win"||r.status==="fail")&&!h.gateDone?.[r.id])return true;return atWall(h)&&!!GATES[h.realm+1]?.ready&&!r})(),raid:(()=>{const st=raidState(periodNow());if(coInvitesForMe().length&&!h.colair)return true;if(h.colair)return true;if(h.lair&&h.lair.phase!=="done")return true;return st.down&&h.raid?.period===periodNow()&&!h.raid.claimed})()};
+  const tabs=[["train","수련"],["world","강호"],["raid","토벌"],["gate","관문"],["self","인물"],["gear","장비"],["alarm","알림"],["mates","인연"],["mail","우편"],["notice","공지"],["qna","문답"]];
+  const dot={world2:0,qna:qnaOK()&&tab!=="qna"&&qnaUnread(),notice:mode==="db"&&noticeUnread()>0,alarm:mode==="db"&&alarmUnread()>0,mail:mode==="db"&&(mailUnread()>0||myParcels().length>0),train:h.training&&Date.now()>=h.training.end,world:(h.travel&&Date.now()>=h.travel.end)||(h.mission&&(h.mission.phase==="scene"||Date.now()>=h.mission.end)),self:h.points>0||!!h.respec||!!postOffer(h),mates:giftsToMe().some(g=>g.t>(h.seenGift||0))||others.some(o=>{const B=bondOf(o._id,myId()),A=bondOf(myId(),o._id);return (B.want&&B.want!=="지인"&&!relMatch(B.want,A.want)&&relNorm(B.want)!==relMutual(myId(),o._id))||false})||partyCallsForMe().length>0||duelInvitesForMe().length>0||(()=>{const d=myDuel();return !!d&&(d.status==="done"||(d.status==="fight"&&!duelActOf(d,myId())))})(),gate:(()=>{const r=myRoom();if(r&&r.status==="fight"){const m=r.party.find(x=>x.id===myId());return !!(m&&m.hp>0&&!playerReady(r,m))}if(r&&(r.status==="win"||r.status==="fail")&&!h.gateDone?.[r.id])return true;return atWall(h)&&!!GATES[h.realm+1]?.ready&&!r})(),raid:(()=>{const st=raidState(periodNow());if(coInvitesForMe().length&&!h.colair)return true;if(h.colair)return true;if(h.lair&&h.lair.phase!=="done")return true;return st.down&&h.raid?.period===periodNow()&&!h.raid.claimed})()};
   return `<div>
   <section style="margin-top:8px">
     <div class="who"><button type="button" class="facebtn" data-go="self" aria-label="프로필 사진 바꾸기">${face(myId(),h.sect,"big")}</button>
@@ -5120,7 +5196,7 @@ function heroView(){
   ${mode==="db"&&tab!=="mates"&&myDuel()?.status==="fight"?`<button class="mailnew" type="button" data-tab="mates">논검 중이다 · ${myDuel().round}합 · 보러 가기</button>`:""}
   ${mode==="db"&&tab!=="alarm"&&alarmUnread()?`<button class="mailnew" type="button" data-tab="alarm">새 알림 ${alarmUnread()}개 · 알림 보기</button>`:""}
   <div class="tabs" role="tablist">${tabs.map(([k,n])=>`<button class="tab" role="tab" type="button" data-tab="${k}" aria-selected="${tab===k}">${n}${dot[k]?`<span class="dot" aria-label="확인할 것 있음"></span>`:""}</button>`).join("")}</div>
-  <div id="tabbody">${tab==="train"?trainTab():tab==="world"?worldTab():tab==="raid"?raidTab():tab==="gate"?gateTab():tab==="self"?selfTab():tab==="gear"?gearTab():tab==="mail"?mailTab():tab==="alarm"?alarmTab():tab==="notice"?noticeTab():bondTab()}</div>
+  <div id="tabbody">${tab==="train"?trainTab():tab==="world"?worldTab():tab==="raid"?raidTab():tab==="gate"?gateTab():tab==="self"?selfTab():tab==="gear"?gearTab():tab==="mail"?mailTab():tab==="alarm"?alarmTab():tab==="notice"?noticeTab():tab==="qna"?qnaTab():bondTab()}</div>
   ${isOwner||mode==="local"?`<details class="tools"><summary>시험용 도구 (만드는 동안만 쓰고 나중에 없앱니다)</summary>
     <div class="row"><button class="btn ghost" id="stoneBtn" type="button">강화석 +20</button><button class="btn ghost" id="warpBtn" type="button">보스 지역으로 순간이동</button><button class="btn ghost" id="triesBtn" type="button">진입 횟수 초기화</button><button class="btn ghost" id="dropBtn" type="button">장비 하나 얻기</button><button class="btn ghost" id="horseBtn" type="button">말 얻기/놓아주기</button></div>
     <div class="row">${fakeOthers.length?`<button class="btn ghost" id="fakeUpBtn" type="button">백운 쪽 인연 +100</button>${["친우","사형제","연인","스승","제자"].map(r=>`<button class="btn ghost" type="button" data-fakerel="${r}">백운이 ${r==="스승"?"제자로 받기":r==="제자"?"사부로 모시기":r} 청하기</button>`).join("")}<button class="btn ghost" id="fakePartyBtn" type="button">백운이 무리 부름 받기</button><button class="btn ghost" id="fakeDelBtn" type="button">가상 동료 내보내기</button>`:`<button class="btn ghost" id="fakeMateBtn" type="button">가상 동료 넣기 (이 기기에서만)</button>`}</div>
@@ -5447,7 +5523,7 @@ function bind(){
   on("#toBossBtn",()=>{dest=bossFor(periodNow()).region;tab="world";try{localStorage.setItem("murim-tab",tab)}catch(e){};render()});
   document.querySelectorAll(".npcsel").forEach(el=>el.addEventListener("change",()=>setNpcPick(el.dataset.nrole,+el.dataset.nslot,el.value)));
   document.querySelectorAll('input[name="rrole"]').forEach(i=>i.addEventListener("change",()=>{raidRole=i.value;render()}));
-  bindMail(); bindAlarm(); bindDuel(); bindNotice(); bindEcon(); bindInv();
+  bindMail(); bindAlarm(); bindDuel(); bindNotice(); bindQna(); bindEcon(); bindInv();
   on("#respecBtn",respecStats); on("#respecNo",()=>{const h=structuredClone(me);h.respec=0;save(h)});
   on("#horseBtn",()=>{const h=structuredClone(me);h.horse=h.horse?null:{n:"적토",t:Date.now()};save(h);toast(h.horse?"말을 얻었습니다.":"말을 놓아주었습니다.")});
   on("#stoneBtn",()=>{const h=structuredClone(me);h.items.stone+=20;save(h)});
@@ -5547,6 +5623,7 @@ async function boot(){
   /* 읽기 아끼기: 사이트(파이어베이스)에서는 필요한 문서만 골라 읽는다. 조건 검색이 없는 곳에서는 전부 읽는다 */
   if(canQ(db.collection("events")))db.doc("events/invasion").onSnapshot(d=>{invasion=d.exists?structuredClone(d.data()):null;if(ready)render()},()=>{});
   else db.collection("events").onSnapshot(snap=>{const d=snap.docs.find(x=>x.id==="invasion"&&x.exists);invasion=d?structuredClone(d.data()):null;if(ready)render()},()=>{});
+  qnaListen();
   Q("notices",c=>c.orderBy("t","desc").limit(NOTICE_LIM)).onSnapshot(snap=>{notices={};snap.docs.forEach(d=>{if(d.exists)notices[d.id]=structuredClone(d.data())});if(ready)render()},()=>{});
   if(canQ(db.collection("visits"))){visitQ=true;
     /* 방명록은 내 장원에 온 발자국과 내가 남긴 발자국만 늘 지켜본다. 남의 장원은 들어갈 때 한 번 읽는다 */
