@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261111153951">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261111165533">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -672,6 +672,12 @@ section.inv.mini::after{font-size:70px;bottom:-16px;right:-2px}
 .esc p{margin:2px 0 0}.esc.late{border-left-color:var(--seal,#b0382a)}
 
 .contrib .csub{display:block;font-size:11px;font-weight:400;color:var(--muted,#8a8378);white-space:nowrap}
+
+.petl{display:flex;flex-direction:column;gap:8px}
+.petc{display:flex;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-s,8px);background:var(--card,#fff)}
+.petc .petimg{flex:none;width:72px;display:grid;place-items:center;image-rendering:pixelated}
+.petx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.petx>span{font-size:12px;color:var(--muted,#8a8378)}.petx b{font-size:14px}
+.petc.mine{background:var(--card2,#f1ece2)}.petc.hungry .petimg{filter:grayscale(.8);opacity:.7}
 </style>
 
 <div class="wrap">
@@ -999,7 +1005,7 @@ const ITEMS={stone:["강화석","장비 강화 재료"],herb:["약초","선물 �
 /* 음식: 객잔에서 사서 행낭에서 먹는다. 먹은 효과는 h.buff 에 남고, 쓰이면 사라진다 */
 const FOOD={longjing:{k:"travel",t:"정신이 맑아진다. 다음 이동 시간 -20%",v:"마시기"},puer:{k:"train",t:"속이 편안하다. 다음 수련 경험치 +15%",v:"마시기"},mandu:{k:"scene",t:"든든하다. 다음 사건 현장 조사 판정 +2"},milbong:{k:"ilil",t:"달콤하다. 1시간 동안 경험치 +11%"},dongpo:{k:"atk",t:"힘이 넘친다. 다음 소굴·관문 싸움이 끝날 때까지 공격 +15%"},samgye:{k:"hp",t:"몸이 뜨끈하다. 다음 소굴·관문 싸움이 끝날 때까지 체력 +20%"}};
 function eatFood(it){const f=FOOD[it],h=structuredClone(me);if(!f||!(h.items[it]>0))return;
-  if(it==="milbong"){const until=Math.max(Date.now(),h.buff?.ilil||0)+3600e3;h.items[it]--;h.buff={...(h.buff||{}),ilil:until};bump(h,"eat");addLog(h,`꿀막대를 먹었다. 달콤하다. 경험치 +11% (${hhmm(until)}까지)`);save(h);toast(`꿀막대 · ${hhmm(until)}까지 경험치 +11%`);return}
+  if(it==="milbong"){const on=(h.buff?.ilil||0)>Date.now(),until=Math.max(Date.now(),h.buff?.ilil||0)+3600e3;h.items[it]--;h.buff={...(h.buff||{}),ilil:until,ililFrom:on?(h.buff.ililFrom||Date.now()):Date.now()};bump(h,"eat");addLog(h,`꿀막대를 먹었다. 달콤하다. 경험치 +11% (${hhmm(until)}까지 시작한 수련·탐문·소굴은 끝날 때까지 붙는다)`);save(h);toast(`꿀막대 · ${hhmm(until)}까지 경험치 +11%`);return}
   if(h.buff?.[f.k]){toast("이미 먹은 효과가 남아 있습니다.");return}
   h.items[it]--;h.buff={...(h.buff||{}),[f.k]:it};bump(h,"eat");addLog(h,`${josa(ITEMS[it][0],"을")} ${f.v?"마셨다":"먹었다"}. ${f.t}`);save(h);toast(`${ITEMS[it][0]} · ${f.t}`)}
 /* 싸움 화면에 지금 걸려 있는 음식 효과를 보여 준다 */
@@ -1076,8 +1082,11 @@ function derived(h){
   return {hp:Math.round((100+(h.level||1)*10+s.wai*8)*bH*(1+go("hp")/100)), qi:50+s.nei*5+go("qi"), atk:Math.round((Math.round(mainVal*2)+g.atk)*bA*(1+go("atk")/100)), def:Math.round((s.wai+g.def)*(1+go("def")/100)),
     eva:Math.min(40,s.shen*.3+go("eva")), crit:5+s.shen*.1+go("crit")};
 }
+/* 꿀막대: 시작할 때 걸려 있었으면 그 일이 끝날 때까지 붙는다. 끝내는 쪽에서 시작 시각을 EXP_AT에 넣어 준다 */
+let EXP_AT=null;const atStart=(t,fn)=>{EXP_AT=t||null;try{return fn()}finally{EXP_AT=null}};
 function applyExp(h,exp){
-  exp=Math.round(exp*rbExpM(h)*((h.buff?.ilil||0)>Date.now()?1.11:1));h.exp+=exp; const c=cap(h.realm); let ups=0;
+  const at=EXP_AT??Date.now(),ilOn=(h.buff?.ilil||0)>at&&(h.buff?.ililFrom||0)<=at;
+  exp=Math.round(exp*rbExpM(h)*(ilOn?1.11:1));h.exp+=exp; const c=cap(h.realm); let ups=0;
   while(h.level<c && h.exp>=need(h.level)){h.exp-=need(h.level);h.level++;h.points+=3;ups++}
   if(h.level>=c) h.exp=Math.min(h.exp,need(h.level));
   return ups;
@@ -1526,7 +1535,7 @@ function endRun(h,why){
   const run=h.lair,B=bossFor(run.period),loot=run.loot,half=why==="wipe";
   let dealt=0;if(why==="boss"){dealt=run.boss.dealt;bump(h,"lair");[...new Set(partyFor(h,run.role).filter(x=>!x.isMe).map(x=>x.sect))].forEach(k=>addFavor(h,k,15));loot.exp+=expPerHour(h.level);if(h.raid?.period===run.period){h.raid.dmg+=dealt;h.raid.sup=(h.raid.sup||0)+(run.boss.sup||0)}}
   const exp=Math.round(loot.exp*(half?.5:1)),stone=Math.floor(loot.stone*(half?.5:1)),herb=Math.floor(loot.herb*(half?.5:1));
-  const lv0=h.level,ups=applyExp(h,exp);h.items.stone+=stone;h.items.herb+=herb;const got=[];
+  const lv0=h.level,ups=atStart(run.start,()=>applyExp(h,exp));h.items.stone+=stone;h.items.herb+=herb;const got=[];
   if(exp)got.push(`경험치 +${exp}`);if(stone)got.push(`강화석 +${stone}`);if(herb)got.push(`약초 +${herb}`);
   {const ef=useBattleFood(h);if(ef)got.push(ef)}
   if(why==="boss"){got.push(silverTxt(addSilver(h,(20+h.level)*(half?.5:1))));const ip=addInv(h,80);if(ip)got.push(`마교 침공 기여 +${ip}`)}
@@ -2782,12 +2791,12 @@ function innHub(h){if(h.travel)return "";const home=atHome(h);
   return `<div class="shop">${head}<div class="innseg" role="tablist">${Object.entries(T).map(([k,n])=>`<button type="button" role="tab" aria-selected="${innTab===k}" class="${innTab===k?"on":""}" data-innt="${k}">${n}</button>`).join("")}</div>${pxScene(innTab)}${body}</div>`}
 function decorTab(h){const G={};for(const [k,D] of Object.entries(DECOR))(G[D.g||"꾸밈"]=G[D.g||"꾸밈"]||[]).push([k,D]);
   const item=([k,D])=>{const own=furnLv(h,k),c=decorCost(D),ok=Object.entries(c).every(([m,v])=>matHave(h,m)>=v);
-    return `<button class="shopi ${own?"own":""}" type="button" data-decor="${k}" ${own||!ok?"disabled":""}><b>${D.n}</b><span>${D.d}${D.eff?` · ${D.u} +${D.per}`:""}${D.cost&&!own?`<span class="fcost">${Object.entries(c).map(([m,v])=>`<i class="${matHave(h,m)>=v?"":"lack"}">${matName(m)} ${m==="silver"?silverTxt(v):`${matHave(h,m)}/${v}`}</i>`).join(" ")}</span>`:""}</span><em>${own?(D.hire?"고용함":"들였다"):D.cost?"만든다":D.hire?`고용 ${silverTxt(D.price)}`:silverTxt(D.price)}</em></button>`};
+    return `<button class="shopi ${own?"own":""}" type="button" data-decor="${k}" ${own||!ok?"disabled":""}><b>${D.n}</b><span>${D.d}${D.eff?` · ${D.u} +${D.per}`:""}${D.cost&&!own?`<span class="fcost">${Object.entries(c).map(([m,v])=>`<i class="${matHave(h,m)>=v?"":"lack"}">${m==="silver"?silverTxt(v):`${matName(m)} ${matHave(h,m)}/${v}`}</i>`).join(" ")}</span>`:""}</span><em>${own?(D.hire?"고용함":"들였다"):D.cost?"만든다":D.hire?`고용 ${silverTxt(D.price)}`:silverTxt(D.price)}</em></button>`};
   const sub=t=>`<div class="dsub">${t}</div>`;
   return ["꾸밈","정원","풍류","공방·약방","귀물","사용인"].filter(g=>G[g]).map(g=>`${sub(g==="사용인"?"사용인 고용":g==="정원"||g==="풍류"||g==="공방·약방"?`${g} · 재료로 만든다`:g)}<div class="shopl">${G[g].map(item).join("")}</div>`).join("")
     +sub("지붕 기와 · 담장과 대문, 정자 지붕 색이 바뀐다")+`<div class="shopl">${Object.entries(ROOFS).filter(([k])=>k!=="black").map(([k,R])=>{const own=roofOwn(h,k),ok=(h.silver||0)>=R.price;
       return `<button class="shopi ${own?"own":""}" type="button" data-roof="${k}" ${own||!ok?"disabled":""}><b><i class="rsw" style="background:${R.b}"></i>${R.n}</b><span>${own?"장원 배치에서 골라 얹을 수 있다":"사면 바로 얹는다"}</span><em>${own?"가졌다":silverTxt(R.price)}</em></button>`}).join("")}</div>`
-    +sub("돌길")+`<div class="shopl"><button class="shopi ${h.manor?.path?"own":""}" type="button" id="buyPath" ${h.manor?.path||!Object.entries(PATH_COST).every(([m,v])=>matHave(h,m)>=v)?"disabled":""}><b>돌길 포석</b><span>마당 바닥에 돌을 깐다. 최대 ${PATH_MAX}칸 · 장원 배치에서 칸을 눌러 깐다${h.manor?.path?"":`<span class="fcost">${Object.entries(PATH_COST).map(([m,v])=>`<i class="${matHave(h,m)>=v?"":"lack"}">${matName(m)} ${m==="silver"?silverTxt(v):`${matHave(h,m)}/${v}`}</i>`).join(" ")}</span>`}</span><em>${h.manor?.path?"가졌다":"만든다"}</em></button></div>`
+    +sub("돌길")+`<div class="shopl"><button class="shopi ${h.manor?.path?"own":""}" type="button" id="buyPath" ${h.manor?.path||!Object.entries(PATH_COST).every(([m,v])=>matHave(h,m)>=v)?"disabled":""}><b>돌길 포석</b><span>마당 바닥에 돌을 깐다. 최대 ${PATH_MAX}칸 · 장원 배치에서 칸을 눌러 깐다${h.manor?.path?"":`<span class="fcost">${Object.entries(PATH_COST).map(([m,v])=>`<i class="${matHave(h,m)>=v?"":"lack"}">${m==="silver"?silverTxt(v):`${matName(m)} ${matHave(h,m)}/${v}`}</i>`).join(" ")}</span>`}</span><em>${h.manor?.path?"가졌다":"만든다"}</em></button></div>`
     +`<p class="note">가구 거간이 객잔 한쪽에 물건을 펼쳐 두었다. 한 번 들이면 장원에 계속 놓인다. 꾸밈 물건은 능력치 효과가 없다(몇 개 빼고).</p>`}
 function innBox(h){if(h.travel)return "";
   const home=atHome(h);
@@ -3072,6 +3081,15 @@ const DECOR={
   workbench:{g:"공방·약방",n:"공방 작업대",d:"설계도를 펼쳐 둔 작업대. 먹줄과 끌이 굴러다닌다",cost:{m_pine:6,m_iron:3,silver:500},eff:null},
   mokwoo:{g:"공방·약방",n:"목우",d:"태엽을 감으면 걷는다는 나무 소. 목우유마를 흉내 냈다",cost:{m_birch:6,m_copper:4,silver:1200},eff:null},
   dog:{g:"꾸밈",n:"장원 강아지",d:"꼬리를 흔들며 손님을 반기는 누렁이",price:10000,eff:null},
+  herbfield:{g:"공방·약방",n:"약초밭",d:"이랑마다 인삼·당귀 싹이 줄지어 올라왔다",cost:{m_insam:4,m_dangkwi:4,silver:300},eff:null},
+  yaktang:{g:"공방·약방",n:"약탕기",d:"숯불 화로 위에서 약탕관이 보글보글 끓는다",cost:{m_cheonma:2,m_copper:2,silver:400},eff:null},
+  insamju:{g:"공방·약방",n:"인삼주 단지",d:"통째로 담근 인삼이 술 속에 둥실 떠 있다",cost:{m_insam:5,m_yeongji:1,silver:500},eff:null},
+  dryherb:{g:"공방·약방",n:"약초 다발 걸이",d:"처마 밑에 말린 약초 다발을 주렁주렁 걸었다",cost:{m_dangkwi:3,m_hasuo:2,m_pine:2,silver:300},eff:null},
+  /* 영수: 영수 칸에서 거둔다 (가게에는 안 나온다) */
+  pet_crane:{g:"영수",pet:1,n:"백학",d:"구름 위를 노닌다는 흰 학",eff:null},
+  pet_bear:{g:"영수",pet:1,n:"아기 곰",d:"뒤뚱뒤뚱 걷는 반달가슴곰 새끼",eff:null},
+  pet_monkey:{g:"영수",pet:1,n:"금빛 원숭이",d:"금빛 털을 두른 날쌘 원숭이",eff:null},
+  pet_kirin:{g:"영수",pet:1,n:"기린",d:"성인이 날 때 나타난다는 상서로운 짐승",eff:null},
   /* 귀물 */
   treasure:{g:"귀물",n:"금은보화 더미",d:"금괴와 보석이 산처럼 쌓였다. 도둑이 걱정이다",price:50000,eff:null},
   toad:{g:"귀물",n:"금두꺼비",d:"엽전을 문 커다란 황금 두꺼비. 재물을 불러들인다고 한다",price:80000,eff:null},
@@ -3179,7 +3197,7 @@ function manorPlaceNew(h,k){if(h.mpos2?.[k])return;const S=ISO_SLOT[k];if(S&&iso
   let best=null;for(let y=0;y<ISO_N;y++)for(let x=0;x<ISO_N;x++){if((x===5||x===6)&&y<=1)continue;if(!isoFree(h,null,k,x,y,0))continue;
     let n=0;for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)if((dx||dy)&&occ.has((x+dx)+","+(y+dy)))n++;const sc=n*10-y*.1;if(!best||sc<best[0])best=[sc,x,y]}
   if(best)h.mpos2={...(h.mpos2||{}),[k]:[best[1],best[2],0]}}
-function buyDecor(k){const D=DECOR[k],h=structuredClone(me);if(!D||furnLv(h,k))return;if(!payCost(h,decorCost(D)))return;
+function buyDecor(k){const D=DECOR[k],h=structuredClone(me);if(!D||D.pet||furnLv(h,k))return;if(!payCost(h,decorCost(D)))return;
   h.manor={...(h.manor||{}),[k]:1};manorPlaceNew(h,k);
   addLog(h,D.hire?`「${D.n}」${pj(D.n,"을")} 장원에 들였다. (${costTxt(decorCost(D))})`:D.cost?`「${D.n}」${pj(D.n,"을")} 손수 만들어 장원에 들였다.`:`객잔 가구 거간에게서 「${D.n}」${pj(D.n,"을")} 사서 장원에 들였다. (${silverTxt(D.price)})${D.eff?` ${D.u} +${D.per}`:""}`);
   save(h);toast(D.hire?`「${D.n}」${pj(D.n,"이")} 장원에 왔다`:`「${D.n}」${pj(D.n,"을")} 장원에 들였다`)}
@@ -3271,6 +3289,17 @@ function isoDrawItem(C,k,gx,gy,r,lv){const [fw0,fd0]=ISO_FP[k]||[1,1];
        B(.3,.35,.35,.3,2,GOLD,4,{t:"#f6dc8a"});B(.38,.4,.2,.18,1.5,GOLD,6,{t:"#fff0b0"});[[.3,.5,4.3,"#b0382a"],[.55,.38,4.2,"#3a6c9a"],[.45,.6,6,"#4c9a6a"],[.62,.55,3.8,"#7a4bb0"],[.42,.42,7.6,"#fff6c8"],[.25,.3,3.6,"#fff6c8"]].forEach(([x,y,z,c])=>dot(x,y,z,c))},
    toad:()=>{B(.15,.2,.7,.6,2,"#b0382a",0,{t:"#c9442f"});const S=["..YY..YY..",".yKyyyyKy.","yyyyyyyyyy","yYrroYYYYy","yyyyyyyyyy",".yy.yy.yy.","yyy....yyy"];sprAt(S,{y:"#c9952e",Y:"#f0d27a",K:"#2b2622",r:"#7a2b22",o:"#f6dc8a"},4)},
    jadecab:()=>{B(.25,.3,.5,.4,2.5,"#7a4f2c",0,{t:"#8a5a33"});const S=["..g.G..",".gGgGg.",".GgGgG.","gGgGgGg",".xGxGx.",".xxGxx.",".xxxxx.","..xxx.."];sprAt(S,{g:"#3f8f5a",G:"#7bc896",x:"#e8f0e2"},2.5)},
+   herbfield:()=>{B(.05,.1,.9,.8,1.5,"#7a5a3a",0,{t:"#8a6a44"});for(let i=0;i<4;i++){B(.1,.15+i*.2,.8,.1,.8,"#5e4128",1.5);for(let j=0;j<5;j++){dot(.15+j*.16,.2+i*.2,3,(i+j)%3?"#4c8a3e":"#7bab58");if((i*5+j)%7===0)dot(.15+j*.16,.2+i*.2,4,(i+j)%2?"#b0382a":"#f5f0e3")}}},
+   yaktang:()=>{B(.25,.25,.5,.5,5,"#3d4148",0,{t:"#2b2622"});dot(.4,.45,5.4,"#e07a2e");dot(.55,.4,5.4,"#f2a65e");dot(.48,.55,5.4,"#e07a2e");
+       B(.3,.3,.4,.4,5,"#8a5a33",5.5,{t:"#a8743f"});B(.38,.38,.24,.24,1.2,"#6b4a2e",10.5);B(.66,.42,.18,.06,.8,"#8a5a33",8);dot(.45,.45,14,"#e6e1d4");dot(.5,.4,17,"#efe9da");dot(.42,.48,20,"#f5f0e3")},
+   insamju:()=>{B(.25,.25,.5,.5,1,WD);B(.22,.22,.56,.56,7,"#c9a06a",1,{t:"#d9b47a",l:"#c9a06a",r:"#a8743f"});B(.36,.36,.28,.28,1.5,"#a8743f",8);B(.38,.38,.24,.24,1.5,"#b0382a",9.5);
+       dot(.45,.55,4,"#f0e0b0");dot(.5,.55,6,"#f0e0b0");dot(.42,.55,7,"#f0e0b0");dot(.52,.55,3,"#f0e0b0")},
+   dryherb:()=>{B(.1,.45,.07,.07,16,WD);B(.85,.45,.07,.07,16,WD);B(.1,.45,.82,.07,1,W,15);
+       for(const [x,c] of [[.2,"#6f8f4a"],[.32,"#8a6a3a"],[.44,"#5d7a3e"],[.56,"#a8743f"],[.68,"#6f8f4a"],[.78,"#8a6a3a"]]){B(x,.46,.05,.05,1.5,"#c9a06a",13.5);B(x-.02,.45,.09,.09,6,c,7.5)}},
+   pet_crane:()=>{const S=[".r.......",".kw......",".w.......",".w.......",".ww......","..wwwww..",".wwwwwwk.","..wwwwkk.","...wwk...","....y.y..","....y.y..","...yy.yy."];sprAt(S,{r:"#b0382a",k:"#2b2622",w:"#f5f0e3",y:"#5a5852"},0)},
+   pet_bear:()=>{const S=["bb.......","bbbb.....","kbBbbbbb.","bBBbbbbbb",".bbbbbbbb",".bb.bb.bb",".bb.bb.bb"];sprAt(S,{b:"#3d2e24",B:"#c9a06a",k:"#f5f0e3"},0)},
+   pet_monkey:()=>{const S=[".oooo...","oOffOo..","oOkfkO..",".offf...","..oOo..o",".oOOOo.o",".oOOOooo","..oOo...","..o.o...",".oo.oo.."];sprAt(S,{o:"#d08a30",O:"#f0c870",f:"#9ab4d8",k:"#2b2622"},0)},
+   pet_kirin:()=>{const S=["..h........",".hgg.......","mgkgg......","mggggm.....","..gGGgsgsg.","..gsgsgsgGm","..gGGGGGGm.","..g.g..g.g.","..g.g..g.g.","..k.k..k.k."];sprAt(S,{h:"#f5f0e3",g:"#d4a73a",G:"#f0d27a",s:"#4c8a6a",m:"#e07a2e",k:"#2b2622"},0)},
    butler:()=>person({h:"#c9c6be",s:"#f0d0a8",a:"#2f3b5a",b:"#c9952e",k:"#2b2622"}),
    maid:()=>person({h:"#2b2622",s:"#f0d0a8",a:"#e8a0b5",b:"#b0382a",k:"#2b2622"},1),
    servant:()=>person({h:"#2b2622",s:"#d9a878",a:"#8a5a33",b:"#e6d7b8",k:"#2b2622"},2),
@@ -3370,6 +3399,50 @@ function paintManor(){let el=document.getElementById("isoWrap");if(!isoView){if(
 function manorView(h,mine){const all={...FURN,...DECOR},L=MANOR_KEYS().filter(k=>furnLv(h,k)&&all[k]),id=mine?myId():h._id,nv=visitsTo(id).length;
   return `<div class="mgo"><button class="btn sm sealb" type="button" data-manor="${id}">${mine?"내 장원 가기":`${esc(josa(h.name,"의"))} 장원 가기`}</button>
     <span class="note">${L.length?`물건 ${L.length}개 · ${L.slice(0,3).map(k=>all[k].n).join(", ")}${L.length>3?" …":""}`:"아직 텅 빈 마당"}${nv?` · 발자국 ${nv}`:""}</span></div>`}
+/* ───────── 영수: 한 사람에 한 마리. 하루 한 번 약초를 먹이면 정이 쌓여 자란다. 사흘 넘게 굶기면 효과가 꺼진다 ───────── */
+const PETS={crane:{n:"백학",st:"nei",d:"맑은 기운을 품은 흰 학. 곁에 두면 내공이 고요해진다",cost:{m_yeongji:3,m_dangkwi:5,silver:5000}},
+  bear:{n:"아기 곰",st:"wai",d:"힘센 반달가슴곰 새끼. 함께 뒹굴면 외공이 단단해진다",cost:{m_hasuo:3,m_insam:5,silver:5000}},
+  monkey:{n:"금빛 원숭이",st:"shen",d:"나뭇가지를 타고 나는 금빛 원숭이. 쫓아다니다 보면 신법이 날래진다",cost:{m_cheonma:3,m_insam:5,silver:5000}},
+  kirin:{n:"기린",st:"all",d:"성인이 날 때 나타난다는 상서로운 짐승. 세 능력치가 고루 오른다",cost:{m_sansam:2,m_seolryeon:1,silver:30000}}};
+const PET_STAGE=[[0,"새끼",.02,.01],[30,"성수",.04,.02],[100,"영수",.06,.03]];
+const PET_FEED=[3,5,10,20],PET_HUNGRY=3;
+const petStage=p=>{let s=PET_STAGE[0];for(const x of PET_STAGE)if((p?.xp||0)>=x[0])s=x;return s};
+const petHungry=p=>!p||dayKey()-(p.fed??-99)>PET_HUNGRY;
+function petBonus(h){const p=h?.pet;if(!p||!PETS[p.k]||petHungry(p))return {};const S=petStage(p),P=PETS[p.k];return P.st==="all"?{nei:S[3],wai:S[3],shen:S[3]}:{[P.st]:S[2]}}
+function adoptPet(k){const P=PETS[k],h=structuredClone(me);if(!P||h.pet)return;if(!payCost(h,P.cost))return;
+  h.pet={k,xp:0,fed:dayKey(),t:Date.now()};h.manor={...(h.manor||{}),["pet_"+k]:1};manorPlaceNew(h,"pet_"+k);
+  addLog(h,`${josa(P.n,"을")} 장원에 거두었다. 하루 한 번 약초를 먹이면 정이 쌓여 자란다.`);save(h);toast(`${josa(P.n,"이")} 장원에 왔다`)}
+function feedPet(m){const h=structuredClone(me),p=h.pet;if(!p)return;if(p.fed===dayKey()&&p.ate){toast("오늘은 이미 먹였다. 내일 또 주자.");return}
+  if(!MATS[m]||MATS[m][1]!=="herb"||!((h.mats||{})[m]>0)){toast("먹일 약초가 없다.");return}
+  const was=petHungry(p),st0=petStage(p);h.mats[m]--;const add=PET_FEED[MATS[m][2]]||3;p.xp=(p.xp||0)+add;p.fed=dayKey();p.ate=1;const st1=petStage(p),P=PETS[p.k];
+  addLog(h,`${P.n}에게 ${josa(matN(m),"을")} 먹였다. 정 +${add}${st1!==st0?` · ${josa(P.n,"이")} 「${st1[1]}」${pj(st1[1],"로")} 자랐다!`:""}${was?" 기운을 되찾았다.":""}`);save(h);toast(st1!==st0?`${P.n} · 「${st1[1]}」${pj(st1[1],"로")} 자랐다!`:`${P.n} · 정 +${add}`)}
+function releasePet(){const h=structuredClone(me),p=h.pet;if(!p)return;const P=PETS[p.k];delete h.manor["pet_"+p.k];if(h.mpos2)delete h.mpos2["pet_"+p.k];h.pet=null;petBye=false;
+  addLog(h,`${josa(P.n,"을")} 산으로 돌려보냈다. 뒤를 돌아보며 멀어져 갔다.`);save(h)}
+let petBye=false;
+/* 도트 그림을 작은 그림으로 */
+function pxSvg(S,pal,sc=4){let o="";S.forEach((r,y)=>[...r].forEach((c,x)=>{if(c!=="."&&pal[c])o+=`<rect x="${x}" y="${y}" width="1" height="1" fill="${pal[c]}"/>`}));const w=Math.max(...S.map(r=>r.length));
+  return `<svg viewBox="0 0 ${w} ${S.length}" width="${w*sc}" height="${S.length*sc}" shape-rendering="crispEdges" aria-hidden="true">${o}</svg>`}
+const PET_PX={crane:[[".r.......",".kw......",".w.......",".w.......",".ww......","..wwwww..",".wwwwwwk.","..wwwwkk.","...wwk...","....y.y..","....y.y..","...yy.yy."],{r:"#b0382a",k:"#2b2622",w:"#f5f0e3",y:"#5a5852"}],
+  bear:[["bb.......","bbbb.....","kbBbbbbb.","bBBbbbbbb",".bbbbbbbb",".bb.bb.bb",".bb.bb.bb"],{b:"#3d2e24",B:"#c9a06a",k:"#f5f0e3"}],
+  monkey:[[".oooo...","oOffOo..","oOkfkO..",".offf...","..oOo..o",".oOOOo.o",".oOOOooo","..oOo...","..o.o...",".oo.oo.."],{o:"#d08a30",O:"#f0c870",f:"#9ab4d8",k:"#2b2622"}],
+  kirin:[["..h........",".hgg.......","mgkgg......","mggggm.....","..gGGgsgsg.","..gsgsgsgGm","..gGGGGGGm.","..g.g..g.g.","..g.g..g.g.","..k.k..k.k."],{h:"#f5f0e3",g:"#d4a73a",G:"#f0d27a",s:"#4c8a6a",m:"#e07a2e",k:"#2b2622"}]};
+function petSection(h){const p=h.pet;
+  if(!p){const cards=Object.entries(PETS).map(([k,P])=>{const ok=Object.entries(P.cost).every(([m,v])=>matHave(h,m)>=v),[S,pal]=PET_PX[k];
+      return `<div class="petc"><div class="petimg">${pxSvg(S,pal,5)}</div><div class="petx"><b>${P.n}</b><span>${P.d}</span><span>${P.st==="all"?"내공·외공·신법":STATS[P.st].n} +${PET_STAGE.map(x=>Math.round((P.st==="all"?x[3]:x[2])*100)).join(" / ")}% (새끼/성수/영수)</span>
+        <span class="fcost">${Object.entries(P.cost).map(([m,v])=>`<i class="${matHave(h,m)>=v?"":"lack"}">${m==="silver"?silverTxt(v):`${matName(m)} ${matHave(h,m)}/${v}`}</i>`).join(" ")}</span></div>
+        <button class="btn sm ${ok?"sealb":""}" type="button" data-adopt="${k}" ${ok?"":"disabled"}>거둔다</button></div>`}).join("");
+    return `<section>${foldHead("pet","영수 · 아직 없음")}<div class="foldb" ${foldOpen("pet")?"":"hidden"}><p class="note" style="margin-top:0">영수를 한 마리 거둘 수 있다. 하루 한 번 약초를 먹이면 정이 쌓여 새끼 → 성수(정 30) → 영수(정 100)로 자란다. 귀한 약초일수록 정이 많이 오른다(흔함 3 · 보통 5 · 귀함 10 · 전설 20). 사흘 넘게 굶기면 시무룩해져 효과가 꺼진다.</p><div class="petl">${cards}</div></div></section>`}
+  const P=PETS[p.k],S0=petStage(p),nx=PET_STAGE.find(x=>x[0]>(p.xp||0)),hungry=petHungry(p),fedToday=p.fed===dayKey()&&p.ate,[S,pal]=PET_PX[p.k];
+  const herbs=Object.entries(h.mats||{}).filter(([m,v])=>v>0&&MATS[m]?.[1]==="herb").sort((a,b)=>MATS[a[0]][2]-MATS[b[0]][2]);
+  const eff=P.st==="all"?`내공·외공·신법 +${Math.round(S0[3]*100)}%`:`${STATS[P.st].n} +${Math.round(S0[2]*100)}%`;
+  return `<section>${foldHead("pet",`영수 · ${P.n} 「${S0[1]}」${hungry?" · 배고픔":fedToday?"":" · 먹이 줄 수 있음"}`)}<div class="foldb" ${foldOpen("pet")?"":"hidden"}>
+    <div class="petc mine ${hungry?"hungry":""}"><div class="petimg">${pxSvg(S,pal,6)}</div><div class="petx"><b>${P.n} <span class="tag">${S0[1]}</span></b>
+      <span>${hungry?`배가 고파 시무룩하다. 효과가 꺼졌다. (원래 ${eff})`:`효과: ${eff}`}</span>
+      <span>정 ${p.xp||0}${nx?` / ${nx[0]} (다음: ${nx[1]})`:" · 다 자랐다"}</span><div class="hpb"><i style="width:${nx?Math.min(100,((p.xp||0)-S0[0])/(nx[0]-S0[0])*100):100}%"></i></div>
+      <span>${fedToday?"오늘은 배불리 먹었다.":hungry?"얼른 약초를 먹이자.":`마지막으로 먹인 날로부터 ${dayKey()-p.fed}일 · ${PET_HUNGRY}일 넘으면 시무룩해진다`}</span></div></div>
+    ${fedToday?"":herbs.length?`<div class="row" style="margin-top:8px"><select id="petHerb" aria-label="먹일 약초">${herbs.map(([m,v])=>`<option value="${m}">${matN(m)} (${v}) · 정 +${PET_FEED[MATS[m][2]]}</option>`).join("")}</select><button class="btn sm sealb" type="button" id="petFeed">먹이 주기</button></div>`:`<p class="note">먹일 약초가 없다. 채집에서 약초를 캐 오자.</p>`}
+    ${petBye?`<div class="wall" style="margin-top:10px"><p>정말 ${josa(P.n,"을")} 산으로 돌려보낼까? 쌓은 정은 사라진다.</p><div class="row"><button class="btn sm sealb" type="button" id="petByeYes">돌려보낸다</button><button class="btn sm ghost" type="button" id="petByeNo">그만둔다</button></div></div>`
+      :`<div class="row" style="margin-top:10px"><button class="btn sm ghost" type="button" id="petBye">산으로 돌려보내기</button></div>`}</div></section>`}
 function manorSection(h){const B=manorBonus(h),parts=Object.entries(FURN).filter(([k])=>furnLv(h,k)).map(([k,F])=>`${F.u} +${F.per*furnLv(h,k)}`);
   const rows=Object.entries(FURN).map(([k,F])=>{const lv=furnLv(h,k);if(lv>=FURN_MAX)return `<div class="frow"><div><b>${F.n}</b> <span class="tag">${lv}단계 · 다 지었다</span><span>${F.d} · ${F.u} +${F.per*lv}</span></div></div>`;
     const c=furnCost(k,lv),ok=Object.entries(c).every(([m,v])=>matHave(h,m)>=v);
@@ -4287,7 +4360,7 @@ function coClaim(){
   const mine=r.boss?.dealtBy?.[myId()]||0;if(r.why==="boss"&&h.raid?.period===r.period){h.raid.dmg+=mine;h.raid.sup=(h.raid.sup||0)+(r.boss?.supBy?.[myId()]||0)}if(r.why==="boss")bump(h,"lair");
   const sj=[...new Set(r.members)].filter(x=>x!==myId()).map(x=>sajeRole(myId(),x)).filter(Boolean);
   const exp=Math.round((lt.exp+(r.why==="boss"?expPerHour(h.level):0))*(half?.5:1)*(sj.includes("제자")?1.25:1)),stone=Math.floor(lt.stone*(half?.5:1))+(sj.includes("스승")?1:0),herb=Math.floor(lt.herb*(half?.5:1));
-  const lv0=h.level,ups=applyExp(h,exp);h.items.stone+=stone;h.items.herb+=herb;const got=[];
+  const lv0=h.level,ups=atStart(r.start,()=>applyExp(h,exp));h.items.stone+=stone;h.items.herb+=herb;const got=[];
   if(exp)got.push(`경험치 +${exp}`);if(stone)got.push(`강화석 +${stone}`);if(herb)got.push(`약초 +${herb}`);
   {const ef=useBattleFood(h);if(ef)got.push(ef)}
   if(r.why==="boss"){got.push(silverTxt(addSilver(h,20+h.level)));const ip=addInv(h,80);if(ip)got.push(`마교 침공 기여 +${ip}`)}
@@ -4583,7 +4656,7 @@ function itemStats(it){
 function statLine(it){const s=itemStats(it);return [s.atk?`공격 +${s.atk}`:"",s.def?`방어 +${s.def}`:"",...["nei","wai","shen"].filter(k=>s[k]).map(k=>`${STATS[k].n} +${s[k]}`)].filter(Boolean).join(" · ")}
 const gradeLine=it=>`${REALMS[it.grade].n}급 · ${it.slot==="acc"?STATS[it.stat].n+" 장신구":SPEC[it.spec].n}${it.sect?` · ${SECTS[it.sect].n} 전용`:""}`;
 function gearSum(h){const o={atk:0,def:0,nei:0,wai:0,shen:0};for(const k in SLOTS){const s=itemStats(h.gear?.[k]);for(const x in s)o[x]+=s[x]}return o}
-function effStats(h){const g=gearSum(h),M=manorBonus(h),m=rbStatM(h),b=k=>Math.round(h.stats[k]*m);return {nei:b("nei")+g.nei+M.nei,wai:b("wai")+g.wai+M.wai,shen:b("shen")+g.shen+M.shen}}
+function effStats(h){const g=gearSum(h),M=manorBonus(h),m=rbStatM(h),pp=petBonus(h),b=k=>Math.round(h.stats[k]*m*(1+(pp[k]||0)));return {nei:b("nei")+g.nei+M.nei,wai:b("wai")+g.wai+M.wai,shen:b("shen")+g.shen+M.shen}}
 function gainItem(h,it){if(h.bag.length>=20){const n=it.grade+1+(it.rar||0)*2;h.items.stone+=n;return `${rarName(it)} (행낭이 가득 차 강화석 ${n}개로 녹임)`}h.bag.push(it);return rarName(it)}
 function rollDrop(h,tier){
   if(Math.random()*100>=[25,12,5][tier]) return null;
@@ -4666,7 +4739,7 @@ function startTrain(){
 function finishTrain(cancel){
   const h=structuredClone(me),t=h.training; if(!t) return;
   const f=cancel?Math.min(1,(Date.now()-t.start)/(t.end-t.start))*.5:1;
-  const g=trainGain(t,f), lv0=h.level, ups=applyExp(h,g.exp), w=applyStat(h,t.stat,g.stat);
+  const g=trainGain(t,f), lv0=h.level, ups=atStart(t.start,()=>applyExp(h,g.exp)), w=applyStat(h,t.stat,g.stat);
   h.training=null;if(!cancel)bump(h,"trainH",t.hours);
   addLog(h,`${STATS[t.stat].train}${cancel?"을 중도에 그만두었다":"을 마쳤다"}. 경험치 +${g.exp}${w?`, ${STATS[t.stat].n} +${w}`:""}${ups?`, Lv.${lv0}→${h.level}`:""}`);
   confirmCancel=false; save(h);
@@ -4896,7 +4969,7 @@ function enterScene(){
     if((e.kind==="talk"||e.kind==="act")&&e.ok)exp+=Math.round(expPerHour(h.level)*.05)}
   h.items.stone+=stones;if(stones)got.push(`강화석 ${stones}`);
   {const iw=f.filter(e=>e.kind==="fight"&&e.ok&&e.inv).length;if(iw){const ip=addInv(h,15*iw);if(ip)got.push(`마교도 ${iw}명 격퇴 · 침공 기여 +${ip}`)}}
-  const ups=applyExp(h,exp);m.bonus=feedBonus(f)+(comp?1:0);if(h.buff?.scene){m.bonus+=2;m.mandu=1;delete h.buff.scene}m.phase="scene";
+  const ups=atStart(m.start,()=>applyExp(h,exp));m.bonus=feedBonus(f)+(comp?1:0);if(h.buff?.scene){m.bonus+=2;m.mandu=1;delete h.buff.scene}m.phase="scene";
   addLog(h,`탐문을 마쳤다. 경험치 +${exp}${got.length?", "+got.join(", "):""} · 조사 판정 +${m.bonus}`);
   save(h);toast(ups?`탐문 중에 레벨이 올랐습니다! Lv.${h.level}`:`탐문 성과로 조사 판정 +${m.bonus}`);
 }
@@ -4956,7 +5029,7 @@ function finishMission(){
   if(L.friend)bx.push("친우 보너스 경험치 +20%");
   companionsFor(m).filter(c=>c.id).forEach(c=>{const v=addBond(h,c.id,10);bx.push(`${josa(c.name,"와")} 인연 +${v}`)});
   (REGION_SECTS[m.region]||[]).forEach(k=>{addFavor(h,k,20);bx.push(`${SECTS[k].n} 우호도 +20`)});
-  const lv0=h.level,ups=applyExp(h,r.exp);
+  const lv0=h.level,ups=atStart(m.start,()=>applyExp(h,r.exp));
   h.items.stone+=r.stone; const extra=[...bx];
   if(L.silver)extra.unshift(silverTxt(addSilver(h,L.silver)));
   if(invasion&&m.region===invasion.region){const ip=addInv(h,[60,100,200][misDiff(m)]*[1,.8,.5][r.t]);if(ip)extra.push(`마교 침공 기여 +${ip}`)}
@@ -5244,8 +5317,8 @@ function selfTab(){
     </div></section>
     <section>${foldHead("bag","행낭")}<div class="foldb" ${foldOpen("bag")?"":"hidden"}>
       <div class="bag"><div><b>${(h.silver||0).toLocaleString()}</b>은자 <span>· 냥 · 객잔과 떠돌이 상단에서 쓴다</span></div>${h.horse?`<div><b>🐎</b>${esc(h.horse.n)} <span>· ${horseT(h.horse).n} · 이동 시간 -${Math.round(horseT(h.horse).cut*100)}%</span></div>`:""}${Object.entries(ITEMS).map(([k,[n,sub]])=>`<div><b>${h.items[k]||0}</b>${n} <span>· ${sub}</span>${FOOD[k]&&h.items[k]>0?` <button class="btn sm ghost" type="button" data-eat="${k}" ${h.buff?.[FOOD[k].k]?"disabled":""}>${FOOD[k].v||"먹기"}</button>`:""}</div>`).join("")}</div>
-      ${h.buff&&Object.keys(h.buff).filter(k=>h.buff[k]&&(k!=="ilil"||h.buff.ilil>Date.now())).length?`<p class="note">걸려 있는 효과: ${Object.entries(h.buff).filter(([k,v])=>v&&(k!=="ilil"||v>Date.now())).map(([k,it])=>Object.values(TOOLS).some(T=>T.buff===k)?`<b>${Object.values(TOOLS).find(T=>T.buff===k).n}</b> (${Object.values(TOOLS).find(T=>T.buff===k).d}${k==="bait"?` · ${it}번 남음`:""})`:k==="cart"?`<b>표국 마차</b> (다음 이동 -${CART_CUT*100}%)`:k==="ilil"?(it>Date.now()?`<b>꿀막대</b> (경험치 +11% · ${hhmm(it)}까지)`:""):`<b>${ITEMS[it]?.[0]||it}</b> (${k==="scene"?"다음 사건 조사 +2":k==="atk"?"공격 +15%":k==="hp"?"체력 +20%":k==="travel"?"다음 이동 -20%":"다음 수련 경험치 +15%"})`).join(" · ")}</p>`:""}
-      <p class="note">강화석은 장비 탭에서 강화에 쓴다. 약초는 소굴에서 회복에 쓴다. 약초·술·향낭·장신구·옥비녀는 인연 탭에서 동료에게, 강호 탭에서 문파에 선물로 쓴다. 음식과 차는 먹기·마시기를 누르면 효과가 걸린다. 착용하는 장신구는 장비 탭에 있다.</p></div></section>${manorSection(h)}${bioSection()}${titleSection()}${sectTabSection()}`;
+      ${h.buff&&Object.keys(h.buff).filter(k=>h.buff[k]&&k!=="ililFrom"&&(k!=="ilil"||h.buff.ilil>Date.now())).length?`<p class="note">걸려 있는 효과: ${Object.entries(h.buff).filter(([k,v])=>v&&k!=="ililFrom"&&(k!=="ilil"||v>Date.now())).map(([k,it])=>Object.values(TOOLS).some(T=>T.buff===k)?`<b>${Object.values(TOOLS).find(T=>T.buff===k).n}</b> (${Object.values(TOOLS).find(T=>T.buff===k).d}${k==="bait"?` · ${it}번 남음`:""})`:k==="cart"?`<b>표국 마차</b> (다음 이동 -${CART_CUT*100}%)`:k==="ilil"?(it>Date.now()?`<b>꿀막대</b> (경험치 +11% · ${hhmm(it)}까지 시작하는 수련·탐문·소굴은 끝날 때까지)`:""):`<b>${ITEMS[it]?.[0]||it}</b> (${k==="scene"?"다음 사건 조사 +2":k==="atk"?"공격 +15%":k==="hp"?"체력 +20%":k==="travel"?"다음 이동 -20%":"다음 수련 경험치 +15%"})`).join(" · ")}</p>`:""}
+      <p class="note">강화석은 장비 탭에서 강화에 쓴다. 약초는 소굴에서 회복에 쓴다. 약초·술·향낭·장신구·옥비녀는 인연 탭에서 동료에게, 강호 탭에서 문파에 선물로 쓴다. 음식과 차는 먹기·마시기를 누르면 효과가 걸린다. 착용하는 장신구는 장비 탭에 있다.</p></div></section>${manorSection(h)}${petSection(h)}${bioSection()}${titleSection()}${sectTabSection()}`;
 }
 
 /* 동행 탭 */
@@ -5275,7 +5348,8 @@ function bind(){
   $("#hname")?.addEventListener("keydown",e=>{if(e.key==="Enter")create()});
   on("#trainBtn",startTrain); on("#promoteBtn",promote); on("#allocBtn",commitAlloc);
   on("#finBtn",()=>finishTrain(false)); on("#cxBtn",()=>{confirmCancel=true;render()}); on("#cxNo",()=>{confirmCancel=false;render()}); on("#cxYes",()=>finishTrain(true));
-  on("#goBtn",()=>startTravel(dest));on("#escDrop",dropEscort);on("#escGive",()=>{const h=structuredClone(me),t=deliverEscort(h,Date.now());if(t){save(h);toast(t)}});
+  on("#goBtn",()=>startTravel(dest));document.querySelectorAll("[data-adopt]").forEach(b=>b.onclick=()=>adoptPet(b.dataset.adopt));
+  on("#petFeed",()=>feedPet(document.getElementById("petHerb")?.value));on("#petBye",()=>{petBye=true;render()});on("#petByeNo",()=>{petBye=false;render()});on("#petByeYes",releasePet);on("#escDrop",dropEscort);on("#escGive",()=>{const h=structuredClone(me),t=deliverEscort(h,Date.now());if(t){save(h);toast(t)}});
   document.querySelectorAll("[data-esc]").forEach(b=>b.onclick=()=>takeEscort(b.dataset.esc));document.querySelectorAll("[data-escgo]").forEach(b=>b.onclick=()=>{dest=b.dataset.escgo;tab="world";render()});on("#stipBtn",claimStipend);on("#farBtn",()=>startFar(dest,false));on("#farCart",()=>startFar(dest,true)); on("#arriveBtn",arrive);
   on("#abBtn",()=>{confirmAbort=true;render()}); on("#abNo",()=>{confirmAbort=false;render()}); on("#abYes",cancelTravel);
   document.querySelectorAll("[data-mis]").forEach(b=>b.addEventListener("click",()=>startMission(b.dataset.mis))); on("#sceneBtn",enterScene); on("#fightBtn",fight); on("#finMisBtn",finishMission);
