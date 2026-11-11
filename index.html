@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261111101019">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261111110006">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -657,6 +657,19 @@ section.inv.mini::after{font-size:70px;bottom:-16px;right:-2px}
 .dsub{margin:12px 0 6px;font-size:12px;color:var(--muted,#8a8378);letter-spacing:.06em}.dsub:first-child{margin-top:4px}
 .rsw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px;border:1px solid rgba(0,0,0,.25)}
 .shopi .fcost{display:block;margin-top:3px}
+
+.farbox{margin-top:8px}
+.farpath{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin:6px 0 0;font-size:13px}
+.farpath span{padding:2px 8px;border-radius:999px;background:var(--card2,#f1ece2);color:var(--muted,#8a8378)}
+.farpath span.here,.farpath span.past{background:var(--ink,#2b2622);color:#fff}
+.farpath span.goal{box-shadow:inset 0 0 0 1px var(--seal,#b0382a);color:var(--seal,#b0382a)}.farpath span.goal.past{color:#fff;background:var(--seal,#b0382a)}
+.farpath i{font-style:normal;color:var(--muted,#8a8378);font-size:11px}
+.farev{margin:8px 0 0;padding:0 0 0 18px;font-size:13px;line-height:1.6}.farev li.bad{color:var(--seal,#b0382a)}.farev li.good{color:#3f7a3a}
+
+.stip{display:flex;align-items:center;gap:10px;justify-content:space-between;margin:8px 0 6px;padding:10px 12px;border-radius:var(--r-s,8px);background:var(--card2,#f1ece2)}
+.stip b{display:block;font-size:14px}.stip span{font-size:12px;color:var(--muted,#8a8378)}.stip .btn{white-space:nowrap;flex:none}.stip em{font-style:normal;font-size:12px;color:var(--muted,#8a8378);white-space:nowrap}
+.esc{margin:0 0 10px;padding:10px 12px;border-radius:var(--r-s,8px);border:1px solid var(--line);border-left:3px solid #c9952e;background:var(--card,#fff)}
+.esc p{margin:2px 0 0}.esc.late{border-left-color:var(--seal,#b0382a)}
 </style>
 
 <div class="wrap">
@@ -757,10 +770,10 @@ function speedTags(h,to,rider){const ht=horseT((rider||h)?.horse),kg=kgCut(rider
 const teaHrs=(h,x)=>{let m=1;if(h?.buff?.travel)m*=.8;if(h?.buff?.cart)m*=1-CART_CUT;return Math.round(x*m*60)/60};
 const hrsTxt=x=>{const H=Math.floor(x),M=Math.round((x-H)*60);return M?(H?`${H}시간 ${M}분`:`${M}분`):`${H}시간`};
 const roadHours=(a,b)=>{const r=ROADS.find(r=>(r[0]===a&&r[1]===b)||(r[0]===b&&r[1]===a));return r?r[2]:0};
-function route(a,b){ // 가장 빠른 길 (다익스트라)
+function route(a,b,h){ // 가장 빠른 길 (다익스트라). h를 주면 아직 못 들어가는 곳은 거쳐 가지 않는다
   const dist={},prev={},q=new Set(Object.keys(REGIONS));for(const k of q)dist[k]=Infinity;dist[a]=0;
-  while(q.size){let u=null;for(const k of q)if(u===null||dist[k]<dist[u])u=k;q.delete(u);if(u===b)break;
-    for(const r of ROADS){const v=r[0]===u?r[1]:r[1]===u?r[0]:null;if(v&&q.has(v)&&dist[u]+r[2]<dist[v]){dist[v]=dist[u]+r[2];prev[v]=u}}}
+  while(q.size){let u=null;for(const k of q)if(u===null||dist[k]<dist[u])u=k;q.delete(u);if(u===b||dist[u]===Infinity)break;
+    for(const r of ROADS){const v=r[0]===u?r[1]:r[1]===u?r[0]:null;if(v&&h&&v!==b&&REGIONS[v].minRealm&&h.realm<REGIONS[v].minRealm)continue;if(v&&q.has(v)&&dist[u]+r[2]<dist[v]){dist[v]=dist[u]+r[2];prev[v]=u}}}
   const path=[b];while(path[0]!==a&&prev[path[0]])path.unshift(prev[path[0]]);return {path,hours:dist[b]};
 }
 
@@ -1965,6 +1978,10 @@ const partyMates=()=>myParty().filter(id=>id!==myId()).map(heroById).filter(Bool
 function addBond(h,otherId,pts){if(!otherId||otherId===myId())return 0;h.bonds=h.bonds||{};const b=h.bonds[otherId]=h.bonds[otherId]||{pts:0};
   const mul=following(otherId)?1.5:1;const v=Math.round(pts*mul);b.pts=(b.pts||0)+v;return v}
 const favorOf=(h,k)=>h?.favor?.[k]||0;
+/* 문파 녹봉: 한 주에 한 번. 크지 않게 (삼류·냉담 60냥 ~ 현경·동지·문주 약 400냥) */
+function stipendOf(h){const realm=40+(h.realm||0)*30,fav=[0,20,40,60][FAVOR_STAGES.indexOf(favorStage(favorOf(h,h.sect)))]||0,post=h.post==="elder"?50:h.post?100:0;return {realm,fav,post,sum:realm+fav+post}}
+function claimStipend(){const h=structuredClone(me);if(h.stipend===weekKey())return;const st=stipendOf(h);h.stipend=weekKey();const sv=addSilver(h,st.sum);
+  addLog(h,`${SECTS[h.sect].n}에서 이번 주 녹봉을 받았다. (${silverTxt(sv)})`);save(h);toast(`녹봉 ${silverTxt(sv)}`)}
 const favorStage=v=>{let s=FAVOR_STAGES[0];for(const x of FAVOR_STAGES)if(v>=x[0])s=x;return s};
 function addFavor(h,k,v){if(!k||!SECTS[k])return;h.favor=h.favor||{};h.favor[k]=(h.favor[k]||0)+v}
 function giftDayLeft(h){const g=h.giftDay||{};return g.day===dayKey()?3-g.n:3}
@@ -2057,7 +2074,9 @@ function sectTabSection(){
       <div class="row"><button class="btn sealb" id="sectYes" type="button">파문을 감수하고 옮긴다</button><button class="btn ghost" id="sectNo" type="button">그만둔다</button></div></div>`
     :`<div style="margin-top:14px">${foldHead("sectmv","문파 옮기기")}</div><div class="foldb" ${foldOpen("sectmv")?"":"hidden"}><div class="sectmv">${opts.map(k=>{const S=SECTS[k],until=(h.leftSects?.[k]||0)+7*86400e3,ban=Date.now()<until;
         return `<button class="smv" type="button" data-sect="${k}" ${ban?"disabled":""}>${emblem(k,"sm")}<span><b>${S.n}</b><em>${S.role} · 주력 ${S.main.map(m=>STATS[m].n).join("+")}${homeOf(k)?` · 근거지 ${homeOf(k).n}`:""}</em><small>${SKILL_NAME[k]} — ${esc(S.sk[0][2])}</small>${ban?`<small class="ban">${fmtDays(until-Date.now())} 뒤에 다시 들어갈 수 있다</small>`:""}</span></button>`}).join("")}</div></div>`;
-  return `<section>${foldHead("favor",`문파 우호도 · ${SECTS[cur].n} ${favorStage(favorOf(h,cur))[1]}`)}${offerBox}<div class="foldb" ${foldOpen("favor")?"":"hidden"}><div class="favs">${rows}</div>${post}
+  const st=stipendOf(h),got=h.stipend===weekKey();
+  const stip=`<div class="stip"><div><b>문파 녹봉</b><span>매주 월요일 · 경지 ${REALMS[h.realm].n} ${st.realm}냥 + 우호 ${favorStage(favorOf(h,cur))[1]} ${st.fav}냥${st.post?` + ${h.post==="elder"?"장로":headN(cur)} ${st.post}냥`:""}</span></div>${got?`<em>이번 주 받음</em>`:`<button class="btn sm sealb" type="button" id="stipBtn">${silverTxt(st.sum)} 받기</button>`}</div>`;
+  return `<section>${foldHead("favor",`문파 우호도 · ${SECTS[cur].n} ${favorStage(favorOf(h,cur))[1]}${got?"":" · 녹봉 받을 수 있음"}`)}${stip}${offerBox}<div class="foldb" ${foldOpen("favor")?"":"hidden"}><div class="favs">${rows}</div>${post}
     <p class="note">우호도는 그 문파 근처의 사건 해결(+20), 문파에 선물(강호 탭에서, +10~25), 그 문파 NPC와 함께 이긴 싸움(+15)으로 오른다.</p></div>${move}</section>`;
 }
 /* 인연 탭 */
@@ -2353,7 +2372,7 @@ function alarmTab(){
 }
 function bindAlarm(){
   document.querySelectorAll("[data-ago]").forEach(b=>b.addEventListener("click",()=>{const to=b.dataset.ago;
-    if(!activity(me)&&roadHours(me.loc,to)){startTravel(to,b.dataset.awith);tab="world";render()}else{dest=to;tab="world";render();if(activity(me))toast(`${busyText[activity(me)]} 지금은 떠날 수 없습니다.`);else toast("바로 가는 길이 없어요. 지도에서 길을 확인해 주세요.")}}));
+    if(!activity(me)&&roadHours(me.loc,to)){startTravel(to,b.dataset.awith);tab="world";render()}else{dest=to;tab="world";render();if(activity(me))toast(`${busyText[activity(me)]} 지금은 떠날 수 없습니다.`);else toast("바로 가는 길이 없어요. 지도에서 「한 번에 가기」를 눌러 주세요.")}}));
   document.querySelectorAll("[data-atab]").forEach(b=>b.addEventListener("click",()=>{tab=b.dataset.atab;try{localStorage.setItem("murim-tab",tab)}catch(e){}render()}));
   document.querySelectorAll("[data-cojoin]").forEach(b=>b.addEventListener("click",async()=>{await coJoin(b.dataset.cojoin);tab="raid";render()}));
   document.querySelectorAll("[data-callgo]").forEach(b=>b.addEventListener("click",()=>sendCall("go",{reg:b.dataset.callgo})));
@@ -3561,9 +3580,23 @@ function gatherBox(h,inner,kind){if(h.travel)return "";const used=stUsed(h),left
   return `${inner?"":`<div class="shop">${head}`}${G1?`<div class="gact"><button class="btn sealb" type="button" data-gather="${kind}" ${left<=0?"disabled":""}>${G1.n} · 활력 1</button><span class="note" style="margin:0">${G1.say} · ${josa(STATS[G1.st].n,"이")} 높을수록 귀한 게 나온다 · 남은 활력 ${left}/${STAMINA}</span></div>`
       :`<div class="shopl">${Object.entries(GATHER).map(([k,G])=>`<button class="shopi" type="button" data-gather="${k}" ${left<=0?"disabled":""}><b>${G.n}</b><span>${G.say} · ${josa(STATS[G.st].n,"이")} 높을수록 귀한 게 나온다</span><em>활력 1</em></button>`).join("")}</div>`}
     ${gLast&&(!kind||gLast.kind===kind)?`<div class="fishpond"><span>${esc(gLast.text)}</span></div>`:""}
+    ${kind?`<div class="row" style="margin-top:6px"><span class="note" style="margin:0;flex:1">가진 ${GATHER[kind].n.split(" ")[0]} 재료: ${Object.entries(h.mats||{}).filter(([k,v])=>v>0&&MATS[k]?.[1]===kind).map(([k,v])=>`${matN(k)} ${v}`).join(", ")||"없다"}</span><button class="btn sm ghost" type="button" id="matSellT">${matSellOpen?"팔기 닫기":"재료 팔기"}</button></div>${matSellOpen?matSellBox(h,kind):""}`:""}
     <p class="note">오늘 날씨 ${wx.n}${tips?` · ${tips}`:""}. ${loc.length?`이 지역에서만: ${loc.map(([k])=>h.gdex?.[k]?matN(k):"???").join(", ")}.`:""} 활력은 자정에 다시 찬다.</p>
     <button type="button" class="shoph" id="gDexBtn" style="margin-top:6px"><span class="kicker">채집 도감 · ${Object.keys(h.gdex||{}).filter(k=>MATS[k]).length}/${MAT_N}종</span><i>${gDex?"접기 ▴":"펼치기 ▾"}</i></button>
     ${gDex?`<div class="dex">${Object.entries(MATS).filter(([,m])=>!kind||m[1]===kind).sort((a,b)=>a[1][1].localeCompare(b[1][1])||a[1][2]-b[1][2]).map(([k,m])=>`<div class="dx t${m[2]} ${h.gdex?.[k]?"got":""}"><b>${h.gdex?.[k]?m[0]:"???"}</b><span>${GATHER[m[1]].n} · ${MAT_TIER[m[2]]} · ${h.gdex?.[k]?`가진 것 ${(h.mats||{})[k]||0}`:m[3]?m[3].map(r=>REGIONS[r].n).join("·"):"어디서나"}</span></div>`).join("")}</div>`:""}${inner?"":"</div>"}`}
+/* 재료 팔기: 객잔 약재상·목상·철물상이 사 간다. 귀함·전설 재료는 한꺼번에 팔기에서 빠진다 */
+let matSellOpen=false;
+const matPrice=k=>MATS[k]?.[4]||0;
+function matSellOne(k,qty){const h=structuredClone(me),m=h.mats||{},have=m[k]||0,n=Math.max(0,Math.min(have,Math.floor(qty)||0));if(!n||!MATS[k])return;
+  const sum=matPrice(k)*n;m[k]=have-n;addSilver(h,sum);addLog(h,`${matN(k)} ${n}개를 팔았다. (${silverTxt(sum)})`);save(h);toast(`${matN(k)} ${n}개 · ${silverTxt(sum)}`)}
+function matSellAll(kind){const h=structuredClone(me),m=h.mats||{};let sum=0,n=0;for(const k in m){if(!m[k]||!MATS[k]||MATS[k][1]!==kind||MATS[k][2]>=2)continue;sum+=matPrice(k)*m[k];n+=m[k];m[k]=0}
+  if(!n){toast("팔 재료가 없다. (귀함·전설 재료는 남겨 둔다)");return}addSilver(h,sum);addLog(h,`${GATHER[kind].n.split(" ")[0]} 재료 ${n}개를 팔았다. (${silverTxt(sum)})`);save(h);toast(`재료 ${n}개 · ${silverTxt(sum)}`)}
+function matSellBox(h,kind){const L=Object.entries(h.mats||{}).filter(([k,v])=>v>0&&MATS[k]?.[1]===kind).sort((a,b)=>MATS[a[0]][2]-MATS[b[0]][2]||matPrice(a[0])-matPrice(b[0]));
+  if(!L.length)return `<p class="note">팔 재료가 없다.</p>`;
+  return `<div class="flist">${L.map(([k,v])=>{const t=MATS[k][2];return `<div class="frow"><div><b>${matN(k)}</b> <span class="tag">${MAT_TIER[t]}</span><span>${v}개 · 하나 ${silverTxt(matPrice(k))}${t>=2?" · 장원 물건에 쓰이는 귀한 재료다":""}</span></div>
+    <input type="number" min="1" max="${v}" value="${t>=2?1:v}" data-msq="${k}" style="width:58px" aria-label="${matN(k)} 몇 개">
+    <button class="btn sm ${t>=2?"ghost":"sealb"}" type="button" data-msell="${k}">판다</button></div>`}).join("")}</div>
+    <div class="row" style="margin-top:8px"><button class="btn sm ghost" type="button" data-msall="${kind}">흔함·보통 재료 한꺼번에 팔기</button></div>`}
 let natTab="fish";
 function natureHub(h){if(h.travel)return "";const W=WEATHER[weatherOf(h.loc)],fl=Math.max(0,fishCasts(h)-fishUsed(h)),sl=STAMINA-stUsed(h),bloom=happenHere("fishing",h.loc);
   if(fishState)natTab="fish";
@@ -3644,8 +3677,37 @@ function stableBox(h){if(h.travel)return "";const HORSE_BUY=Math.round(HORSE_BUY
     ${!h.horse?cell("horse","말 사기","이동 시간 -30% · 탐문·상단에서도 얻는다",silverTxt(HORSE_BUY),(h.silver||0)<HORSE_BUY)
       :nx?cell("up",`${josa(nx.n,"로")} 기르기`,`${esc(h.horse.n)} · 이동 시간 -${Math.round(ht.cut*100)}% → -${Math.round(nx.cut*100)}%`,silverTxt(nx.cost),(h.silver||0)<nx.cost)
       :`<div class="shopi" style="cursor:default"><b>천리마</b><span>${esc(h.horse.n)} · 하루에 천 리를 달린다 · 이동 시간 -50%</span></div>`}
-    ${cell("cart","표국 마차",h.buff?.cart?"이미 빌려 두었다 · 다음 이동에 쓴다":`다음 이동 한 번 -${CART_CUT*100}% · 다른 효과와 겹친다`,silverTxt(CART_COST),!!h.buff?.cart||(h.silver||0)<CART_COST)}</div>
+    ${cell("cart","표국 마차",h.buff?.cart?(h.escort?"빌려 두었다 · 표물을 든 동안은 못 탄다":"이미 빌려 두었다 · 다음 이동에 쓴다"):`다음 이동 한 번 -${CART_CUT*100}% · 다른 효과와 겹친다`,silverTxt(CART_COST),!!h.buff?.cart||(h.silver||0)<CART_COST)}</div>
+    ${escortList(h)}
     <p class="note">경공: ${REALMS[h.realm].n}의 발놀림 ${kg?`· 이동 시간 -${Math.round(kg*100)}%`:"· 이류부터 빨라진다"} (경지가 오를수록 빨라진다, 현경 -20%)</p></div>`}
+/* 표국 호위 의뢰: 표물을 다른 지역까지 날라 주면 보수를 받는다. 6시간마다 의뢰가 바뀐다. 하루 3번까지
+   기한을 넘기면 절반, 먼 길에서 도적에게 지면 표물을 빼앗겨 보수가 30%씩 깎인다 (표국 마차로 가면 표사가 지켜 준다) */
+const ESC_WIN=6*3600e3,ESC_DAY=3;
+const ESC_CARGO=[["비단 다섯 필",1],["약재 궤짝",1],["밀봉한 서신",.9],["청자 한 상자",1.1],["차 한 짐",1],["은괴 궤짝",1.3],["족보 한 질",.9],["소금 섬",1]];
+function escortOffers(h,t=Date.now()){const w=Math.floor(t/ESC_WIN),R=seeded(w*104729+[...h.loc].reduce((a,c)=>a*31+c.charCodeAt(0),7)),from=h.loc;
+  const ok=Object.keys(REGIONS).filter(k=>k!==from&&!(REGIONS[k].minRealm&&h.realm<REGIONS[k].minRealm)).map(k=>[k,route(from,k,h)]).filter(([,r])=>isFinite(r.hours)&&r.path[0]===from);
+  const near=ok.filter(([,r])=>r.path.length===2),mid=ok.filter(([,r])=>r.path.length===3),far=ok.filter(([,r])=>r.path.length>=4);
+  const pick=a=>a.length?a[Math.floor(R()*a.length)]:null;
+  return [pick(near),pick(mid),pick(far)].filter(Boolean).map(([to,r],i)=>{const c=ESC_CARGO[Math.floor(R()*ESC_CARGO.length)],D=r.hours;
+    return {id:`${w}:${from}:${i}`,from,to,hops:r.path.length-1,cargo:c[0],reward:Math.round((40+28*D)*c[1]*(1+.12*(h.realm||0))),hrs:D+3}})}
+const escDayN=h=>h.escDay?.day===dayKey()?h.escDay.n:0;
+function takeEscort(id){const h=structuredClone(me);if(h.escort){toast("이미 맡은 표물이 있다.");return}if(escDayN(h)>=ESC_DAY){toast(`표국 의뢰는 하루 ${ESC_DAY}번까지다.`);return}
+  const o=escortOffers(h).find(x=>x.id===id);if(!o)return;if(h.escDone?.includes(id)){toast("이미 맡았던 의뢰다.");return}
+  h.escort={...o,t:Date.now(),due:Date.now()+o.hrs*3600e3,cut:0};h.escDay={day:dayKey(),n:escDayN(h)+1};h.escDone=[...(h.escDone||[]).slice(-12),id];
+  addLog(h,`표국에서 「${o.cargo}」${pj(o.cargo,"을")} 받았다. ${REGIONS[o.to].n}까지 날라야 한다. (보수 ${silverTxt(o.reward)})`);save(h);toast(`표물을 받았다 · ${REGIONS[o.to].n}까지`)}
+function dropEscort(){const h=structuredClone(me);if(!h.escort)return;addLog(h,`「${h.escort.cargo}」${pj(h.escort.cargo,"을")} 표국에 돌려주었다.`);h.escort=null;save(h)}
+/* 표물 넘기기: 도착한 시각(at)으로 기한을 본다 */
+function deliverEscort(h,at,quiet){const e=h.escort;if(!e||h.loc!==e.to)return "";const late=at>e.due;let pay=Math.round(e.reward*(late?.5:1)*Math.max(0,1-(e.cut||0)));
+  const sv=addSilver(h,pay);h.escort=null;bump(h,"escort");const txt=`${REGIONS[e.to].n} 표국에 「${e.cargo}」${pj(e.cargo,"을")} 넘겼다.${late?" 기한을 넘겨 보수가 절반이다.":""}${e.cut?` 빼앗긴 몫만큼 깎였다.`:""} (${silverTxt(sv)})`;if(!quiet)addLog(h,txt);return txt}
+function escortCard(h){const e=h.escort;if(!e)return "";const now=Date.now(),late=now>e.due,here=!h.travel&&h.loc===e.to;
+  return `<div class="esc ${late?"late":""}"><div class="kicker">표물 호위</div><p><b>${esc(e.cargo)}</b> → <b>${REGIONS[e.to].n}</b> · 보수 ${silverTxt(Math.round(e.reward*Math.max(0,1-(e.cut||0))))}${e.cut?` (빼앗겨 -${Math.round(e.cut*100)}%)`:""}</p>
+    <p class="note" style="margin:2px 0 0">${late?"기한을 넘겼다. 그래도 넘기면 절반은 받는다.":`기한 <span data-until="${e.due}"></span> 남음`}${here?"":" · 도착하면 바로 넘긴다 · 표국 마차는 못 탄다"}</p>
+    <div class="row" style="margin-top:6px">${here?`<button class="btn sm sealb" type="button" id="escGive">표물 넘기기</button>`:h.loc!==e.to&&!h.travel?`<button class="btn sm" type="button" data-escgo="${e.to}">${REGIONS[e.to].n} 지도에서 보기</button>`:""}<button class="btn sm ghost" type="button" id="escDrop">표국에 돌려주기</button></div></div>`}
+function escortList(h){const n=escDayN(h);if(h.escort)return `<p class="note">맡은 표물을 먼저 날라야 새 의뢰를 받을 수 있다.</p>`;if(n>=ESC_DAY)return `<p class="note">오늘 표국 의뢰를 다 맡았다. (${n}/${ESC_DAY}) 자정에 다시 받는다.</p>`;
+  const L=escortOffers(h);const nx=(Math.floor(Date.now()/ESC_WIN)+1)*ESC_WIN;
+  return `<div class="dsub">표국 의뢰 · 오늘 ${n}/${ESC_DAY} · 새 의뢰까지 <span data-until="${nx}"></span></div><div class="shopl">${L.map(o=>{const done=h.escDone?.includes(o.id);
+    return `<button class="shopi" type="button" data-esc="${o.id}" ${done?"disabled":""}><b>${esc(o.cargo)} → ${REGIONS[o.to].n}</b><span>${o.hops===1?"이웃 지역":`${o.hops}구간 · 먼 길`} · 기한 ${hrsTxt(o.hrs)}${done?" · 맡았던 의뢰":""}</span><em>${silverTxt(o.reward)}</em></button>`}).join("")}</div>
+    <p class="note">표물을 들고 목적지에 도착하면 바로 보수를 받는다. 기한을 넘기면 절반. 표물은 직접 지켜야 해서 <b>표국 마차를 탈 수 없다</b>. 먼 길에서 도적에게 지면 표물을 빼앗겨 보수가 깎인다.</p>`}
 /* 대장간: 일류 전까지 쓰는 기본 무기·의복(무명·청강)을 판다. 청강은 이류부터 */
 const SMITH={0:{weapon:40,armor:30},1:{weapon:120,armor:90}};
 let smithSpec=null;
@@ -4619,9 +4681,46 @@ function commitAlloc(){
 }
 
 /* ───────── 행동: 이동 ───────── */
+/* 먼 길 한 번에 가기: 거쳐 가는 곳마다 여비가 들고, 길에서 일이 생길 수 있다 */
+const FAR_FEE=50,FAR_EV=.35;
+const farFee=n=>FAR_FEE*n;
+function rollRoad(h,via,legT,ride,cart){const ev=[];let shift=0;const horse=!cart&&!!(h.horse||ride);
+  for(let i=1;i<via.length-1;i++){if(Math.random()>=FAR_EV)continue;const r=REGIONS[via[i]].n,at=legT[i]+shift;
+    const pool=["rain","bandit","bandit","short","find"].concat(horse?["tired","tired"]:[]),k=pickOne(pool);let e={k,at,r:via[i]};
+    if(k==="tired"){e.d=1;e.text=`${r} 역참에서 말이 지쳐 한나절 쉬어 갔다.`}
+    if(k==="rain"){e.d=1.5;e.text=`큰비에 ${r} 나루가 막혀 발이 묶였다.`}
+    if(k==="short"){e.d=-.5;e.text=`${r} 토박이가 지름길을 일러 주었다.`}
+    if(k==="find"){e.d=0;e.item=Math.random()<.5?"herb":"stone";e.text=`${r} 길섶에서 ${e.item==="herb"?"약초":"강화석"}를 주웠다. (${e.item==="herb"?"약초":"강화석"} +1)`}
+    if(k==="bandit"&&cart){e.d=0;e.text=`${r} 고갯길에서 도적 떼가 나타났지만 표사들이 쫓아냈다.`}
+    else if(k==="bandit"){const win=Math.random()<Math.min(.9,.55+.1*(h.realm||0));e.win=win;
+      if(win){e.d=0;e.silver=Math.round((20+Math.random()*30)*(1+(h.realm||0)*.5));e.exp=Math.round(expPerHour(h.level)/2);e.text=`${r} 고갯길에서 도적 떼를 만났으나 물리쳤다.`}
+      else{e.d=.5;e.lose=Math.min(500,Math.round((h.silver||0)*.05)+30);e.text=`${r} 고갯길에서 도적 떼에게 길을 막혀 은자를 털렸다.`}}
+    shift+=e.d*3600e3;ev.push(e)}
+  return {ev,shift}}
+/* 길에서 생긴 일을 몸에 남긴다 (upto 시각까지 지난 것만) */
+function applyRoad(h,t,upto){const done=[];for(const e of t.ev||[]){if(e.applied||e.at>upto)continue;e.applied=1;let tail="";
+  if(e.item){h.items[e.item]=(h.items[e.item]||0)+1}
+  if(e.silver){const sv=addSilver(h,e.silver);tail=` (${silverTxt(sv)}${e.exp?`, 경험치 +${e.exp}`:""})`}
+  if(e.exp)applyExp(h,e.exp);
+  if(e.lose){const l=Math.min(h.silver||0,e.lose);h.silver=(h.silver||0)-l;tail=` (${silverTxt(l)} 잃음)`;if(h.escort&&h.escort.t<=e.at){h.escort.cut=Math.min(.9,(h.escort.cut||0)+.3);tail+=" 표물 일부도 빼앗겼다."}}
+  if(e.d>0&&!e.lose&&e.k!=="bandit")tail=` (${hrsTxt(e.d)} 늦어짐)`;if(e.d<0)tail=` (${hrsTxt(-e.d)} 빨라짐)`;
+  done.push(e.text+tail)}return done}
+/* 표국 마차로 먼 길: 빌려 둔 마차는 한 구간 몫이라, 구간이 늘 때마다 마차 삯을 더 받는다. 여비는 표국이 대신 치른다 */
+const cartLegCost=h=>Math.round(CART_COST0*mkt(h));
+const farCost=(h,via,cart)=>cart?cartLegCost(h)*(via.length-2):farFee(via.length-2);
+function startFar(to,useCart){const h=structuredClone(me);const cart=!!(useCart&&h.buff?.cart&&!h.escort);if(activity(h)){toast(`${busyText[activity(h)]} 떠날 수 없습니다.`);return}
+  const R=REGIONS[to];if(R.minRealm&&h.realm<R.minRealm){toast(`${josa(R.n,"은")} ${REALMS[R.minRealm].n} 이상만 들어갈 수 있습니다.`);return}
+  const rt=route(h.loc,to,h);if(!isFinite(rt.hours)||rt.path[0]!==h.loc){toast("갈 수 있는 길이 없다.");return}
+  const via=rt.path,fee=farCost(h,via,cart);if((h.silver||0)<fee){toast(`${cart?"마차 삯이":"여비가"} 모자라다. (${silverTxt(fee)})`);return}
+  const hb=structuredClone(h);if(!cart&&hb.buff)delete hb.buff.cart;
+  let hrs=hrsFor(h,rt.hours,to);hrs=teaHrs(hb,hrs);if(h.buff){delete h.buff.travel;if(cart)delete h.buff.cart}
+  const now=Date.now(),legT=[now];let acc=0;for(let i=1;i<via.length;i++){acc+=roadHours(via[i-1],via[i]);legT.push(now+acc/rt.hours*hrs*3600e3)}
+  const {ev,shift}=rollRoad(h,via,legT,null,cart);
+  h.silver-=fee;h.travel={from:h.loc,to,start:now,end:legT[legT.length-1]+shift,via,legT,ev};
+  addLog(h,`${josa(REGIONS[h.loc].n,"을")} 떠나 ${via.slice(1,-1).map(r=>REGIONS[r].n).join("·")}${pj(REGIONS[via[via.length-2]].n,"을")} 거쳐 ${josa(R.n,"로")} 한 번에 간다. ${cart?`(표국 마차 · 더 낸 마차 삯 ${silverTxt(fee)})`:`(여비 ${silverTxt(fee)})${h.horse?` (${josa(h.horse.n,"을")} 타고)`:""}`}`);if(cart)h.travel.cart=1;dest=null;save(h)}
 function startTravel(to,withId){
   const h=structuredClone(me),W=withId&&following(withId)?heroById(withId):null,ride=!h.horse&&W?.horse?W:null;
-  let hrsNeed=hrsFor(h,roadHours(h.loc,to),to,ride||h);if(h.buff?.travel){hrsNeed=Math.round(hrsNeed*.8*60)/60;delete h.buff.travel}if(h.buff?.cart){hrsNeed=Math.round(hrsNeed*(1-CART_CUT)*60)/60;delete h.buff.cart}
+  let hrsNeed=hrsFor(h,roadHours(h.loc,to),to,ride||h);if(h.buff?.travel){hrsNeed=Math.round(hrsNeed*.8*60)/60;delete h.buff.travel}if(h.buff?.cart&&!h.escort){hrsNeed=Math.round(hrsNeed*(1-CART_CUT)*60)/60;delete h.buff.cart}
   if(activity(h)){toast(`${busyText[activity(h)]} 떠날 수 없습니다.`);return}
   if(!hrsNeed) return;
   const R=REGIONS[to]; if(R.minRealm&&h.realm<R.minRealm){toast(`${josa(R.n,"은")} ${REALMS[R.minRealm].n} 이상만 들어갈 수 있습니다.`);return}
@@ -4630,7 +4729,8 @@ function startTravel(to,withId){
 }
 function arrive(){
   const h=structuredClone(me),t=h.travel; if(!t||Date.now()<t.end) return;
-  h.loc=t.to; h.travel=null; bump(h,"trav"); h.visited=[...new Set([...(h.visited||[]),t.from,t.to])]; let msg=`${REGIONS[t.to].n}에 도착했다.`;
+  const road=t.ev?applyRoad(h,t,Infinity):[];if(road.length)addLog(h,`가는 길에 생긴 일 — ${road.join(" / ")}`);
+  h.loc=t.to; h.travel=null; bump(h,"trav"); h.visited=[...new Set([...(h.visited||[]),t.from,...(t.via||[]),t.to])]; let msg=`${REGIONS[t.to].n}에 도착했다.`;
   if(Math.random()<.4){
     const ev=pickOne(["herb","stone","master","bandit"]);
     if(ev==="herb"){h.items.herb++;msg+=" 길가 바위틈에서 약초를 캤다. (약초 +1)"}
@@ -4638,9 +4738,14 @@ function arrive(){
     if(ev==="master"){const x=expPerHour(h.level);applyExp(h,x);msg+=` 떠돌이 고수와 한 수 겨루고 깨달음을 얻었다. (경험치 +${x})`}
     if(ev==="bandit"){const x=Math.round(expPerHour(h.level)/2);applyExp(h,x);h.items.stone++;const sv=addSilver(h,10+Math.floor(Math.random()*15));msg+=` 길을 막은 산적을 혼쭐냈다. (경험치 +${x}, 강화석 +1, ${silverTxt(sv)})`}
   }
+  const dl=deliverEscort(h,t.end,true);if(dl)msg+=" "+dl;
   addLog(h,msg); maybeGiyeon(h,.03); save(h); toast(msg);
 }
-function cancelTravel(){const h=structuredClone(me);if(!h.travel)return;addLog(h,`${josa(REGIONS[h.travel.to].n,"로")} 가던 길을 돌려 ${josa(REGIONS[h.travel.from].n,"로")} 돌아왔다.`);h.travel=null;confirmAbort=false;save(h)}
+function cancelTravel(){const h=structuredClone(me);if(!h.travel)return;const t=h.travel;
+  if(t.via){const now=Date.now(),road=applyRoad(h,t,now);let i=0;const sh=(t.end-t.legT[t.legT.length-1]);for(let k=1;k<t.via.length-1;k++)if(t.legT[k]<=now)i=k;
+    if(road.length)addLog(h,`가는 길에 생긴 일 — ${road.join(" / ")}`);const stop=t.via[i];h.loc=stop;h.visited=[...new Set([...(h.visited||[]),...t.via.slice(0,i+1)])];
+    addLog(h,i?`${josa(REGIONS[t.to].n,"로")} 가던 길을 ${REGIONS[stop].n}에서 멈췄다.`:`${josa(REGIONS[t.to].n,"로")} 가던 길을 돌려 ${josa(REGIONS[t.from].n,"로")} 돌아왔다.`);h.travel=null;confirmAbort=false;save(h);return}
+  addLog(h,`${josa(REGIONS[t.to].n,"로")} 가던 길을 돌려 ${josa(REGIONS[t.from].n,"로")} 돌아왔다.`);h.travel=null;confirmAbort=false;save(h)}
 
 /* ───────── 행동: 임무 ───────── */
 function startMission(diff){
@@ -5017,21 +5122,27 @@ function worldTab(){
   const h=me,a=activity(h),now=Date.now();
   let travelBox="";
   if(h.travel){const t=h.travel,done=now>=t.end;
-    travelBox=`<div class="case"><div class="kicker">이동</div><h3>${REGIONS[t.from].n} → ${REGIONS[t.to].n}</h3>
-      <p>${done?"목적지가 눈앞이다.":`<span data-until="${t.end}"></span> 남았다. 이동 중에는 수련과 임무를 할 수 없다.`}</p>
+    const passed=t.via?t.via.filter((r,i)=>i>0&&i<t.via.length-1&&t.legT[i]<=now):[],seen=(t.ev||[]).filter(e=>e.at<=now);
+    travelBox=`<div class="case"><div class="kicker">${t.via?"먼 길":"이동"}</div><h3>${REGIONS[t.from].n} → ${REGIONS[t.to].n}</h3>
+      ${t.via?`<div class="farpath">${t.via.map((p,i)=>`<span class="${i===0||(i<t.via.length-1&&t.legT[i]<=now)||done?"past":""} ${i===t.via.length-1?"goal":""}">${REGIONS[p].n}</span>`).join("<i>→</i>")}</div>`:""}
+      <p>${done?"목적지가 눈앞이다.":`${passed.length?`${josa(REGIONS[passed[passed.length-1]].n,"을")} 지났다. `:""}<span data-until="${t.end}"></span> 남았다. 이동 중에는 수련과 임무를 할 수 없다.`}</p>
+      ${seen.length?`<ul class="farev">${seen.map(e=>`<li class="${e.lose?"bad":e.silver||e.d<0||e.item?"good":""}">${esc(e.text)}</li>`).join("")}</ul>`:""}
       <div class="row">${done?`<button class="btn sealb" id="arriveBtn" type="button">${REGIONS[t.to].n}에 들어서기</button>`
         :confirmAbort?`<button class="btn sealb" id="abYes" type="button">돌아가기</button><button class="btn ghost" id="abNo" type="button">계속 가기</button>`
         :`<button class="btn ghost" id="abBtn" type="button">발길 돌리기</button>`}</div></div>`}
   const focus=dest||(h.travel?h.travel.to:h.loc),R=REGIONS[focus];
   let regionBox=`<div class="region"><div><h3>${R.n} <span class="wx" title="오늘 날씨">${WEATHER[weatherOf(focus)].ch} ${WEATHER[weatherOf(focus)].n}</span></h3><div class="place">${R.place}</div></div><p>${R.note}</p>${(REGION_SECTS[focus]||[]).length?`<div class="homes">${REGION_SECTS[focus].map(k=>`<span>${emblem(k,"sm")}${SECTS[k].n}의 근거지</span>`).join("")}</div>`:""}`;
   if(!h.travel&&dest&&dest!==h.loc){
-    const direct=teaHrs(h,hrsFor(h,roadHours(h.loc,dest),dest)),tg=speedTags(h,dest),lock=R.minRealm&&h.realm<R.minRealm;
+    const hv=h.escort&&h.buff?.cart?{...h,buff:{...h.buff,cart:0}}:h,direct=teaHrs(hv,hrsFor(h,roadHours(h.loc,dest),dest)),tg=speedTags(hv,dest),lock=R.minRealm&&h.realm<R.minRealm;
     if(lock) regionBox+=`<p class="note">${REALMS[R.minRealm].n} 이상만 들어갈 수 있다.</p>`;
     else if(direct) regionBox+=`<div class="row" style="margin-top:6px"><button class="btn solid" id="goBtn" type="button" ${a?"disabled":""}>${josa(R.n,"로")} 떠나기 · ${hrsTxt(direct)}${tg.length?` (${tg.join(", ")})`:""}</button>${realMates().length?`<button class="btn ghost" type="button" data-callgo="${dest}">무리에게 같이 가자고 하기</button>`:""}${a?`<span class="note" style="margin:0">${busyText[a]} 떠날 수 없다.</span>`:""}</div>`;
-    else{const rt=route(h.loc,dest);regionBox+=`<p class="note">바로 가는 길이 없다. ${rt.path.map(p=>REGIONS[p].n).join(" → ")} (모두 ${hrsTxt(teaHrs(h,hrsFor(h,rt.hours)))}${speedTags(h,null).length?`, ${speedTags(h,null).join(" · ")}`:""}) 순으로 한 곳씩 이동해야 한다.</p>`}
+    else{const rt=route(h.loc,dest,h);if(!isFinite(rt.hours)||rt.path[0]!==h.loc)regionBox+=`<p class="note">아직 갈 수 있는 길이 없다.</p>`;else{const n=rt.path.length-2,hasCart=!!h.buff?.cart&&!h.escort,hNo=h.buff?.cart?{...h,buff:{...h.buff,cart:0}}:h,fee=farFee(n),hh=teaHrs(hNo,hrsFor(h,rt.hours,dest)),poor=(h.silver||0)<fee,cfee=farCost(h,rt.path,true),chh=teaHrs(h,hrsFor(h,rt.hours,dest)),cpoor=(h.silver||0)<cfee;
+      regionBox+=`<div class="farbox"><div class="farpath">${rt.path.map((p,i)=>`<span class="${i===0?"here":i===rt.path.length-1?"goal":""}">${REGIONS[p].n}</span>`).join("<i>→</i>")}</div>
+        <div class="row" style="margin-top:8px">${hasCart?`<button class="btn sealb" id="farCart" type="button" ${a||cpoor?"disabled":""}>표국 마차로 가기 · ${hrsTxt(chh)} · 마차 삯 +${silverTxt(cfee)}</button>`:""}<button class="btn ${hasCart?"ghost":"solid"}" id="farBtn" type="button" ${a||poor?"disabled":""}>${hasCart?"마차 없이 가기":"한 번에 가기"} · ${hrsTxt(hh)} · 여비 ${silverTxt(fee)}</button>${realMates().length?`<button class="btn ghost" type="button" data-callgo="${dest}">무리에게 같이 가자고 하기</button>`:""}</div>
+        <p class="note" style="margin:6px 0 0">${a?`${busyText[a]} 떠날 수 없다. `:poor?"여비가 모자라다. ":""}거쳐 가는 곳마다 역참 삯·주막 밥값으로 ${silverTxt(FAR_FEE)}이 든다. 길에서 큰비를 만나거나 말이 지치면 늦어지고, 도적을 만나면 은자를 털릴 수도 있다(이기면 오히려 번다). 중간에 발길을 돌리면 마지막으로 지난 곳에 멈춘다.${hasCart?` <b>표국 마차</b>는 빌린 값이 한 구간 몫이라 구간이 하나 늘 때마다 ${silverTxt(cartLegCost(h))}을 더 낸다(여비는 표국이 치른다). 표사가 호위해 도적에게 털리지 않고, 말이 지칠 일도 없다. 큰비는 피할 수 없다.`:""}</p></div>`}}
   }
   regionBox+=(focus===h.loc?regionSectBox(focus)+ililBox(h)+shopGroup("생업 · 일하고 거두기",jobBox(h)+natureHub(h))+shopGroup("가게 · 사고 고치기",stableBox(h)+innHub(h)):"")+`</div>`;
-  return `${nemBox(h)}${happenBox(h)}${invBox(h)}${questBox(h)}<section><div class="label">지도</div>${mapSvg()}
+  return `${nemBox(h)}${happenBox(h)}${invBox(h)}${questBox(h)}<section><div class="label">지도</div>${escortCard(h)}${mapSvg()}
     <p class="note">지역을 누르면 정보가 보이고, 이어진 곳이면 바로 떠날 수 있다.</p>${regionBox}${caravanBox(h)}</section>
     ${travelBox?`<section style="margin-top:20px">${travelBox}</section>`:""}
     <section><div class="label">사건</div>${missionBox()}${journalList()}</section>`;
@@ -5155,7 +5266,8 @@ function bind(){
   $("#hname")?.addEventListener("keydown",e=>{if(e.key==="Enter")create()});
   on("#trainBtn",startTrain); on("#promoteBtn",promote); on("#allocBtn",commitAlloc);
   on("#finBtn",()=>finishTrain(false)); on("#cxBtn",()=>{confirmCancel=true;render()}); on("#cxNo",()=>{confirmCancel=false;render()}); on("#cxYes",()=>finishTrain(true));
-  on("#goBtn",()=>startTravel(dest)); on("#arriveBtn",arrive);
+  on("#goBtn",()=>startTravel(dest));on("#escDrop",dropEscort);on("#escGive",()=>{const h=structuredClone(me),t=deliverEscort(h,Date.now());if(t){save(h);toast(t)}});
+  document.querySelectorAll("[data-esc]").forEach(b=>b.onclick=()=>takeEscort(b.dataset.esc));document.querySelectorAll("[data-escgo]").forEach(b=>b.onclick=()=>{dest=b.dataset.escgo;tab="world";render()});on("#stipBtn",claimStipend);on("#farBtn",()=>startFar(dest,false));on("#farCart",()=>startFar(dest,true)); on("#arriveBtn",arrive);
   on("#abBtn",()=>{confirmAbort=true;render()}); on("#abNo",()=>{confirmAbort=false;render()}); on("#abYes",cancelTravel);
   document.querySelectorAll("[data-mis]").forEach(b=>b.addEventListener("click",()=>startMission(b.dataset.mis))); on("#sceneBtn",enterScene); on("#fightBtn",fight); on("#finMisBtn",finishMission);
   on("#mxBtn",()=>{confirmAbort=true;render()}); on("#mxNo",()=>{confirmAbort=false;render()}); on("#mxYes",abortMission);
@@ -5221,6 +5333,8 @@ function bind(){
   on("#dexBtn",()=>{dexOpen=!dexOpen;render()});on("#fishCast",fishCast);document.querySelectorAll("[data-innt]").forEach(b=>b.onclick=()=>{innTab=b.dataset.innt;render()});document.querySelectorAll("[data-natt]").forEach(b=>b.onclick=()=>{natTab=b.dataset.natt;render()});on("#mEdit",()=>{manorEdit=true;manorDraft={...(me.mpos||{})};manorSel=null;render()});on("#mCancel",()=>{manorEdit=false;manorDraft=null;manorSel=null;render()});on("#mSave",manorSaveArr);
   on("#mFlip",()=>{if(!manorSel)return;const P=mposOf(me,manorSel,manorDraft);manorDraft={...manorDraft,[manorSel]:[P[0],P[1],!P[2]]};render()});
   on("#mReset",()=>{if(!manorSel)return;const d={...manorDraft};delete d[manorSel];manorDraft=d;render()});manorWire();on("#ililClaim",ililClaim);document.querySelectorAll("[data-maehwa]").forEach(b=>b.onclick=()=>maehwaStart(b.dataset.maehwa));on("#fishBuy",fishBuy);on("#fishPull",()=>fishPull(false));on("#fishSell",fishSell);on("#rbAsk",()=>{rbAsk=true;render()});on("#rbNo",()=>{rbAsk=false;render()});on("#rbGo",doRebirth);on("#fishSellT",()=>{fishSellOpen=!fishSellOpen;render()});
+  document.querySelectorAll("[data-msell]").forEach(b=>b.onclick=()=>{const k=b.dataset.msell,i=document.querySelector(`[data-msq="${k}"]`);matSellOne(k,+(i?.value||1))});
+  document.querySelectorAll("[data-msall]").forEach(b=>b.onclick=()=>matSellAll(b.dataset.msall));{const t=document.getElementById("matSellT");if(t)t.onclick=()=>{matSellOpen=!matSellOpen;render()}}
   document.querySelectorAll("[data-fsell]").forEach(b=>b.onclick=()=>{const k=b.dataset.fsell,i=document.querySelector(`[data-fsq="${k}"]`);fishSellOne(k,+(i?.value||1))});
   document.querySelectorAll("[data-craft]").forEach(b=>b.addEventListener("click",()=>craftFurn(b.dataset.craft)));document.querySelectorAll("[data-decor]").forEach(b=>b.addEventListener("click",()=>buyDecor(b.dataset.decor)));document.querySelectorAll("[data-roof]").forEach(b=>b.addEventListener("click",()=>buyRoof(b.dataset.roof)));{const bp=document.getElementById("buyPath");if(bp)bp.onclick=buyPath}
   document.querySelectorAll("[data-fold]").forEach(b=>b.addEventListener("click",()=>toggleFold(b.dataset.fold)));
