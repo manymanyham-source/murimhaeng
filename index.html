@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261113180328">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261113201756">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -731,6 +731,8 @@ section.inv.mini::after{font-size:70px;bottom:-16px;right:-2px}
 
 .mi{border:0;background:none;padding:0;font:inherit;color:inherit;text-decoration:underline dotted;text-underline-offset:3px;cursor:pointer}
 .mih{font-size:11px;color:var(--muted,#8a8378)}
+
+.fixbox{margin-top:10px;padding:10px;border:1px dashed var(--seal,#b0382a);border-radius:var(--r-s,8px)}.fixbox .row{gap:6px;align-items:center;font-size:13px;margin-top:6px}
 </style>
 
 <div class="wrap">
@@ -1076,6 +1078,20 @@ const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 const pickOne=a=>a[Math.floor(Math.random()*a.length)];
 /* 여럿이 함께 보는 시각(합 마감 등)은 서버 시각 기준. 기기 시계가 틀려도 같은 순간을 본다 */
 const sNow=()=>{try{return window.__murim?.now?window.__murim.now():Date.now()}catch(e){return Date.now()}};
+/* 관리자: 내 인물 고치기 (잘못 누른 시험 단추 되돌리기용) */
+let lv30Ask=false;
+function fixBox(h){const g=k=>h.gear?.[k];const sel=(id,v,opts)=>`<select id="${id}">${opts.map((o,i)=>`<option value="${i}" ${i===v?"selected":""}>${o}</option>`).join("")}</select>`;
+  const num=(id,v,w=64)=>`<input id="${id}" type="number" min="0" value="${v}" style="width:${w}px">`;
+  return `<div class="fixbox"><b>내 인물 고치기 · 관리자</b><p class="note" style="margin:2px 0 6px">능력치는 장비·영수를 뺀 맨몸 수치다(인물 탭 숫자보다 조금 낮다). 정확히 모르면 능력치를 낮게 두고 남은 포인트에 넣어 다시 나눠도 된다.</p>
+    <div class="row">경지 ${sel("fxRealm",h.realm,REALMS.map(r=>r.n))} 레벨 ${num("fxLv",h.level)} 포인트 ${num("fxPt",h.points)}</div>
+    <div class="row">내공 ${num("fxNei",h.stats.nei)} 외공 ${num("fxWai",h.stats.wai)} 신법 ${num("fxShen",h.stats.shen)}</div>
+    ${["weapon","armor","acc"].filter(k=>g(k)).map(k=>`<div class="row">${SLOTS[k]} 「${esc(g(k).name)}」 재질 ${sel("fxG_"+k,g(k).grade||0,GRADE)} 강화 +${num("fxP_"+k,g(k).plus||0,52)}</div>`).join("")}
+    <div class="row"><button class="btn sm sealb" type="button" id="fixSave">이대로 고친다</button></div></div>`}
+function fixHero(){if(!isOwner)return;const h=structuredClone(me),v=id=>Math.max(0,Math.floor(+document.getElementById(id)?.value||0));
+  h.realm=Math.min(REALMS.length-1,v("fxRealm"));h.level=Math.max(1,Math.min(cap(h.realm),v("fxLv")));h.exp=Math.min(h.exp||0,need(h.level)-1);h.points=v("fxPt");
+  h.stats={nei:Math.max(1,v("fxNei")),wai:Math.max(1,v("fxWai")),shen:Math.max(1,v("fxShen"))};
+  for(const k of ["weapon","armor","acc"]){const it=h.gear?.[k];if(!it||!document.getElementById("fxG_"+k))continue;const gr=Math.min(GRADE.length-1,v("fxG_"+k));if(gr!==it.grade){it.grade=gr;it.name=it.name.replace(/^\S+/,GRADE[gr])}it.plus=v("fxP_"+k)}
+  addLog(h,`(관리자) 인물을 고쳤다: ${REALMS[h.realm].n} Lv.${h.level}, 내공 ${h.stats.nei} · 외공 ${h.stats.wai} · 신법 ${h.stats.shen}`);save(h);toast("고쳤습니다")}
 function toast(t){const el=$("#toast");el.textContent=t;el.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("on"),3000)}
 function fmtLeft(ms){ms=Math.max(0,ms);const h=Math.floor(ms/3600e3),m=Math.floor(ms%3600e3/60e3),s=Math.floor(ms%60e3/1e3);
   return h?`${h}시간 ${m}분`:m?`${m}분 ${s}초`:`${s}초`}
@@ -5444,12 +5460,12 @@ function heroView(){
   ${isOwner||mode==="local"?`<details class="tools"><summary>시험용 도구 (만드는 동안만 쓰고 나중에 없앱니다)</summary>
     <div class="row"><button class="btn ghost" id="stoneBtn" type="button">강화석 +20</button><button class="btn ghost" id="warpBtn" type="button">보스 지역으로 순간이동</button><button class="btn ghost" id="triesBtn" type="button">진입 횟수 초기화</button><button class="btn ghost" id="dropBtn" type="button">장비 하나 얻기</button><button class="btn ghost" id="horseBtn" type="button">말 얻기/놓아주기</button></div>
     <div class="row">${fakeOthers.length?`<button class="btn ghost" id="fakeUpBtn" type="button">백운 쪽 인연 +100</button>${["친우","사형제","연인","스승","제자"].map(r=>`<button class="btn ghost" type="button" data-fakerel="${r}">백운이 ${r==="스승"?"제자로 받기":r==="제자"?"사부로 모시기":r} 청하기</button>`).join("")}<button class="btn ghost" id="fakePartyBtn" type="button">백운이 무리 부름 받기</button><button class="btn ghost" id="fakeDelBtn" type="button">가상 동료 내보내기</button>`:`<button class="btn ghost" id="fakeMateBtn" type="button">가상 동료 넣기 (이 기기에서만)</button>`}</div>
-    <div class="row"><button class="btn ghost" id="lv30Btn" type="button">일류 Lv.30 (관문 직전)으로</button><button class="btn ghost" id="warpGateBtn" type="button">관문 지역으로 순간이동</button></div>
+    <div class="row">${lv30Ask?`<span class="note" style="margin:0">정말? 지금 경지·레벨·능력치·무기·의복이 덮어써진다.</span><button class="btn sm sealb" id="lv30Btn" type="button">덮어쓴다</button><button class="btn sm ghost" id="lv30No" type="button">그만둔다</button>`:`<button class="btn ghost" id="lv30Ask" type="button">일류 Lv.30 (관문 직전)으로</button>`}<button class="btn ghost" id="warpGateBtn" type="button">관문 지역으로 순간이동</button></div>
     <div class="row">${activity(h)?`<button class="btn ghost" id="ffBtn" type="button">지금 하는 일 바로 끝내기</button>`:""}
     <button class="btn ghost" id="newIncBtn" type="button">이 지역 사건 다시 열기</button></div>
     ${h.mission?`<div class="row"><span>가상 동행 붙이기:</span>${["없음",...RELS].map(r=>`<button class="btn ghost" type="button" data-fake="${r}" style="padding:4px 10px;font-size:12px${(fakeMate?.rel||"없음")===r?";border-color:var(--ink);color:var(--ink)":""}">${r}</button>`).join("")}</div>`:""}
     <div class="row">
-    <button class="btn ghost" id="wipeBtn" type="button">${confirmWipe?"정말 지울까요? 한 번 더 누르면 지워집니다":"내 캐릭터 지우기"}</button></div></details>`:""}
+    <button class="btn ghost" id="wipeBtn" type="button">${confirmWipe?"정말 지울까요? 한 번 더 누르면 지워집니다":"내 캐릭터 지우기"}</button></div>${isOwner?fixBox(h):""}</details>`:""}
   </div>`;
 }
 function bannerView(){
@@ -5755,7 +5771,8 @@ function bind(){
   document.querySelectorAll("[data-gact]").forEach(b=>b.addEventListener("click",()=>chooseGate(b.dataset.gact)));
   document.querySelectorAll("[data-gmode]").forEach(b=>b.addEventListener("click",()=>setGateMode(b.dataset.gmode)));
   document.querySelectorAll('input[name="grole"]').forEach(i=>i.addEventListener("change",()=>GS.setAct({...myAct(),role:i.value})));
-  on("#lv30Btn",()=>{const h=structuredClone(me),main=SECTS[h.sect].main;h.realm=2;h.level=30;h.exp=need(30);h.points=0;h.stats={nei:25,wai:45,shen:25};main.forEach(k=>h.stats[k]=100);
+  on("#lv30Ask",()=>{lv30Ask=true;render()});on("#lv30No",()=>{lv30Ask=false;render()});on("#fixSave",fixHero);
+  on("#lv30Btn",()=>{lv30Ask=false;const h=structuredClone(me),main=SECTS[h.sect].main;h.realm=2;h.level=30;h.exp=need(30);h.points=0;h.stats={nei:25,wai:45,shen:25};main.forEach(k=>h.stats[k]=100);
     for(const k of ["weapon","armor"]){if(h.gear[k]){h.gear[k].grade=2;h.gear[k].plus=5;h.gear[k].name=h.gear[k].name.replace(/^\S+/,"한철")}}save(h);toast("일류 Lv.30, 경지의 벽까지 올렸습니다.")});
   on("#warpGateBtn",()=>{const h=structuredClone(me);h.travel=null;h.loc=GATES[Math.min(6,Math.max(3,h.realm+1))].region;save(h)});
   on("#chalBtn",enterLair); on("#claimBtn",claimRaid);
