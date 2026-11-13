@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261113170655">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261113173413">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1911,10 +1911,19 @@ function claimGate(){
   if(r.status==="win")[...new Set(r.party.filter(x=>!x.player).map(x=>x.sect))].forEach(k=>{addFavor(h,k,15);got.push(`${SECTS[k].n} 우호도 +15`)});
   {const ef=useBattleFood(h);if(ef)got.push(ef)}
   h.gateDone[r.id]=true;
+  /* 지난 관문 기록: 하나만 남기고 사흘 뒤엔 안 보인다 */
+  h.gateLast={t:Date.now(),realm:r.realm,boss:G.boss,title:G.title,region:G.region,win:r.status==="win",party:r.party.map(x=>({n:x.name,s:x.sect,r:x.role,p:!!x.player,me:x.id===myId()})),log:r.log.slice(-120),got};
   h.journal=[{title:`관문 · ${G.boss}`,region:G.region,start:r.created,tier:1,label:r.status==="win"?"돌파":"실패",lines:r.log.map((l,i)=>({...l,t:r.created+i}))},...(h.journal||[])].slice(0,10);
   addLog(h,`${G.title} ${r.status==="win"?"돌파":"실패"}. ${got.join(", ")}`);save(h);toast(got[0]);
 }
-function gateTab(){const tw=me.tower;if(tw?.room&&tw.wk===weekKey())return towerView(tw.room);return gateTab0()+towerSection()}
+const GATE_KEEP=3*86400e3;let gateLastOpen=false;
+function gateLastBox(h){const L=h.gateLast;if(!L||Date.now()-L.t>GATE_KEEP)return "";
+  return `<section><button class="foldh" type="button" id="gLastT" aria-expanded="${gateLastOpen}"><span class="label" style="margin:0">지난 관문 · ${L.title} ${esc(L.boss)} · ${L.win?"돌파":"실패"}</span><i>${gateLastOpen?"접기 ▴":"펼치기 ▾"}</i></button>
+    ${gateLastOpen?`<p class="note" style="margin:8px 0 4px">${hhmm(L.t)} · ${REGIONS[L.region]?.n||""} · 함께한 사람: ${L.party.map(x=>`${esc(x.n)}${x.me?"(나)":x.p?"":"(NPC)"}`).join(", ")}</p>
+      ${L.got?.length?`<p class="note" style="margin:0 0 6px">받은 것: ${L.got.map(esc).join(", ")}</p>`:""}
+      <div class="feedwrap" style="margin:6px -18px 0"><ul class="feed">${L.log.map(battleLine).join("")}</ul></div>
+      <p class="note" style="margin:6px 0 0">가장 최근 관문 하나만 남는다. ${hhmm(L.t+GATE_KEEP)}에 사라진다.</p>`:""}</section>`}
+function gateTab(){const tw=me.tower;if(tw?.room&&tw.wk===weekKey())return towerView(tw.room);return gateTab0()+gateLastBox(me)+towerSection()}
 function gateTab0(){
   const r=myRoom();if(r&&r.status!=="closed")return gateRoomView(r);
   const h=me,nr=h.realm+1,G=GATES[nr],canOpen=atWall(h)&&REALMS[nr]?.gate&&G?.ready,now=Date.now();
@@ -5560,6 +5569,7 @@ function bind(){
   on("#enhBtn",()=>enhance(gsel)); on("#unequipBtn",()=>unequip(gsel));
   document.querySelectorAll("[data-eq]").forEach(b=>b.addEventListener("click",()=>equip(+b.dataset.eq,false)));
   document.querySelectorAll("[data-eqi]").forEach(b=>b.addEventListener("click",()=>{ginh=null;equip(+b.dataset.eqi,true)}));
+  on("#gLastT",()=>{gateLastOpen=!gateLastOpen;render()});
   document.querySelectorAll("[data-inhq]").forEach(b=>b.addEventListener("click",()=>{ginh=+b.dataset.inhq;gconfirm=null;render()}));document.querySelectorAll("[data-inhno]").forEach(b=>b.addEventListener("click",()=>{ginh=null;render()}));
   document.querySelectorAll("[data-salvq]").forEach(b=>b.addEventListener("click",()=>{gconfirm=+b.dataset.salvq;render()}));
   document.querySelectorAll("[data-salv]").forEach(b=>b.addEventListener("click",()=>salvage(+b.dataset.salv)));
