@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261112023406">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261113142249">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -693,6 +693,11 @@ section.inv.mini::after{font-size:70px;bottom:-16px;right:-2px}
 .foldh{display:flex;width:100%;align-items:center;justify-content:space-between;gap:8px;border:0;background:none;padding:0;font:inherit;color:inherit;cursor:pointer;text-align:left}
 .foldh i{font-style:normal;font-size:12px;color:var(--muted,#8a8378);white-space:nowrap}
 .phist li{line-height:1.5}
+
+.lk{display:inline-block;font-size:10px;line-height:1;padding:2px 5px;margin-right:5px;border-radius:4px;background:#2b2622;color:#f0d27a;vertical-align:2px;font-weight:600}
+.itemrow.locked{box-shadow:inset 3px 0 0 #c9952e}
+
+.smn{display:block;font-size:11px;color:var(--muted,#8a8378)}
 </style>
 
 <div class="wrap">
@@ -1732,7 +1737,7 @@ const sectMul=(sect,role,realm)=>{const k=sect+"/"+role;if(SECT_MUL[k])return SE
 function npcRef(hero){const st=hero.stats||{nei:10,wai:10,shen:10},t=(st.nei+st.wai+st.shen)/3,c=structuredClone(hero);c.stats={nei:t,wai:t,shen:t};
   const d=derived(hero),e=derived(c),w=hero.gear?.weapon?.spec,wf=w==="tank"?.84:w==="heal"?.966:1;
   return {atk:Math.round(d.atk/wf),max:e.hp,hp:e.hp,def:e.def}}
-function memberFromHero(hero,id,role){const d=derived(hero);return {id,name:hero.name,sect:hero.sect,role,hp:d.hp,max:d.hp,atk:Math.round(d.atk*sectMul(hero.sect,role,hero.realm)),def:d.def,eva:d.eva,crit:d.crit,qi:d.qi,qmax:d.qi,cd:0,player:true,realm:hero.realm}}
+function memberFromHero(hero,id,role){const d=derived(hero),sm=sectMul(hero.sect,role,hero.realm);return {id,name:hero.name,sect:hero.sect,role,hp:d.hp,max:d.hp,atk:Math.round(d.atk*sm),baseAtk:d.atk,sm,def:d.def,eva:d.eva,crit:d.crit,qi:d.qi,qmax:d.qi,cd:0,player:true,realm:hero.realm}}
 /* 함께 들어간 관문은 더 어렵게: 사람과 함께면 보스 체력 +10%, 보스 피해 +5% (몇 명이든 한 번만).
    들어온 사람 중 가장 센 사람이 그 경지 기준(경지 끝에 장비를 갖춘 정도)보다 세면, 그 비율의 제곱근만큼 보스 체력·포효 기준이 오르고 피해는 네제곱근만큼 오른다.
    (센 도우미가 들어와 쉽게 깨는 것을 막는다) 혼자 들어가면 예전과 같다. NPC는 관문을 연 사람을 본뜬다. */
@@ -1932,7 +1937,8 @@ function gateRoomView(r){
   if(r.status==="lobby"){const ids=roomMembers(r),party=buildGateParty(r);const roles=SECT_ROLES[me.sect];
     return `<section><div class="case"><div class="kicker">${G.title} · ${REGIONS[G.region].n} · 모집 중</div><h3>${G.boss}</h3><p>${G.lore}</p>
       <div class="label" style="margin-top:14px">파티 (사람 ${ids.length}/4 · 빈자리는 NPC)</div>
-      <div class="party">${party.map(x=>`<div class="pm2">${x.player?face(x.id,x.sect,"sm"):emblem(x.sect,"sm")}<div><b>${esc(x.name)}${x.id===myId()?" (나)":x.player?"":" · NPC"}</b><span>${ROLE_N[x.role]} · 체력 ${x.max} · 공격 ${x.atk}</span></div></div>`).join("")}</div>
+      <div class="party">${party.map(x=>`<div class="pm2">${x.player?face(x.id,x.sect,"sm"):emblem(x.sect,"sm")}<div><b>${esc(x.name)}${x.id===myId()?" (나)":x.player?"":" · NPC"}</b><span>${ROLE_N[x.role]} · 체력 ${x.max} · 공격 ${x.atk}${x.player&&x.sm&&Math.abs(x.sm-1)>.005?` <small class="smn">(인물 공격 ${x.baseAtk} × ${SECTS[x.sect].n} ${ROLE_N[x.role]} 보정 ${x.sm.toFixed(2)}${x.sahyung?" · 사형제 +15%":""})</small>`:x.sahyung?` <small class="smn">(사형제 +15%)</small>`:""}</span></div></div>`).join("")}</div>
+      ${party.some(x=>x.player&&x.sm&&Math.abs(x.sm-1)>.005)?`<p class="note" style="margin:4px 0 0">관문·소굴 전투에서는 문파와 역할마다 공격에 보정이 붙는다 (문파끼리 고르게 맞추려는 것). 인물 탭 공격과 다른 건 그래서다. 체력·방어는 그대로다.</p>`:""}
       ${roles.length>1?`<div class="chips" style="margin-top:10px">${roles.map(rr=>`<label class="chip"><input type="radio" name="grole" value="${rr}" id="gr-${rr}" ${(mineA.role||roles[0])===rr?"checked":""}><span>${ROLE_N[rr]}로 서기</span></label>`).join("")}</div>`:""}
       <p class="note">8막 동안 싸운다. 매 막 전조를 보고 각자 행동을 고른다. 모두 고르면 바로 진행되고, 90초가 지나면 안 고른 사람은 자동으로 움직인다.</p>
       ${isOwner2?`<div class="row" style="margin-top:10px">${realMates().length?`<button class="btn ghost" type="button" data-callgate="party">무리에게 도움 청하기</button>`:""}<button class="btn ghost" type="button" data-callgate="all">모두에게 도움 청하기</button></div>`:""}
@@ -2263,7 +2269,7 @@ function shipFee(h,o,kind,qty,key){if(sameSpot(h,o))return 0;if(kind==="items"&&
 function giveList(h,kind){if(kind==="mats")return Object.entries(h.mats||{}).filter(([,v])=>v>0).map(([k,v])=>[k,`${matN(k)} (${v})`,v]);
   if(kind==="fish")return Object.entries(h.fish||{}).filter(([,v])=>v>0).map(([k,v])=>[k,`${fishName(k)} (${v})`,v]);
   if(kind==="items")return Object.entries(h.items||{}).filter(([k,v])=>v>0&&ITEMS[k]).map(([k,v])=>[k,`${ITEMS[k][0]} (${v})`,v]);
-  if(kind==="gear")return (h.bag||[]).map((it,i)=>[String(i),`${rarName(it)}${it.plus?` +${it.plus}`:""}`,1]);
+  if(kind==="gear")return (h.bag||[]).map((it,i)=>it.lock?null:[String(i),`${rarName(it)}${it.plus?` +${it.plus}`:""}`,1]).filter(Boolean);
   if(kind==="silver")return [["silver",`은자 (${h.silver||0}냥)`,h.silver||0]];return []}
 const parcelText=p=>p.kind==="silver"?silverTxt(p.qty):p.kind==="gear"?`장비 「${rarName(p.item)}${p.item.plus?` +${p.item.plus}`:""}」`:p.kind==="mats"?`${matN(p.key)} ${p.qty}개`:p.kind==="fish"?`${fishName(p.key)} ${p.qty}마리`:`${ITEMS[p.key]?.[0]||p.key} ${p.qty}개`;
 async function sendParcel(to){if(mode!=="db"){toast("여럿이 함께하는 곳에서만 건넬 수 있다.");return}const o=heroById(to);if(!o||to===myId())return;
@@ -2271,7 +2277,7 @@ async function sendParcel(to){if(mode!=="db"){toast("여럿이 함께하는 곳�
   const key=row[0],qty=kind==="gear"?1:Math.max(1,Math.min(row[2],Math.floor(+givePick.qty||1)));
   const fee=shipFee(h,o,kind,qty,key),ship=!sameSpot(h,o);if((h.silver||0)<fee+(kind==="silver"?qty:0)){toast(`은자가 모자라다. (표국 수수료 ${fee}냥)`);return}
   const p={from:myId(),fromName:h.name,to,toName:o.name,kind,key,qty,note:String(givePick.note||"").slice(0,60),t:Date.now(),ship};
-  if(kind==="gear"){const it=h.bag[+key];if(!it){toast("그 장비가 없다.");return}p.item=it;h.bag.splice(+key,1)}
+  if(kind==="gear"){const it=h.bag[+key];if(!it){toast("그 장비가 없다.");return}if(it.lock){toast("잠긴 장비는 보낼 수 없다.");return}p.item=it;h.bag.splice(+key,1)}
   else if(kind==="silver"){if((h.silver||0)<qty){toast("은자가 모자라다.");return}h.silver-=qty}
   else{const src=kind==="mats"?(h.mats=h.mats||{}):kind==="fish"?(h.fish=h.fish||{}):h.items;if((src[key]||0)<qty){toast("그만큼 가지고 있지 않다.");return}src[key]-=qty}
   const id=myId().replace(/[^A-Za-z0-9_-]/g,"").slice(0,12)+"-"+Date.now().toString(36);
@@ -4762,12 +4768,16 @@ function enhance(slot){
 function equip(idx,inherit){
   const h=structuredClone(me),it=h.bag[idx];if(!it)return;const old=h.gear[it.slot];
   h.bag.splice(idx,1);let msg=`${josa(it.name,"을")} 장착했다.`;
+  if(inherit&&old?.lock){toast(`${josa(old.name,"은")} 잠겨 있어 기운을 넘길 수 없다. 먼저 잠금을 푼다.`);return}
   if(inherit&&old&&old.plus>0){const p=Math.floor(old.plus/2);if(p>it.plus){it.plus=p;msg+=` ${old.name}의 강화 기운을 이어받아 ${josa("+"+p,"이")} 되었다.`}old.plus=0;old.fails=0}
   h.gear[it.slot]=it;if(old)h.bag.push(old);gsel=it.slot;gmsg=null;gconfirm=null;
   addLog(h,msg);save(h);toast(msg);
 }
 function unequip(slot){const h=structuredClone(me),it=h.gear[slot];if(!it)return;if(h.bag.length>=20){toast("행낭이 가득 찼습니다.");return}h.bag.push(it);h.gear[slot]=null;gmsg=null;addLog(h,`${josa(it.name,"을")} 벗어 행낭에 넣었다.`);save(h)}
-function salvage(idx){const h=structuredClone(me),it=h.bag[idx];if(!it)return;const n=it.grade+1+Math.floor(it.plus/2);h.bag.splice(idx,1);h.items.stone+=n;const sv=addSilver(h,5*(it.grade+1));
+/* 장비 잠금: 잠근 장비는 녹이기·꾸러미 보내기·강화 계승(기운 빼앗기기)을 막는다 */
+function toggleLock(where,k){const h=structuredClone(me),it=where==="gear"?h.gear[k]:h.bag[+k];if(!it)return;it.lock=!it.lock;gconfirm=null;save(h);toast(it.lock?`${josa(it.name,"을")} 잠갔다`:`${it.name} 잠금을 풀었다`)}
+const lockTag=it=>it?.lock?`<span class="lk" title="잠김">잠김</span>`:"";
+function salvage(idx){const h=structuredClone(me),it=h.bag[idx];if(!it)return;if(it.lock){toast("잠긴 장비는 녹일 수 없다. 먼저 잠금을 푼다.");return}const n=it.grade+1+Math.floor(it.plus/2);h.bag.splice(idx,1);h.items.stone+=n;const sv=addSilver(h,5*(it.grade+1));
   addLog(h,`${josa(it.name,"을")} 녹여 강화석 ${n}개와 ${silverTxt(sv)}을 얻었다.`);gconfirm=null;save(h);toast(`강화석 +${n} · ${silverTxt(sv)}`)}
 function diffLine(it){
   const cur=itemStats(me.gear[it.slot]),nw=itemStats(it),keys=["atk","def","nei","wai","shen"],nm={atk:"공격",def:"방어",nei:"내공",wai:"외공",shen:"신법"};
@@ -4777,7 +4787,7 @@ function diffLine(it){
 function gearTab(){
   const h=me,d=derived(h),it=h.gear[gsel];
   const card=k=>{const x=h.gear[k];return `<button class="gslot ${gsel===k?"on":""}" type="button" data-gsel="${k}"><span class="sl">${SLOTS[k]}</span>
-    ${x?`<b>${rarTag(x)}${esc(x.name)}${x.plus?` <em>+${x.plus}</em>`:""}</b><span class="gs">${gradeLine(x)}</span><span class="gst">${statLine(x)}</span>${x.opts?.length?`<span class="gopt r${x.rar}">${optLine(x)}</span>`:""}`
+    ${x?`<b>${lockTag(x)}${rarTag(x)}${esc(x.name)}${x.plus?` <em>+${x.plus}</em>`:""}</b><span class="gs">${gradeLine(x)}</span><span class="gst">${statLine(x)}</span>${x.opts?.length?`<span class="gopt r${x.rar}">${optLine(x)}</span>`:""}`
       :`<b class="none">비어 있음</b><span class="gs">사건과 보스에서 얻는다</span>`}</button>`};
   let forge;
   if(!it) forge=`<div class="forge"><p class="note" style="margin:0">${SLOTS[gsel]} 칸이 비어 있다. 행낭의 장비를 장착하면 여기서 강화할 수 있다.</p></div>`;
@@ -4791,7 +4801,7 @@ function gearTab(){
         <dt>실패하면</dt><dd>강화석만 사라지고 다음 확률 +1%</dd></dl>
       ${gmsg&&gmsg.slot===gsel?`<div class="fres ${gmsg.ok?"":"fail"} ${gmsg.n!==gmsgShown?"anim":""}" data-n="${gmsg.n}">▸ ${esc(gmsg.text)} <b>【${gmsg.tag}】</b><span class="note" style="display:block;margin:2px 0 0">${gmsg.sub}</span></div>`:""}
       <div class="row"><button class="btn ${lack?"":"sealb"}" id="enhBtn" type="button" ${lack?"disabled":""}>망치를 든다 · 강화 시도</button>
-        <button class="btn ghost" id="unequipBtn" type="button">벗기</button></div>
+        <button class="btn ghost" id="unequipBtn" type="button">벗기</button><button class="btn ghost" type="button" data-lockg="${gsel}">${it.lock?"잠금 풀기":"잠그기"}</button></div>
       ${lack?`<p class="note" style="margin:0">강화석은 사건 해결, 길 위의 만남, 장비 녹이기로 모은다.</p>`:""}
       ${it.sect?`<p class="note" style="margin:0">전용 효과: ${sectItemOf(it).fx} (${it.sect===h.sect?"소굴·관문 전투에서 적용 · 논검 제외":`${SECTS[it.sect].n} 문하만 효과를 받는다`})</p>`:""}</div>`}
   if(it?.opts?.length){const cost=REROLL_COST[it.rar];forge+=`<div class="forge"><div class="kicker">기운 다듬기 · ${RAR[it.rar].n} ${esc(it.name)}</div>
@@ -4799,10 +4809,10 @@ function gearTab(){
     <div class="rrl">${it.opts.map((o,i)=>`<div class="rr"><span class="gopt r${it.rar}">${optTxt(o)}</span><button class="btn sm" type="button" data-reroll="${i}" ${(h.silver||0)<cost?"disabled":""}>다시 · ${cost}냥</button></div>`).join("")}</div>
     <p class="note" style="margin:6px 0 0">가진 돈 ${silverTxt(h.silver||0)}</p></div>`}
   const bag=h.bag.length?h.bag.map((x,i)=>{const cur=h.gear[x.slot],inh=cur&&cur.plus>1&&Math.floor(cur.plus/2)>x.plus;
-    return `<div class="itemrow"><div><b>${rarTag(x)}${esc(x.name)}${x.plus?` <em>+${x.plus}</em>`:""}</b>${x.opts?.length?`<div class="gopt r${x.rar}">${optLine(x)}</div>`:""}<div class="gs">${SLOTS[x.slot]} · ${gradeLine(x)}</div>
+    return `<div class="itemrow ${x.lock?"locked":""}"><div><b>${lockTag(x)}${rarTag(x)}${esc(x.name)}${x.plus?` <em>+${x.plus}</em>`:""}</b>${x.opts?.length?`<div class="gopt r${x.rar}">${optLine(x)}</div>`:""}<div class="gs">${SLOTS[x.slot]} · ${gradeLine(x)}</div>
       <div class="gst">${statLine(x)} · 지금 것보다 ${diffLine(x)}</div></div>
       <div class="acts">${gconfirm===i?`<button class="btn sm sealb" type="button" data-salv="${i}">녹여서 강화석 ${x.grade+1+Math.floor(x.plus/2)}개</button><button class="btn sm ghost" type="button" data-salvno>그만두기</button>`
-        :`<button class="btn sm" type="button" data-eq="${i}">장착</button>${inh?`<button class="btn sm sealb" type="button" data-eqi="${i}">계승하며 장착 · +${Math.floor(cur.plus/2)}</button>`:""}<button class="btn sm ghost" type="button" data-salvq="${i}">녹이기</button>`}</div></div>`}).join("")
+        :`<button class="btn sm" type="button" data-eq="${i}">장착</button>${inh&&!cur.lock?`<button class="btn sm sealb" type="button" data-eqi="${i}">계승하며 장착 · +${Math.floor(cur.plus/2)}</button>`:""}${x.lock?"":`<button class="btn sm ghost" type="button" data-salvq="${i}">녹이기</button>`}<button class="btn sm ghost" type="button" data-lockb="${i}">${x.lock?"잠금 풀기":"잠그기"}</button>`}</div></div>`}).join("")
     :`<p class="empty">행낭에 장비가 없다. 사건을 대성공으로 해결할수록 장비가 나올 확률이 높다.</p>`;
   return `<section><div class="label">착용 중 · 공격력 ${d.atk} · 방어력 ${d.def}</div><div class="gslots">${card("weapon")}${card("armor")}${card("acc")}</div>${forge}</section>
     <section><div class="label">행낭의 장비 · ${h.bag.length}/20</div><div class="items">${bag}</div>
@@ -5146,7 +5156,9 @@ function fastForward(){
 /* ───────── 그리기 ───────── */
 let lastView=null, fadeNext=true;
 function render(){
-  const ae=document.activeElement;if(ae&&ae.closest?.(".mailf")&&/^(INPUT|TEXTAREA)$/.test(ae.tagName)&&ae.type!=="checkbox"&&ae.type!=="radio"){if(!render.pend){render.pend=true;ae.addEventListener("blur",()=>{render.pend=false;setTimeout(render,0)},{once:true})}return}
+  /* 글을 쓰는 중(입력칸에 손이 가 있음)에는 화면을 다시 그리지 않는다. 다시 그리면 입력칸이 새로 바뀌어 폰 키보드가 내려간다.
+     입력칸을 떠나면 그때 그린다 (버튼 누름이 먼저 먹히도록 조금 늦게) */
+  const ae=document.activeElement;if(ae&&ae.closest?.(".mailf,.qcf,.keepf")&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)&&ae.type!=="checkbox"&&ae.type!=="radio"){if(!render.pend){render.pend=true;ae.addEventListener("blur",()=>{render.pend=false;setTimeout(render,200)},{once:true})}return}
   {const d0=$("#duelFeed");duelFeedSt=d0?{at:d0.scrollHeight-d0.scrollTop-d0.clientHeight<30,st:d0.scrollTop,n:d0.children.length}:null}
   const app=$("#app"),fb0=$("#inlineFeed"),fbAt=!fb0||fb0.scrollHeight-fb0.scrollTop-fb0.clientHeight<30,fbSt=fb0?.scrollTop||0;
   if(!ready){app.innerHTML="";return}
@@ -5545,6 +5557,7 @@ function bind(){
   document.querySelectorAll("[data-eqi]").forEach(b=>b.addEventListener("click",()=>equip(+b.dataset.eqi,true)));
   document.querySelectorAll("[data-salvq]").forEach(b=>b.addEventListener("click",()=>{gconfirm=+b.dataset.salvq;render()}));
   document.querySelectorAll("[data-salv]").forEach(b=>b.addEventListener("click",()=>salvage(+b.dataset.salv)));
+  document.querySelectorAll("[data-lockb]").forEach(b=>b.addEventListener("click",()=>toggleLock("bag",b.dataset.lockb)));document.querySelectorAll("[data-lockg]").forEach(b=>b.addEventListener("click",()=>toggleLock("gear",b.dataset.lockg)));
   on("[data-salvno]",()=>{gconfirm=null;render()});
   document.querySelectorAll("[data-fake]").forEach(b=>b.addEventListener("click",()=>{fakeMate=b.dataset.fake==="없음"?null:{name:"백운",rel:b.dataset.fake};typedKey="";render()}));
   on("#newIncBtn",()=>{const h=structuredClone(me);delete h.done[h.loc];h.dn=Object.fromEntries(Object.entries(h.dn||{}).filter(([k])=>!k.startsWith(h.loc+"|")));save(h)});
