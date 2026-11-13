@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261113173413">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261113180328">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -701,6 +701,36 @@ section.inv.mini::after{font-size:70px;bottom:-16px;right:-2px}
 
 .inhq{margin:8px 0 6px;padding:10px 12px;border-radius:var(--r-s,8px);background:rgba(176,56,42,.07);box-shadow:inset 3px 0 0 var(--seal,#b0382a)}
 .inhq p{margin:0 0 8px;font-size:13px;line-height:1.55}
+
+.ghbox .ghdots{display:flex;gap:6px;margin:8px 0 4px}.ghdots i{width:22px;height:6px;border-radius:999px;background:var(--line)}
+.ghdots i.ok{background:#3f7a3a}.ghdots i.no{background:var(--seal,#b0382a)}.ghdots i.safe{background:#c9b48e}.ghdots i.cur{background:var(--ink,#2b2622);animation:ivpulse 1.6s ease-in-out infinite}
+.ghintro{margin:8px 0;font-size:14px;line-height:1.6;color:var(--ink2,#4a433b);font-style:italic}
+.ghlog{list-style:none;margin:8px 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.ghlog li{padding:8px 10px;border-radius:var(--r-s,8px);background:var(--card2,#f1ece2);font-size:13px;box-shadow:inset 3px 0 0 #c9b48e}
+.ghlog li.ok{box-shadow:inset 3px 0 0 #3f7a3a}.ghlog li.no{box-shadow:inset 3px 0 0 var(--seal,#b0382a)}
+.ghlog p{margin:3px 0 0;line-height:1.55;color:var(--muted,#8a8378)}.ghlog p.ghx{color:var(--ink,#2b2622)}.ghr{font-size:11px;color:var(--muted,#8a8378)}
+.ghg{display:block;margin-top:4px;font-size:12px;color:#3f7a3a}
+.ghstage{margin-top:8px;padding:12px;border-radius:var(--r-s,8px);border:1px solid var(--line);background:var(--card,#fff)}.ghstage>p{margin:4px 0 10px;font-size:14px;line-height:1.65}
+.ghc{display:flex;flex-direction:column;gap:6px}
+.ghbtn{display:flex;gap:10px;align-items:center;width:100%;padding:10px 12px;border-radius:var(--r-s,8px);border:1px solid var(--line);background:var(--card2,#f1ece2);font:inherit;color:inherit;text-align:left;cursor:pointer}
+.ghbtn:hover{border-color:var(--ink,#2b2622)}.ghbtn b{display:block;font-size:14px;font-weight:600}.ghbtn em{display:block;font-style:normal;font-size:12px;color:var(--muted,#8a8378)}
+.ghk{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:6px;background:var(--ink,#2b2622);color:#fff;font-family:var(--f-brush);font-size:16px}.ghbtn.safe .ghk{background:#c9b48e;color:#2b2622}
+.ghend{margin-top:8px;padding:12px;border-radius:var(--r-s,8px);background:var(--card2,#f1ece2)}.ghend p{margin:4px 0;font-size:14px;line-height:1.65}.ghend.e2{background:rgba(201,149,46,.12);box-shadow:inset 3px 0 0 #c9952e}
+
+.ghbtn.duel{border-color:var(--seal,#b0382a);background:rgba(176,56,42,.06)}.ghbtn.duel .ghk{background:var(--seal,#b0382a)}
+.ghduel{display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:var(--r-s,8px);background:rgba(176,56,42,.06);box-shadow:inset 0 0 0 1px rgba(176,56,42,.35)}
+.ghduel>b{font-size:13px}
+.ghfl{margin-top:4px;font-size:12px}.ghlog .ghfl li{padding:0;background:none;box-shadow:none;border-radius:0;font-size:12px;list-style:disc}.ghfl summary{cursor:pointer;color:var(--muted,#8a8378)}.ghfl ul{margin:4px 0 0;padding-left:16px;line-height:1.5;color:var(--ink2,#4a433b)}
+
+.ghrun{margin-top:8px;padding:12px;border:1px solid var(--line);border-radius:var(--r-s,8px);background:var(--card,#fff)}
+.ghrh{display:flex;justify-content:space-between;gap:8px;align-items:baseline;margin-bottom:6px}.ghrh b{font-size:14px}.ghrh span{font-size:12px;color:var(--muted,#8a8378);white-space:nowrap}
+.ghhp{font-size:12px;color:var(--muted,#8a8378);margin:3px 0 6px}
+.ghrl{list-style:none;padding:8px 10px;margin:6px 0;font-size:13px;line-height:1.6;color:var(--ink2,#4a433b);background:var(--card2,#f1ece2);border-radius:var(--r-s,8px)}
+.ghrl>li::before{content:"· ";color:var(--muted,#8a8378)}
+.ghsc{margin:10px 0 8px;font-size:14px;line-height:1.6;font-weight:500}
+
+.mi{border:0;background:none;padding:0;font:inherit;color:inherit;text-decoration:underline dotted;text-underline-offset:3px;cursor:pointer}
+.mih{font-size:11px;color:var(--muted,#8a8378)}
 </style>
 
 <div class="wrap">
@@ -2454,6 +2484,10 @@ const maxPlus=h=>Math.max(0,...[...Object.values(h.gear||{}),...(h.bag||[])].fil
 /* 칭호 확인은 내 기록을 저장할 때만 하므로, 관계는 나와 다른 사람 사이로 본다 */
 const anyRel=(h,r)=>others.some(o=>o._id&&!String(o._id).startsWith("fake-")&&(PAIR[r]?sajeRole(myId(),o._id)===r:relMutual(myId(),o._id)===r));
 const TITLES=[
+  /* 기행 */
+  {id:"gh1",g:"기행",n:"기행가",hint:"기행 하나를 끝까지 마친다",ok:h=>cnt(h,"gh")>=1},
+  {id:"gh2",g:"기행",n:"천하주유",hint:"기행을 네 번 끝까지 마친다",ok:h=>cnt(h,"gh")>=4},
+  {id:"gh3",g:"기행",n:"전기의 주인공",hint:"기행을 빛나는 끝으로 세 번 마친다",ok:h=>cnt(h,"ghbest")>=3},
   /* 절기 */
   {id:"ilil1",g:"절기",n:"다정한 협객",hint:"일일절에 꿀막대를 11개 이상 건넨다",ok:h=>(h.ilil?.give||0)>=11},
   {id:"ilil2",g:"절기",n:"강호의 인기인",hint:"일일절에 꿀막대를 11개 이상 받는다",ok:h=>(h.ilil?.got||0)>=11},
@@ -2793,6 +2827,7 @@ const foldHead=(k,label)=>`<button type="button" class="shoph foldh" data-fold="
 function toggleFold(k){shopOpen["f_"+k]=!foldOpen(k);try{localStorage.setItem("murim-shop",JSON.stringify(shopOpen))}catch(e){}render()}
 /* 가게 머리 도트 아이콘 (10×10, 장원 도트와 같은 색판) */
 const SHOP_PX={
+  gihaeng:["............","....k.......","...kGk......","..kGGGk..k..","..GGgGGkkGk.",".GGgggGGGGGk","GGgggggGGGGG","...bb.......","....bbb.....","......bbbb.."],
   nature:[".....G......","....GgG.....","...GgGgG....","..GgGgGgG...","...gG.Gg....","....gGg.....",".....g......","bbbbbbbbbbbb",".bBbbBbbBbb.","bbbbbbbbbbbb"],
   job:["....yy......","...rrrr.....","..rRRRRr....",".rRRrRRRr...","rRRRRRRRRr..","rRrRRRrRRr..","rRRRRRRRRr..","rRRrRRRrRr..",".rRRRRRRr...","..rrrrrr...."],
   quest:[".cWWWWWWWc..",".cxxxxxxxc..","..xkkkkkx...","..xxxxxxx...","..xkkkxkx...","..xxxxxxx...","..xkkkkxx...","..xxxxxxx...",".cWWWWWWWc..","....rr......"],
@@ -2994,6 +3029,169 @@ function claimWeek(){const h=ensureQuests(structuredClone(me));if(h.qweek.claime
   {const it=makeItem(pickOne(["weapon","armor","acc"]),Math.min(6,h.realm),pickOne(SPECS));if(h.realm>=3)setRar(it,Math.random()<.25?2:1);got.push(`장비 「${gainItem(h,it)}」`)}
   addLog(h,`이번 주 의뢰 ${QWEEK_NEED}건을 모두 마쳐 무림맹의 상자를 받았다. ${got.join(", ")}`);save(h);toast("주간 상자를 열었다!")}
 let questOpenT=0;
+/* ───────── 기행(紀行): 매주 다른 지역에서 펼쳐지는 다섯 마당 이야기 ─────────
+   한 주에 한 이야기, 마당마다 이야기가 이어진다. 마당 하나는 작은 던전: 단계를 하나씩 고르며 나아가고 끝에 우두머리나 부탁이 있다.
+   하루에 한 마당만, 세 번까지 시도할 수 있다. 쓰러지거나 물러나면 한 번 쓴 것으로 친다. 깨면 그날은 끝, 다음 마당은 내일.
+   던전 안 체력은 이어진다. 뒤 마당일수록 길고 적이 세며, 부탁하는 재료도 많아진다. */
+const GH_K={조사:"調",채집:"採",채광:"鑛",전진:"進",전투:"戰",쉬기:"息",결투:"決",부탁:"託",물러남:"退",끝:"終"};
+const GH_LEN=[4,5,6,8,10],GH_TRY=3;
+const GHS=[
+ {r:"miao",n:"묘강 기행",sub:"고왕의 마지막 제자",herb:["hyeoldeung","dangkwi"],ore:["dansa","iron"],trophy:"gh_jar",
+  mobs:["독충 떼","대숲 독사","고에 홀린 사냥꾼","마교 졸개"],
+  scenes:["빽빽한 대숲. 바람도 없는데 잎사귀가 사각거린다.","이끼 낀 바위 사이로 붉은 물이 흐른다.","버려진 사냥꾼 움막. 솥에 식은 죽이 남아 있다.","벌레 우는 소리가 갑자기 뚝 그친다.","나무마다 낯선 부적이 걸려 있다.","안개 낀 계곡. 발밑이 미끄럽다.","무너진 묘족 사당. 향이 아직 타고 있다.","대나무 끝에 작은 항아리들이 매달려 있다."],
+  ch:[
+   {t:"괴질의 흔적",intro:"묘강 마을에 이상한 병이 돈다. 앓는 사람들 손목마다 붉은 점이 찍혀 있다. 고왕 아랑의 마지막 제자가 산으로 숨어들었다는 소문을 따라 대숲으로 들어간다.",
+    boss:{n:"독충 떼의 우두머리",x:"대숲 끝 동굴 앞. 주먹만 한 독충이 길을 막고 있다."},clear:"동굴 앞 바위에 '남이'라는 이름이 새겨져 있다. 고왕의 제자다."},
+   {t:"마교의 그림자",intro:"남이의 흔적을 쫓다 보니 마교 무리가 마을 사람 몇을 붙잡아 두고 있다. 남이에게 고를 바치라고 협박하는 모양이다.",
+    need:{hyeoldeung:3},needX:"붙잡힌 사람들이 고에 중독되어 있다. 혈등을 달여 먹여야 깨어난다.",boss:{n:"마교 졸개 두목",x:"인질을 지키던 졸개 두목이 칼을 뽑는다."},clear:"사람들을 구해 냈다. 그들이 말한다. 「남이는 우릴 지키려고 마교 말을 들은 거예요.」"},
+   {t:"남이",intro:"동굴 깊은 곳에서 마른 소녀가 고를 기르고 있다. 「당신도 마교에서 왔어? …아니라면, 도와줘.」",
+    need:{dansa:3},needX:"남이가 말한다. 「단사로 결계를 그려야 스승님의 고를 잠재울 수 있어.」",clear:"결계가 완성됐다. 남이가 처음으로 웃었다. 「마교가 오기 전에 끝내야 해.」"},
+   {t:"백부장의 습격",intro:"결계를 그리던 밤, 마교 백부장이 무리를 이끌고 동굴로 쳐들어왔다.",
+    boss:{n:"마교 백부장",x:"백부장이 피 묻은 깃발을 꽂는다. 「고왕의 고는 신교의 것이다!」"},clear:"백부장이 쓰러지자 무리가 흩어졌다. 그런데 동굴 깊은 곳에서 무언가 깨어나는 소리가 들린다."},
+   {t:"고왕의 고",intro:"결계가 깨지며 고왕이 남긴 천년 지네가 깨어났다. 남이가 소리친다. 「저걸 막지 못하면 마을이 끝장이야!」",
+    boss:{n:"천년 지네",x:"동굴 천장까지 닿는 지네가 몸을 일으킨다."},clear:"지네가 쓰러지고 동굴이 고요해졌다."}],
+  end:["마을의 병은 멎었다. 남이는 스승의 무덤을 지키겠다며 산에 남았다.","남이는 마을 약방에서 일하기로 했다. 떠나는 길에 그녀가 스승의 단지를 건넸다. 「이젠 필요 없어요.」"]},
+ {r:"fujian",n:"복건 기행",sub:"붉은 돛의 보물",herb:["dangkwi","insam"],ore:["copper","iron"],wood:["yongmok"],trophy:"gh_wheel",
+  mobs:["해적 잔당","갯바위 게","술 취한 선원","진팔의 졸개"],
+  scenes:["삐걱대는 갑판. 발밑으로 바닷물이 찰랑인다.","모래톱에 부서진 술통이 흩어져 있다.","갈매기 떼가 한꺼번에 날아오른다.","썰물에 드러난 산호초. 날카롭다.","해안 동굴 입구에 밧줄이 늘어져 있다.","파도에 떠밀려 온 해적 깃발 한 장.","선창 아래 어둠 속에서 쥐들이 달아난다.","등대 불빛이 깜빡인다. 누군가 신호를 보낸다."],
+  ch:[
+   {t:"난파선",intro:"천주 앞바다에 붉은 돛을 단 난파선이 떠밀려 왔다. 해적왕 쌍도 진팔의 보물 지도가 실려 있다는 소문을 따라 배에 오른다.",
+    boss:{n:"선장실의 해적",x:"선장실 문을 열자 칼을 든 해적이 지도를 품에 안고 있다."},clear:"반쪽짜리 지도를 손에 넣었다. 「셋째 섬, 용의 이빨 아래」"},
+   {t:"쫓기는 몸",intro:"지도를 얻은 걸 진팔 일당이 알아챘다. 부두마다 졸개들이 깔렸다. 섬으로 건너갈 배를 몰래 고쳐야 한다.",
+    need:{yongmok:3},needX:"늙은 뱃사공이 말한다. 「배 밑이 터졌소. 남해 용목이 있어야 고치지.」",boss:{n:"추격대 우두머리",x:"선창 끝에서 추격대 우두머리가 길을 막는다."},clear:"작은 배가 몰래 바다로 나섰다."},
+   {t:"진팔의 딸",intro:"섬에 닿자 한 소녀가 숨어 있다가 다가온다. 「난 진팔의 딸 해란이야. 아버지가 보물을 손에 넣으면 바다가 피로 물들어. 막아 줘.」",
+    need:{copper:3},needX:"해란이 말한다. 「용의 이빨 장치는 구리 열쇠로만 열려. 녹여서 만들어야 해.」",clear:"구리 열쇠가 완성됐다. 해란이 동굴 쪽을 가리킨다."},
+   {t:"용의 이빨",intro:"용의 이빨 바위 아래 동굴. 진팔의 오른팔 '철갑 상어' 마칠이 먼저 와 있다.",
+    boss:{n:"철갑 상어 마칠",x:"마칠이 철갑 주먹을 맞부딪친다. 「대장 딸까지 꼬드겼나?」"},clear:"마칠이 무릎을 꿇었다. 동굴 안쪽에서 금빛이 새어 나온다."},
+   {t:"쌍도 진팔",intro:"보물 상자 앞. 해적왕 쌍도 진팔이 두 자루 칼을 뽑는다. 「내 딸을 데려간 대가를 치러라!」",
+    boss:{n:"쌍도 진팔",x:"진팔의 쌍도가 파도처럼 몰아친다."},clear:"진팔의 칼이 부러졌다. 해란이 아버지 앞을 막아섰다."}],
+  end:["보물은 바다에 가라앉았다. 진팔은 딸의 손에 이끌려 뭍으로 떠났다.","해란이 보물 상자에서 커다란 키를 꺼내 건넸다. 「아버지 배의 키야. 이제 이 배는 아무 데도 안 가.」"]},
+ {r:"liaodong",n:"요동 기행",sub:"산삼꾼의 마지막 길",herb:["insam","sansam"],ore:["iron","copper"],trophy:"gh_tiger",
+  mobs:["굶주린 늑대","인삼 도둑","눈 덮인 멧돼지","밀렵꾼"],
+  scenes:["무릎까지 빠지는 눈길. 발자국이 금세 덮인다.","얼어붙은 개울 위로 바람이 운다.","나무 껍질에 칼자국 표시가 있다.","숯불 자국. 누군가 여기서 밤을 보냈다.","멀리서 범이 우는 소리가 산을 울린다.","자작나무 숲. 하얀 줄기 사이로 그림자가 지나간다.","눈 속에 부러진 지게가 묻혀 있다.","김이 피어오르는 온천. 몸을 녹이기 좋다."],
+  ch:[
+   {t:"돌아오지 않는 노인",intro:"장백산 산삼꾼 노인이 산에 든 지 열흘째 돌아오지 않는다. 앓아누운 손녀가 강호인에게 매달린다.",
+    boss:{n:"늑대 무리의 우두머리",x:"노인의 지게 곁을 늑대 무리가 둘러싸고 있다."},clear:"지게 밑에서 노인의 쪽지를 찾았다. 「산군의 삼을 찾았다. 그런데 사람들이 따라온다.」"},
+   {t:"밀렵꾼",intro:"노인을 따라온 건 인삼 도둑 패거리였다. 노인이 그들에게 붙잡혀 산삼 자리를 대라고 협박받고 있다.",
+    need:{insam:3},needX:"패거리 졸개가 거래를 건다. 「인삼 세 뿌리만 주면 노인 있는 곳을 알려 주지.」",boss:{n:"밀렵꾼 두목",x:"졸개를 따라가자 두목이 화승총을 겨눈다."},clear:"밀렵꾼들이 흩어졌다. 노인은 폭포 쪽으로 도망쳤다고 한다."},
+   {t:"노인과의 만남",intro:"얼어붙은 폭포 아래에서 다리를 다친 노인을 찾았다. 「손녀를 살리려면 산군이 지키는 삼이 있어야 하네. 도와주게.」",
+    need:{iron:3},needX:"노인이 말한다. 「폭포 뒤 굴은 얼음이 무너져. 쇠말뚝을 박아 받쳐야 들어가네.」",clear:"쇠말뚝을 박자 폭포 뒤로 굴이 열렸다."},
+   {t:"얼음 굴",intro:"굴 안은 얼음 기둥 숲이다. 겨울잠을 깬 커다란 곰이 길을 막는다.",
+    boss:{n:"얼음 곰",x:"얼음 곰이 일어서자 천장의 고드름이 떨어진다."},clear:"곰이 물러났다. 굴 끝에서 금빛 눈 두 개가 빛난다."},
+   {t:"금빛 산군",intro:"굴 가장 깊은 곳, 오래 묵은 산삼 곁에 금빛 산군이 앉아 있다.",
+    boss:{n:"금빛 산군",x:"산군이 천천히 일어난다. 산 전체가 숨을 죽인다."},clear:"산군이 낮게 울더니 산삼 곁에서 물러났다."}],
+  end:["노인은 무사히 돌아왔고, 산삼 덕에 손녀도 일어났다.","손녀의 병이 나았다. 노인이 산군의 가죽을 내주었다. 「그놈, 이튿날 늙어 죽었더군. 지켜 줘서 고맙다고 하더이다.」"]},
+ {r:"xiyu",n:"서역 기행",sub:"모래에 묻힌 경전",herb:["dangkwi","cheonma"],ore:["okk","iron"],trophy:"gh_sutra",
+  mobs:["사막 전갈","모래 도적","굶주린 독수리","도적 척후"],
+  scenes:["끝없는 모래언덕. 해가 등을 태운다.","말라 버린 오아시스. 야자수만 서 있다.","모래 속에서 부서진 불상의 손이 튀어나와 있다.","바람이 모래를 쓸어 가자 옛 길이 드러난다.","낙타 해골 곁에 찢어진 지도 조각.","해 질 녘, 모래언덕 너머로 연기가 오른다.","신기루 속에 탑이 흔들린다.","돌기둥에 이국의 글자가 새겨져 있다."],
+  ch:[
+   {t:"드러난 탑",intro:"모래 폭풍이 지나간 뒤 사막 한가운데 옛 절의 탑 끝이 드러났다. 천 년 전 묻힌 경전이 그 안에 있다고 한다.",
+    boss:{n:"거대 전갈",x:"탑 그늘에서 집채만 한 전갈이 꼬리를 세운다."},clear:"탑 문틀에 새겨진 글귀: 「경전을 찾는 이여, 마음을 먼저 비워라.」"},
+   {t:"붙잡힌 승려",intro:"모래 도적들이 늙은 승려 하나를 끌고 다니며 탑을 파게 하고 있다. 경전을 노리는 것이다.",
+    need:{okk:2},needX:"도적 길잡이가 속삭인다. 「옥 두 덩이면 승려가 갇힌 천막을 알려 주지.」",boss:{n:"도적 척후대장",x:"천막 앞에서 척후대장이 곡도를 뽑는다."},clear:"승려를 구해 냈다. 「고맙소. 그 경전은 도적 손에 들어가면 안 되오.」"},
+   {t:"늙은 승려의 부탁",intro:"승려 혜원이 말한다. 「나는 경전을 지키던 절의 마지막 승려요. 경전실까지 함께 가 주시오.」",
+    need:{iron:3},needX:"혜원이 말한다. 「지하 회랑은 모래가 무너지오. 쇠로 버팀목을 대야 하오.」",clear:"버팀목을 대자 지하 회랑으로 가는 길이 열렸다."},
+   {t:"탑의 수호상",intro:"지하 회랑 끝, 돌로 된 수호상이 눈을 뜬다. 혜원이 말한다. 「시험이오. 힘으로 증명하시오.」",
+    boss:{n:"탑의 수호상",x:"수호상이 돌주먹을 들어 올린다."},clear:"수호상이 고개를 숙이고 길을 비켰다."},
+   {t:"사막의 매",intro:"경전실 앞. 도적 두목 '사막의 매'가 남은 무리를 이끌고 들이닥쳤다.",
+    boss:{n:"사막의 매",x:"매의 쌍곡도가 햇빛처럼 번쩍인다."},clear:"매의 칼이 부러졌다. 도적들이 두목을 메고 달아났다."}],
+  end:["경전 몇 장을 건져 나왔다. 혜원은 탑에 남아 모래를 쓸겠다고 했다.","무너지는 탑을 빠져나오자 혜원이 경전 두루마리를 건넸다. 「읽을 수 없어도 괜찮소. 마음이 고요해질 거요.」"]}];
+/* 재료 이름을 누르면 어디서 나는지 알려 준다 */
+function matWhere(m){const M=MATS[m];if(!M)return "";const S=ghStory(),inGh=[...S.herb,...S.ore,...(S.wood||[])].includes(m);
+  return `${M[0]} · ${MAT_TIER[M[2]]} · ${GATHER[M[1]].n}에서 나온다 · ${M[3]?M[3].map(r=>REGIONS[r].n).join(", ")+"에서만":"어느 지역에서나"}${inGh?` · 이번 주 ${S.n}의 ${M[1]==="ore"?"채광":"채집"}에서도 나온다`:""}`}
+const miBtn=(m,label)=>`<button type="button" class="mi" data-mi="${m}">${label}</button>`;
+const ghStory=()=>GHS[((weekKey()%GHS.length)+GHS.length)%GHS.length];
+const ghOf=h=>h.gh?.wk===weekKey()&&h.gh.v===2?h.gh:{v:2,wk:weekKey(),r:ghStory().r,ch:0,day:-1,tries:0,clrDay:-1,fails:0,run:null,hist:[],done:false};
+/* 판정: 잘하는 능력일수록 잘 된다 */
+const ghChance=(h,st)=>{const S=effStats(h),mx=Math.max(S.nei,S.wai,S.shen,1);return Math.round(Math.min(90,48+37*(S[st]/mx)))};
+const ghBest=h=>{const S=effStats(h);return ["wai","shen","nei"].sort((a,b)=>S[b]-S[a])[0]};
+/* 결투: 지금 체력으로 싸운다. power 1이면 자세 없이 반반쯤 */
+const GH_STANCE={wai:{n:"정면으로 맞선다",d:"외공 · 주는 피해 +25%, 받는 피해 +10%"},shen:{n:"틈을 노린다",d:"신법 · 회피 +9, 치명 +6"},nei:{n:"기를 끌어올린다",d:"내공 · 매 합 체력 2.5% 회복, 받는 피해 -3%"}};
+let GH_HPK=6.6,GH_ATK=5.9;
+function ghFight(h,run,foe,power,stance){const d=derived(h),log=[];let hp=run.hp;const mx=run.mx,fdef=Math.round(d.def*.8),hd=d.atk*100/(100+fdef),cr0=Math.min(80,d.crit||0),ev0=Math.min(60,d.eva||0);
+  let fhp=Math.round(hd*(1+.6*cr0/100)*GH_HPK*power);const fmx=fhp,per=mx/GH_ATK/(1-ev0/100)*Math.sqrt(power);
+  const dm=stance==="wai"?1.25:1,tk=stance==="wai"?1.1:stance==="nei"?.97:1,ev=Math.min(70,ev0+(stance==="shen"?9:0)),cr=Math.min(90,cr0+(stance==="shen"?6:0));
+  for(let t=1;t<=10&&hp>0&&fhp>0;t++){let x=Math.round(hd*dm*(.85+Math.random()*.3));const c=Math.random()*100<cr;if(c)x=Math.round(x*1.6);fhp=Math.max(0,fhp-x);
+    let line=`${t}합 · ${c?"치명! ":""}${foe}에게 ${x}`;
+    if(fhp>0){const rg=fhp<fmx*.3;if(Math.random()*100<ev)line+=` · 공격을 피했다`;else{const y=Math.round(per*tk*(rg?1.25:1)*(.85+Math.random()*.3));hp=Math.max(0,hp-y);line+=` · ${rg?"성난 ":""}반격 ${y}`}
+      if(stance==="nei"&&hp>0)hp=Math.min(mx,hp+Math.round(mx*.025))}
+    log.push(`${line} (나 ${hp}/${mx} · 상대 ${fhp}/${fmx})`)}
+  run.hp=hp;return {win:fhp<=0&&hp>0,log}}
+/* 단계 고르기: 매 단계 선택지 2~3개 (전진은 늘 있다). 마지막 단계는 우두머리나 부탁 */
+function ghMakeStep(S,c,run){const L=GH_LEN[c];
+  if(run.step>=L-1){const C=S.ch[c],o=[];if(C.need&&!run.needOK)o.push({k:"부탁"});else if(C.boss)o.push({k:"결투"});else o.push({k:"끝"});o.push({k:"물러남"});return {x:C.need&&!run.needOK?C.needX:C.boss?C.boss.x:"이 마당의 끝에 닿았다.",o}}
+  const pool=["조사","채집","채광","전투"];if(run.hp<run.mx*.7)pool.push("쉬기","쉬기");
+  const o=[{k:"전진"}],pk=[...pool].sort(()=>Math.random()-.5).filter((v,i,a)=>a.indexOf(v)===i).slice(0,Math.random()<.5?1:2);pk.forEach(k=>o.push({k,st:k==="조사"?(Math.random()<.5?"nei":"shen"):k==="채집"?"shen":k==="채광"?"wai":null}));
+  return {x:pickOne(S.scenes),o}}
+const ghPow=(c,boss)=>boss?[.85,.85,.8,.85,.82][c]:[.25,.28,.3,.33,.33][c];
+function ghStart(){const h=structuredClone(me),S=ghStory(),G=ghOf(h);if(G.done||G.run)return;if(h.travel||h.loc!==S.r){toast(`${REGIONS[S.r].n}에 있어야 한다.`);return}
+  if(G.clrDay===dayKey()){toast("오늘은 이미 한 마당을 넘었다. 내일 이어 간다.");return}
+  if(G.day!==dayKey()){G.day=dayKey();G.tries=0}if(G.tries>=GH_TRY){toast(`오늘 시도를 다 썼다. (${GH_TRY}번)`);return}
+  G.tries++;const d=derived(h);G.run={step:0,hp:d.hp,mx:d.hp,log:[],needOK:false};G.run.cur=ghMakeStep(S,G.ch,G.run);h.gh=G;save(h)}
+function ghAct(i,stance){const h=structuredClone(me),S=ghStory(),G=ghOf(h),R=G.run;if(!R)return;const c=G.ch,C=S.ch[c],o=R.cur?.o?.[i];if(!o)return;
+  const lg=t=>R.log.push(t),realm=h.realm||0;let ended=null;
+  const gain=(pool,n)=>{const m=pickOne(pool);h.mats=h.mats||{};h.mats[m]=(h.mats[m]||0)+n;h.gdex=h.gdex||{};h.gdex[m]=1;return `${matN(m)} +${n}`};
+  const mob=()=>{const f=ghFight(h,R,pickOne(S.mobs),ghPow(c,false),ghBest(h));lg({t:"fight",x:`${f.win?"물리쳤다":"쓰러졌다"}`,f:f.log});return f.win};
+  if(o.k==="물러남"){lg({t:"x",x:"오늘은 여기서 물러난다."});ended="retreat"}
+  else if(o.k==="전진"){if(Math.random()<.2+c*.03){lg({t:"x",x:`길을 가다 ${pickOne(S.mobs)}에게 습격당했다!`});if(!mob())ended="down"}else{const r=Math.random();if(r<.3){const sv=addSilver(h,Math.round(10*(1+c)*(1+.2*realm)));lg({t:"x",x:`길에서 주운 것: ${silverTxt(sv)}`})}else lg({t:"x",x:"무사히 나아갔다."})}}
+  else if(o.k==="쉬기"){const v=Math.round(R.mx*.25);R.hp=Math.min(R.mx,R.hp+v);lg({t:"x",x:`숨을 고르며 상처를 싸맸다. 체력 +${v}`})}
+  else if(o.k==="전투"){lg({t:"x",x:"길을 막은 적에게 먼저 덤벼든다."});const f=ghFight(h,R,pickOne(S.mobs),ghPow(c,false)*1.3,ghBest(h));
+    if(f.win){h.items.stone=(h.items.stone||0)+1;const sv=addSilver(h,Math.round(20*(1+c)*(1+.2*realm)));lg({t:"fight",x:`물리쳤다! 강화석 +1 · ${silverTxt(sv)}`,f:f.log})}else{lg({t:"fight",x:"쓰러졌다…",f:f.log});ended="down"}}
+  else if(["조사","채집","채광"].includes(o.k)){const ch=ghChance(h,o.st),ok=Math.random()*100<ch;
+    if(ok){const n=1+(c>=2&&Math.random()<.4?1:0);const got=o.k==="채집"?gain([...S.herb,...(S.wood||[])],n):o.k==="채광"?gain(S.ore,n):Math.random()<.5?gain([...S.herb,...S.ore],1):silverTxt(addSilver(h,Math.round(15*(1+c)*(1+.2*realm))));lg({t:"x",x:`${o.k} 성공 (${ch}%) · ${got}`})}
+    else{if(o.k!=="조사"&&Math.random()<.5){lg({t:"x",x:`${o.k}하다 들켰다! ${pickOne(S.mobs)}이(가) 덮쳐 온다.`});if(!mob())ended="down"}
+      else{const v=Math.round(R.mx*(.08+c*.02));R.hp=Math.max(0,R.hp-v);lg({t:"x",x:`${o.k} 실패 (${ch}%) · ${o.k==="채광"?"돌이 무너져":o.k==="채집"?"벼랑에서 미끄러져":"함정을 밟아"} 체력 -${v}`});if(R.hp<=0)ended="down"}}}
+  else if(o.k==="부탁"){const ok=Object.entries(C.need).every(([m,v])=>(h.mats?.[m]||0)>=v);if(!ok){toast(`모자라다: ${Object.entries(C.need).map(([m,v])=>`${matN(m)} ${h.mats?.[m]||0}/${v}`).join(", ")}`);return}
+    for(const [m,v] of Object.entries(C.need))h.mats[m]-=v;R.needOK=true;lg({t:"x",x:`${Object.entries(C.need).map(([m,v])=>`${matN(m)} ${v}`).join(", ")}을(를) 건넸다.`});R.step--;}
+  else if(o.k==="결투"){if(!GH_STANCE[stance])return;const f=ghFight(h,R,C.boss.n,ghPow(c,true),stance);lg({t:"fight",x:f.win?`${C.boss.n}을(를) 쓰러뜨렸다!`:`${C.boss.n}에게 졌다…`,f:f.log});ended=f.win?"clear":"down"}
+  else if(o.k==="끝")ended="clear";
+  if(!ended){R.step++;if(R.step>=GH_LEN[c]&&!(C.boss||C.need&&!R.needOK))ended="clear";else R.cur=ghMakeStep(S,c,R)}
+  ghDuel=null;
+  if(ended==="clear"){const got=[],exp=Math.round(expPerHour(h.level)*(.8+.3*c));applyExp(h,exp);got.push(`경험치 +${exp}`);got.push(silverTxt(addSilver(h,Math.round(60*(1+c)*(1+.2*realm)))));
+    const st=1+Math.floor(c/2);h.items.stone=(h.items.stone||0)+st;got.push(`강화석 +${st}`);
+    if(c>=3&&Math.random()<.5){const it=rarify(h,makeItem(pickOne(["weapon","armor","acc"]),Math.min(6,realm+1),pickOne(SPECS)),"gate");got.push(`장비 「${gainItem(h,it)}」`)}
+    G.hist=[...G.hist,{c,try:G.tries,text:C.clear,got}];G.ch++;G.clrDay=dayKey();G.run=null;
+    if(G.ch>=5){G.done=true;const best=G.fails<=3;G.end=best?1:0;bump(h,"gh");if(best)bump(h,"ghbest");const fg=[];
+      if(best&&!furnLv(h,S.trophy)){h.manor={...(h.manor||{}),[S.trophy]:1};manorPlaceNew(h,S.trophy);fg.push(`장원 기념품 「${DECOR[S.trophy].n}」`)}fg.push(silverTxt(addSilver(h,best?600:300)));G.endGot=fg}
+    addLog(h,`${S.n} ${c+1}마당 「${C.t}」을 넘었다. ${C.clear} (${got.join(", ")})${G.done?` / ${S.end[G.end]}`:""}`);toast(G.done?`${S.n} 완주!`:`${c+1}마당을 넘었다!`)}
+  else if(ended){G.fails++;const exp=Math.round(expPerHour(h.level)*.2*(1+R.step/GH_LEN[c]));applyExp(h,exp);
+    G.hist=[...G.hist,{c,try:G.tries,fail:ended,step:R.step,got:[`경험치 +${exp}`]}];G.run=null;addLog(h,`${S.n} ${c+1}마당 · ${ended==="retreat"?"물러났다":"쓰러져 마을로 실려 왔다"} (${R.step}/${GH_LEN[c]}단계)`);toast(ended==="retreat"?"물러났다":"쓰러졌다…")}
+  h.gh=G;save(h)}
+let ghDuel=null;
+function gihaengBox(h){const S=ghStory(),G=ghOf(h),here=!h.travel&&h.loc===S.r,c=Math.min(G.ch,4),C=S.ch[c],nx=(weekKey()+1)*7*86400e3-KST-3*86400e3;
+  const tries=G.day===dayKey()?G.tries:0,clrToday=G.clrDay===dayKey(),R=G.run;
+  const dots=`<div class="ghdots">${S.ch.map((x,i)=>`<i class="${i<G.ch?"ok":i===G.ch&&!G.done?"cur":""}" title="${i+1}마당 ${x.t}"></i>`).join("")}</div>`;
+  const head=shopHead("gihaeng",`${S.n} · ${S.sub} · ${G.done?"완주":`${G.ch+1}마당 「${C.t}」`}${!G.done&&here&&!clrToday&&tries<GH_TRY&&!R?" · 오늘 갈 수 있음":R?" · 탐사 중":""}`);
+  if(!shopOpen.gihaeng&&!R)return `<div class="shop ghbox">${head}</div>`;
+  const hist=G.hist.filter(x=>!x.fail).map(x=>`<li class="ok"><b>${x.c+1}마당 · ${esc(S.ch[x.c].t)}</b> <span class="ghr">${x.try}번째 시도에 넘음</span><p class="ghx">${esc(x.text)}</p><span class="ghg">${x.got.map(esc).join(" · ")}</span></li>`).join("");
+  let body="";
+  if(G.done)body=`<div class="ghend e${G.end+1}"><div class="kicker">${G.end?"빛나는 끝":"무난한 끝"}</div><p>${esc(S.end[G.end])}</p>${G.endGot?.length?`<span class="ghg">${G.endGot.map(esc).join(" · ")}</span>`:""}</div><p class="note">다음 주에는 다른 지역에서 새 기행이 열린다. <span data-until="${nx}"></span> 남음</p>`;
+  else if(R){const L=GH_LEN[c],cur=R.cur;
+    body=`<div class="ghrun"><div class="ghrh"><b>${c+1}마당 · ${esc(C.t)}</b><span>${Math.min(R.step+1,L)}/${L}단계 · 오늘 ${tries}/${GH_TRY}번째</span></div>
+      <div class="hpb"><i style="width:${R.hp/R.mx*100}%"></i></div><div class="ghhp">체력 ${R.hp}/${R.mx}${C.need&&!R.needOK?` · 부탁: ${Object.entries(C.need).map(([m,v])=>`${miBtn(m,matN(m))} ${h.mats?.[m]||0}/${v}`).join(", ")}`:""}</div>
+      ${R.log.length?`<ul class="ghrl">${R.log.slice(-5).map(l=>`<li>${esc(l.x)}${l.f?`<details class="ghfl"><summary>겨룬 기록</summary><ul>${l.f.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></details>`:""}</li>`).join("")}</ul>`:""}
+      <p class="ghsc">${esc(cur.x)}</p>
+      <div class="ghc">${cur.o.map((o,i)=>{
+        if(o.k==="결투"&&ghDuel===i)return `<div class="ghduel"><b>${esc(josa(C.boss.n,"와"))} 겨룬다 · 자세를 고른다</b>${Object.entries(GH_STANCE).map(([k,X])=>`<button class="ghbtn" type="button" data-ghst="${k}" data-ghi="${i}"><span class="ghk">${STATS[k].n[0]}</span><span><b>${X.n}</b><em>${X.d}</em></span></button>`).join("")}<button class="btn sm ghost" type="button" data-ghno>그만둔다</button></div>`;
+        const lab={전진:["앞으로 나아간다","운이 나쁘면 습격을 받는다"],조사:["주변을 살핀다",`조사 · ${o.st?STATS[o.st].n:""} 판정 · ${o.st?ghChance(h,o.st):0}% · 실패하면 함정`],채집:["약초를 캔다",`채집 · 신법 판정 · ${ghChance(h,"shen")}% · 실패하면 들킬 수도`],
+          채광:["광맥을 판다",`채광 · 외공 판정 · ${ghChance(h,"wai")}% · 실패하면 들킬 수도`],전투:["길을 막은 적에게 덤빈다","전투 · 이기면 강화석과 은자 · 지면 쓰러진다"],쉬기:["숨을 고른다","체력 25% 회복"],
+          결투:[`${C.boss?.n||""}와(과) 겨룬다`,"우두머리 · 자세를 골라 겨룬다 · 지면 쓰러진다"],부탁:["부탁을 들어준다",C.need?`${Object.entries(C.need).map(([m,v])=>`${matN(m)} ${h.mats?.[m]||0}/${v}`).join(", ")}`:""],끝:["마당을 마친다",""],물러남:["오늘은 물러난다","시도 한 번을 쓴다"]}[o.k];
+        return `<button class="ghbtn ${o.k==="결투"?"duel":o.k==="물러남"?"safe":""}" type="button" data-gha="${i}" ${o.k==="부탁"&&!Object.entries(C.need||{}).every(([m,v])=>(h.mats?.[m]||0)>=v)?"disabled":""}><span class="ghk">${GH_K[o.k]||"·"}</span><span><b>${o.k==="결투"?esc(josa(C.boss.n,"와"))+" 겨룬다":lab[0]}</b><em>${lab[1]}</em></span></button>`}).join("")}</div>
+      ${cur.o.some(o=>o.k!=="물러남")&&!cur.o.some(o=>o.k==="물러남")?`<button class="btn sm ghost" type="button" data-ghquit style="margin-top:6px">물러나기 (시도 한 번 씀)</button>`:""}</div>`}
+  else if(!here)body=`<p class="ghintro">${esc(C.intro)}</p><p class="note">이번 주 기행은 <b>${REGIONS[S.r].n}</b>에서 펼쳐진다. 그곳에 가야 들어갈 수 있다.</p><div class="row"><button class="btn sm" type="button" data-ghgo="${S.r}">${REGIONS[S.r].n} 지도에서 보기</button></div>`;
+  else if(clrToday)body=`<p class="note">오늘은 한 마당을 넘었다. 내일 ${G.ch+1}마당 「${esc(C.t)}」을 이어 간다.</p>`;
+  else if(tries>=GH_TRY)body=`<p class="note">오늘 시도를 다 썼다. (${GH_TRY}번) 내일 다시 ${G.ch+1}마당에 들어간다.</p>`;
+  else body=`<div class="ghstage"><div class="kicker">${G.ch+1}마당 · ${esc(C.t)}</div><p>${esc(C.intro)}</p>
+    <p class="note" style="margin:0 0 8px">${GH_LEN[c]}단계${C.need?` · 부탁: ${Object.entries(C.need).map(([m,v])=>`${miBtn(m,matN(m))} ${h.mats?.[m]||0}/${v}`).join(", ")} <span class="mih">(이름을 누르면 어디서 나는지 보인다)</span>`:""}${C.boss?` · 우두머리: ${esc(C.boss.n)}`:""}</p>
+    <button class="btn sealb" type="button" id="ghStart">들어간다 · 오늘 ${tries}/${GH_TRY}번 썼다</button></div>`;
+  return `<div class="shop ghbox">${head}${dots}${hist?`<ol class="ghlog">${hist}</ol>`:""}${body}
+    <p class="note" style="margin-top:8px">한 주에 한 이야기, 다섯 마당. 하루에 한 마당, 세 번까지 들어갈 수 있다. 쓰러지거나 물러나면 한 번 쓴 것이다. 다섯 마당을 넘으면서 실패가 세 번 이하면 장원 기념품을 받는다.</p></div>`}
+function bindGh(){on("#ghStart",ghStart);document.querySelectorAll("[data-mi]").forEach(b=>b.onclick=e=>{e.stopPropagation();toast(matWhere(b.dataset.mi))});
+  document.querySelectorAll("[data-gha]").forEach(b=>b.onclick=()=>{const G=ghOf(me),o=G.run?.cur?.o?.[+b.dataset.gha];if(o?.k==="결투"){ghDuel=+b.dataset.gha;render()}else ghAct(+b.dataset.gha)});
+  document.querySelectorAll("[data-ghst]").forEach(b=>b.onclick=()=>ghAct(+b.dataset.ghi,b.dataset.ghst));document.querySelectorAll("[data-ghno]").forEach(b=>b.onclick=()=>{ghDuel=null;render()});
+  document.querySelectorAll("[data-ghquit]").forEach(b=>b.onclick=()=>{const h=structuredClone(me),G=ghOf(h);if(!G.run)return;G.run.cur={x:"",o:[{k:"물러남"}]};h.gh=G;me=h;ghAct(0)});
+  document.querySelectorAll("[data-ghgo]").forEach(b=>b.onclick=()=>{dest=b.dataset.ghgo;tab="world";render()})}
+
 function questBox(h){h=ensureQuests(structuredClone(h));const head=shopHead("quest",`의뢰판 · 오늘 ${h.quests.list.filter(q=>q.claimed).length}/3 · 이번 주 ${Math.min(h.qweek.n,QWEEK_NEED)}/${QWEEK_NEED}`);
   if(!shopOpen.quest)return `<section><div class="shop">${head}</div></section>`;
   const rows=h.quests.list.map((q,i)=>{const Q=QPOOL.find(x=>x.k===q.k),pr=qProg(h,q),ok=pr>=q.need;
@@ -3195,6 +3393,11 @@ const DECOR={
   pet_bear:{g:"영수",pet:1,n:"아기 곰",d:"뒤뚱뒤뚱 걷는 반달가슴곰 새끼",eff:null},
   pet_monkey:{g:"영수",pet:1,n:"금빛 원숭이",d:"금빛 털을 두른 날쌘 원숭이",eff:null},
   pet_kirin:{g:"영수",pet:1,n:"기린",d:"성인이 날 때 나타난다는 상서로운 짐승",eff:null},
+  /* 기행 기념품: 기행을 가장 좋은 끝으로 마치면 받는다 (가게에는 안 나온다) */
+  gh_jar:{g:"기행",n:"고왕의 단지",d:"남이가 건넨 빈 고 단지. 이제 아무것도 살지 않는다",eff:null},
+  gh_wheel:{g:"기행",n:"붉은 돛의 키",d:"해적왕 진팔의 배를 몰던 커다란 키",eff:null},
+  gh_tiger:{g:"기행",n:"산군 가죽",d:"장백산 금빛 산군의 가죽. 노인이 고맙다며 내주었다",eff:null},
+  gh_sutra:{g:"기행",n:"모래 경전",d:"사막의 탑에서 건져 낸 읽을 수 없는 경전",eff:null},
   /* 귀물 */
   treasure:{g:"귀물",n:"금은보화 더미",d:"금괴와 보석이 산처럼 쌓였다. 도둑이 걱정이다",price:50000,eff:null},
   toad:{g:"귀물",n:"금두꺼비",d:"엽전을 문 커다란 황금 두꺼비. 재물을 불러들인다고 한다",price:80000,eff:null},
@@ -3401,6 +3604,10 @@ function isoDrawItem(C,k,gx,gy,r,lv){const [fw0,fd0]=ISO_FP[k]||[1,1];
        dot(.45,.55,4,"#f0e0b0");dot(.5,.55,6,"#f0e0b0");dot(.42,.55,7,"#f0e0b0");dot(.52,.55,3,"#f0e0b0")},
    dryherb:()=>{B(.1,.45,.07,.07,16,WD);B(.85,.45,.07,.07,16,WD);B(.1,.45,.82,.07,1,W,15);
        for(const [x,c] of [[.2,"#6f8f4a"],[.32,"#8a6a3a"],[.44,"#5d7a3e"],[.56,"#a8743f"],[.68,"#6f8f4a"],[.78,"#8a6a3a"]]){B(x,.46,.05,.05,1.5,"#c9a06a",13.5);B(x-.02,.45,.09,.09,6,c,7.5)}},
+   gh_jar:()=>{B(.25,.25,.5,.5,1,WD);B(.28,.28,.44,.44,7,"#4e3a2c",1,{t:"#5e4636",l:"#4e3a2c",r:"#3d2e24"});B(.36,.36,.28,.28,1.5,"#3d2e24",8);[[.32,.6,4],[.55,.6,6],[.42,.6,3]].forEach(([x,y,z])=>dot(x,y,z,"#6fae58"));dot(.6,.4,9,"#b0382a")},
+   gh_wheel:()=>{B(.4,.4,.2,.2,6,WD);const S=["...w...",".wWwWw.","wW.w.Ww","Ww.o.wW","wW.w.Ww",".wWwWw.","...w..."];sprAt(S,{w:"#8a5a33",W:"#b07a45",o:"#c9952e"},6)},
+   gh_tiger:()=>{for(let i=0;i<5;i++)B(.12+i*.15,.2,.15,.6,.6,i%2?"#2b2622":"#d08a30",0,{t:i%2?"#2b2622":"#e0a040"});B(.05,.38,.1,.24,.8,"#e0a040");dot(.08,.45,1,"#2b2622")},
+   gh_sutra:()=>{B(.35,.35,.3,.3,6,WD);B(.2,.4,.6,.2,.8,W,6);B(.18,.38,.64,.24,1.2,"#efe6d2",6.8,{t:"#f5f0e3"});for(let i=0;i<4;i++)dot(.3+i*.12,.5,8.2,"#7a6a5a");B(.16,.38,.04,.24,1.6,"#b0382a",6.8);B(.8,.38,.04,.24,1.6,"#b0382a",6.8)},
    pet_crane:()=>{const S=[".r.......",".kw......",".w.......",".w.......",".ww......","..wwwww..",".wwwwwwk.","..wwwwkk.","...wwk...","....y.y..","....y.y..","...yy.yy."];sprAt(S,{r:"#b0382a",k:"#2b2622",w:"#f5f0e3",y:"#5a5852"},0)},
    pet_bear:()=>{const S=["bb.......","bbbb.....","kbBbbbbb.","bBBbbbbbb",".bbbbbbbb",".bb.bb.bb",".bb.bb.bb"];sprAt(S,{b:"#3d2e24",B:"#c9a06a",k:"#f5f0e3"},0)},
    pet_monkey:()=>{const S=[".oooo...","oOffOo..","oOkfkO..",".offf...","..oOo..o",".oOOOo.o",".oOOOooo","..oOo...","..o.o...",".oo.oo.."];sprAt(S,{o:"#d08a30",O:"#f0c870",f:"#9ab4d8",k:"#2b2622"},0)},
@@ -3534,7 +3741,7 @@ const PET_PX={crane:[[".r.......",".kw......",".w.......",".w.......",".ww......
 function petSection(h){const p=h.pet;
   if(!p){const cards=Object.entries(PETS).map(([k,P])=>{const ok=Object.entries(P.cost).every(([m,v])=>matHave(h,m)>=v),[S,pal]=PET_PX[k];
       return `<div class="petc"><div class="petimg">${pxSvg(S,pal,5)}</div><div class="petx"><b>${P.n}</b><span>${P.d}</span><span>${P.st==="all"?"내공·외공·신법":STATS[P.st].n} +${PET_STAGE.map(x=>Math.round((P.st==="all"?x[3]:x[2])*100)).join(" / ")}% (새끼/성수/영수)</span>
-        <span class="fcost">${Object.entries(P.cost).map(([m,v])=>`<i class="${matHave(h,m)>=v?"":"lack"}">${m==="silver"?silverTxt(v):`${matName(m)} ${matHave(h,m)}/${v}`}</i>`).join(" ")}</span></div>
+        <span class="fcost">${Object.entries(P.cost).map(([m,v])=>m==="silver"?`<i class="${matHave(h,m)>=v?"":"lack"}">${silverTxt(v)}</i>`:`<i class="${matHave(h,m)>=v?"":"lack"}">${miBtn(m.slice(2),matName(m))} ${matHave(h,m)}/${v}</i>`).join(" ")}</span></div>
         <button class="btn sm ${ok?"sealb":""}" type="button" data-adopt="${k}" ${ok?"":"disabled"}>거둔다</button></div>`}).join("");
     return `<section>${foldHead("pet","영수 · 아직 없음")}<div class="foldb" ${foldOpen("pet")?"":"hidden"}><p class="note" style="margin-top:0">영수를 한 마리 거둘 수 있다. 하루 한 번 약초를 먹이면 정이 쌓여 새끼 → 성수(정 30) → 영수(정 100)로 자란다. 귀한 약초일수록 정이 많이 오른다(흔함 3 · 보통 5 · 귀함 10 · 전설 20). 사흘 넘게 굶기면 시무룩해져 효과가 꺼진다.</p><div class="petl">${cards}</div></div></section>`}
   const P=PETS[p.k],S0=petStage(p),nx=PET_STAGE.find(x=>x[0]>(p.xp||0)),hungry=petHungry(p),fedToday=p.fed===dayKey()&&p.ate,[S,pal]=PET_PX[p.k];
@@ -5337,7 +5544,7 @@ function worldTab(){
         <p class="note" style="margin:6px 0 0">${a?`${busyText[a]} 떠날 수 없다. `:poor?"여비가 모자라다. ":""}거쳐 가는 곳마다 역참 삯·주막 밥값으로 ${silverTxt(FAR_FEE)}이 든다. 길에서 큰비를 만나거나 말이 지치면 늦어지고, 도적을 만나면 은자를 털릴 수도 있다(이기면 오히려 번다). 중간에 발길을 돌리면 마지막으로 지난 곳에 멈춘다.${hasCart?` <b>표국 마차</b>는 빌린 값이 한 구간 몫이라 구간이 하나 늘 때마다 ${silverTxt(cartLegCost(h))}을 더 낸다(여비는 표국이 치른다). 표사가 호위해 도적에게 털리지 않고, 말이 지칠 일도 없다. 큰비는 피할 수 없다.`:""}</p></div>`}}
   }
   regionBox+=(focus===h.loc?regionSectBox(focus)+ililBox(h)+shopGroup("생업 · 일하고 거두기",jobBox(h)+natureHub(h))+shopGroup("가게 · 사고 고치기",stableBox(h)+innHub(h)):"")+`</div>`;
-  return `${nemBox(h)}${happenBox(h)}${invBox(h)}${questBox(h)}<section><div class="label">지도</div>${escortCard(h)}${mapSvg()}
+  return `${nemBox(h)}${happenBox(h)}${invBox(h)}${questBox(h)}${gihaengBox(h)}<section><div class="label">지도</div>${escortCard(h)}${mapSvg()}
     <p class="note">지역을 누르면 정보가 보이고, 이어진 곳이면 바로 떠날 수 있다.</p>${regionBox}${caravanBox(h)}</section>
     ${travelBox?`<section style="margin-top:20px">${travelBox}</section>`:""}
     <section><div class="label">사건</div>${missionBox()}${journalList()}</section>`;
@@ -5464,7 +5671,7 @@ function bind(){
   $("#hname")?.addEventListener("keydown",e=>{if(e.key==="Enter")create()});
   on("#trainBtn",startTrain); on("#promoteBtn",promote); on("#allocBtn",commitAlloc);
   on("#finBtn",()=>finishTrain(false)); on("#cxBtn",()=>{confirmCancel=true;render()}); on("#cxNo",()=>{confirmCancel=false;render()}); on("#cxYes",()=>finishTrain(true));
-  on("#goBtn",()=>startTravel(dest));document.querySelectorAll("[data-adopt]").forEach(b=>b.onclick=()=>adoptPet(b.dataset.adopt));
+  on("#goBtn",()=>startTravel(dest));bindGh();document.querySelectorAll("[data-adopt]").forEach(b=>b.onclick=()=>adoptPet(b.dataset.adopt));
   on("#petFeed",()=>feedPet(document.getElementById("petHerb")?.value));on("#petBye",()=>{petBye=true;render()});on("#petByeNo",()=>{petBye=false;render()});on("#petByeYes",releasePet);on("#escDrop",dropEscort);on("#escGive",()=>{const h=structuredClone(me),t=deliverEscort(h,Date.now());if(t){save(h);toast(t)}});
   document.querySelectorAll("[data-esc]").forEach(b=>b.onclick=()=>takeEscort(b.dataset.esc));document.querySelectorAll("[data-escgo]").forEach(b=>b.onclick=()=>{dest=b.dataset.escgo;tab="world";render()});on("#stipBtn",claimStipend);on("#farBtn",()=>startFar(dest,false));on("#farCart",()=>startFar(dest,true)); on("#arriveBtn",arrive);
   on("#abBtn",()=>{confirmAbort=true;render()}); on("#abNo",()=>{confirmAbort=false;render()}); on("#abYes",cancelTravel);
