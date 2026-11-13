@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261113142249">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261113170655">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -698,6 +698,9 @@ section.inv.mini::after{font-size:70px;bottom:-16px;right:-2px}
 .itemrow.locked{box-shadow:inset 3px 0 0 #c9952e}
 
 .smn{display:block;font-size:11px;color:var(--muted,#8a8378)}
+
+.inhq{margin:8px 0 6px;padding:10px 12px;border-radius:var(--r-s,8px);background:rgba(176,56,42,.07);box-shadow:inset 3px 0 0 var(--seal,#b0382a)}
+.inhq p{margin:0 0 8px;font-size:13px;line-height:1.55}
 </style>
 
 <div class="wrap">
@@ -4706,7 +4709,7 @@ const enhChance=it=>Math.min(100,Math.round((ENH[it.plus]*Math.pow(.9,it.grade)+
 const enhCost=it=>(it.plus+1)*2;
 const SUCC=["망치가 내려칠 때마다 불꽃이 튄다. 담금질한 쇠가 푸르게 울었다.","{i|에} 새 기운이 스며든다. 손에 착 감긴다.","쩡! 맑은 소리와 함께 {i|의} 결이 한층 단단해졌다."];
 const FAILT=["쩌억— 불길한 소리. 강화석만 재가 되어 흩어졌다.","기운이 엇나가 튕겨 나왔다. {i|은} 그대로다.","담금질 물이 끓어 넘쳤다. 이번엔 실패다."];
-let gsel="weapon", gmsg=null, gconfirm=null, gmsgSeq=0, gmsgShown=0;
+let gsel="weapon", gmsg=null, gconfirm=null, gmsgSeq=0, gmsgShown=0, ginh=null;
 /* ───────── 장비 등급: 절정부터 소굴·관문·어려움 탐문에서 등급 장비가 나온다 ───────── */
 const RAR=[{n:"일반"},{n:"고급"},{n:"희귀"},{n:"전설"}];
 const GOPT={atk:{n:"공격",u:"%",r:[0,[3,5],[5,8],[8,12]]},hp:{n:"체력",u:"%",r:[0,[4,6],[6,10],[10,15]]},def:{n:"방어",u:"%",r:[0,[5,8],[8,12],[12,18]]},
@@ -4811,8 +4814,10 @@ function gearTab(){
   const bag=h.bag.length?h.bag.map((x,i)=>{const cur=h.gear[x.slot],inh=cur&&cur.plus>1&&Math.floor(cur.plus/2)>x.plus;
     return `<div class="itemrow ${x.lock?"locked":""}"><div><b>${lockTag(x)}${rarTag(x)}${esc(x.name)}${x.plus?` <em>+${x.plus}</em>`:""}</b>${x.opts?.length?`<div class="gopt r${x.rar}">${optLine(x)}</div>`:""}<div class="gs">${SLOTS[x.slot]} · ${gradeLine(x)}</div>
       <div class="gst">${statLine(x)} · 지금 것보다 ${diffLine(x)}</div></div>
+      ${ginh===i?`<div class="inhq"><p><b>계승할까?</b> 지금 낀 ${josa(esc(cur.name)+" +"+cur.plus,"의")} 강화 기운 절반을 이어받아 ${esc(x.name)}${josa(x.name,"이").slice(x.name.length)} <b>${josa("+"+Math.floor(cur.plus/2),"이")}</b> 되고, ${esc(cur.name)}${josa(cur.name,"은").slice(cur.name.length)} <b>+0</b>으로 행낭에 들어간다. 되돌릴 수 없다.</p>
+        <div class="row"><button class="btn sm sealb" type="button" data-eqi="${i}">계승한다</button><button class="btn sm ghost" type="button" data-inhno>그만둔다</button></div></div>`:""}
       <div class="acts">${gconfirm===i?`<button class="btn sm sealb" type="button" data-salv="${i}">녹여서 강화석 ${x.grade+1+Math.floor(x.plus/2)}개</button><button class="btn sm ghost" type="button" data-salvno>그만두기</button>`
-        :`<button class="btn sm" type="button" data-eq="${i}">장착</button>${inh&&!cur.lock?`<button class="btn sm sealb" type="button" data-eqi="${i}">계승하며 장착 · +${Math.floor(cur.plus/2)}</button>`:""}${x.lock?"":`<button class="btn sm ghost" type="button" data-salvq="${i}">녹이기</button>`}<button class="btn sm ghost" type="button" data-lockb="${i}">${x.lock?"잠금 풀기":"잠그기"}</button>`}</div></div>`}).join("")
+        :`<button class="btn sm" type="button" data-eq="${i}">장착</button>${inh&&!cur.lock&&ginh!==i?`<button class="btn sm sealb" type="button" data-inhq="${i}">계승하며 장착 · +${Math.floor(cur.plus/2)}</button>`:""}${x.lock?"":`<button class="btn sm ghost" type="button" data-salvq="${i}">녹이기</button>`}<button class="btn sm ghost" type="button" data-lockb="${i}">${x.lock?"잠금 풀기":"잠그기"}</button>`}</div></div>`}).join("")
     :`<p class="empty">행낭에 장비가 없다. 사건을 대성공으로 해결할수록 장비가 나올 확률이 높다.</p>`;
   return `<section><div class="label">착용 중 · 공격력 ${d.atk} · 방어력 ${d.def}</div><div class="gslots">${card("weapon")}${card("armor")}${card("acc")}</div>${forge}</section>
     <section><div class="label">행낭의 장비 · ${h.bag.length}/20</div><div class="items">${bag}</div>
@@ -5554,7 +5559,8 @@ function bind(){
   document.querySelectorAll("[data-gsel]").forEach(b=>b.addEventListener("click",()=>{gsel=b.dataset.gsel;render()}));
   on("#enhBtn",()=>enhance(gsel)); on("#unequipBtn",()=>unequip(gsel));
   document.querySelectorAll("[data-eq]").forEach(b=>b.addEventListener("click",()=>equip(+b.dataset.eq,false)));
-  document.querySelectorAll("[data-eqi]").forEach(b=>b.addEventListener("click",()=>equip(+b.dataset.eqi,true)));
+  document.querySelectorAll("[data-eqi]").forEach(b=>b.addEventListener("click",()=>{ginh=null;equip(+b.dataset.eqi,true)}));
+  document.querySelectorAll("[data-inhq]").forEach(b=>b.addEventListener("click",()=>{ginh=+b.dataset.inhq;gconfirm=null;render()}));document.querySelectorAll("[data-inhno]").forEach(b=>b.addEventListener("click",()=>{ginh=null;render()}));
   document.querySelectorAll("[data-salvq]").forEach(b=>b.addEventListener("click",()=>{gconfirm=+b.dataset.salvq;render()}));
   document.querySelectorAll("[data-salv]").forEach(b=>b.addEventListener("click",()=>salvage(+b.dataset.salv)));
   document.querySelectorAll("[data-lockb]").forEach(b=>b.addEventListener("click",()=>toggleLock("bag",b.dataset.lockb)));document.querySelectorAll("[data-lockg]").forEach(b=>b.addEventListener("click",()=>toggleLock("gear",b.dataset.lockg)));
