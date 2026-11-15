@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261116024000">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261116032500">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -929,15 +929,15 @@ section.fort.pop .fortseal{animation:fortpop .7s cubic-bezier(.2,1.6,.4,1)}
 .huntaim p{margin:0 0 8px;font-size:15px}.huntaim.t2{border-color:color-mix(in srgb,var(--seal) 45%,transparent)}.huntaim.t3{border-color:#c9952e;box-shadow:0 0 0 2px color-mix(in srgb,#c9952e 25%,transparent)}
 .hbar{position:relative;height:30px;border-radius:999px;background:linear-gradient(90deg,var(--line-2),var(--line),var(--line-2));overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.15)}
 .hbar .hz{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--seal) 30%,transparent);border-left:2px solid var(--seal);border-right:2px solid var(--seal)}
-.hbar .hm{position:absolute;top:3px;bottom:3px;width:6px;margin-left:-3px;border-radius:3px;background:var(--ink);box-shadow:0 0 0 2px var(--paper);animation:huntmove linear infinite;left:0}
+.hbar .hm{position:absolute;top:3px;bottom:3px;width:6px;margin-left:-3px;border-radius:3px;background:var(--ink);box-shadow:0 0 0 2px var(--paper);left:0;transition:none!important;animation:none!important}
 @keyframes huntmove{0%{left:0}50%{left:100%}100%{left:0}}
 .btn.huntfire{min-height:52px;min-width:140px;font-size:18px;letter-spacing:.2em}
-@media (prefers-reduced-motion:reduce){.hbar .hm{animation:huntmove linear infinite!important}}
 
 /* ───────── 고묘도굴 ───────── */
 section.tomb{margin-top:18px;padding:14px 16px;border-radius:var(--r);background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow)}
 section.tomb.live{border-color:color-mix(in srgb,#8a6a2e 50%,transparent);background:color-mix(in srgb,#8a6a2e 5%,var(--card))}
-section.tomb.inv{border-color:color-mix(in srgb,var(--seal) 40%,transparent)}
+section.tomb.tinv{border-color:color-mix(in srgb,var(--seal) 40%,transparent)}
+section.tomb.tinv p{color:var(--ink)}
 .tmems{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
 .tmem{font-size:13px;padding:3px 10px;border-radius:999px;background:var(--card2)}.tmem small{color:var(--ink-3)}.tmem.ko{opacity:.5;text-decoration:line-through}
 .tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-width:360px;margin:10px auto 6px;padding:8px;border-radius:10px;background:#2b2420;box-shadow:inset 0 2px 8px rgba(0,0,0,.5)}
@@ -988,6 +988,11 @@ button.tc.go em{position:absolute;top:3px;right:4px;font-style:normal;font-size:
 .lgdie.t-b b{border-color:#8a5a2e;box-shadow:2px 3px 0 #8a5a2e}.lgdie.t-a b{border-color:#2f7f8a;box-shadow:2px 3px 0 #2f7f8a}
 .fortline{margin:16px 0 0;padding:8px 12px;border-radius:var(--r-s);background:color-mix(in srgb,var(--fc,var(--seal)) 7%,var(--card));border:1px solid color-mix(in srgb,var(--fc,var(--seal)) 30%,transparent);font-size:13.5px;color:var(--ink-2)}
 .fortline b{font-family:var(--f-brush);font-weight:400;color:var(--fc,var(--seal));margin-right:4px;font-size:16px}
+
+/* 행낭 정렬 단추 */
+.bagsort{gap:6px;margin:0 0 6px}
+/* 컴퓨터: 지도가 화면 높이를 넘지 않게 */
+@media (min-width:600px){.mapbox .map{max-height:min(64vh,560px)}}
 </style>
 
 <div class="wrap">
@@ -4558,7 +4563,8 @@ const HUNT_WX={snow:{wolf:2.5,snowleo:2},fog:{fox:2.5,gold:1},rain:{boar:2,pheas
 const HUNT_DAY=5,HUNT_N=Object.keys(HUNTDB).length;
 const HUNT_ZONE=[.25,.19,.14,.09],HUNT_SPEED=[950,780,640,520];
 const huntUsed=h=>h.huntDay?.day===dayKey()?h.huntDay.n:0;
-let huntState=null,huntTimer=null,huntLast=null,hDexOpen=false;
+let huntState=null,huntTimer=null,huntLast=null,hDexOpen=false,huntRaf=0;
+function huntAnim(){cancelAnimationFrame(huntRaf);const step=()=>{const el=document.getElementById("huntMark");if(!el||huntState?.phase!=="aim")return;el.style.left=(huntPos(huntState)*100).toFixed(2)+"%";huntRaf=requestAnimationFrame(step)};huntRaf=requestAnimationFrame(step)}
 function huntTable(h){const wx=weatherOf(h.loc),cat=fortCatch(h);
   return Object.entries(HUNTDB).filter(([,a])=>(!a[3]||a[3].includes(h.loc))&&(!a[4]||a[4].includes(wx))).map(([k,a])=>{let w=a[2];if(a[3])w*=1.4;w*=HUNT_WX[wx]?.[k]||1;if(a[1]>=2)w*=cat;return [k,w]})}
 function huntRoll(h){const t=huntTable(h),tot=t.reduce((a,x)=>a+x[1],0);let r=Math.random()*tot;for(const [k,w] of t){if((r-=w)<0)return k}return "rabbit"}
@@ -4584,7 +4590,7 @@ function huntBox(h){const used=huntUsed(h),left=Math.max(0,HUNT_DAY-used),wx=wea
   if(s?.phase==="track")stage=`<div class="fishpond wait"><span>발자국을 따라 숲으로 든다…</span></div><button class="btn" type="button" disabled>숨을 죽인다</button>`;
   else if(s?.phase==="aim"){const A=HUNTDB[s.k],el=Date.now()-s.t0;
     stage=`<div class="huntaim t${A[1]}"><p>앞에 <b>${A[0]}</b>${pj(A[0],"이")} 나타났다! <span class="tag">${HUNT_TIER[A[1]]}</span></p>
-      <div class="hbar" aria-hidden="true"><i class="hz" style="left:${(s.z0*100).toFixed(1)}%;width:${((s.z1-s.z0)*100).toFixed(1)}%"></i><i class="hm" style="animation-duration:${2*s.P}ms;animation-delay:-${el}ms"></i></div>
+      <div class="hbar" aria-hidden="true"><i class="hz" style="left:${(s.z0*100).toFixed(1)}%;width:${((s.z1-s.z0)*100).toFixed(1)}%"></i><i class="hm" id="huntMark" style="left:${(huntPos(s)*100).toFixed(2)}%"></i></div>
       <p class="note" style="margin:6px 0 0">움직이는 표시가 붉은 칸에 들어올 때 쏜다. 5초 안에 쏘지 않으면 달아난다.</p></div>
       <button class="btn sealb huntfire" type="button" id="huntShoot">쏜다!</button>`}
   else stage=`<div class="fishpond"><span>${huntLast?esc(huntLast.text):"바람이 나뭇잎을 흔든다. 어딘가 짐승의 기척이 있다."}</span></div>${left>0?`<button class="btn sealb" type="button" id="huntGo">사냥 나간다 · 오늘 ${left}/${HUNT_DAY}</button>`:`<p class="note" style="margin:6px 0 0">오늘 사냥은 다 했다. 자정에 다시 나갈 수 있다.</p>`}`;
@@ -4746,7 +4752,7 @@ function tombView(){const T=myTomb(),h=me;
     <div class="row" style="margin-top:10px"><button class="btn sealb" type="button" id="tombClaim">챙긴 것을 나눠 갖는다</button></div><p class="note">함께 들어간 사람은 모두 같은 몫을 받는다 (기절했으면 절반).</p></section>`;
   return `<section class="tomb"><div class="label">고묘</div><p class="note">닫힌 고묘다.</p><button class="btn ghost" type="button" id="tombLeave">나온다</button></section>`}
 function tombTop(h){let out="";if(h.tomb)out+=tombView();
-  if(!h.tomb){for(const T of tombInvites())out+=`<section class="tomb inv"><div class="label">고묘도굴 초대</div><p><b>${esc(T.ownerName)}</b>${pj(T.ownerName,"이")} ${REGIONS[T.region].n}의 고묘에 함께 들어가자고 한다. (${T.members.length}/${TOMB_MAX}) 동행은 어디에 있든 따라 들어간다.</p>
+  if(!h.tomb){for(const T of tombInvites())out+=`<section class="tomb tinv"><div class="label">고묘도굴 초대</div><p><b>${esc(T.ownerName)}</b>${pj(T.ownerName,"이")} ${REGIONS[T.region].n}의 고묘에 함께 들어가자고 한다. (${T.members.length}/${TOMB_MAX}) 동행은 어디에 있든 따라 들어간다.</p>
     <div class="row"><button class="btn sealb" type="button" data-tjoin="${T.id}">합류한다</button><button class="btn ghost" type="button" data-tno="${T.id}">거절한다</button></div></section>`}
   if(tombMsg&&!h.tomb)out+=`<div class="fishpond" style="margin-top:12px"><span>${esc(tombMsg)}</span></div>`;return out}
 function tmapBox(h){const L=tmapsOf(h);if(!L.length)return "";
@@ -5912,6 +5918,11 @@ function statLine(it){const s=itemStats(it);return [s.atk?`공격 +${s.atk}`:"",
 const gradeLine=it=>`${REALMS[it.grade].n}급 · ${it.slot==="acc"?STATS[it.stat].n+" 장신구":SPEC[it.spec].n}${it.sect?` · ${SECTS[it.sect].n} 전용`:""}`;
 function gearSum(h){const o={atk:0,def:0,nei:0,wai:0,shen:0};for(const k in SLOTS){const s=itemStats(h.gear?.[k]);for(const x in s)o[x]+=s[x]}return o}
 function effStats(h){const g=gearSum(h),M=manorBonus(h),m=rbStatM(h),pp=petBonus(h),b=k=>Math.round(h.stats[k]*m*(1+(pp[k]||0)));return {nei:b("nei")+g.nei+M.nei,wai:b("wai")+g.wai+M.wai,shen:b("shen")+g.shen+M.shen}}
+/* 행낭 정렬: 종류순(무기→의복→장신구, 같은 종류 안에서는 희귀도·재질·강화 높은 것부터) 또는 희귀도순(같으면 종류순) */
+const BAG_SLOT={weapon:0,armor:1,acc:2};
+function bagSort(k){const h=structuredClone(me);if(!h.bag?.length)return;const sl=x=>BAG_SLOT[x.slot]??9,rr=x=>x.rar||0,gr=x=>x.grade||0,pl=x=>x.plus||0;
+  h.bag.sort(k==="rar"?(a,b)=>rr(b)-rr(a)||sl(a)-sl(b)||gr(b)-gr(a)||pl(b)-pl(a):(a,b)=>sl(a)-sl(b)||rr(b)-rr(a)||gr(b)-gr(a)||pl(b)-pl(a));
+  gconfirm=null;ginh=null;save(h);toast(k==="rar"?"희귀도순으로 정리했다":"종류순으로 정리했다")}
 function gainItem(h,it){if(h.bag.length>=20){const n=it.grade+1+(it.rar||0)*2;h.items.stone+=n;return `${rarName(it)} (행낭이 가득 차 강화석 ${n}개로 녹임)`}h.bag.push(it);return rarName(it)}
 function rollDrop(h,tier){
   if(Math.random()*100>=[25,12,5][tier]) return null;
@@ -5979,7 +5990,7 @@ function gearTab(){
         :`<button class="btn sm" type="button" data-eq="${i}">장착</button>${inh&&!cur.lock&&ginh!==i?`<button class="btn sm sealb" type="button" data-inhq="${i}">계승하며 장착 · +${Math.floor(cur.plus/2)}</button>`:""}${x.lock?"":`<button class="btn sm ghost" type="button" data-salvq="${i}">녹이기</button>`}<button class="btn sm ghost" type="button" data-lockb="${i}">${x.lock?"잠금 풀기":"잠그기"}</button>`}</div></div>`}).join("")
     :`<p class="empty">행낭에 장비가 없다. 사건을 대성공으로 해결할수록 장비가 나올 확률이 높다.</p>`;
   return `<section><div class="label">착용 중 · 공격력 ${d.atk} · 방어력 ${d.def}</div><div class="gslots">${card("weapon")}${card("armor")}${card("acc")}</div>${forge}</section>
-    <section><div class="label">행낭의 장비 · ${h.bag.length}/20</div><div class="items">${bag}</div>
+    <section><div class="label">행낭의 장비 · ${h.bag.length}/20</div>${h.bag.length>1?`<div class="row bagsort"><span class="note" style="margin:0">정렬</span><button class="btn sm ghost" type="button" data-bagsort="slot">종류순 (무기·의복·장신구)</button><button class="btn sm ghost" type="button" data-bagsort="rar">희귀도순</button></div>`:""}<div class="items">${bag}</div>
     <p class="note">강화 계승: 강화된 장비를 새 장비로 바꿀 때 강화 수치의 절반을 이어 줄 수 있다. 이어 준 옛 장비는 +0이 된다.</p></section>${workshop(h)}${kitchen(h)}`;
 }
 
@@ -6757,10 +6768,11 @@ function bind(){
   on("#dexBtn",()=>{dexOpen=!dexOpen;render()});on("#fishCast",fishCast);document.querySelectorAll("[data-innt]").forEach(b=>b.onclick=()=>{innTab=b.dataset.innt;render()});document.querySelectorAll("[data-natt]").forEach(b=>b.onclick=()=>{natTab=b.dataset.natt;render()});on("#mEdit",()=>{manorEdit=true;manorDraft={...(me.mpos||{})};manorSel=null;render()});on("#mCancel",()=>{manorEdit=false;manorDraft=null;manorSel=null;render()});on("#mSave",manorSaveArr);
   on("#mFlip",()=>{if(!manorSel)return;const P=mposOf(me,manorSel,manorDraft);manorDraft={...manorDraft,[manorSel]:[P[0],P[1],!P[2]]};render()});
   on("#mReset",()=>{if(!manorSel)return;const d={...manorDraft};delete d[manorSel];manorDraft=d;render()});manorWire();on("#ililClaim",ililClaim);on("#attBtn",attClaim);on("#festBtn",festClaim);on("#fortBtn",fortDraw);
-  on("#huntGo",huntGo);{const b=$("#huntShoot");if(b)b.addEventListener("pointerdown",e=>{e.preventDefault();huntShoot(false)})}on("#hDexBtn",()=>{hDexOpen=!hDexOpen;render()});
+  on("#huntGo",huntGo);if(huntState?.phase==="aim")huntAnim();{const b=$("#huntShoot");if(b)b.addEventListener("pointerdown",e=>{e.preventDefault();huntShoot(false)})}on("#hDexBtn",()=>{hDexOpen=!hDexOpen;render()});
   document.querySelectorAll("[data-cook]").forEach(b=>b.addEventListener("click",()=>cook(b.dataset.cook)));
   document.querySelectorAll("[data-cleather]").forEach(b=>b.addEventListener("click",()=>craftLeather(b.dataset.cleather)));
   document.querySelectorAll("[data-chide]").forEach(s=>s.addEventListener("change",()=>{craftHide[s.dataset.chide]=s.value;render()}));
+  document.querySelectorAll("[data-bagsort]").forEach(b=>b.addEventListener("click",()=>bagSort(b.dataset.bagsort)));
   on("#adSummon",adSummon);on("#adFinish",adFinish);{const a=$("#adTarget");if(a)a.addEventListener("change",()=>{adTarget=a.value})}
   on("#lgJoin",lgJoin);on("#lgCancel",lgCancel);on("#lgDice",lgDice);on("#lgClaim",lgClaim);
   on("#tombStart",tombStart);on("#tombLeave",tombLeave);on("#tombClaim",tombClaim);
