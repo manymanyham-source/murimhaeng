@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261116023500">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261116024000">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -4819,7 +4819,10 @@ function lgDuel(a,b,seed){const R=seeded(seed),P={a:{hp:DUEL_HP,lw:null,h:a},b:{
     else{const wk=DSTANCE[A].beat===B?"a":"b",lk=wk==="a"?"b":"a",ws=wk==="a"?A:B,rd=P[wk].lw===ws;P[lk].hp-=rd?DUEL_READ:DUEL_WIN;P[wk].lw=ws;P[lk].lw=null;
       if(lines.length<3)lines.push(fill(DS_WIN[ws][Math.floor(R()*DS_WIN[ws].length)],{x:P[wk].h.name,y:P[lk].h.name}))}}
   const win=P.a.hp===P.b.hp?R()<.5:P.a.hp>P.b.hp;return {win,lines}}
-const lgStat=(o,k)=>{try{return effStats(o)[k]||0}catch(e){return o?.stats?.[k]||0}};
+/* 겨루기는 능력치 숫자가 아니라 성향(그 능력치가 내 내공·외공·신법 합에서 차지하는 비율)으로 한다. 경지·레벨과 상관없다.
+   비율 차이만큼 승률이 기울고(차이 10%p마다 15%p, 20%~80% 사이), 주사위(1~100)로 판정한다 */
+const lgRatio=(o,k)=>{const s=o?.stats||{},t=(s.nei||0)+(s.wai||0)+(s.shen||0);return t>0?(s[k]||0)/t:1/3};
+const lgOdds=(a,b)=>Math.max(.2,Math.min(.8,.5+(a-b)*1.5));
 const LG_STATN={wai:"외공",nei:"내공",shen:"신법"};
 async function lgDice(){if(lgBusy||!me)return;const lv=lgLive();if(!lv){toast("판은 토·일요일 21시~22시에만 열린다.");return}
   const w=lgWeek(),d=lv.d;if(!lgOf(me,w)){toast("이번 주 친선에 신청하지 않았다.");return}
@@ -4849,9 +4852,9 @@ async function lgDice(){if(lgBusy||!me)return;const lv=lgLive();if(!lv){toast("�
       else if(K==="even"){const r=1+Math.floor(Math.random()*6);ok=r%2===0;why=`땅 주사위 ${r}${ok?" (짝수)":" (홀수)"}`}
       else if(K==="duel"){const o=holder||(foes.length?pickOne(foes).o:null);if(!o){ok=true;why="겨룰 상대가 없어 그대로 깃발을 꽂았다"}
         else{const r=lgDuel(h,o,Date.now()%2147483647);ok=r.win;duelWith={o,r,id:ppl.find(p=>p.o===o)?.id};why=`${josa(o.name,"과")} 논검 ${ok?"승리":"패배"}`}}
-      else{const k=K,mine=lgStat(h,k),pool=holder?[holder]:foes.length?foes.map(p=>p.o):ppl.filter(p=>lgDay(p.L,d).rolls>0||p.id===myId()).map(p=>p.o),
-        tgt=pool.reduce((a,o)=>a+lgStat(o,k),0)/Math.max(1,pool.length),A=mine*(.75+Math.random()*.5),B=tgt*(.75+Math.random()*.5);ok=A>=B;
-        why=`${LG_STATN[k]} 겨루기 ${Math.round(A)} : ${Math.round(B)}${holder?` (${holder.name})`:""}`}
+      else{const k=K,mine=lgRatio(h,k),pool=holder?[holder]:foes.length?foes.map(p=>p.o):ppl.filter(p=>lgDay(p.L,d).rolls>0||p.id===myId()).map(p=>p.o),
+        tgt=pool.reduce((a,o)=>a+lgRatio(o,k),0)/Math.max(1,pool.length),odds=lgOdds(mine,tgt),roll=1+Math.floor(Math.random()*100);ok=roll<=Math.round(odds*100);
+        why=`${LG_STATN[k]} 성향 ${Math.round(mine*100)}% : ${Math.round(tgt*100)}%${holder?` (${holder.name})`:" (상대 패 평균)"} · 승률 ${Math.round(odds*100)}% · 주사위 ${roll}`}
       ev.cap={cell:pos,ok,kind:K,steal};
       if(ok){gain(steal?5:3,`${why} · ${nm}${steal?`을 ${LG_TEAM[foeTeam].n} 패에게서 빼앗았다`:`에 깃발을 꽂았다`}`);bump(h,"lgCap")}
       else out.push(`${why} · ${nm}${pj(nm,"을")} 차지하지 못했다`)}}
@@ -4891,7 +4894,7 @@ function lgBoard(w,d){const ppl=lgPeople(w),at={},myL=lgOf(me,w),own=lgOwners(w,
     <p class="lgsub">${sub}</p>
     ${lgLast&&lv?`<div class="lgdie ${lgLast.die?"":"rest"} t-${LG_TEAM[lgLast.team]?.c||"a"}"><b>${lgLast.die||"休"}</b><span>${lgLast.cell?esc(lgLast.cell):""}</span></div>`:""}</div></div>`}
 const lgRules=()=>`<p class="note"><b>월~금</b> 신청 → <b>토요일 0시</b> 신청자를 청룡·백호 두 패로 반씩 무작위로 나눔 → <b>토·일 21시~22시</b> 판이 열린다. 두 패가 <b>번갈아 한 명씩</b> 굴린다(패 안에서는 덜 굴린 사람이 먼저, 인원이 적은 패는 한 사람이 여러 번 굴린다). 여럿이 동시에 누르면 한 사람만 굴린 것으로 친다. 차례인 패가 60초 동안 안 굴리면 차례가 넘어간다.<br>
-  지역 칸(땅) 12곳은 칸마다 차지하는 조건이 다르다: 주사위 4 이상, 짝수, 외공·내공·신법 겨루기(상대 패 땅이면 그 땅을 차지한 사람과, 빈 땅이면 상대 패 평균과), 논검. 상대 패 땅도 같은 조건으로 빼앗는다. 새 땅 +3, 빼앗으면 +5, 우리 땅에 서면 +2.
+  지역 칸(땅) 12곳은 칸마다 차지하는 조건이 다르다: 주사위 4 이상, 짝수, 외공·내공·신법 겨루기, 논검. 겨루기는 능력치 숫자가 아니라 <b>성향</b>(그 능력치가 내 내공·외공·신법 합에서 차지하는 비율)으로 한다. 비율이 높을수록 승률이 오르지만(20%~80%) 주사위로 뒤집힐 수 있어 경지와 상관없이 누구나 이길 수 있다. 상대 패 땅이면 그 땅을 차지한 사람과, 빈 땅이면 상대 패 평균과 겨룬다. 상대 패 땅도 같은 조건으로 빼앗는다. 새 땅 +3, 빼앗으면 +5, 우리 땅에 서면 +2.
   땅이 아닌 칸에서 상대 패와 마주치거나 비무대에 서면 논검을 벌이고, 진 사람은 다음 차례를 쉰다. 절해고도에 서면 다음 두 차례 동안 6이 나와야 빠져나온다.<br>
   <b>22시</b>에 닫힐 때 가진 땅을 센다. <b>일요일 22시</b>에 토·일 땅 수 합으로 승패를 낸다(같으면 활약도 합).</p>`;
 function leagueTab(){const h=me,c=lgClock(),w=lgWeek(),L=lgOf(h,w),lv=lgLive(),U=lgUnclaimed(h);
