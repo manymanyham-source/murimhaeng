@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261116032500">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261116034500">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -993,6 +993,15 @@ button.tc.go em{position:absolute;top:3px;right:4px;font-style:normal;font-size:
 .bagsort{gap:6px;margin:0 0 6px}
 /* 컴퓨터: 지도가 화면 높이를 넘지 않게 */
 @media (min-width:600px){.mapbox .map{max-height:min(64vh,560px)}}
+
+/* 큰 고묘 */
+.tgrid.g4{max-width:400px;gap:5px}.tgrid.g5{max-width:430px;gap:4px;padding:6px}
+.tgrid.g4 .tc b{font-size:20px}.tgrid.g5 .tc b{font-size:17px}
+.tgrid.g4 .tc span,.tgrid.g5 .tc span{font-size:10px}.tgrid.g5 .tc{padding:2px}
+.tgrid.g5 button.tc.go i,.tgrid.g4 button.tc.go i{font-size:10px;bottom:1px}
+@media (max-width:420px){.tgrid.g5 .tc span{display:none}.tgrid.g5 .tc.here span{display:block}}
+.tsz{font-style:normal;font-size:11px;padding:1px 6px;border-radius:999px;background:var(--seal);color:#fff;margin-left:4px;vertical-align:2px}
+.frow.bigmap{border-left:3px solid var(--seal);padding-left:8px}
 </style>
 
 <div class="wrap">
@@ -4644,45 +4653,57 @@ function leatherRows(h){return Object.entries(LEATHER).map(([slot,R])=>{const g=
    고묘는 3×3 방. 입구(아래 가운데)에서 네 걸음을 걷는다. 혼자 또는 무리와 셋까지. 갈 길은 다수결, 10초 안에 아무도 안 고르면 운에 맡긴다.
    판은 동행 소굴과 같은 곳(lairs/)에 둔다. kind:"tomb" 이고 상태 이름이 달라 소굴 쪽에서는 보이지 않는다 */
 const TMAP_MAX=5,TOMB_MAX=3,TOMB_STEPS=4,TOMB_WAIT=10e3;
+/* 고묘 크기: 3×3이 대부분. 드물게 4×4(5%, 다섯 걸음), 아주 드물게 5×5(1%, 여덟 걸음). 큰 고묘일수록 보물이 크다 */
+const TOMB_SIZE={3:{steps:4,p:0,n:"고묘",rest:{gold:1,trap:2,gather:2,relic:1,guard:1,tunnel:1}},
+  4:{steps:5,p:.05,n:"큰 고묘",rest:{gold:1,trap:4,gather:3,relic:2,guard:2,tunnel:1,none:2}},
+  5:{steps:8,p:.01,n:"황릉",rest:{gold:1,trap:6,gather:5,relic:3,guard:3,tunnel:2,none:4}}};
+const tombN=x=>TOMB_SIZE[x?.n]?x.n:3,tombDoor=n=>(n-1)*n+Math.floor(n/2),NUMK=["","한","두","세","네","다섯","여섯","일곱","여덟","아홉","열","열한","열두"];
+const stepTxt=k=>`${NUMK[k]||k} 걸음`;
+const tombSizeRoll=()=>{const r=Math.random();return r<TOMB_SIZE[5].p?5:r<TOMB_SIZE[5].p+TOMB_SIZE[4].p?4:3};
 const TOMB_CELL={door:{n:"입구",ch:"門"},gold:{n:"보물 상자",ch:"寶"},trap:{n:"함정",ch:"險"},gather:{n:"약재·광맥",ch:"採"},relic:{n:"부장품",ch:"物"},guard:{n:"석상 수호자",ch:"守"},tunnel:{n:"비밀 통로",ch:"道"},none:{n:"빈 방",ch:"·"}};
 const TOMB_COL=["왼쪽 날개","가운데 회랑","오른쪽 날개"];
 const tmapsOf=h=>(h?.tmaps||[]).filter(m=>REGIONS[m.r]);
 function tmapDrop(h,ch){if(Math.random()>=ch)return "";const regs=Object.keys(REGIONS).filter(k=>!REGIONS[k].minRealm||h.realm>=REGIONS[k].minRealm),r=pickOne(regs);
   if(tmapsOf(h).length>=TMAP_MAX){addSilver(h,100);return `낡은 보물지도를 주웠지만 지도통이 가득 차 팔았다 (${silverTxt(100)})`}
-  h.tmaps=[...tmapsOf(h),{id:Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36),r,t:Date.now()}];bump(h,"tmap");return `보물지도를 얻었다! (${REGIONS[r].n}의 고묘)`}
+  const n=tombSizeRoll();h.tmaps=[...tmapsOf(h),{id:Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36),r,t:Date.now(),...(n>3?{n}:{})}];bump(h,"tmap");
+  return n>3?`보물지도를 얻었다!! 지도가 유난히 크다 — ${REGIONS[r].n}의 ${TOMB_SIZE[n].n} (${n}×${n})`:`보물지도를 얻었다! (${REGIONS[r].n}의 고묘)`}
 let tombs={},tombBusy=false,tombMsg=null;
 const myTomb=()=>me?.tomb?(lairRuns[me.tomb]?.kind==="tomb"?lairRuns[me.tomb]:null):null;
 const tombInvites=()=>Object.values(lairRuns).filter(T=>T.kind==="tomb"&&T.status==="tlobby"&&(T.invitees||[]).includes(myId())&&!T.members.includes(myId())&&!(me?.tombNo||{})[T.id]&&Date.now()-(T.updated||0)<10*60e3);
 const tombAlive=T=>T.members.filter(id=>(T.hp?.[id]??100)>0);
-const tombNb=p=>{const r=Math.floor(p/3),c=p%3,o=[];if(r>0)o.push([p-3,"위"]);if(c>0)o.push([p-1,"왼쪽"]);if(c<2)o.push([p+1,"오른쪽"]);if(r<2)o.push([p+3,"아래"]);return o};
+const tombNb=(p,n=3)=>{const r=Math.floor(p/n),c=p%n,o=[];if(r>0)o.push([p-n,"위"]);if(c>0)o.push([p-1,"왼쪽"]);if(c<n-1)o.push([p+1,"오른쪽"]);if(r<n-1)o.push([p+n,"아래"]);return o};
 async function tombEdit(id,check,fn){if(tombBusy)return false;tombBusy=true;
   try{if(!(await LS.lease(id)))return false;const f=await LS.get(id);if(!f||!check(f))return false;if(fn(f)===false)return false;await LS.set(id,f);return true}
   catch(e){return false}finally{setTimeout(()=>tombBusy=false,250)}}
 function tombOpen(mapId,withParty){const h=structuredClone(me),m=tmapsOf(h).find(x=>x.id===mapId);if(!m)return;
   if(h.loc!==m.r||h.travel){toast(`${REGIONS[m.r].n}에 있어야 지도를 펼 수 있다.`);return}if(activity(h)){toast(`${busyText[activity(h)]} 고묘에 들 수 없다.`);return}
-  const R=seeded(Date.now()%2147483647),rest=["gold","trap","trap","gather","gather","relic","guard","tunnel"];for(let i=rest.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[rest[i],rest[j]]=[rest[j],rest[i]]}
-  const cells=[...rest.slice(0,7),"door",rest[7]],gold=cells.indexOf("gold");
+  const n=tombN(m),Z=TOMB_SIZE[n],door=tombDoor(n),R=seeded(Date.now()%2147483647),rest=Object.entries(Z.rest).flatMap(([k,c])=>Array(c).fill(k));
+  for(let i=rest.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[rest[i],rest[j]]=[rest[j],rest[i]]}
+  const cells=[...rest.slice(0,door),"door",...rest.slice(door)];
+  {const far=n===5?4:n===4?3:0,dist=q=>Math.abs(Math.floor(q/n)-Math.floor(door/n))+Math.abs(q%n-door%n),g=cells.indexOf("gold");
+    if(dist(g)<far){const ok=cells.map((c,i)=>i).filter(i=>cells[i]!=="door"&&dist(i)>=far),t=ok[Math.floor(R()*ok.length)];[cells[g],cells[t]]=[cells[t],cells[g]]}}
+  const gold=cells.indexOf("gold");
   const inv=withParty&&mode==="db"?realMates().slice(0,TOMB_MAX-1).map(o=>o._id):[],id="tomb-"+myId().replace(/[^A-Za-z0-9_-]/g,"").slice(0,40)+"-"+Date.now().toString(36);
   const T={id,kind:"tomb",status:inv.length?"tlobby":"twalk",owner:myId(),ownerName:h.name,region:m.r,mapId:m.id,invitees:inv,members:[myId()],names:{[myId()]:h.name},realm:h.realm,
-    cells,pos:7,seen:[7],step:0,max:TOMB_STEPS,votes:{},deadline:inv.length?0:sNow()+TOMB_WAIT,hp:{[myId()]:100},hint:gold%3,hx:gold,
-    loot:{silver:0,stone:0,mats:{},herb:0,clue:0,gold:0,guard:0},log:[{k:"sec",x:`${REGIONS[m.r].n}의 고묘`},{k:"amb",x:`지도에 그려진 바위 틈을 밀자 오래 닫혀 있던 돌문이 열렸다. 지도에는 보물이 묻힌 방에 붉은 X가 그려져 있다. 함정이 어디 있는지는 지도에 없다.`}],created:Date.now()};
-  if(!inv.length)T.log.push({k:"amb",x:"횃불을 들고 입구 방에 들어섰다. 네 걸음 안에 보물을 찾아 나와야 한다."});
-  h.tmaps=tmapsOf(h).filter(x=>x.id!==m.id);h.tomb=id;bump(h,"tomb");addLog(h,`${REGIONS[m.r].n}에서 보물지도를 펴고 고묘에 들어섰다.${inv.length?" 무리를 불렀다.":""}`);
+    n,cells,pos:door,seen:[door],step:0,max:Z.steps,votes:{},deadline:inv.length?0:sNow()+TOMB_WAIT,hp:{[myId()]:100},hint:gold%n%3,hx:gold,
+    loot:{silver:0,stone:0,mats:{},herb:0,clue:0,gold:0,guard:0},log:[{k:"sec",x:`${REGIONS[m.r].n}의 ${Z.n}${n>3?` · ${n}×${n}`:""}`},{k:"amb",x:`${n===5?"산 하나가 통째로 무덤이다. ":n===4?"여느 고묘보다 훨씬 넓다. ":""}지도에 그려진 바위 틈을 밀자 오래 닫혀 있던 돌문이 열렸다. 지도에는 보물이 묻힌 방에 붉은 X가 그려져 있다. 함정이 어디 있는지는 지도에 없다.`}],created:Date.now()};
+  if(!inv.length)T.log.push({k:"amb",x:`횃불을 들고 입구 방에 들어섰다. ${stepTxt(Z.steps)} 안에 보물을 찾아 나와야 한다.`});
+  h.tmaps=tmapsOf(h).filter(x=>x.id!==m.id);h.tomb=id;bump(h,"tomb");addLog(h,`${REGIONS[m.r].n}에서 보물지도를 펴고 ${Z.n}에 들어섰다.${inv.length?" 무리를 불렀다.":""}`);
   tombMsg=null;LS.set(id,T);save(h);if(tab!=="world"){tab="world";try{localStorage.setItem("murim-tab",tab)}catch(e){}}render()}
 async function tombJoin(id){if(activity(me)){toast(`${busyText[activity(me)]} 합류할 수 없다.`);return}
   const ok=await tombEdit(id,T=>T.status==="tlobby"&&T.members.length<TOMB_MAX&&!T.members.includes(myId()),T=>{T.members.push(myId());T.names[myId()]=me.name;T.hp[myId()]=100;T.log.push({k:"amb",x:`${josa(me.name,"이")} 고묘 어귀에 합류했다.`});
     if(T.members.length>=Math.min(TOMB_MAX,1+(T.invitees||[]).length))tombGo(T)});
   if(!ok){toast("이미 출발했거나 자리가 찼어요.");return}const h=structuredClone(me);h.tomb=id;addLog(h,`${josa(heroById(lairRuns[id]?.owner)?.name||"동행","을")} 따라 고묘에 들어섰다.`);save(h)}
 function tombNo(id){const h=structuredClone(me);h.tombNo={...(h.tombNo||{}),[id]:1};save(h)}
-function tombGo(T){T.status="twalk";T.step=0;T.votes={};T.deadline=sNow()+TOMB_WAIT;T.log.push({k:"amb",x:`${T.members.length}명이 횃불을 들고 입구 방에 들어섰다. 네 걸음 안에 보물을 찾아 나와야 한다.`})}
+function tombGo(T){T.status="twalk";T.step=0;T.votes={};T.deadline=sNow()+TOMB_WAIT;T.log.push({k:"amb",x:`${T.members.length}명이 횃불을 들고 입구 방에 들어섰다. ${stepTxt(T.max)} 안에 보물을 찾아 나와야 한다.`})}
 async function tombStart(){const T=myTomb();if(!T||T.owner!==myId())return;await tombEdit(T.id,f=>f.status==="tlobby",f=>tombGo(f))}
 async function tombVote(to){const T=myTomb();if(!T||T.status!=="twalk")return;if((T.hp?.[myId()]??100)<=0){toast("기절해서 고를 수 없다.");return}
-  if(!tombNb(T.pos).some(([q])=>q===to))return;const st=T.step;
+  if(!tombNb(T.pos,tombN(T)).some(([q])=>q===to))return;const st=T.step;
   await tombEdit(T.id,f=>f.status==="twalk"&&f.step===st,f=>{f.votes={...(f.votes||{}),[myId()]:to};if(tombAlive(f).every(id=>f.votes[id]!=null))tombMove(f)})}
 function maybeResolveTomb(){const T=myTomb();if(!T||T.status!=="twalk"||tombBusy)return;
   const all=tombAlive(T).every(id=>T.votes?.[id]!=null);if(!all&&sNow()<T.deadline)return;
   const st=T.step;if(!mayTry("t:"+T.id+":"+st))return;tombEdit(T.id,f=>f.status==="twalk"&&f.step===st,f=>tombMove(f)).catch(()=>{})}
-function tombMove(T){const nb=tombNb(T.pos),V=T.votes||{},nm=id=>T.names?.[id]||heroById(id)?.name||"동행",log=T.log,R=Math.random;
+function tombMove(T){const nb=tombNb(T.pos,tombN(T)),V=T.votes||{},nm=id=>T.names?.[id]||heroById(id)?.name||"동행",log=T.log,R=Math.random;
   const tally={};Object.entries(V).forEach(([id,q])=>{if(nb.some(([x])=>x===q)&&(T.hp?.[id]??100)>0)tally[q]=(tally[q]||0)+1});
   let to,why;const top=Math.max(0,...Object.values(tally));
   if(!top){to=pickOne(nb)[0];why="아무도 고르지 않아 횃불이 기우는 쪽으로 걸었다"}
@@ -4706,8 +4727,8 @@ function tombMove(T){const nb=tombNb(T.pos),V=T.votes||{},nm=id=>T.names?.[id]||
       if(win){T.loot.guard++;const s=Math.round(120*(1+RL*.3));T.loot.silver+=s;log.push({k:"ev2",sub:"act",x:`석상 수호자가 눈을 뜨고 일어섰다! ${al.length>1?"함께 맞서 ":""}석상을 부숴 냈다. 석상 안에서 오래된 병기가 나왔다 (장비 1) · ${silverTxt(s)}`})}
       else log.push({k:"ev2",sub:"hit",x:`석상 수호자가 눈을 뜨고 일어섰다! 돌주먹을 당해 내지 못하고 물러섰다. ${al.map(id=>hit(id,35)).join(" · ")}`})}
     else if(kind==="tunnel"){T.max++;log.push({k:"ev2",sub:"act",x:"벽 너머로 바람이 새어 나온다. 비밀 통로다! 한 걸음을 더 걸을 수 있다."})}
-    else if(kind==="gold"){T.loot.gold=1;const s=Math.round((600+R()*600)*(1+RL*.2));T.loot.silver+=s;T.loot.stone+=8;T.loot.clue+=3;
-      log.push({k:"end",x:`보물 상자다!! 뚜껑을 열자 금빛이 쏟아진다. ${silverTxt(s)} · 강화석 8 · 비급 단서 3 · 귀한 장비 1`})}}
+    else if(kind==="gold"){const n=tombN(T),G=n===5?3:n===4?1.8:1,st=Math.round(8*G),cl=Math.round(3*G),eq=n===5?2:1;T.loot.gold=eq;const s=Math.round((600+R()*600)*(1+RL*.2)*G);T.loot.silver+=s;T.loot.stone+=st;T.loot.clue+=cl;
+      log.push({k:"end",x:`${n===5?"황릉의 보고다!!! 금은보화가 산처럼 쌓여 있다.":n===4?"커다란 보물 궤다!! 뚜껑을 열자 금빛이 넘쳐흐른다.":"보물 상자다!! 뚜껑을 열자 금빛이 쏟아진다."} ${silverTxt(s)} · 강화석 ${st} · 비급 단서 ${cl} · 귀한 장비 ${eq}${n===5?" (전설 확정 1)":""}`})}}
   const alive=tombAlive(T);
   if(!alive.length||T.step>=T.max){T.status="tdone";T.end=Date.now();T.faint=!alive.length;
     log.push({k:"sec",x:"고묘를 나서며"},{k:"amb",x:!alive.length?"모두 쓰러졌다. 정신을 차려 보니 입구 밖이다. 챙긴 것의 절반만 남았다.":T.loot.gold?"보물을 안고 무너지기 시작한 고묘를 빠져나왔다.":"횃불이 다 타 버렸다. 보물은 찾지 못했지만 챙긴 것을 들고 밖으로 나왔다."})}
@@ -4719,19 +4740,19 @@ function tombClaim(){const T=myTomb(),h=structuredClone(me);if(!T||T.status!=="t
   for(const [k,v] of Object.entries(L.mats||{})){const q=Math.max(1,Math.round(v*half));h.mats={...(h.mats||{}),[k]:((h.mats||{})[k]||0)+q};got.push(`${matN(k)} ${q}`)}
   if(L.herb){h.items.herb=(h.items.herb||0)+L.herb;got.push(`약초 ${L.herb}`)}if(L.clue){h.items.clue+=L.clue;got.push(`비급 단서 ${L.clue}`)}
   for(let i=0;i<(L.guard||0);i++)got.push("장비 「"+gainItem(h,setRar(makeItem(pickOne(["weapon","armor","acc"]),Math.min(6,h.realm),pickOne(SPECS)),Math.random()<.35?2:1))+"」");
-  if(L.gold){got.push("장비 「"+gainItem(h,setRar(makeItem(pickOne(["weapon","armor","acc"]),Math.min(6,h.realm),pickOne(SPECS)),Math.random()<.25?3:2))+"」");bump(h,"tombGold")}
-  const x=Math.round(expPerHour(h.level)*1.5);applyExp(h,x);got.push(`경험치 +${x}`);
+  if(L.gold){const big=tombN(T),k=Math.max(1,L.gold|0);for(let i=0;i<k;i++)got.push("장비 「"+gainItem(h,setRar(makeItem(pickOne(["weapon","armor","acc"]),Math.min(6,h.realm),pickOne(SPECS)),big===5&&i===0?3:Math.random()<(big===4?.4:.25)?3:2))+"」");bump(h,"tombGold")}
+  const x=Math.round(expPerHour(h.level)*(tombN(T)===5?3:tombN(T)===4?2:1.5));applyExp(h,x);got.push(`경험치 +${x}`);
   h.tombDone={...Object.fromEntries(Object.entries(h.tombDone||{}).slice(-20)),[T.id]:1};h.tomb=null;
   tombMsg=`고묘에서 챙겨 나온 것: ${got.join(" · ")}${half<1?" (기절해서 절반)":""}`;addLog(h,tombMsg);save(h);toast(L.gold?"보물을 찾았다!":"고묘에서 나왔다")}
 async function tombLeave(){const T=myTomb(),h=structuredClone(me);
   if(T&&T.status==="tlobby"&&T.owner===myId()){await tombEdit(T.id,f=>f.status==="tlobby",f=>{f.status="tclosed";f.log.push({k:"amb",x:"지도 주인이 고묘 문을 다시 닫았다."})});
-    h.tmaps=[...tmapsOf(h),{id:T.mapId,r:T.region,t:Date.now()}].slice(0,TMAP_MAX);h.tomb=null;addLog(h,"고묘 문을 다시 닫았다. 지도는 돌려받았다.");save(h);return}
+    h.tmaps=[...tmapsOf(h),{id:T.mapId,r:T.region,t:Date.now(),...(tombN(T)>3?{n:tombN(T)}:{})}].slice(0,TMAP_MAX);h.tomb=null;addLog(h,"고묘 문을 다시 닫았다. 지도는 돌려받았다.");save(h);return}
   if(T&&T.status==="tlobby"){await tombEdit(T.id,f=>f.status==="tlobby",f=>{f.members=f.members.filter(x=>x!==myId());f.log.push({k:"amb",x:`${josa(me.name,"이")} 빠졌다.`})})}
   h.tomb=null;save(h)}
 const tombStale=T=>!T||T.status==="tclosed"||(T.status==="tlobby"&&Date.now()-(T.updated||0)>10*60e3)||(T.status==="twalk"&&Date.now()-(T.updated||0)>15*60e3);
-function tombGrid(T){const mine=T.status==="twalk"&&(T.hp?.[myId()]??100)>0,nb=T.status==="twalk"?tombNb(T.pos):[],V=T.votes||{};
+function tombGrid(T){const N=tombN(T),mine=T.status==="twalk"&&(T.hp?.[myId()]??100)>0,nb=T.status==="twalk"?tombNb(T.pos,N):[],V=T.votes||{};
   const cnt=q=>Object.values(V).filter(x=>x===q).length;
-  return `<div class="tgrid" role="group" aria-label="고묘 지도">${T.cells.map((c,i)=>{const here=i===T.pos,seen=T.seen.includes(i)||(T.status==="tdone"),n=nb.find(([q])=>q===i),col=(T.hx!=null?i===T.hx:i%3===T.hint)&&!seen;
+  return `<div class="tgrid g${N}" style="grid-template-columns:repeat(${N},1fr)" role="group" aria-label="고묘 지도 ${N}×${N}">${T.cells.map((c,i)=>{const here=i===T.pos,seen=T.seen.includes(i)||(T.status==="tdone"),n=nb.find(([q])=>q===i),col=(T.hx!=null?i===T.hx:i%3===T.hint)&&!seen;
     const lab=seen?TOMB_CELL[c].ch:col?(T.hx!=null?"✕":"?"):"";const sub=here?"우리":seen?TOMB_CELL[c].n:col?(T.hx!=null?"지도의 X":"붉은 점 줄"):"";
     const inner=`<b>${lab}</b><span>${sub}</span>${n&&cnt(i)?`<em>${cnt(i)}표</em>`:""}`;
     return n&&mine?`<button type="button" class="tc go ${seen?"seen":""} ${col?"hint":""} ${V[myId()]===i?"mine":""}" data-tvote="${i}" aria-label="${n[1]}으로">${inner}<i>${n[1]}</i></button>`
@@ -4740,11 +4761,11 @@ function tombView(){const T=myTomb(),h=me;
   if(!T){return h.tomb?`<section class="tomb"><div class="label">고묘</div><p class="note">고묘 기록을 불러오는 중이다… 계속 이러면 아래 단추로 나온다.</p><button class="btn ghost" type="button" id="tombLeave">고묘에서 나온다</button></section>`:""}
   const feed=`<div class="feedwrap" style="margin:12px -16px 0"><ul class="feed" id="tombFeed">${T.log.map(battleLine).join("")}</ul></div>`;
   const who=T.members.map(id=>`<span class="tmem ${(T.hp?.[id]??100)<=0?"ko":""}">${esc(T.names?.[id]||"동행")} <small>${T.hp?.[id]??100}</small></span>`).join("");
-  if(T.status==="tlobby"){const isO=T.owner===myId();return `<section class="tomb"><div class="label">고묘 어귀 · ${REGIONS[T.region].n}</div>
+  if(T.status==="tlobby"){const isO=T.owner===myId();return `<section class="tomb"><div class="label">${TOMB_SIZE[tombN(T)].n} 어귀 · ${REGIONS[T.region].n}${tombN(T)>3?` · ${tombN(T)}×${tombN(T)}`:""}</div>
     <p>${isO?"무리를 불렀다. 합류를 기다리거나 바로 들어갈 수 있다.":`${josa(esc(T.ownerName),"이")} 들어가기를 기다리는 중이다.`} 함께 갈 사람 ${T.members.length}/${TOMB_MAX}</p><div class="tmems">${who}</div>
     <div class="row" style="margin-top:10px">${isO?`<button class="btn sealb" type="button" id="tombStart">들어간다</button>`:""}<button class="btn ghost" type="button" id="tombLeave">${isO?"문을 닫는다 (지도 돌려받기)":"빠진다"}</button></div></section>`}
   if(T.status==="twalk"){const mine=(T.hp?.[myId()]??100)>0,voted=T.votes?.[myId()]!=null;
-    return `<section class="tomb live"><div class="label">고묘 · ${REGIONS[T.region].n} · ${T.step}/${T.max}걸음</div><div class="tmems">${who}</div>
+    return `<section class="tomb live"><div class="label">${TOMB_SIZE[tombN(T)].n} · ${REGIONS[T.region].n}${tombN(T)>3?` · ${tombN(T)}×${tombN(T)}`:""} · ${T.step}/${T.max}걸음</div><div class="tmems">${who}</div>
       ${tombGrid(T)}
       <p class="tq">${!mine?"기절했다. 동행이 고르는 대로 따라간다.":voted?`골랐다. 다른 사람을 기다린다 · <span data-suntil="${T.deadline}"></span>`:`어느 쪽으로 갈까? 문이 열린 방을 누른다 · <span data-suntil="${T.deadline}"></span> 안에 아무도 안 고르면 운에 맡긴다`}</p>
       <p class="note" style="margin:4px 0 0">${T.hx!=null?"지도의 붉은 <b>X</b>가 보물이 있는 방이다. 함정은 어디 있는지 모른다.":`지도의 붉은 점: 무덤의 <b>${TOMB_COL[T.hint]}</b>.`} 남은 걸음 ${T.max-T.step}.${T.members.length>1?" 길은 다수결, 표가 같으면 그중 하나를 운에 맡긴다.":""}</p>${feed}</section>`}
@@ -4752,14 +4773,14 @@ function tombView(){const T=myTomb(),h=me;
     <div class="row" style="margin-top:10px"><button class="btn sealb" type="button" id="tombClaim">챙긴 것을 나눠 갖는다</button></div><p class="note">함께 들어간 사람은 모두 같은 몫을 받는다 (기절했으면 절반).</p></section>`;
   return `<section class="tomb"><div class="label">고묘</div><p class="note">닫힌 고묘다.</p><button class="btn ghost" type="button" id="tombLeave">나온다</button></section>`}
 function tombTop(h){let out="";if(h.tomb)out+=tombView();
-  if(!h.tomb){for(const T of tombInvites())out+=`<section class="tomb tinv"><div class="label">고묘도굴 초대</div><p><b>${esc(T.ownerName)}</b>${pj(T.ownerName,"이")} ${REGIONS[T.region].n}의 고묘에 함께 들어가자고 한다. (${T.members.length}/${TOMB_MAX}) 동행은 어디에 있든 따라 들어간다.</p>
+  if(!h.tomb){for(const T of tombInvites())out+=`<section class="tomb tinv"><div class="label">고묘도굴 초대</div><p><b>${esc(T.ownerName)}</b>${pj(T.ownerName,"이")} ${REGIONS[T.region].n}의 ${TOMB_SIZE[tombN(T)].n}${tombN(T)>3?`(${tombN(T)}×${tombN(T)})`:""}에 함께 들어가자고 한다. (${T.members.length}/${TOMB_MAX}) 동행은 어디에 있든 따라 들어간다.</p>
     <div class="row"><button class="btn sealb" type="button" data-tjoin="${T.id}">합류한다</button><button class="btn ghost" type="button" data-tno="${T.id}">거절한다</button></div></section>`}
   if(tombMsg&&!h.tomb)out+=`<div class="fishpond" style="margin-top:12px"><span>${esc(tombMsg)}</span></div>`;return out}
 function tmapBox(h){const L=tmapsOf(h);if(!L.length)return "";
   return `<section><div class="label">보물지도 · ${L.length}/${TMAP_MAX}장</div><div class="flist">${L.map(m=>{const here=h.loc===m.r&&!h.travel;
-    return `<div class="frow"><div><b>${REGIONS[m.r].n}의 고묘</b><span>${here?"지도에 그려진 바위가 바로 근처에 있다.":`${REGIONS[m.r].n}에 가서 펴야 한다.`} 혼자 또는 무리와 셋까지 · 네 걸음</span></div>
+    const n=tombN(m);return `<div class="frow ${n>3?"bigmap":""}"><div><b>${REGIONS[m.r].n}의 ${TOMB_SIZE[n].n}${n>3?` <em class="tsz">${n}×${n}</em>`:""}</b><span>${here?"지도에 그려진 바위가 바로 근처에 있다.":`${REGIONS[m.r].n}에 가서 펴야 한다.`} 혼자 또는 무리와 셋까지 · ${stepTxt(TOMB_SIZE[n].steps)}</span></div>
       <div class="acts">${here?`<button class="btn sm sealb" type="button" data-topen="${m.id}">혼자 든다</button>${mode==="db"&&realMates().length?`<button class="btn sm" type="button" data-topenp="${m.id}">무리와 든다</button>`:""}`:`<button class="btn sm ghost" type="button" data-tgo="${m.r}">지도에서 보기</button>`}</div></div>`}).join("")}</div>
-    <p class="note">보물지도는 사건을 마치거나 채집·사냥을 하다 드물게 나온다. 고묘는 3×3 방이고 입구에서 네 걸음을 걷는다. 지도에 보물이 있는 방이 X로 그려져 있지만, 가는 길의 함정은 알려 주지 않는다.</p></section>`}
+    <p class="note">보물지도는 사건을 마치거나 채집·사냥을 하다 드물게 나온다. 고묘는 대개 3×3 방이고 입구에서 네 걸음을 걷는다. 아주 드물게 4×4 큰 고묘(다섯 걸음)나 5×5 황릉(여덟 걸음)이 나오는데, 함정도 많지만 보물이 훨씬 크다. 지도에 보물이 있는 방이 X로 그려져 있지만, 가는 길의 함정은 알려 주지 않는다.</p></section>`}
 
 /* ═════════════════ 무림맹 친선: 주말 저녁 한 시간의 점령전 ═════════════════
    월~금: 신청을 받는다. 토요일 0시에 신청자를 청룡·백호로 반씩 무작위로 나눈다(모두의 화면에서 같은 결과가 나오게 주 번호로 섞는다).
