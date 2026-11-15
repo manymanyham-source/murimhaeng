@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261116021500">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261116023500">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1344,6 +1344,20 @@ const pickOne=a=>a[Math.floor(Math.random()*a.length)];
 const sNow=()=>{try{return window.__murim?.now?window.__murim.now():Date.now()}catch(e){return Date.now()}};
 /* 관리자: 내 인물 고치기 (잘못 누른 시험 단추 되돌리기용) */
 let lv30Ask=false;
+/* ───── 관리자: 다른 사람 불러오기 · 하는 일 바로 끝내기 (시험용) ─────
+   그 사람의 인물 기록(heroes/아이디)을 직접 고쳐 쓴다. 그 사람 화면은 서버 기록을 받아 바로 바뀐다 */
+let adTarget="all",adBusy=false;
+const adPeople=()=>others.filter(o=>o._id&&!String(o._id).startsWith("fake-"));
+async function adminEdit(fn,label){if(!isOwner||mode!=="db"||adBusy)return;const L=adTarget==="all"?adPeople():adPeople().filter(o=>o._id===adTarget);if(!L.length){toast("고를 사람이 없어요.");return}
+  adBusy=true;let n=0;try{for(const o of L){const d=JSON.parse(JSON.stringify(o));delete d._id;delete d.journal;if(fn(d)===false)continue;addLog(d,`(관리자) ${label}`);
+    try{await db.doc("heroes/"+o._id).set(d);n++}catch(e){toast(`${o.name}의 기록을 고치지 못했어요. (권한)`)}}}finally{adBusy=false}
+  toast(n?`${L.length>1?`${n}명`:L[0].name} · ${label}`:"바꿀 것이 없었어요.")}
+const adSummon=()=>{const to=me.travel?me.travel.to:me.loc;adminEdit(d=>{if(d.loc===to&&!d.travel)return false;d.loc=to;d.travel=null},`${REGIONS[to].n}로 불려 왔다`)};
+const adFinish=()=>adminEdit(d=>{const now=Date.now();let any=false;for(const k of ["training","travel","mission","job"])if(d[k]&&d[k].end>now){d[k].start=Math.min(d[k].start,now-1000);d[k].end=now;any=true}return any?undefined:false},"하던 일이 바로 끝났다");
+function adminBox(){const L=adPeople();if(!isOwner||mode!=="db"||!L.length)return "";const act=o=>{const a=activity(o);return a?` · ${({train:"수련",travel:"이동",mission:"임무",job:"일",lair:"소굴",tomb:"고묘"})[a]||a}`:""};
+  return `<div class="fixbox"><b>다른 사람 · 관리자 (시험용)</b><p class="note" style="margin:2px 0 6px">고른 사람의 기록을 직접 고친다. 그 사람이 그 순간 무언가를 저장하면 덮어써질 수 있다.</p>
+    <div class="row"><select id="adTarget" aria-label="고칠 사람"><option value="all" ${adTarget==="all"?"selected":""}>모두 (${L.length}명)</option>${L.map(o=>`<option value="${esc(o._id)}" ${adTarget===o._id?"selected":""}>${esc(o.name)} · ${o.travel?`${REGIONS[o.travel.to]?.n||""}로 가는 중`:REGIONS[o.loc]?.n||""}${act(o)}</option>`).join("")}</select></div>
+    <div class="row"><button class="btn sm sealb" type="button" id="adSummon" ${adBusy?"disabled":""}>내 곳(${REGIONS[me.travel?me.travel.to:me.loc].n})으로 불러오기</button><button class="btn sm" type="button" id="adFinish" ${adBusy?"disabled":""}>하는 일 바로 끝내기</button></div></div>`}
 function fixBox(h){const g=k=>h.gear?.[k];const sel=(id,v,opts)=>`<select id="${id}">${opts.map((o,i)=>`<option value="${i}" ${i===v?"selected":""}>${o}</option>`).join("")}</select>`;
   const num=(id,v,w=64)=>`<input id="${id}" type="number" min="0" value="${v}" style="width:${w}px">`;
   return `<div class="fixbox"><b>내 인물 고치기 · 관리자</b><p class="note" style="margin:2px 0 6px">능력치는 장비·영수를 뺀 맨몸 수치다(인물 탭 숫자보다 조금 낮다). 정확히 모르면 능력치를 낮게 두고 남은 포인트에 넣어 다시 나눠도 된다.</p>
@@ -6385,7 +6399,7 @@ function heroView(){
     <button class="btn ghost" id="newIncBtn" type="button">이 지역 사건 다시 열기</button></div>
     ${h.mission?`<div class="row"><span>가상 동행 붙이기:</span>${["없음",...RELS].map(r=>`<button class="btn ghost" type="button" data-fake="${r}" style="padding:4px 10px;font-size:12px${(fakeMate?.rel||"없음")===r?";border-color:var(--ink);color:var(--ink)":""}">${r}</button>`).join("")}</div>`:""}
     <div class="row">
-    <button class="btn ghost" id="wipeBtn" type="button">${confirmWipe?"정말 지울까요? 한 번 더 누르면 지워집니다":"내 캐릭터 지우기"}</button></div>${isOwner?fixBox(h):""}</details>`:""}
+    <button class="btn ghost" id="wipeBtn" type="button">${confirmWipe?"정말 지울까요? 한 번 더 누르면 지워집니다":"내 캐릭터 지우기"}</button></div>${isOwner?fixBox(h)+adminBox():""}</details>`:""}
   </div>`;
 }
 function bannerView(){
@@ -6744,6 +6758,7 @@ function bind(){
   document.querySelectorAll("[data-cook]").forEach(b=>b.addEventListener("click",()=>cook(b.dataset.cook)));
   document.querySelectorAll("[data-cleather]").forEach(b=>b.addEventListener("click",()=>craftLeather(b.dataset.cleather)));
   document.querySelectorAll("[data-chide]").forEach(s=>s.addEventListener("change",()=>{craftHide[s.dataset.chide]=s.value;render()}));
+  on("#adSummon",adSummon);on("#adFinish",adFinish);{const a=$("#adTarget");if(a)a.addEventListener("change",()=>{adTarget=a.value})}
   on("#lgJoin",lgJoin);on("#lgCancel",lgCancel);on("#lgDice",lgDice);on("#lgClaim",lgClaim);
   on("#tombStart",tombStart);on("#tombLeave",tombLeave);on("#tombClaim",tombClaim);
   document.querySelectorAll("[data-tvote]").forEach(b=>b.addEventListener("click",()=>tombVote(+b.dataset.tvote)));
