@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261116213000">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261117003000">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -3078,14 +3078,16 @@ let duelFeedSt=null;
 /* ───────── 공지(무림맹 방문): 관리자만 쓰고 모두가 본다. 쓴 사람 이름 대신 [무림맹]으로 나온다 ─────────
    notices/<번호> = {title, body, t, pin} */
 const NOTICE_BY="무림맹";
-let notices={}, noticeDraft={title:"",body:"",pin:false}, noticeOpen=null, noticeBusy=false;
+let notices={}, noticeDraft={title:"",body:"",pin:false}, noticeOpen=null, noticeBusy=false, noticeEdit=null;
 const noticeList=()=>Object.entries(notices).map(([id,n])=>({...n,id})).sort((a,b)=>(b.pin?1:0)-(a.pin?1:0)||b.t-a.t);
 const noticeUnread=()=>noticeList().filter(n=>n.t>(me?.noticeSeen||0)).length;
 async function postNotice(){
   if(!isOwner||mode!=="db"||noticeBusy)return;const d=noticeDraft,title=d.title.trim().slice(0,80),body=d.body.trim().slice(0,3000);
   if(!title){toast("제목을 적어 주세요.");return}
-  const id="n"+Date.now().toString(36),doc={title,body,t:sNow(),pin:!!d.pin};noticeBusy=true;
-  try{await db.doc("notices/"+id).set(doc);notices[id]=doc;noticeDraft={title:"",body:"",pin:false};toast("공지를 내걸었습니다.");render()}
+  /* 고치기: 같은 번호에 덮어쓴다. 올린 때(t)는 그대로 두어 알림이 다시 가지 않고, '다시 알리기'를 고르면 t를 새로 해 모두에게 새 공지로 뜬다 */
+  const old=noticeEdit&&notices[noticeEdit],id=old?noticeEdit:"n"+Date.now().toString(36),
+    doc=old?{...old,title,body,pin:!!d.pin,et:sNow(),...(d.renotify?{t:sNow()}:{})}:{title,body,t:sNow(),pin:!!d.pin};noticeBusy=true;
+  try{await db.doc("notices/"+id).set(doc);notices[id]=doc;noticeDraft={title:"",body:"",pin:false};noticeEdit=null;toast(old?"공지를 고쳤습니다.":"공지를 내걸었습니다.");render()}
   catch(e){toast("올리지 못했어요. ("+(e?.code||e?.message||"오류")+")")}finally{noticeBusy=false}}
 async function delNotice(id){if(!isOwner||mode!=="db")return;try{await db.doc("notices/"+id).delete();delete notices[id];render();toast("공지를 내렸습니다.")}catch(e){toast("지우지 못했어요.")}}
 async function pinNotice(id){if(!isOwner||mode!=="db")return;const n=notices[id];if(!n)return;try{const d={...n,pin:!n.pin};await db.doc("notices/"+id).set(d);notices[id]=d;render()}catch(e){toast("바꾸지 못했어요.")}}
@@ -3144,16 +3146,18 @@ function bindQna(){if(tab!=="qna")return;
 function noticeTab(){
   const list=noticeList(),seen=me.noticeSeen||0;
   const items=list.length?list.map((n,i)=>{const open=noticeOpen===n.id;
-    return `<div class="mail notice ${n.t>seen?"new":""}"><button class="mailh" type="button" data-nopen="${n.id}"><b>${n.pin?`<span class="pin">고정</span>`:""}${esc(n.title)}</b><span>[${NOTICE_BY}] · ${hhmm(n.t)}</span></button>
+    return `<div class="mail notice ${n.t>seen?"new":""}"><button class="mailh" type="button" data-nopen="${n.id}"><b>${n.pin?`<span class="pin">고정</span>`:""}${esc(n.title)}</b><span>[${NOTICE_BY}] · ${hhmm(n.t)}${n.et?` · 고침 ${hhmm(n.et)}`:""}</span></button>
       ${open?`<div class="mailb"><p>${esc(n.body||"").replace(/\n/g,"<br>")}</p><p class="note sig" style="margin:0">— ${NOTICE_BY}</p>
-        ${isOwner&&mode==="db"?`<div class="row"><button class="btn ghost sm" type="button" data-npin="${n.id}">${n.pin?"고정 풀기":"맨 위에 고정"}</button><button class="btn ghost sm" type="button" data-ndel="${n.id}">공지 내리기</button></div>`:""}</div>`:""}</div>`}).join("")
+        ${isOwner&&mode==="db"?`<div class="row"><button class="btn ghost sm" type="button" data-nedit="${n.id}">고치기</button><button class="btn ghost sm" type="button" data-npin="${n.id}">${n.pin?"고정 풀기":"맨 위에 고정"}</button><button class="btn ghost sm" type="button" data-ndel="${n.id}">공지 내리기</button></div>`:""}</div>`:""}</div>`}).join("")
     :`<p class="empty">아직 내걸린 공지가 없다.</p>`;
-  const form=isOwner&&mode==="db"?`<section><div class="label">공지 내걸기 · 관리자</div>
+  const ed=noticeEdit&&notices[noticeEdit];
+  const form=isOwner&&mode==="db"?`<section id="noticeForm"><div class="label">${ed?`공지 고치기 · 「${esc(ed.title)}」`:"공지 내걸기"} · 관리자</div>
     <div class="mailf"><label>제목<input data-nd="title" maxlength="80" value="${esc(noticeDraft.title)}" placeholder="예: 10월 25일 새 판 안내"></label>
     <label>내용<textarea data-nd="body" rows="6" maxlength="3000" placeholder="모두에게 알릴 내용">${esc(noticeDraft.body)}</textarea></label>
     <label class="chk"><input type="checkbox" data-npinc ${noticeDraft.pin?"checked":""}> 맨 위에 고정</label>
-    <p class="note" style="margin:0">쓴 사람은 [${NOTICE_BY}]로 나온다. 내걸면 모두에게 알림이 간다.</p>
-    <div class="row"><button class="btn solid" type="button" id="noticePost" ${noticeBusy?"disabled":""}>내걸기</button></div></div></section>`:"";
+    ${ed?`<label class="chk"><input type="checkbox" data-nrenot ${noticeDraft.renotify?"checked":""}> 모두에게 다시 알리기 (새 공지처럼 알림이 간다)</label>`:""}
+    <p class="note" style="margin:0">쓴 사람은 [${NOTICE_BY}]로 나온다. ${ed?"고치면 제목 옆에 '고침'과 시각이 붙는다.":"내걸면 모두에게 알림이 간다."}</p>
+    <div class="row"><button class="btn solid" type="button" id="noticePost" ${noticeBusy?"disabled":""}>${ed?"고쳐 걸기":"내걸기"}</button>${ed?`<button class="btn ghost" type="button" id="noticeEditNo">고치기 그만두기</button>`:""}</div></div></section>`:"";
   const RM=window.__reads,rmL=RM?Object.entries(RM.by).sort((a,b)=>b[1]-a[1]):[],rmT=rmL.reduce((a,x)=>a+x[1],0);
   /* 최근 10분: 접속 때 한꺼번에 읽은 양을 빼고 본다 */
   const H=RM?.hist||[],base=H.length?H[Math.max(0,H.length-10)]:null,rmMin=base?(Date.now()-base.t)/60e3:0,
@@ -3173,6 +3177,9 @@ function bindNotice(){
   document.querySelectorAll("[data-nd]").forEach(i=>i.addEventListener("input",()=>noticeDraft[i.dataset.nd]=i.value));
   document.querySelectorAll("[data-npinc]").forEach(i=>i.addEventListener("change",()=>noticeDraft.pin=i.checked));
   on("#noticePost",postNotice);
+  document.querySelectorAll("[data-nedit]").forEach(b=>b.addEventListener("click",()=>{const n=notices[b.dataset.nedit];if(!n)return;noticeEdit=b.dataset.nedit;noticeDraft={title:n.title||"",body:n.body||"",pin:!!n.pin,renotify:false};render();setTimeout(()=>document.getElementById("noticeForm")?.scrollIntoView({behavior:"smooth",block:"start"}),50)}));
+  document.querySelectorAll("[data-nrenot]").forEach(i=>i.addEventListener("change",()=>noticeDraft.renotify=i.checked));
+  on("#noticeEditNo",()=>{noticeEdit=null;noticeDraft={title:"",body:"",pin:false};render()});
   if(tab==="notice"&&me&&mode==="db"&&!render.noticeSeenT){const top=noticeList().reduce((a,n)=>Math.max(a,n.t),0);
     if(top>(me.noticeSeen||0))render.noticeSeenT=setTimeout(()=>{render.noticeSeenT=null;const h=structuredClone(me);h.noticeSeen=top;save(h)},2000)}
 }
