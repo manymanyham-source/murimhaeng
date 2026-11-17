@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261117193000">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261118034000">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1676,14 +1676,14 @@ function simulate(h,role,B,quiet,rnd=Math.random){
    · 호신강기: 보스방에 사람이 셋보다 적으면 피해가 조금만 스며든다 (혼자 10%, 둘 20%)
    · 보스의 공격은 들어온 사람들의 맷집에 맞춰 세진다 (강타 한 번에 체력의 RD_SMASH)
    · 함께 들어가면 무리 전체가 준 피해를 사람 수로 똑같이 나눠 보스 체력을 깎는다 (탱커·힐러도 같은 몫)
-   · 한 사람 몫의 보스 체력은 셋이 함께 들어간 판 4~5번어치 */
-const RAID_MIN=3,RAID_AURA=[1,.1,.2];let RD_SMASH=.9,RD_CAP=1.1,RD_SHARE=2;
+   · 한 사람 몫의 보스 체력은 셋이 함께 들어간 판 7~11번어치 (사흘 동안 9번 들어갈 수 있다) */
+const RAID_MIN=3,RAID_AURA=[1,.1,.2];let RD_SMASH=.9,RD_CAP=1.1,RD_SHARE=4; /* 2026-11-18: 보스 체력 2배 (2→4). 이미 들어간 사람의 몫은 들어갈 때 정해져서, 다음 토벌부터 적용된다 */
 const raidAura=n=>n>=RAID_MIN?1:RAID_AURA[Math.max(1,n)];
 function raidAtk(L,party){const base=20+L*8,P=party.filter(x=>x.player||x.isMe);if(!P.length)return base;const eh=P.map(x=>(x.max||0)*(100+(x.def||0))/100);
   return Math.max(base,Math.min(RD_SMASH*eh.reduce((a,x)=>a+x,0)/P.length,RD_CAP*Math.min(...eh))/1.6)}
 /* 독은 방어를 무시하므로, 세진 공격을 그대로 쓰면 지나치다: 체력의 10%를 넘지 않게 */
 const raidPsn=(bAtk,a)=>Math.round(Math.min(bAtk*.3,(a.max||0)*.1));
-const raidShare=x=>x?.raid?.v===2?(x.raid.share||0):Math.round((x?.raid?.share||0)*RD_SHARE/7.5);
+const raidShare=x=>x?.raid?.v===2?(x.raid.share||0):Math.round((x?.raid?.share||0)*2/7.5);
 const raidPool=x=>x?.raid?.pool??x?.raid?.dmg??0;
 function raidCredit(h,personal,pool){const r=h.raid,base=r.pool??r.dmg??0;r.dmg=(r.dmg||0)+personal;r.pool=base+pool}
 function hpShareFor(h,role,B){let s=0;const R=seeded(h.level*7919+3);for(let i=0;i<20;i++)s+=simulate(h,role,B,true,R).dmg;return Math.round(s/20*RD_SHARE)}
