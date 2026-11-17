@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261117003000">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261117193000">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -3811,19 +3811,23 @@ const fishBase=h=>FISH_DAY+(furnLv(h,"pond")||0)+(happenHere("fishing",h.loc)?2:
 /* 미끼 더 사기: 오늘 횟수를 다 쓰면 은자로 한 번씩 더 던진다. 300냥부터 살 때마다 두 배, 자정에 초기화. 산 미끼는 30% 확률로 줄이 끊긴다 */
 const FISH_BUY=300,FISH_SNAP=.3;
 const fishBought=h=>h.fishBuy?.day===dayKey()?h.fishBuy.n:0,fishBuyCost=h=>FISH_BUY*2**fishBought(h);
-const fishCasts=h=>fishBase(h)+fishBought(h);
-function fishBuy(){const h=structuredClone(me),c=fishBuyCost(h);if(fishUsed(h)<fishCasts(h)||fishState)return;if((h.silver||0)<c){toast(`은자가 모자라다. (${silverTxt(c)})`);return}
-  h.silver-=c;h.fishBuy={day:dayKey(),n:fishBought(h)+1};addLog(h,`객잔에서 미끼를 더 샀다. (${silverTxt(c)})`);save(h);toast(`미끼를 샀다 · 한 번 더 던질 수 있다 (${silverTxt(c)})`)}
+/* 산 미끼는 따로 센다(left). 예전에는 '기본 횟수+산 횟수'로 셌는데, 대풍어 지역에서 더 던진 뒤 다른 곳으로 가면
+   기본 횟수가 줄어 산 미끼가 사라지는 일이 있었다 */
+const fishBuyLeft=h=>h.fishBuy?.day!==dayKey()?0:h.fishBuy.left??Math.max(0,fishBase(h)+h.fishBuy.n-fishUsed(h));
+const fishLeft=h=>Math.max(0,fishBase(h)-fishUsed(h))+fishBuyLeft(h);
+const fishCasts=h=>fishUsed(h)+fishLeft(h);
+function fishBuy(){const h=structuredClone(me),c=fishBuyCost(h);if(fishLeft(h)>0||fishState)return;if((h.silver||0)<c){toast(`은자가 모자라다. (${silverTxt(c)})`);return}
+  h.silver-=c;h.fishBuy={day:dayKey(),n:fishBought(h)+1,left:fishBuyLeft(h)+1};addLog(h,`객잔에서 미끼를 더 샀다. (${silverTxt(c)})`);save(h);toast(`미끼를 샀다 · 한 번 더 던질 수 있다 (${silverTxt(c)})`)}
 const fishUsed=h=>h.fishDay?.day===dayKey()?h.fishDay.n:0;
 let fishState=null,fishTimer=null;
 function fishTable(h){const wx=weatherOf(h.loc),W=WEATHER[wx],bloom=happenHere("fishing",h.loc);
   const t=Object.keys(FISHDB).filter(k=>fishOk(k,h.loc,wx)).map(k=>{const f=FISHDB[k];let w=f[2];if(h.buff?.bait&&f[3]>=2)w*=2;if(f[3]>=2)w*=fortCatch(h);if(f[4])w*=1.3;if(W.boost?.[k])w*=W.boost[k];if(bloom&&f[3]>=2)w*=3;return [k,w]});
   for(const [k,f] of Object.entries(FISH_JUNK))t.push([k,f[2]*(W.boost?.[k]||1)]);return t}
 function fishRoll(h){const t=fishTable(h),tot=t.reduce((a,x)=>a+x[1],0);let r=Math.random()*tot;for(const [k,w] of t){if((r-=w)<0)return k}return "bung"}
-function fishCast(){const h=me;if(h.travel){toast("길 위에서는 낚시할 수 없다.");return}if(fishUsed(h)>=fishCasts(h)){toast("오늘은 더 던질 수 없다.");return}if(fishState)return;
+function fishCast(){const h=me;if(h.travel){toast("길 위에서는 낚시할 수 없다.");return}if(fishLeft(h)<=0){toast("오늘은 더 던질 수 없다.");return}if(fishState)return;
   fishState={phase:"wait"};render();clearTimeout(fishTimer);fishTimer=setTimeout(()=>{fishState={phase:"bite",t:Date.now()};render();fishTimer=setTimeout(()=>fishPull(true),1500)},2000+Math.random()*5000)}
 function fishPull(late){clearTimeout(fishTimer);if(!fishState)return;const ph=fishState.phase,h=structuredClone(me);fishState=null;
-  const extra=fishUsed(h)>=fishBase(h);h.fishDay={day:dayKey(),n:fishUsed(h)+1};if(h.buff?.bait){h.buff.bait--;if(h.buff.bait<=0)delete h.buff.bait}
+  const extra=fishUsed(h)>=fishBase(h);if(extra&&h.fishBuy?.day===dayKey())h.fishBuy={...h.fishBuy,left:Math.max(0,fishBuyLeft(h)-1)};h.fishDay={day:dayKey(),n:fishUsed(h)+1};if(h.buff?.bait){h.buff.bait--;if(h.buff.bait<=0)delete h.buff.bait}
   if(ph!=="bite"||late){const msg=ph==="wait"?"너무 일찍 챘다. 고기가 놀라 달아났다.":"입질을 놓쳤다. 미끼만 사라졌다.";fishLast={ok:false,text:msg};save(h);return}
   if(extra&&Math.random()<FISH_SNAP){fishLast={ok:false,text:"묵직하게 걸렸는데… 산 미끼가 시원찮았는지 줄이 툭 끊어졌다."};save(h);return}
   const k=fishRoll(h);let text;
@@ -3845,7 +3849,7 @@ function fishSellBox(h){const L=Object.entries(h.fish||{}).filter(([k,v])=>v>0&&
 function fishSell(){const h=structuredClone(me),f=h.fish||{};let sum=0,n=0;const keep=new Set(Object.keys(FISHDB).filter(k=>FISHDB[k][3]>=2));
   for(const k in f){if(keep.has(k)||!f[k])continue;sum+=fishPrice(k)*f[k];n+=f[k];f[k]=0}if(!n){toast("팔 물고기가 없다. (귀함·전설 고기는 팔지 않고 남겨 둔다)");return}
   addSilver(h,sum);addLog(h,`객잔에 물고기 ${n}마리를 팔았다. (${silverTxt(sum)})`);save(h);toast(`물고기 ${n}마리 · ${silverTxt(sum)}`)}
-function fishBox(h,inner){if(h.travel)return "";const used=fishUsed(h),max=fishCasts(h),left=Math.max(0,max-used),ex=Object.keys(FISHDB).filter(k=>FISHDB[k][4]?.includes(h.loc)),bloom=happenHere("fishing",h.loc);
+function fishBox(h,inner){if(h.travel)return "";const used=fishUsed(h),max=fishCasts(h),left=fishLeft(h),ex=Object.keys(FISHDB).filter(k=>FISHDB[k][4]?.includes(h.loc)),bloom=happenHere("fishing",h.loc);
   const wk=weatherOf(h.loc),W=WEATHER[wk];
   const head=shopHead("fish",`${REGIONS[h.loc].n} 물가 · ${W.ch} ${W.n} · 오늘 ${left}/${max}번${bloom?" · 대풍어!":""}`);
   if(!inner&&!shopOpen.fish&&!fishState)return `<div class="shop">${head}</div>`;
@@ -4520,7 +4524,7 @@ function matSellBox(h,kind){const L=Object.entries(h.mats||{}).filter(([k,v])=>v
     <button class="btn sm ${t>=2?"ghost":"sealb"}" type="button" data-msell="${k}">판다</button></div>`}).join("")}</div>
     <div class="row" style="margin-top:8px"><button class="btn sm ghost" type="button" data-msall="${kind}">흔함·보통 재료 한꺼번에 팔기</button></div>`}
 let natTab="fish";
-function natureHub(h){if(h.travel)return "";const W=WEATHER[weatherOf(h.loc)],fl=Math.max(0,fishCasts(h)-fishUsed(h)),sl=STAMINA-stUsed(h),bloom=happenHere("fishing",h.loc);
+function natureHub(h){if(h.travel)return "";const W=WEATHER[weatherOf(h.loc)],fl=fishLeft(h),sl=STAMINA-stUsed(h),bloom=happenHere("fishing",h.loc);
   if(fishState)natTab="fish";if(huntState)natTab="hunt";const hl=Math.max(0,HUNT_DAY-huntUsed(h)),busy=fishState?"fish":huntState?"hunt":null;
   const head=shopHead("nature",`${REGIONS[h.loc].n} 산과 물가 · ${W.ch} ${W.n} · 낚시 ${fl}/${fishCasts(h)} · 사냥 ${hl}/${HUNT_DAY} · 활력 ${sl}/${STAMINA}${bloom?" · 대풍어!":""}`);
   if(!shopOpen.nature&&!busy)return `<div class="shop">${head}</div>`;
