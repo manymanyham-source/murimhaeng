@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261118034000">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261118220000">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1002,6 +1002,9 @@ button.tc.go em{position:absolute;top:3px;right:4px;font-style:normal;font-size:
 @media (max-width:420px){.tgrid.g5 .tc span{display:none}.tgrid.g5 .tc.here span{display:block}}
 .tsz{font-style:normal;font-size:11px;padding:1px 6px;border-radius:999px;background:var(--seal);color:#fff;margin-left:4px;vertical-align:2px}
 .frow.bigmap{border-left:3px solid var(--seal);padding-left:8px}
+
+/* 행낭에서 바로 강화 */
+.itemrow .bagforge{grid-column:1/-1;margin:4px 0 2px}
 </style>
 
 <div class="wrap">
@@ -5971,14 +5974,18 @@ function rollDrop(h,tier){
   if(tier===0&&Math.random()<.15) return makeItem("weapon",h.realm,null,{sect:Math.random()<.5?h.sect:pickOne(Object.keys(SECTS))});
   const slot=pickOne(["weapon","armor","acc"]);return makeItem(slot,h.realm,pickOne(SPECS));
 }
+/* 행낭 장비도 벗은 채로 강화할 수 있다. 행낭 칸 번호는 바뀔 수 있어 장비 내용으로 찾는다 */
+let gbag=null;
+const bagKey=x=>JSON.stringify(x);
+const bagFind=h=>gbag==null?-1:h.bag.findIndex(x=>bagKey(x)===gbag);
 function enhance(slot){
-  const h=structuredClone(me),it=h.gear[slot];if(!it)return;
+  const h=structuredClone(me),bi=slot==="bag"?bagFind(h):-1,it=slot==="bag"?h.bag[bi]:h.gear[slot];if(!it){if(slot==="bag"){gbag=null;render()}return}
   if(it.plus>=10){toast("이미 최고 강화입니다.");return}
   const cost=enhCost(it);if(h.items.stone<cost){toast(`강화석이 ${cost-h.items.stone}개 모자랍니다.`);return}
   const jr=!!h.buff?.enh,ch=Math.min(100,enhChance(it)+(jr?15:0)),before=statLine(it),target=it.plus+1;h.items.stone-=cost;bump(h,"enh");if(jr)delete h.buff.enh;
   if(Math.random()*100<ch){it.plus++;it.fails=0;gmsg={slot,ok:true,text:fill(pickOne(SUCC),{i:it.name}),tag:`+${it.plus} 성공`,sub:`${before} → ${statLine(it)}`};addLog(h,`${it.name} 강화 성공 · +${it.plus}`)}
   else{it.fails=(it.fails||0)+1;gmsg={slot,ok:false,text:fill(pickOne(FAILT),{i:it.name}),tag:`+${target} 실패`,sub:`강화석 ${cost}개 소모 · 다음 확률 +${it.fails}% (실패 보정)`};addLog(h,`${it.name} +${target} 강화 실패 · 강화석 ${cost}개 소모`)}
-  gmsg.n=++gmsgSeq; save(h);
+  gmsg.n=++gmsgSeq;if(slot==="bag")gbag=bagKey(it); save(h);
 }
 function equip(idx,inherit){
   const h=structuredClone(me),it=h.bag[idx];if(!it)return;const old=h.gear[it.slot];
@@ -6007,29 +6014,33 @@ function gearTab(){
   let forge;
   if(!it) forge=`<div class="forge"><p class="note" style="margin:0">${SLOTS[gsel]} 칸이 비어 있다. 행낭의 장비를 장착하면 여기서 강화할 수 있다.</p></div>`;
   else if(it.plus>=10) forge=`<div class="forge"><div class="kicker">강화 · ${esc(it.name)}</div><div class="fbig"><em>+10</em> 극에 달했다</div><p class="note" style="margin:0">더 이상 강화할 수 없다. 새 장비로 갈아탈 때 절반(+5)을 이어 줄 수 있다.</p></div>`;
-  else{const ch=enhChance(it),cost=enhCost(it),next={...it,plus:it.plus+1},lack=h.items.stone<cost;
-    forge=`<div class="forge"><div class="kicker">강화 · ${esc(it.name)}</div>
+  else forge=forgeBox(h,it,gsel);
+  function forgeBox(h,it,sl){const bagMode=sl==="bag";if(it.plus>=10)return `<div class="forge"><div class="kicker">강화 · ${esc(it.name)}</div><div class="fbig"><em>+10</em> 극에 달했다</div>${bagMode?`<div class="row"><button class="btn sm ghost" type="button" data-benhno>닫기</button></div>`:""}</div>`;
+    const ch=enhChance(it),cost=enhCost(it),next={...it,plus:it.plus+1},lack=h.items.stone<cost;
+    return `<div class="forge ${bagMode?"bagforge":""}"><div class="kicker">강화 · ${esc(it.name)}${bagMode?" · 행낭에 둔 채로":""}</div>
       <div class="fbig">+${it.plus} → <em>+${it.plus+1}</em></div>
       <dl><dt>성공 확률</dt><dd>${Math.min(100,ch+(h.buff?.enh?15:0))}%${it.fails?` <span class="note">(실패 보정 +${it.fails}% 포함)</span>`:""}${h.buff?.enh?` <span class="note">(정련석 +15% 포함)</span>`:""}</dd>
         <dt>필요 강화석</dt><dd>${cost}개 <span class="${lack?"down":"note"}">(가진 것 ${h.items.stone}개)</span></dd>
         <dt>성공하면</dt><dd>${statLine(it)} → ${statLine(next)}</dd>
         <dt>실패하면</dt><dd>강화석만 사라지고 다음 확률 +1%</dd></dl>
-      ${gmsg&&gmsg.slot===gsel?`<div class="fres ${gmsg.ok?"":"fail"} ${gmsg.n!==gmsgShown?"anim":""}" data-n="${gmsg.n}">▸ ${esc(gmsg.text)} <b>【${gmsg.tag}】</b><span class="note" style="display:block;margin:2px 0 0">${gmsg.sub}</span></div>`:""}
-      <div class="row"><button class="btn ${lack?"":"sealb"}" id="enhBtn" type="button" ${lack?"disabled":""}>망치를 든다 · 강화 시도</button>
-        <button class="btn ghost" id="unequipBtn" type="button">벗기</button><button class="btn ghost" type="button" data-lockg="${gsel}">${it.lock?"잠금 풀기":"잠그기"}</button></div>
+      ${gmsg&&gmsg.slot===sl?`<div class="fres ${gmsg.ok?"":"fail"} ${gmsg.n!==gmsgShown?"anim":""}" data-n="${gmsg.n}">▸ ${esc(gmsg.text)} <b>【${gmsg.tag}】</b><span class="note" style="display:block;margin:2px 0 0">${gmsg.sub}</span></div>`:""}
+      <div class="row">${bagMode?`<button class="btn ${lack?"":"sealb"}" data-enhbag type="button" ${lack?"disabled":""}>망치를 든다 · 강화 시도</button><button class="btn ghost" type="button" data-benhno>닫기</button>`
+        :`<button class="btn ${lack?"":"sealb"}" id="enhBtn" type="button" ${lack?"disabled":""}>망치를 든다 · 강화 시도</button>
+        <button class="btn ghost" id="unequipBtn" type="button">벗기</button><button class="btn ghost" type="button" data-lockg="${sl}">${it.lock?"잠금 풀기":"잠그기"}</button>`}</div>
       ${lack?`<p class="note" style="margin:0">강화석은 사건 해결, 길 위의 만남, 장비 녹이기로 모은다.</p>`:""}
-      ${it.sect?`<p class="note" style="margin:0">전용 효과: ${sectItemOf(it).fx} (${it.sect===h.sect?"소굴·관문 전투에서 적용 · 논검 제외":`${SECTS[it.sect].n} 문하만 효과를 받는다`})</p>`:""}</div>`}
+      ${!bagMode&&it.sect?`<p class="note" style="margin:0">전용 효과: ${sectItemOf(it).fx} (${it.sect===h.sect?"소굴·관문 전투에서 적용 · 논검 제외":`${SECTS[it.sect].n} 문하만 효과를 받는다`})</p>`:""}</div>`}
   if(it?.opts?.length){const cost=REROLL_COST[it.rar];forge+=`<div class="forge"><div class="kicker">기운 다듬기 · ${RAR[it.rar].n} ${esc(it.name)}</div>
     <p class="note" style="margin:0 0 8px">한 줄씩 은자를 내고 다시 굴린다. 한 줄에 ${silverTxt(cost)}. 다른 줄과 같은 옵션은 나오지 않는다.</p>
     <div class="rrl">${it.opts.map((o,i)=>`<div class="rr"><span class="gopt r${it.rar}">${optTxt(o)}</span><button class="btn sm" type="button" data-reroll="${i}" ${(h.silver||0)<cost?"disabled":""}>다시 · ${cost}냥</button></div>`).join("")}</div>
     <p class="note" style="margin:6px 0 0">가진 돈 ${silverTxt(h.silver||0)}</p></div>`}
   const bag=h.bag.length?h.bag.map((x,i)=>{const cur=h.gear[x.slot],inh=cur&&cur.plus>1&&Math.floor(cur.plus/2)>x.plus;
     return `<div class="itemrow ${x.lock?"locked":""}"><div><b>${lockTag(x)}${rarTag(x)}${esc(x.name)}${x.plus?` <em>+${x.plus}</em>`:""}</b>${x.opts?.length||x.lea?`<div class="gopt r${x.rar||0}">${optLine(x)}</div>`:""}<div class="gs">${SLOTS[x.slot]} · ${gradeLine(x)}</div>
-      <div class="gst">${statLine(x)} · 지금 것보다 ${diffLine(x)}</div></div>
+      <div class="gst">${statLine(x)} · 지금 것보다 ${diffLine(x)}${x.fails?` · <span class="note">실패 보정 +${x.fails}%</span>`:""}</div></div>
+      ${gbag!=null&&bagKey(x)===gbag?forgeBox(h,x,"bag"):""}
       ${ginh===i&&inh&&!cur.lock?`<div class="inhq"><p><b>계승할까?</b> 지금 낀 ${josa(esc(cur.name)+" +"+cur.plus,"의")} 강화 기운 절반을 이어받아 ${esc(x.name)}${josa(x.name,"이").slice(x.name.length)} <b>${josa("+"+Math.floor(cur.plus/2),"이")}</b> 되고, ${esc(cur.name)}${josa(cur.name,"은").slice(cur.name.length)} <b>+0</b>으로 행낭에 들어간다. 되돌릴 수 없다.</p>
         <div class="row"><button class="btn sm sealb" type="button" data-eqi="${i}">계승한다</button><button class="btn sm ghost" type="button" data-inhno>그만둔다</button></div></div>`:""}
       <div class="acts">${gconfirm===i?`<button class="btn sm sealb" type="button" data-salv="${i}">녹여서 강화석 ${x.grade+1+Math.floor(x.plus/2)}개</button><button class="btn sm ghost" type="button" data-salvno>그만두기</button>`
-        :`<button class="btn sm" type="button" data-eq="${i}">장착</button>${inh&&!cur.lock&&ginh!==i?`<button class="btn sm sealb" type="button" data-inhq="${i}">계승하며 장착 · +${Math.floor(cur.plus/2)}</button>`:""}${x.lock?"":`<button class="btn sm ghost" type="button" data-salvq="${i}">녹이기</button>`}<button class="btn sm ghost" type="button" data-lockb="${i}">${x.lock?"잠금 풀기":"잠그기"}</button>`}</div></div>`}).join("")
+        :`<button class="btn sm" type="button" data-eq="${i}">장착</button>${gbag!=null&&bagKey(x)===gbag?"":`<button class="btn sm ghost" type="button" data-benh="${i}">강화</button>`}${inh&&!cur.lock&&ginh!==i?`<button class="btn sm sealb" type="button" data-inhq="${i}">계승하며 장착 · +${Math.floor(cur.plus/2)}</button>`:""}${x.lock?"":`<button class="btn sm ghost" type="button" data-salvq="${i}">녹이기</button>`}<button class="btn sm ghost" type="button" data-lockb="${i}">${x.lock?"잠금 풀기":"잠그기"}</button>`}</div></div>`}).join("")
     :`<p class="empty">행낭에 장비가 없다. 사건을 대성공으로 해결할수록 장비가 나올 확률이 높다.</p>`;
   return `<section><div class="label">착용 중 · 공격력 ${d.atk} · 방어력 ${d.def}</div><div class="gslots">${card("weapon")}${card("armor")}${card("acc")}</div>${forge}</section>
     <section><div class="label">행낭의 장비 · ${h.bag.length}/20</div>${h.bag.length>1?`<div class="row bagsort"><span class="note" style="margin:0">정렬</span><button class="btn sm ghost" type="button" data-bagsort="slot">종류순 (무기·의복·장신구)</button><button class="btn sm ghost" type="button" data-bagsort="rar">희귀도순</button></div>`:""}<div class="items">${bag}</div>
@@ -6859,7 +6870,10 @@ function bind(){
   on("#stoneBtn",()=>{const h=structuredClone(me);h.items.stone+=20;save(h)});
   on("#dropBtn",()=>{const h=structuredClone(me);const it=Math.random()<.2?makeItem("weapon",h.realm,null,{sect:h.sect}):makeItem(pickOne(["weapon","armor","acc"]),h.realm,pickOne(SPECS));toast("얻음: "+gainItem(h,it));save(h)});
   document.querySelectorAll("[data-gsel]").forEach(b=>b.addEventListener("click",()=>{gsel=b.dataset.gsel;render()}));
-  on("#enhBtn",()=>enhance(gsel)); on("#unequipBtn",()=>unequip(gsel));
+  on("#enhBtn",()=>enhance(gsel));
+  document.querySelectorAll("[data-benh]").forEach(b=>b.addEventListener("click",()=>{const x=me.bag[+b.dataset.benh];if(!x)return;gbag=bagKey(x);gmsg=null;gconfirm=null;ginh=null;render()}));
+  document.querySelectorAll("[data-enhbag]").forEach(b=>b.addEventListener("click",()=>enhance("bag")));
+  document.querySelectorAll("[data-benhno]").forEach(b=>b.addEventListener("click",()=>{gbag=null;if(gmsg?.slot==="bag")gmsg=null;render()})); on("#unequipBtn",()=>unequip(gsel));
   document.querySelectorAll("[data-eq]").forEach(b=>b.addEventListener("click",()=>equip(+b.dataset.eq,false)));
   document.querySelectorAll("[data-eqi]").forEach(b=>b.addEventListener("click",()=>{ginh=null;equip(+b.dataset.eqi,true)}));
   on("#gLastT",()=>{gateLastOpen=!gateLastOpen;render()});
