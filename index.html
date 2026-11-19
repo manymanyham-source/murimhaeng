@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261119043000">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261119203000">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1024,6 +1024,14 @@ button.tc.go em{position:absolute;top:3px;right:4px;font-style:normal;font-size:
 .cosi span{font-size:12px;color:var(--ink-3)}.cosi.own{border-color:var(--ink-3)}.cosi.on{border-color:var(--seal);box-shadow:inset 0 0 0 1px var(--seal)}.cosi.on span{color:var(--seal)}
 .cosi:disabled{opacity:.5;cursor:default}
 .cosi .frs{display:inline-grid;margin:4px}
+
+/* 장원: 정원/방 · 창고 */
+.isotabs{display:flex;gap:0;margin:6px 0 8px;border:1px solid var(--line);border-radius:999px;overflow:hidden;width:max-content}
+.isotabs button{font:inherit;padding:6px 18px;border:0;background:transparent;color:var(--ink-2);cursor:pointer}
+.isotabs button.on{background:var(--ink);color:var(--paper)}.isotabs button:disabled{opacity:.4;cursor:default}
+.isoroom{gap:8px;align-items:center;margin:6px 0 8px;flex-wrap:wrap}
+.isostore{margin-top:10px;padding:8px 10px;border:1px dashed var(--line);border-radius:6px;background:color-mix(in srgb,var(--paper) 70%,transparent)}
+.isostore .chips{margin-top:6px;gap:6px;flex-wrap:wrap}
 </style>
 
 <div class="wrap">
@@ -1119,7 +1127,7 @@ const KG_CUT=[0,.03,.06,.1,.13,.16,.2];
 const kgCut=h=>KG_CUT[Math.min(6,h?.realm||0)]||0;
 /* 표국 마차: 은자를 내면 다음 이동 한 번 -40% */
 const CART_COST0=80,CART_CUT=.4;
-const hrsFor=(h,x,to,rider)=>{let m=1;const ht=horseT((rider||h)?.horse);if(ht)m*=1-ht.cut;m*=1-kgCut(rider||h);if(knows(h,to))m*=1-FAMILIAR_CUT;return Math.round(x*m*60)/60};
+const hrsFor=(h,x,to,rider)=>{let m=1;const ht=horseT((rider||h)?.horse);if(ht)m*=1-ht.cut;m*=1-kgCut(rider||h);if(knows(h,to))m*=1-FAMILIAR_CUT;try{m*=1-(manorBonus(h).travelP||0)/100}catch(e){}return Math.round(x*m*60)/60};
 function speedTags(h,to,rider){const ht=horseT((rider||h)?.horse),kg=kgCut(rider||h);return [ht?`${ht.n} -${Math.round(ht.cut*100)}%`:"",kg?`경공 -${Math.round(kg*100)}%`:"",knows(h,to)?"익숙한 길 -15%":"",h?.buff?.travel?`${ITEMS[h.buff.travel]?.[0]||"용정차"} -20%`:"",h?.buff?.cart?`표국 마차 -${CART_CUT*100}%`:""].filter(Boolean)}
 const teaHrs=(h,x)=>{let m=1;if(h?.buff?.travel)m*=.8;if(h?.buff?.cart)m*=1-CART_CUT;return Math.round(x*m*60)/60};
 const hrsTxt=x=>{const H=Math.floor(x),M=Math.round((x-H)*60);return M?(H?`${H}시간 ${M}분`:`${M}분`):`${H}시간`};
@@ -2870,6 +2878,8 @@ const TITLES=[
   {id:"ilil2",g:"절기",n:"강호의 인기인",hint:"일일절에 꿀막대를 11개 이상 받는다",ok:h=>(h.ilil?.got||0)>=11},
   {id:"fest1",g:"절기",n:"명절 나그네",hint:"설·단오·추석·동지 가운데 하나를 쇤다",ok:h=>Object.keys(h.festGot||{}).length>=1},
   {id:"fest4",g:"절기",n:"사철 풍류객",hint:"설·단오·추석·동지를 모두 쇤다",ok:h=>Object.keys(h.festGot||{}).length>=4},
+  /* 장원 */
+  {id:"room7",g:"장원",n:"안채의 주인",hint:"방을 들이고 방 가구 일곱 가지를 모두 방에 놓는다",ok:h=>hasRoom(h)&&Object.entries(DECOR).filter(([,D])=>D.room).every(([k])=>furnLv(h,k)&&locOf(h,k)==="room")},
   {id:"hunt30",g:"강호",n:"산군 사냥꾼",hint:"짐승을 서른 마리 잡는다",ok:h=>cnt(h,"hunt")>=30},
   {id:"huntw",g:"강호",n:"백호를 잡은 자",hint:"장백산의 백호를 잡는다",ok:h=>cnt(h,"huntWhite")>=1},
   {id:"tomb1",g:"강호",n:"고묘 도굴꾼",hint:"고묘에서 보물 상자를 연다",ok:h=>cnt(h,"tombGold")>=1},
@@ -3498,7 +3508,7 @@ function decorTab(h){const G={};for(const [k,D] of Object.entries(DECOR))(G[D.g|
   const item=([k,D])=>{const own=furnLv(h,k),c=decorCost(D),ok=Object.entries(c).every(([m,v])=>matHave(h,m)>=v);
     return `<button class="shopi ${own?"own":""}" type="button" data-decor="${k}" ${own||!ok?"disabled":""}><b>${D.n}</b><span>${D.d}${D.eff?` · ${D.u} +${D.per}`:""}${D.cost&&!own?`<span class="fcost">${Object.entries(c).map(([m,v])=>`<i class="${matHave(h,m)>=v?"":"lack"}">${m==="silver"?silverTxt(v):`${matName(m)} ${matHave(h,m)}/${v}`}</i>`).join(" ")}</span>`:""}</span><em>${own?(D.hire?"고용함":"들였다"):D.cost?"만든다":D.hire?`고용 ${silverTxt(D.price)}`:silverTxt(D.price)}</em></button>`};
   const sub=t=>`<div class="dsub">${t}</div>`;
-  return ["꾸밈","정원","풍류","공방·약방","귀물","사용인"].filter(g=>G[g]).map(g=>`${sub(g==="사용인"?"사용인 고용":g==="정원"||g==="풍류"||g==="공방·약방"?`${g} · 재료로 만든다`:g)}<div class="shopl">${G[g].map(item).join("")}</div>`).join("")
+  return ["꾸밈","방 안","정원","풍류","공방·약방","귀물","사용인"].filter(g=>G[g]).map(g=>`${sub(g==="방 안"?`방 안 · ${hasRoom(h)?"방에 놓인다":"방을 들이면 방에 놓는다 (장원에서 방 들이기)"}`:g==="사용인"?"사용인 고용":g==="정원"||g==="풍류"||g==="공방·약방"?`${g} · 재료로 만든다`:g)}<div class="shopl">${G[g].map(item).join("")}</div>`).join("")
     +sub("지붕 기와 · 담장과 대문, 정자 지붕 색이 바뀐다")+`<div class="shopl">${Object.entries(ROOFS).filter(([k,R])=>k!=="black"&&!R.fest).map(([k,R])=>{const own=roofOwn(h,k),ok=(h.silver||0)>=R.price;
       return `<button class="shopi ${own?"own":""}" type="button" data-roof="${k}" ${own||!ok?"disabled":""}><b><i class="rsw" style="background:${R.b}"></i>${R.n}</b><span>${own?"장원 배치에서 골라 얹을 수 있다":"사면 바로 얹는다"}</span><em>${own?"가졌다":silverTxt(R.price)}</em></button>`}).join("")}</div>`
     +sub("돌길")+`<div class="shopl"><button class="shopi ${h.manor?.path?"own":""}" type="button" id="buyPath" ${h.manor?.path||!Object.entries(PATH_COST).every(([m,v])=>matHave(h,m)>=v)?"disabled":""}><b>돌길 포석</b><span>마당 바닥에 돌을 깐다. 최대 ${PATH_MAX}칸 · 장원 배치에서 칸을 눌러 깐다${h.manor?.path?"":`<span class="fcost">${Object.entries(PATH_COST).map(([m,v])=>`<i class="${matHave(h,m)>=v?"":"lack"}">${m==="silver"?silverTxt(v):`${matName(m)} ${matHave(h,m)}/${v}`}</i>`).join(" ")}</span>`}</span><em>${h.manor?.path?"가졌다":"만든다"}</em></button></div>`
@@ -3854,7 +3864,7 @@ const FISH_DAY=5;
 const fishBase=h=>FISH_DAY+(furnLv(h,"pond")||0)+(happenHere("fishing",h.loc)?2:0);
 /* 미끼 더 사기: 오늘 횟수를 다 쓰면 은자로 한 번씩 더 던진다. 300냥부터 살 때마다 두 배, 자정에 초기화. 산 미끼는 30% 확률로 줄이 끊긴다 */
 const FISH_BUY=300,FISH_SNAP=.3;
-const fishBought=h=>h.fishBuy?.day===dayKey()?h.fishBuy.n:0,fishBuyCost=h=>FISH_BUY*2**fishBought(h);
+const fishBought=h=>h.fishBuy?.day===dayKey()?h.fishBuy.n:0,fishBuyCost=h=>Math.round(FISH_BUY*2**fishBought(h)*(1-(manorBonus(h).fishBuyP||0)/100));
 /* 산 미끼는 따로 센다(left). 예전에는 '기본 횟수+산 횟수'로 셌는데, 대풍어 지역에서 더 던진 뒤 다른 곳으로 가면
    기본 횟수가 줄어 산 미끼가 사라지는 일이 있었다 */
 const fishBuyLeft=h=>h.fishBuy?.day!==dayKey()?0:h.fishBuy.left??Math.max(0,fishBase(h)+h.fishBuy.n-fishUsed(h));
@@ -3971,6 +3981,14 @@ const DECOR={
   treasure:{g:"귀물",n:"금은보화 더미",d:"금괴와 보석이 산처럼 쌓였다. 도둑이 걱정이다",price:50000,eff:null},
   toad:{g:"귀물",n:"금두꺼비",d:"엽전을 문 커다란 황금 두꺼비. 재물을 불러들인다고 한다",price:80000,eff:null},
   jadecab:{g:"귀물",n:"취옥 배추",d:"옥 한 덩이를 깎아 만든 배추. 잎 위에 여치 한 마리",price:120000,eff:null},
+  /* 방 안: 방이 있으면 방에 놓인다 (정원에 놓아도 된다) */
+  candle:{g:"방 안",room:1,n:"놋쇠 촛대",d:"밤늦도록 책을 비추는 놋쇠 촛대",price:2000,eff:null},
+  brazier:{g:"방 안",room:1,n:"방 화로",d:"숯불이 사그라들지 않는 무쇠 화로. 화살촉을 직접 벼려 쓴다",price:3000,eff:"huntBuyP",per:5,u:"화살값 할인 %"},
+  desk:{g:"방 안",room:1,n:"서안",d:"벼루와 붓, 펼친 책이 놓인 낮은 책상. 밤마다 미끼를 손수 꿴다",price:4000,eff:"fishBuyP",per:5,u:"미끼값 할인 %"},
+  rug:{g:"방 안",room:1,n:"꽃자리",d:"붉은 바탕에 꽃무늬를 짠 너른 자리 (2×2)",price:5000,eff:null},
+  bed:{g:"방 안",room:1,n:"침상",d:"비단 이불을 깐 나무 침상 (2×1). 푹 자고 나면 걸음이 가볍다",price:6000,eff:"travelP",per:5,u:"이동 시간 단축 %"},
+  mirror:{g:"방 안",room:1,n:"경대",d:"서랍 위에 놋거울을 세운 화장대",price:8000,eff:null},
+  wardrobe:{g:"방 안",room:1,n:"자개장",d:"검은 옻칠 위에 자개로 학과 구름을 새긴 장롱",price:12000,eff:null},
   /* 사용인 */
   butler:{g:"사용인",hire:1,n:"집사",d:"장원 살림을 도맡는 백발의 집사",price:20000,eff:null},
   maid:{g:"사용인",hire:1,n:"시녀",d:"쌍상투를 튼 부지런한 시녀",price:20000,eff:null},
@@ -3991,7 +4009,7 @@ const furnLv=(h,k)=>h?.manor?.[k]||0;
 const furnCost=(k,lv)=>Object.fromEntries(Object.entries(FURN[k].cost).map(([m,v])=>[m,v*Math.pow(2,lv)]));
 const matName=m=>m==="silver"?"은자":m.startsWith("f_")?fishName(m.slice(2)):m.startsWith("m_")?matN(m.slice(2)):ITEMS[m]?.[0]||m;
 const matHave=(h,m)=>m==="silver"?(h.silver||0):m.startsWith("f_")?((h.fish||{})[m.slice(2)]||0):m.startsWith("m_")?((h.mats||{})[m.slice(2)]||0):(h.items?.[m]||0);
-function manorBonus(h){const o={nei:0,wai:0,shen:0,hpP:0,qi:0,atkP:0,defP:0,trainP:0,cast:0};for(const k in FURN){const lv=furnLv(h,k);if(lv)o[FURN[k].eff]+=FURN[k].per*lv}for(const k in DECOR){if(furnLv(h,k)&&DECOR[k].eff)o[DECOR[k].eff]+=DECOR[k].per}return o}
+function manorBonus(h){const o={nei:0,wai:0,shen:0,hpP:0,qi:0,atkP:0,defP:0,trainP:0,cast:0,travelP:0,fishBuyP:0,huntBuyP:0};for(const k in FURN){const lv=furnLv(h,k);if(lv)o[FURN[k].eff]+=FURN[k].per*lv}for(const k in DECOR){if(furnLv(h,k)&&DECOR[k].eff)o[DECOR[k].eff]+=DECOR[k].per}return o}
 function craftFurn(k){const h=structuredClone(me),lv=furnLv(h,k);if(!FURN[k]||lv>=FURN_MAX)return;const c=furnCost(k,lv);
   const lack=Object.entries(c).filter(([m,v])=>matHave(h,m)<v).map(([m,v])=>`${matName(m)} ${v-matHave(h,m)}`);if(lack.length){toast(`모자라다: ${lack.join(", ")}`);return}
   for(const [m,v] of Object.entries(c)){if(m==="silver")h.silver-=v;else if(m.startsWith("f_"))h.fish[m.slice(2)]-=v;else if(m.startsWith("m_"))h.mats[m.slice(2)]-=v;else h.items[m]-=v}
@@ -4071,12 +4089,17 @@ const costTxt=c=>Object.entries(c).map(([m,v])=>m==="silver"?silverTxt(v):`${mat
 function payCost(h,c){const lack=Object.entries(c).filter(([m,v])=>matHave(h,m)<v).map(([m,v])=>`${matName(m)} ${m==="silver"?silverTxt(v-matHave(h,m)):v-matHave(h,m)}`);if(lack.length){toast(`모자라다: ${lack.join(", ")}`);return false}
   for(const [m,v] of Object.entries(c)){if(m==="silver")h.silver-=v;else if(m.startsWith("f_"))h.fish[m.slice(2)]-=v;else if(m.startsWith("m_"))h.mats[m.slice(2)]-=v;else h.items[m]-=v}return true}
 /* 새로 들인 물건은 비어 있는 칸에 놓는다 (기본 자리가 비었으면 그대로) */
-function manorPlaceNew(h,k){if(h.mpos2?.[k])return;const S=ISO_SLOT[k];if(S&&isoFree(h,null,k,S[0],S[1],S[2]))return;
-  /* 이웃이 적은 칸을 고른다 (마당에 고루 퍼지게). 대문 앞(5~6, 0~1)은 비워 둔다 */
-  const occ=new Set();for(const o of MANOR_KEYS()){if(o===k||!furnLv(h,o))continue;const [ox,oy,or]=isoPos(h,o),[ow,od]=isoFp(o,or);for(let i=0;i<ow;i++)for(let j=0;j<od;j++)occ.add((ox+i)+","+(oy+j))}
-  let best=null;for(let y=0;y<ISO_N;y++)for(let x=0;x<ISO_N;x++){if((x===5||x===6)&&y<=1)continue;if(!isoFree(h,null,k,x,y,0))continue;
-    let n=0;for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)if((dx||dy)&&occ.has((x+dx)+","+(y+dy)))n++;const sc=n*10-y*.1;if(!best||sc<best[0])best=[sc,x,y]}
-  if(best)h.mpos2={...(h.mpos2||{}),[k]:[best[1],best[2],0]}}
+/* 새 물건 놓기: 방 물건은 방이 있으면 방에, 나머지는 정원에. 빈 칸이 없으면 창고에 넣는다 */
+function isoSpot(h,k,sc,draft,ld){const occ=new Set(),all={...FURN,...DECOR};for(const o of MANOR_KEYS()){if(o===k||!furnLv(h,o)||!all[o]||locOf(h,o,ld)!==sc)continue;const [ox,oy,or]=isoPos(h,o,draft,sc),[ow,od]=isoFp(o,or);for(let i=0;i<ow;i++)for(let j=0;j<od;j++)occ.add((ox+i)+","+(oy+j))}
+  let best=null;for(let y=0;y<ISO_N;y++)for(let x=0;x<ISO_N;x++){if(sc==="yard"&&(x===5||x===6)&&y<=1)continue;if(!isoFree(h,draft,k,x,y,0,sc,ld))continue;
+    let n=0;for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)if((dx||dy)&&occ.has((x+dx)+","+(y+dy)))n++;const v=n*10-y*.1;if(!best||v<best[0])best=[v,x,y]}
+  return best?[best[1],best[2],0]:null}
+function manorPlaceNew(h,k){const sc=DECOR[k]?.room&&hasRoom(h)?"room":"yard",map=sc==="room"?"mpos3":"mpos2";
+  if(sc==="room")h.mloc={...(h.mloc||{}),[k]:"room"};else if(h.mloc?.[k]){const m={...h.mloc};delete m[k];h.mloc=m}
+  if(h[map]?.[k])return;if(sc==="yard"){const S=ISO_SLOT[k];if(S&&isoFree(h,null,k,S[0],S[1],S[2],"yard",null))return}
+  const P=isoSpot(h,k,sc,null,null);if(P)h[map]={...(h[map]||{}),[k]:P};else h.mloc={...(h.mloc||{}),[k]:"store"}}
+function buyRoom(){const h=structuredClone(me);if(hasRoom(h))return;if(!payCost(h,{silver:ROOM_PRICE}))return;h.manor={...(h.manor||{}),room:1};
+  addLog(h,`장원 안채에 방 한 칸을 들였다. (${silverTxt(ROOM_PRICE)}) 「방」에 가구를 놓을 수 있다.`);save(h);toast("방을 들였다 · 장원에서 「방」을 눌러 들어간다");isoScene="room";setTimeout(paintManor,50)}
 function buyDecor(k){const D=DECOR[k],h=structuredClone(me);if(!D||D.pet||furnLv(h,k))return;if(!payCost(h,decorCost(D)))return;
   h.manor={...(h.manor||{}),[k]:1};manorPlaceNew(h,k);
   addLog(h,D.hire?`「${D.n}」${pj(D.n,"을")} 장원에 들였다. (${costTxt(decorCost(D))})`:D.cost?`「${D.n}」${pj(D.n,"을")} 손수 만들어 장원에 들였다.`:`객잔 가구 거간에게서 「${D.n}」${pj(D.n,"을")} 사서 장원에 들였다. (${silverTxt(D.price)})${D.eff?` ${D.u} +${D.per}`:""}`);
@@ -4093,7 +4116,7 @@ function decorBox(h){if(h.travel)return "";const n=Object.keys(DECOR).filter(k=>
 /* ───────── 쿼터뷰 장원: 9×9 마당에 물건을 칸으로 놓는다. 장원 가기(전체 화면) · 배치 바꾸기 · 방명록 ───────── */
 const ISO_N=9,ISO_W=176,ISO_H=120,ISO_TW=16,ISO_TH=8,ISO_OX=88,ISO_OY=34;
 /* 물건이 차지하는 칸 (기본 1×1) */
-const ISO_FP={pond:[2,2],pavilion:[2,2]};
+const ISO_FP={pond:[2,2],pavilion:[2,2],bed:[2,1],rug:[2,2]};
 const isoFp=(k,r)=>{const f=ISO_FP[k]||[1,1];return r%2?[f[1],f[0]]:f};
 /* 기본 자리 [x,y,방향] */
 const ISO_SLOT={pavilion:[1,1,0],shelf:[3,0,0],bell:[4,0,0],stele:[7,0,0],banner:[8,0,0],
@@ -4101,7 +4124,11 @@ const ISO_SLOT={pavilion:[1,1,0],shelf:[3,0,0],bell:[4,0,0],stele:[7,0,0],banner
   well:[3,3,0],lantern:[5,2,0],censer:[6,3,0],vase:[8,2,0],lion:[7,1,0],
   pond:[4,5,0],tank:[7,5,0],teatable:[2,5,0],bonsai:[2,7,0],furnace:[8,7,3],cat:[6,8,0]};
 const MANOR_KEYS=()=>[...Object.keys(FURN),...Object.keys(DECOR)];
-const isoPos=(h,k,draft)=>{const P=(draft||h.mpos2||{})[k];return P?[P[0],P[1],P[2]||0]:[...(ISO_SLOT[k]||[4,4,0])]};
+/* 물건이 있는 곳: 정원(yard, 기본) · 방(room) · 창고(store). h.mloc[k]. 자리: 정원은 h.mpos2, 방은 h.mpos3 */
+let isoScene="yard",isoLocDraft=null;
+const ROOM_PRICE=30000,hasRoom=h=>!!h?.manor?.room;
+const locOf=(h,k,ld)=>(ld||h?.mloc||{})[k]||"yard";
+const isoPos=(h,k,draft,sc=isoScene)=>{const P=(draft||(sc==="room"?h.mpos3:h.mpos2)||{})[k];return P?[P[0],P[1],P[2]||0]:sc==="room"?[4,4,0]:[...(ISO_SLOT[k]||[4,4,0])]};
 function isoShade(hx,f){const n=parseInt(hx.slice(1),16),c=[n>>16,(n>>8)&255,n&255].map(v=>Math.max(0,Math.min(255,Math.round(f>1?v+(255-v)*(f-1):v*f))));return "#"+c.map(v=>v.toString(16).padStart(2,"0")).join("")}
 /* 그리는 판: 낮은 해상도 픽셀 버퍼에 다각형을 칠한다 */
 function isoCanvas(){const buf=new Uint8ClampedArray(ISO_W*ISO_H*4);
@@ -4188,12 +4215,45 @@ function isoDrawItem(C,k,gx,gy,r,lv){const [fw0,fd0]=ISO_FP[k]||[1,1];
    maid:()=>person({h:"#2b2622",s:"#f0d0a8",a:"#e8a0b5",b:"#b0382a",k:"#2b2622"},1),
    servant:()=>person({h:"#2b2622",s:"#d9a878",a:"#8a5a33",b:"#e6d7b8",k:"#2b2622"},2),
    guard:()=>person({h:"#2b2622",s:"#d9a878",a:"#7a2b22",b:"#2b2622",k:"#2b2622"},3),
+   candle:()=>{B(.4,.4,.2,.2,.8,GOLD);B(.47,.47,.06,.06,10,GOLD,.8);B(.42,.42,.16,.16,.6,GOLD,10.8);B(.46,.46,.08,.08,3,"#f5f0e3",11.4);dot(.5,.5,15.4,"#f2a65e");dot(.5,.5,16.4,"#fff6c8")},
+   brazier:()=>{for(const [x,y] of [[.25,.25],[.68,.25],[.25,.68],[.68,.68]])B(x,y,.07,.07,1.5,"#3d4148");B(.2,.2,.6,.6,3.5,"#5a5f66",1.5);B(.27,.27,.46,.46,.3,"#3a3a3a",5,{t:"#3a3a3a"});
+     dot(.4,.45,5.4,"#e07a2e");dot(.55,.4,5.4,"#f2a65e");dot(.5,.55,5.4,"#e07a2e");dot(.45,.5,7,"#d9d4c8");dot(.5,.48,9,"#e6e1d4")},
+   desk:()=>{for(const [x,y] of [[.12,.25],[.82,.25],[.12,.68],[.82,.68]])B(x,y,.06,.06,4,WD);B(.08,.2,.84,.6,.8,"#5e3f24",4,{t:"#7a4f2c"});
+     B(.18,.3,.2,.16,.6,"#2b2622",4.8);B(.48,.32,.3,.24,.6,"#efe6d2",4.8,{t:"#f5f0e3"});B(.48,.32,.01,.24,.7,"#b0382a",4.8);dot(.3,.6,5.6,"#2b2622");dot(.34,.6,5.6,"#7a4f2c")},
+   rug:()=>{B(.1,.1,1.8,1.8,.3,"#a8402f",0,{t:"#b0382a"});B(.3,.3,1.4,1.4,.1,"#d9b46a",.3,{t:"#d9b46a"});B(.4,.4,1.2,1.2,.1,"#b0382a",.4,{t:"#b0382a"});B(.75,.75,.5,.5,.1,"#3a6c9a",.5,{t:"#3a6c9a"});
+     [[.55,.55],[1.45,.55],[.55,1.45],[1.45,1.45],[1,.5],[1,1.5],[.5,1],[1.5,1]].forEach(([x,y])=>{dot(x,y,.7,"#f6cfdb");dot(x+.05,y,.7,"#e8a0b5")});dot(1,1,.8,"#f0d27a")},
+   bed:()=>{B(0,0,2,1,2.5,"#7a4f2c");B(.05,.05,1.9,.9,1.4,"#f5f0e3",2.5);B(.7,.04,1.26,.92,1,"#a8402f",3.9,{t:"#c9442f"});for(let i=0;i<5;i++)dot(.9+i*.22,.5,4.95,"#f0d27a");
+     B(.12,.2,.4,.6,1.3,"#e6d7b8",3.9,{t:"#efe6d2"});B(-.02,-.02,.12,1.04,9,"#5e3f24",0,{t:"#7a4f2c"});B(1.9,-.02,.12,1.04,5,"#5e3f24",0,{t:"#7a4f2c"})},
+   mirror:()=>{B(.2,.3,.6,.45,4.5,"#7a4f2c",0,{t:"#8a5a33"});B(.3,.74,.4,.02,1,"#5e3f24",1.5);B(.3,.74,.4,.02,1,"#5e3f24",3);dot(.5,.76,2,GOLD);dot(.5,.76,3.5,GOLD);
+     B(.32,.4,.04,.08,7,"#5e3f24",4.5);B(.64,.4,.04,.08,7,"#5e3f24",4.5);B(.36,.42,.28,.04,7,GOLD,5,{l:"#e6e8ea",r:"#c8ccd0",t:GOLD});dot(.45,.46,9,"#ffffff");dot(.5,.46,10,"#f5f7f9")},
+   wardrobe:()=>{B(.1,.3,.8,.55,16,"#2b2622",0,{t:"#3a3030",l:"#2b2622",r:"#221c1a"});B(.49,.85,.02,.01,15,"#5e3f24",.5);
+     [[.25,13,"#cfe6e8"],[.3,12,"#f0d0e8"],[.7,11,"#cfe6e8"],[.75,12,"#e6f0d8"],[.35,6,"#f0d0e8"],[.65,5,"#cfe6e8"],[.2,8,"#e6f0d8"],[.8,7,"#f0d0e8"],[.6,14,"#cfe6e8"],[.4,3,"#cfe6e8"]].forEach(([x,z,c])=>dot(x,.86,z,c));
+     dot(.45,.86,9,GOLD);dot(.55,.86,9,GOLD);B(.05,.25,.9,.65,1,"#3a3030",16,{t:"#4a3e3c"})},
    peach:()=>{B(.4,.4,.2,.2,9,"#7a4f2c");B(0,0,1,1,5,"#e8a0b5",8);B(.2,-.1,.8,.8,4,"#e8a0b5",12);B(-.1,.25,.8,.8,4,"#e8a0b5",11);B(.25,.25,.5,.5,3,"#e8a0b5",15);dot(.3,0,15,"#7bab58");dot(0,.5,13,"#4c7a39");dot(.7,.3,13,"#f6cfdb")}
   })[k]?.();
   /* 단계 반짝임 */
   if(lv>=2){const [sx,sy]=isoP(gx+.9,gy+.1,14);C.px(sx,sy,"#fff6c8");C.px(sx-1,sy,"#f0d27a");C.px(sx+1,sy,"#f0d27a");C.px(sx,sy-1,"#f0d27a");C.px(sx,sy+1,"#f0d27a")}
   if(lv>=3){const [sx,sy]=isoP(gx+.1,gy+.9,12);C.px(sx,sy,"#fff6c8");C.px(sx-1,sy,"#f0d27a");C.px(sx+1,sy,"#f0d27a");C.px(sx,sy-1,"#f0d27a");C.px(sx,sy+1,"#f0d27a")}}
+/* 방 안: 마루 바닥, 회벽과 나무 기둥, 창호 */
+function isoDrawRoom(C,h){const N=ISO_N;for(let y=0;y<ISO_H;y++)for(let x=0;x<ISO_W;x++)C.px(x,y,"#f6f4ee");
+  for(let gx=0;gx<N;gx++)for(let gy=0;gy<N;gy++){C.poly([isoP(gx,gy,0),isoP(gx+1,gy,0),isoP(gx+1,gy+1,0),isoP(gx,gy+1,0)],gx%2?"#b98a5a":"#c49464");C.poly([isoP(gx,gy,0),isoP(gx+.04,gy,0),isoP(gx+.04,gy+1,0),isoP(gx,gy+1,0)],"#9c7148")}
+  C.poly([isoP(0,N,0),isoP(N,N,0),isoP(N,N,-3),isoP(0,N,-3)],"#8a5f3a");C.poly([isoP(N,0,0),isoP(N,N,0),isoP(N,N,-3),isoP(N,0,-3)],"#7a5232");
+  const WB=(x,y,w,d,hh,t,l,r,z0=0)=>{C.poly([isoP(x,y+d,z0),isoP(x+w,y+d,z0),isoP(x+w,y+d,z0+hh),isoP(x,y+d,z0+hh)],l);C.poly([isoP(x+w,y,z0),isoP(x+w,y+d,z0),isoP(x+w,y+d,z0+hh),isoP(x+w,y,z0+hh)],r);C.poly([isoP(x,y,z0+hh),isoP(x+w,y,z0+hh),isoP(x+w,y+d,z0+hh),isoP(x,y+d,z0+hh)],t)};
+  const WH=22;WB(-.35,0,.35,N,WH,"#cfc8b8","#efe6d2","#efe6d2");WB(0,-.35,N,.35,WH,"#cfc8b8","#e8dfca","#e8dfca");WB(-.35,-.35,.35,.35,WH,"#cfc8b8","#efe6d2","#e8dfca");
+  WB(-.35,0,.36,N,2.5,"#7a4f2c","#7a4f2c","#6e4527");WB(0,-.35,N,.36,2.5,"#7a4f2c","#7a4f2c","#6e4527");
+  for(let i=0;i<=N;i+=3){WB(-.35,i-.1,.38,.2,WH,"#7a4f2c","#7a4f2c","#5e3f24");WB(i-.1,-.35,.2,.38,WH,"#7a4f2c","#7a4f2c","#5e3f24")}
+  WB(-.35,0,.38,N,1.5,"#7a4f2c","#7a4f2c","#5e3f24",WH-1.5);WB(0,-.35,N,.38,1.5,"#7a4f2c","#7a4f2c","#5e3f24",WH-1.5);
+  /* 창호: 뒷벽(y=0) 두 짝, 옆벽(x=0) 한 짝 */
+  const winB=(a,b,z0,z1)=>{C.poly([isoP(a,0,z0),isoP(b,0,z0),isoP(b,0,z1),isoP(a,0,z1)],"#6e4527");C.poly([isoP(a+.12,0,z0+1),isoP(b-.12,0,z0+1),isoP(b-.12,0,z1-1),isoP(a+.12,0,z1-1)],"#fbf6e8");
+    for(let t=a+.12;t<b-.12;t+=.4)C.poly([isoP(t,0,z0+1),isoP(t+.05,0,z0+1),isoP(t+.05,0,z1-1),isoP(t,0,z1-1)],"#a8743f");for(let z=z0+3;z<z1-1;z+=3)C.poly([isoP(a+.12,0,z),isoP(b-.12,0,z),isoP(b-.12,0,z+.5),isoP(a+.12,0,z+.5)],"#a8743f")};
+  const winL=(a,b,z0,z1)=>{C.poly([isoP(0,a,z0),isoP(0,b,z0),isoP(0,b,z1),isoP(0,a,z1)],"#6e4527");C.poly([isoP(0,a+.12,z0+1),isoP(0,b-.12,z0+1),isoP(0,b-.12,z1-1),isoP(0,a+.12,z1-1)],"#fbf6e8");
+    for(let t=a+.12;t<b-.12;t+=.4)C.poly([isoP(0,t,z0+1),isoP(0,t+.05,z0+1),isoP(0,t+.05,z1-1),isoP(0,t,z1-1)],"#a8743f");for(let z=z0+3;z<z1-1;z+=3)C.poly([isoP(0,a+.12,z),isoP(0,b-.12,z),isoP(0,b-.12,z+.5),isoP(0,a+.12,z+.5)],"#a8743f")};
+  winB(.6,2.4,7,17);winB(6.6,8.4,7,17);winL(3.6,5.4,7,17);
+  /* 족자 한 폭 */
+  C.poly([isoP(4.1,0,6),isoP(4.9,0,6),isoP(4.9,0,18),isoP(4.1,0,18)],"#efe6d2");C.poly([isoP(4.05,0,17.5),isoP(4.95,0,17.5),isoP(4.95,0,18.5),isoP(4.05,0,18.5)],"#5e3f24");C.poly([isoP(4.05,0,5.5),isoP(4.95,0,5.5),isoP(4.95,0,6.5),isoP(4.05,0,6.5)],"#5e3f24");
+  for(const [t,z] of [[4.4,15],[4.45,13],[4.5,11],[4.55,9]])C.px(...isoP(t,0,z).map(Math.round),"#2b2622")}
 function isoDrawScene(cv,h,draft,sel){const C=isoCanvas(),N=ISO_N;
+  if(isoScene==="room")isoDrawRoom(C,h);else{
   const bgTop="#dfe9ef",bgBot="#f6f4ee";for(let y=0;y<ISO_H;y++)for(let x=0;x<ISO_W;x++)C.px(x,y,bgBot);
   for(let gx=0;gx<N;gx++)for(let gy=0;gy<N;gy++)C.poly([isoP(gx,gy,0),isoP(gx+1,gy,0),isoP(gx+1,gy+1,0),isoP(gx,gy+1,0)],(gx+gy)%2?"#d9caa6":"#d2c29c");
   C.poly([isoP(0,N,0),isoP(N,N,0),isoP(N,N,-3),isoP(0,N,-3)],"#b9a67e");C.poly([isoP(N,0,0),isoP(N,N,0),isoP(N,N,-3),isoP(N,0,-3)],"#a8946c");
@@ -4207,8 +4267,9 @@ function isoDrawScene(cv,h,draft,sel){const C=isoCanvas(),N=ISO_N;
   for(const c of ((draft&&isoPathDraft)||h.mpath||[])){const [px,py]=c.split(",").map(Number);if(!(px>=0&&py>=0&&px<N&&py<N))continue;
     C.poly([isoP(px+.04,py+.04,0),isoP(px+.96,py+.04,0),isoP(px+.96,py+.96,0),isoP(px+.04,py+.96,0)],"#9d978a");
     for(const [ax,ay,c2] of [[.08,.08,"#c3bdb0"],[.52,.08,"#b3ad9f"],[.08,.52,"#b3ad9f"],[.52,.52,"#c9c3b6"]])C.poly([isoP(px+ax,py+ay,0),isoP(px+ax+.4,py+ay,0),isoP(px+ax+.4,py+ay+.4,0),isoP(px+ax,py+ay+.4,0)],c2)}
+  }
   /* 고른 물건의 칸 표시 */
-  const all={...FURN,...DECOR},ks=MANOR_KEYS().filter(k=>furnLv(h,k)&&all[k]).map(k=>[k,isoPos(h,k,draft)]);
+  const ld=draft?isoLocDraft:null,all={...FURN,...DECOR},ks=MANOR_KEYS().filter(k=>furnLv(h,k)&&all[k]&&locOf(h,k,ld)===isoScene).map(k=>[k,isoPos(h,k,draft)]);
   if(sel){const it=ks.find(x=>x[0]===sel);if(it){const [x,y,r]=it[1],[fw,fd]=isoFp(sel,r);const A=isoP(x,y,0),B2=isoP(x+fw,y,0),C2=isoP(x+fw,y+fd,0),D=isoP(x,y+fd,0);C.poly([A,B2,C2,D],"#e9b3a6")}}
   ks.sort((a,b)=>{const [ax,ay,ar]=a[1],[bx,by,br]=b[1],fa=isoFp(a[0],ar),fb=isoFp(b[0],br);return (ax+fa[0]/2+ay+fa[1]/2)-(bx+fb[0]/2+by+fb[1]/2)});
   const boxes=[];
@@ -4225,8 +4286,8 @@ function isoHit(cv,e){const r=cv.getBoundingClientRect(),sx=(e.clientX-r.left)/r
   const ux=(sx-ISO_OX)/(ISO_TW/2),uy=(sy-ISO_OY)/(ISO_TH/2),gx=Math.floor((ux+uy)/2),gy=Math.floor((uy-ux)/2);
   return {item:b?.k||null,gx,gy}}
 /* 놓을 수 있나: 마당 안, 다른 물건과 겹치지 않음, 대문 앞(5~6,0)은 비운다 */
-function isoFree(h,draft,k,x,y,r){const [fw,fd]=isoFp(k,r);if(x<0||y<0||x+fw>ISO_N||y+fd>ISO_N)return false;
-  const all={...FURN,...DECOR};for(const o of MANOR_KEYS()){if(o===k||!furnLv(h,o)||!all[o])continue;const [ox,oy,or]=isoPos(h,o,draft),[ow,od]=isoFp(o,or);if(x<ox+ow&&ox<x+fw&&y<oy+od&&oy<y+fd)return false}
+function isoFree(h,draft,k,x,y,r,sc=isoScene,ld=isoLocDraft){const [fw,fd]=isoFp(k,r);if(x<0||y<0||x+fw>ISO_N||y+fd>ISO_N)return false;
+  const all={...FURN,...DECOR};for(const o of MANOR_KEYS()){if(o===k||!furnLv(h,o)||!all[o]||locOf(h,o,ld)!==sc)continue;const [ox,oy,or]=isoPos(h,o,draft,sc),[ow,od]=isoFp(o,or);if(x<ox+ow&&ox<x+fw&&y<oy+od&&oy<y+fd)return false}
   return true}
 /* 장원 가기 (전체 화면) */
 let isoRoofDraft=null,isoPathDraft=null,isoPathMode=false,isoRoofNow=null;
@@ -4238,7 +4299,7 @@ async function loadVisits(host){if(!visitQ||mode!=="db"||host===myId())return;tr
   Object.assign(visits,visitsExtra);if(isoView===host)paintManor()}catch(e){}}
 const visitsTo=id=>Object.values(visits).filter(v=>v.host===id).sort((a,b)=>b.t-a.t);
 const myVisitToday=host=>Object.values(visits).some(v=>v.host===host&&v.visitor===myId()&&v.day===dayKey());
-function openManor(id){const o=id===myId()?me:heroById(id);if(!o)return;isoView=id;isoSel=null;isoEdit=false;isoDraft=null;isoMsg="";loadVisits(id);
+function openManor(id){const o=id===myId()?me:heroById(id);if(!o)return;isoView=id;isoSel=null;isoEdit=false;isoDraft=null;isoMsg="";isoScene="yard";isoLocDraft=null;loadVisits(id);
   if(id===myId()&&mode==="db"){const h=structuredClone(me),seen=h.visitSeen||0,news=visitsTo(myId()).filter(v=>v.t>seen&&v.visitor!==myId());
     const fed=h.pet&&PETS[h.pet.k]?visitsTo(myId()).filter(v=>(v.pt||0)>seen&&v.visitor!==myId()):[];
     if(news.length||fed.length){news.forEach(v=>addBond(h,v.visitor,5));h.visitSeen=Date.now();
@@ -4246,7 +4307,7 @@ function openManor(id){const o=id===myId()?me:heroById(id);if(!o)return;isoView=
       if(fed.length){h.pet.xp=(h.pet.xp||0)+VPET_XP*fed.length;addLog(h,`${fed.map(v=>v.vname).join(", ")}${pj(fed[fed.length-1].vname,"이")} ${PETS[h.pet.k].n}에게 먹이를 주고 갔다. (정 +${VPET_XP*fed.length})`)}
       save(h)}}
   paintManor()}
-function closeManor(){isoView=null;isoEdit=false;isoDraft=null;isoSel=null;paintManor()}
+function closeManor(){isoView=null;isoEdit=false;isoDraft=null;isoSel=null;isoLocDraft=null;isoScene="yard";paintManor()}
 async function leaveVisit(host){if(mode!=="db"||host===myId()||myVisitToday(host))return;const o=heroById(host);if(!o)return;
   const v={host,visitor:myId(),vname:me.name,t:Date.now(),day:dayKey(),msg:String(isoMsg||"").trim().slice(0,40)},id=`${host}__${myId()}`.replace(/[^A-Za-z0-9_-]/g,"").slice(0,120);
   try{await db.doc("visits/"+id).set(v);visits[id]={...v,id}}catch(e){toast("발자국을 남기지 못했어요. 잠시 뒤 다시 해 주세요.");return}
@@ -4254,16 +4315,20 @@ async function leaveVisit(host){if(mode!=="db"||host===myId()||myVisitToday(host
 function paintManor(){let el=document.getElementById("isoWrap");if(!isoView){if(el)el.remove();document.body.classList.remove("noscroll");return}
   const mine=isoView===myId(),h=mine?me:heroById(isoView);if(!h){closeManor();return}
   if(!el){el=document.createElement("div");el.id="isoWrap";el.className="isowrap";document.body.appendChild(el)}document.body.classList.add("noscroll");
-  const all={...FURN,...DECOR},L=MANOR_KEYS().filter(k=>furnLv(h,k)&&all[k]),sel=isoSel&&all[isoSel]?isoSel:null;
-  const V=visitsTo(isoView).slice(0,12),visited=!mine&&myVisitToday(isoView);
+  if(isoScene==="room"&&!hasRoom(h))isoScene="yard";
+  const ld=isoEdit?isoLocDraft:null,all={...FURN,...DECOR},own=MANOR_KEYS().filter(k=>furnLv(h,k)&&all[k]),L=own.filter(k=>locOf(h,k,ld)===isoScene),ST=own.filter(k=>locOf(h,k,ld)==="store"),sel=isoSel&&all[isoSel]&&L.includes(isoSel)?isoSel:null;
+  const V=visitsTo(isoView).slice(0,12),visited=!mine&&myVisitToday(isoView),inRoom=isoScene==="room";
+  const tabs=hasRoom(h)?`<div class="isotabs" role="tablist">${[["yard","정원"],["room","방"]].map(([k,n])=>`<button type="button" role="tab" aria-selected="${isoScene===k}" class="${isoScene===k?"on":""}" data-iscene="${k}" ${isoEdit&&isoScene!==k?"disabled":""}>${n}</button>`).join("")}</div>`
+    :mine?`<div class="row isoroom"><button class="btn sm" type="button" id="buyRoom" ${(me.silver||0)<ROOM_PRICE?"disabled":""}>방 들이기 · ${silverTxt(ROOM_PRICE)}</button><span class="note" style="margin:0">정원만 한 방 한 칸. 방 가구를 따로 놓을 수 있다.</span></div>`:"";
+  const store=mine&&isoEdit?`<div class="isostore"><div class="kicker">창고 · ${ST.length}개${ST.length?" · 누르면 꺼내 놓는다":""}</div>${ST.length?`<div class="chips">${ST.map(k=>`<button type="button" class="btn sm ghost" data-istore="${k}">${esc(all[k].n)}</button>`).join("")}</div>`:`<p class="note" style="margin:0">물건을 고르고 「창고에 넣기」를 누르면 여기로 들어온다. 창고에 넣어도 효과는 그대로다.</p>`}</div>`:"";
   el.innerHTML=`<div class="isobox" role="dialog" aria-modal="true" aria-label="${esc(h.name)}의 장원">
-    <div class="isohead"><b>${esc(josa(h.name,"의"))} 장원</b><button type="button" class="btn sm ghost" id="isoClose">돌아가기</button></div>
+    <div class="isohead"><b>${esc(josa(h.name,"의"))} ${inRoom?"방":"장원"}</b><button type="button" class="btn sm ghost" id="isoClose">돌아가기</button></div>${tabs}
     <canvas id="isoCv" class="isocv ${isoEdit?"edit":""}"></canvas>
-    <div class="isocap">${sel?`<b>${all[sel].n}</b>${FURN[sel]?` · ${furnLv(h,sel)}단계 · ${FURN[sel].u} +${FURN[sel].per*furnLv(h,sel)}`:DECOR[sel].eff?` · ${DECOR[sel].u} +${DECOR[sel].per}`:" · 꾸밈"}<span>${esc(all[sel].d)}</span>`:L.length?`<span>${isoEdit?"옮길 물건을 누른다.":"물건을 누르면 이름이 보인다."}</span>`:`<span>${mine?"아직 텅 빈 마당이다. 재료를 모아 물건을 들여 보자.":"아직 텅 빈 마당이다."}</span>`}</div>
+    <div class="isocap">${sel?`<b>${all[sel].n}</b>${FURN[sel]?` · ${furnLv(h,sel)}단계 · ${FURN[sel].u} +${FURN[sel].per*furnLv(h,sel)}`:DECOR[sel].eff?` · ${DECOR[sel].u} +${DECOR[sel].per}`:" · 꾸밈"}<span>${esc(all[sel].d)}</span>`:L.length?`<span>${isoEdit?"옮길 물건을 누른다.":"물건을 누르면 이름이 보인다."}</span>`:`<span>${inRoom?(mine?"아직 텅 빈 방이다. 「배치 바꾸기」에서 창고나 정원의 물건을 옮겨 오자.":"아직 텅 빈 방이다."):mine?"아직 텅 빈 마당이다. 재료를 모아 물건을 들여 보자.":"아직 텅 빈 마당이다."}</span>`}${mine&&!isoEdit&&ST.length?`<span>창고에 ${ST.length}개 넣어 둠</span>`:""}</div>
     ${mine?(isoEdit?`<div class="isoedit"><p class="note" style="margin:0 0 6px">${isoPathMode?`돌길 깔기 · 칸을 누르면 깔고, 다시 누르면 걷어낸다 (${(isoPathDraft||[]).length}/${PATH_MAX})`:sel?`「${all[sel].n}」 고름 · 빈 칸을 누르면 옮겨진다`:"옮길 물건을 먼저 누른다"}</p>
-      ${Object.keys(ROOFS).filter(k=>roofOwn(me,k)).length>1?`<div class="chips" style="margin:0 0 6px">${Object.entries(ROOFS).filter(([k])=>roofOwn(me,k)).map(([k,R])=>`<button type="button" class="btn sm ${isoRoofDraft===k?"sealb":"ghost"}" data-iroof="${k}"><i class="rsw" style="background:${R.b}"></i>${R.n}</button>`).join("")}</div>`:""}
-      <div class="row">${me.manor?.path?`<button class="btn sm ${isoPathMode?"sealb":""}" type="button" id="isoPath">${isoPathMode?"돌길 깔기 끝":"돌길 깔기"}</button>`:""}<button class="btn sm" type="button" id="isoRot" ${sel&&!isoPathMode?"":"disabled"}>방향 돌리기</button><button class="btn sm ghost" type="button" id="isoBack" ${sel&&ISO_SLOT[sel]&&!isoPathMode?"":"disabled"}>원래 자리로</button><button class="btn sm sealb" type="button" id="isoSave">배치 저장</button><button class="btn sm ghost" type="button" id="isoCancel">그만두기</button></div></div>`
-      :L.length||me.manor?.path||Object.keys(ROOFS).some(k=>k!=="black"&&roofOwn(me,k))?`<div class="row" style="margin-top:8px"><button class="btn sm" type="button" id="isoEditBtn">배치 바꾸기</button></div>`:"")
+      ${!inRoom&&Object.keys(ROOFS).filter(k=>roofOwn(me,k)).length>1?`<div class="chips" style="margin:0 0 6px">${Object.entries(ROOFS).filter(([k])=>roofOwn(me,k)).map(([k,R])=>`<button type="button" class="btn sm ${isoRoofDraft===k?"sealb":"ghost"}" data-iroof="${k}"><i class="rsw" style="background:${R.b}"></i>${R.n}</button>`).join("")}</div>`:""}
+      <div class="row">${me.manor?.path&&!inRoom?`<button class="btn sm ${isoPathMode?"sealb":""}" type="button" id="isoPath">${isoPathMode?"돌길 깔기 끝":"돌길 깔기"}</button>`:""}<button class="btn sm" type="button" id="isoRot" ${sel&&!isoPathMode?"":"disabled"}>방향 돌리기</button><button class="btn sm" type="button" id="isoStore" ${sel&&!isoPathMode?"":"disabled"}>창고에 넣기</button>${inRoom?"":`<button class="btn sm ghost" type="button" id="isoBack" ${sel&&ISO_SLOT[sel]&&!isoPathMode?"":"disabled"}>원래 자리로</button>`}<button class="btn sm sealb" type="button" id="isoSave">배치 저장</button><button class="btn sm ghost" type="button" id="isoCancel">그만두기</button></div>${store}</div>`
+      :own.length||me.manor?.path||Object.keys(ROOFS).some(k=>k!=="black"&&roofOwn(me,k))?`<div class="row" style="margin-top:8px"><button class="btn sm" type="button" id="isoEditBtn">배치 바꾸기</button></div>`:"")
      :`<div class="isovisit">${visited?`<p class="note" style="margin:0">오늘 발자국을 남겼다. 내일 또 놀러 오자.</p>${visitPlayBox(h)}`:`<div class="mailf" style="margin:0"><label>한마디 (선택)<input id="isoMsg" maxlength="40" value="${esc(isoMsg)}" placeholder="장원이 멋지네!"></label></div><button class="btn sm sealb" type="button" id="isoVisit" style="margin-top:6px">발자국 남기기 · 서로 인연 +5</button><p class="note" style="margin:6px 0 0">발자국을 남기면 차를 얻어 마시거나 영수에게 먹이를 줄 수 있다.</p>`}</div>`}
     <div class="label" style="margin-top:16px">방명록</div>
     ${V.length?`<div class="isogb">${V.map(v=>`<div><b>${esc(v.vname)}</b> <span>${hhmm(v.t)}${v.pday===v.day?" · 영수에게 먹이를 주고 감":""}</span>${v.msg?`<p>"${esc(v.msg)}"</p>`:""}</div>`).join("")}</div>`:`<p class="note">아직 다녀간 사람이 없다.</p>`}
@@ -4277,13 +4342,19 @@ function paintManor(){let el=document.getElementById("isoWrap");if(!isoView){if(
     if(isoSel){const [,,r]=isoPos(me,isoSel,isoDraft),[fw,fd]=isoFp(isoSel,r),x=t.gx-Math.floor((fw-1)/2),y=t.gy-Math.floor((fd-1)/2);
       if(!isoFree(me,isoDraft,isoSel,x,y,r)){toast("거기엔 놓을 수 없다.");return}isoDraft={...isoDraft,[isoSel]:[x,y,r]};paintManor()}};
   const on2=(s,f)=>{const b=el.querySelector(s);if(b)b.onclick=f};
-  on2("#isoClose",closeManor);on2("#isoEditBtn",()=>{isoEdit=true;isoDraft={...(me.mpos2||{})};isoRoofDraft=me.roof||"black";isoPathDraft=[...(me.mpath||[])];isoPathMode=false;isoSel=null;paintManor()});
+  on2("#isoClose",closeManor);on2("#isoEditBtn",()=>{isoEdit=true;isoDraft={...((isoScene==="room"?me.mpos3:me.mpos2)||{})};isoLocDraft={...(me.mloc||{})};isoRoofDraft=me.roof||"black";isoPathDraft=[...(me.mpath||[])];isoPathMode=false;isoSel=null;paintManor()});
   on2("#isoPath",()=>{isoPathMode=!isoPathMode;isoSel=null;paintManor()});
   el.querySelectorAll("[data-iroof]").forEach(b=>b.onclick=()=>{isoRoofDraft=b.dataset.iroof;paintManor()});
-  on2("#isoCancel",()=>{isoEdit=false;isoDraft=null;isoSel=null;isoPathMode=false;isoRoofDraft=null;isoPathDraft=null;paintManor()});
-  on2("#isoSave",()=>{const h2=structuredClone(me);h2.mpos2={...(isoDraft||{})};if(isoRoofDraft&&roofOwn(h2,isoRoofDraft))h2.roof=isoRoofDraft;if(h2.manor?.path)h2.mpath=[...(isoPathDraft||[])];isoPathMode=false;isoEdit=false;isoDraft=null;isoSel=null;addLog(h2,"장원의 물건들을 새로 놓았다.");save(h2);toast("장원 배치를 저장했다.");setTimeout(paintManor,50)});
+  on2("#isoCancel",()=>{isoEdit=false;isoDraft=null;isoSel=null;isoPathMode=false;isoRoofDraft=null;isoPathDraft=null;isoLocDraft=null;paintManor()});
+  on2("#isoSave",()=>{const h2=structuredClone(me),D={...(isoDraft||{})};for(const k of Object.keys(D))if(locOf(h2,k,isoLocDraft)!==isoScene)delete D[k];
+    if(isoScene==="room")h2.mpos3=D;else h2.mpos2=D;const LD={};for(const [k,v] of Object.entries(isoLocDraft||{}))if(v&&v!=="yard")LD[k]=v;h2.mloc=LD;isoLocDraft=null;if(isoRoofDraft&&roofOwn(h2,isoRoofDraft))h2.roof=isoRoofDraft;if(h2.manor?.path)h2.mpath=[...(isoPathDraft||[])];isoPathMode=false;isoEdit=false;isoDraft=null;isoSel=null;addLog(h2,"장원의 물건들을 새로 놓았다.");save(h2);toast("장원 배치를 저장했다.");setTimeout(paintManor,50)});
   on2("#isoRot",()=>{if(!isoSel)return;const [x,y,r]=isoPos(me,isoSel,isoDraft),nr=(r+1)%4;if(!isoFree(me,isoDraft,isoSel,x,y,nr)){toast("돌리면 옆 물건과 겹친다.");return}isoDraft={...isoDraft,[isoSel]:[x,y,nr]};paintManor()});
   on2("#isoBack",()=>{if(!isoSel||!ISO_SLOT[isoSel])return;const [x,y,r]=ISO_SLOT[isoSel];if(!isoFree(me,isoDraft,isoSel,x,y,r)){toast("원래 자리에 다른 물건이 있다.");return}const d={...isoDraft};delete d[isoSel];isoDraft=d;paintManor()});
+  el.querySelectorAll("[data-iscene]").forEach(b=>b.onclick=()=>{if(isoEdit)return;isoScene=b.dataset.iscene;isoSel=null;paintManor()});
+  on2("#buyRoom",buyRoom);
+  on2("#isoStore",()=>{if(!isoSel)return;const d={...isoDraft};delete d[isoSel];isoDraft=d;isoLocDraft={...isoLocDraft,[isoSel]:"store"};toast(`「${all[isoSel].n}」 창고에 넣었다`);isoSel=null;paintManor()});
+  el.querySelectorAll("[data-istore]").forEach(b=>b.onclick=()=>{const k=b.dataset.istore,ld2={...isoLocDraft,[k]:isoScene},P=isoSpot(me,k,isoScene,isoDraft,ld2);
+    if(!P){toast(`${inRoom?"방":"정원"}에 빈 칸이 없다. 다른 물건을 먼저 창고에 넣자.`);return}isoLocDraft=ld2;isoDraft={...isoDraft,[k]:P};isoSel=k;paintManor()});
   on2("#isoVisit",()=>leaveVisit(isoView));on2("#isoTea",()=>visitTea(isoView));on2("#isoPet",()=>visitPet(isoView));const mi=el.querySelector("#isoMsg");if(mi)mi.oninput=()=>isoMsg=mi.value;
   el.onkeydown=e=>{if(e.key==="Escape")closeManor()}}
 
@@ -4307,7 +4378,7 @@ function feedPet(m){const h=structuredClone(me),p=h.pet;if(!p)return;if(p.fed===
   if(!MATS[m]||MATS[m][1]!=="herb"||!((h.mats||{})[m]>0)){toast("먹일 약초가 없다.");return}
   const was=petHungry(p),st0=petStage(p);h.mats[m]--;const add=PET_FEED[MATS[m][2]]||3;p.xp=(p.xp||0)+add;p.fed=dayKey();p.ate=1;const st1=petStage(p),P=PETS[p.k];
   addLog(h,`${P.n}에게 ${josa(matN(m),"을")} 먹였다. 정 +${add}${st1!==st0?` · ${josa(P.n,"이")} 「${st1[1]}」${pj(st1[1],"로")} 자랐다!`:""}${was?" 기운을 되찾았다.":""}`);save(h);toast(st1!==st0?`${P.n} · 「${st1[1]}」${pj(st1[1],"로")} 자랐다!`:`${P.n} · 정 +${add}`)}
-function releasePet(){const h=structuredClone(me),p=h.pet;if(!p)return;const P=PETS[p.k];delete h.manor["pet_"+p.k];if(h.mpos2)delete h.mpos2["pet_"+p.k];h.pet=null;petBye=false;
+function releasePet(){const h=structuredClone(me),p=h.pet;if(!p)return;const P=PETS[p.k];delete h.manor["pet_"+p.k];if(h.mpos2)delete h.mpos2["pet_"+p.k];if(h.mpos3)delete h.mpos3["pet_"+p.k];if(h.mloc)delete h.mloc["pet_"+p.k];h.pet=null;petBye=false;
   addLog(h,`${josa(P.n,"을")} 산으로 돌려보냈다. 뒤를 돌아보며 멀어져 갔다.`);save(h)}
 let petBye=false;
 /* 도트 그림을 작은 그림으로 */
@@ -4643,7 +4714,7 @@ const HUNT_DAY=5,HUNT_N=Object.keys(HUNTDB).length;
 const HUNT_ZONE=[.25,.19,.14,.09],HUNT_SPEED=[950,780,640,520];
 const huntUsed=h=>h.huntDay?.day===dayKey()?h.huntDay.n:0;
 /* 사냥 더 하기: 화살 한 묶음을 사면 한 번 더. 살 때마다 값이 두 배 (300 → 600 → 1200 …) */
-const HUNT_BUY=300,huntBought=h=>h.huntBuy?.day===dayKey()?h.huntBuy.n:0,huntMax=h=>HUNT_DAY+huntBought(h),huntBuyCost=h=>HUNT_BUY*2**huntBought(h);
+const HUNT_BUY=300,huntBought=h=>h.huntBuy?.day===dayKey()?h.huntBuy.n:0,huntMax=h=>HUNT_DAY+huntBought(h),huntBuyCost=h=>Math.round(HUNT_BUY*2**huntBought(h)*(1-(manorBonus(h).huntBuyP||0)/100));
 function huntBuy(){const h=structuredClone(me),c=huntBuyCost(h);if(huntUsed(h)<huntMax(h)||huntState)return;if((h.silver||0)<c){toast(`은자가 모자라다. (${silverTxt(c)})`);return}
   h.silver-=c;h.huntBuy={day:dayKey(),n:huntBought(h)+1};addLog(h,`사냥꾼에게 화살 한 묶음을 샀다. (${silverTxt(c)})`);save(h);toast(`사냥 +1 · ${silverTxt(c)}`)}
 let huntState=null,huntTimer=null,huntLast=null,hDexOpen=false,huntRaf=0;
