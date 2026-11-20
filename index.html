@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261120200000">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261120213000">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1065,11 +1065,11 @@ button.tc.go em{position:absolute;top:3px;right:4px;font-style:normal;font-size:
 .inkmap .road.selr{stroke:#b0382a;stroke-width:1.4;stroke-dasharray:5 3;opacity:.75}
 .inkmap .road.go{stroke:#b0382a;stroke-dasharray:none;stroke-width:2;opacity:.9}
 .inkmap .hrs{fill:#3b332c;font-size:10px;font-weight:700;paint-order:stroke;stroke:#efe5cf;stroke-width:3px}
-.inkmap .seal{fill:#f6efe0;stroke:#b0382a;stroke-width:1.6}
+.inkmap .rseal{fill:#f6efe0;stroke:#b0382a;stroke-width:1.6}
 .inkmap .sealt{fill:#b0382a;font-size:7.4px;font-weight:700;text-anchor:middle;font-family:var(--f-brush),serif}
-.inkmap .node.me .seal{fill:#b0382a}.inkmap .node.me .sealt{fill:#fff}
-.inkmap .node.lock .seal{stroke-dasharray:2 2;fill:#ece4d2;opacity:.75}.inkmap .node.lock .sealt{opacity:.6}
-.inkmap .node:focus-visible .seal{stroke-width:3}
+.inkmap .node.me .rseal{fill:#b0382a}.inkmap .node.me .sealt{fill:#fff}
+.inkmap .node.lock .rseal{stroke-dasharray:2 2;fill:#ece4d2;opacity:.75}.inkmap .node.lock .sealt{opacity:.6}
+.inkmap .node:focus-visible .rseal{stroke-width:3}
 .inkmap .node.sel .ring2{fill:none;stroke:#b0382a;stroke-width:1.4;stroke-dasharray:3 3}
 .inkmap .name{fill:#2b2622;font-size:12px;font-weight:700;font-family:var(--f-brush),serif;paint-order:stroke;stroke:#efe5cf;stroke-width:3.5px}
 .inkmap .here{fill:#b0382a;stroke:#7e1f17}.inkmap .heret{fill:#fff}
@@ -1083,6 +1083,90 @@ button.tc.go em{position:absolute;top:3px;right:4px;font-style:normal;font-size:
 .rpp .face,.rpp svg{width:24px;height:24px}.rpp em{font-style:normal;font-size:12px;color:var(--ink-3)}
 .rpp.moving{border-style:dashed;opacity:.85}
 .rppl0{margin:8px 0 0}
+
+/* 탭 묶음 */
+.tabs.tabs5{display:grid;grid-template-columns:repeat(5,1fr);overflow:visible}
+.tabs.tabs5 .tab{justify-content:center;text-align:center;padding-left:0;padding-right:0;white-space:nowrap}
+.subtabs{display:flex;gap:6px;margin:10px 0 2px;flex-wrap:wrap}
+.subtabs .stab{position:relative;font:inherit;font-size:14px;padding:5px 14px;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--ink-2);cursor:pointer}
+.subtabs .stab[aria-selected="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.subtabs .stab .dot{position:absolute;top:2px;right:4px}
+/* 강호 돌발 */
+.haps{display:grid;gap:10px}
+.hap2{position:relative;display:flex;gap:12px;padding:12px 14px 12px 12px;border:1px solid var(--hc,#b57a12);border-radius:10px;background:linear-gradient(135deg,color-mix(in srgb,var(--hc,#b57a12) 9%,var(--paper)),var(--paper) 70%);overflow:hidden}
+.hap2::after{content:"";position:absolute;right:-18px;top:-18px;width:90px;height:90px;border-radius:50%;background:color-mix(in srgb,var(--hc,#b57a12) 8%,transparent)}
+.hap-treasure{--hc:#b57a12}.hap-master{--hc:#8c2f24}.hap-fishing{--hc:#2f6f8f}.hap-market{--hc:#2e7d5b}
+.hap2.done{opacity:.72;filter:saturate(.6)}
+.hapseal{flex:none;width:46px;height:46px;display:grid;place-items:center;border-radius:6px;background:var(--hc);color:#fff;font-family:var(--f-brush),serif;font-size:26px;transform:rotate(-4deg);box-shadow:inset 0 0 0 2px rgba(255,255,255,.35),0 2px 0 color-mix(in srgb,var(--hc) 60%,#000)}
+.hapbody{flex:1;min-width:0;position:relative;z-index:1}
+.haptop{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.hapk{font-size:11px;letter-spacing:.12em;color:var(--hc)}.haptop b{font-size:17px}
+.hapreg{margin-left:auto;font:inherit;font-size:12px;padding:2px 10px;border-radius:999px;border:1px solid var(--hc);color:var(--hc);background:var(--paper);cursor:pointer}
+.hap2.here .hapreg{background:var(--hc);color:#fff}
+.hap2 p{margin:6px 0 8px;line-height:1.6}
+.hapbar{height:4px;border-radius:2px;background:color-mix(in srgb,var(--hc) 15%,transparent);overflow:hidden}.hapbar i{display:block;height:100%;background:var(--hc);border-radius:2px}
+.hapleft{font-size:12px;color:var(--ink-3);margin:3px 0 0;text-align:right}
+.hapact{margin-top:6px}.hapact .btn.sealb{background:var(--hc);border-color:var(--hc);color:#fff}
+.hapnext2{display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px dashed var(--line);border-radius:10px;color:var(--ink-2);font-size:14px}
+.hapnext2 i{font-style:normal;display:grid;place-items:center;width:28px;height:28px;border-radius:5px;border:1px solid var(--ink-3);font-family:var(--f-brush),serif;color:var(--ink-2);transform:rotate(-4deg)}
+
+/* 환골탈태 표식: 붉은 붓자국 + 흰 한자 */
+.rbm2{display:inline-grid;place-items:center;margin:0 10px 0 8px;padding:5px 16px 6px 14px;vertical-align:middle;background:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 64%22 preserveAspectRatio=%22none%22%3E%3Cg fill=%22%23a8281c%22%3E%3Cpath d=%22M6,20 C20,10 48,9 80,8 C112,7 150,6 176,9 C188,10 196,14 194,22 C198,30 192,36 196,44 C194,52 182,56 160,56 C128,58 96,57 62,58 C38,59 18,58 9,52 C3,46 7,40 4,33 C2,27 4,24 6,20Z%22/%3E%3Cpath d=%22M2,30 C10,26 18,27 24,29 L22,34 C14,33 8,34 2,33Z%22 opacity=%22.8%22/%3E%3Cpath d=%22M186,12 C194,11 199,15 198,19 C196,17 190,16 186,16Z%22 opacity=%22.7%22/%3E%3Cpath d=%22M150,56 C170,57 186,59 199,62 C186,62 168,61 150,60Z%22 opacity=%22.6%22/%3E%3Cpath d=%22M30,7 C50,4 70,5 90,6 L88,8 C70,8 50,8 30,9Z%22 opacity=%22.55%22/%3E%3C/g%3E%3Cg fill=%22%23fff%22 fill-opacity=%22.16%22%3E%3Cpath d=%22M20,22 C70,19 120,20 180,21 L180,23 C120,22 70,22 20,24Z%22/%3E%3Cpath d=%22M14,44 C60,46 120,45 186,43 L186,45 C120,47 60,48 14,46Z%22/%3E%3Cpath d=%22M40,33 C80,32 130,33 170,32 L170,33.5 C130,34.5 80,34 40,34.5Z%22/%3E%3C/g%3E%3C/svg%3E") center/100% 100% no-repeat;transform:rotate(-3deg);filter:drop-shadow(0 1px 0 rgba(0,0,0,.12))}
+.rbm2 b{font-family:var(--f-brush),serif;font-weight:400;color:#fff;font-size:22px;letter-spacing:.14em;line-height:1;text-shadow:0 0 1px rgba(0,0,0,.25)}
+.rbm2.asc{background-image:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 64%22 preserveAspectRatio=%22none%22%3E%3Cg fill=%22%235b3d9e%22%3E%3Cpath d=%22M6,20 C20,10 48,9 80,8 C112,7 150,6 176,9 C188,10 196,14 194,22 C198,30 192,36 196,44 C194,52 182,56 160,56 C128,58 96,57 62,58 C38,59 18,58 9,52 C3,46 7,40 4,33 C2,27 4,24 6,20Z%22/%3E%3Cpath d=%22M2,30 C10,26 18,27 24,29 L22,34 C14,33 8,34 2,33Z%22 opacity=%22.8%22/%3E%3Cpath d=%22M186,12 C194,11 199,15 198,19 C196,17 190,16 186,16Z%22 opacity=%22.7%22/%3E%3Cpath d=%22M150,56 C170,57 186,59 199,62 C186,62 168,61 150,60Z%22 opacity=%22.6%22/%3E%3Cpath d=%22M30,7 C50,4 70,5 90,6 L88,8 C70,8 50,8 30,9Z%22 opacity=%22.55%22/%3E%3C/g%3E%3Cg fill=%22%23fff%22 fill-opacity=%22.16%22%3E%3Cpath d=%22M20,22 C70,19 120,20 180,21 L180,23 C120,22 70,22 20,24Z%22/%3E%3Cpath d=%22M14,44 C60,46 120,45 186,43 L186,45 C120,47 60,48 14,46Z%22/%3E%3Cpath d=%22M40,33 C80,32 130,33 170,32 L170,33.5 C130,34.5 80,34 40,34.5Z%22/%3E%3C/g%3E%3C/svg%3E")}
+
+/* 출석부 접기 */
+.att{position:relative}
+.attmini{padding:0!important}
+.attfold{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--paper)}
+.attfold b{font-family:var(--f-brush),serif;font-weight:400;font-size:16px;white-space:nowrap}
+.attdots{display:inline-flex;gap:3px;flex:none}.attdots i{width:9px;height:9px;border-radius:2px;border:1px solid var(--ink-3)}.attdots i.got{background:var(--seal);border-color:var(--seal)}.attdots i.big{width:11px;height:11px}
+.attsum{flex:1;min-width:0;font-size:13px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.attfold em{font-style:normal;font-size:12px;color:var(--ink-3);white-space:nowrap}
+.attfold.up{position:absolute;top:10px;right:12px;width:auto;padding:0;border:0;background:none;font-size:12px;color:var(--ink-3)}
+
+/* 투전판 */
+.dicebox{margin-top:6px}
+.dicetable{padding:16px 12px 12px;border-radius:12px;background:radial-gradient(ellipse at 50% 40%,#3d6b4f,#24432f 75%);box-shadow:inset 0 0 0 3px #5e3f24,inset 0 0 0 6px #7a4f2c;text-align:center}
+.dicebowl{display:flex;justify-content:center;gap:12px;padding:10px 0}
+.dz{width:54px;height:54px;filter:drop-shadow(0 3px 0 rgba(0,0,0,.35))}
+.dz.spin{animation:dspin .18s linear infinite}@keyframes dspin{0%{transform:rotate(-12deg) translateY(-3px)}50%{transform:rotate(10deg) translateY(2px)}100%{transform:rotate(-12deg) translateY(-3px)}}
+.dz.win{filter:drop-shadow(0 0 6px #f2d27a) drop-shadow(0 3px 0 rgba(0,0,0,.35))}
+.diceres{color:#f3ead6;font-size:15px;margin-top:4px}.diceres b{font-family:var(--f-brush),serif;font-weight:400;font-size:20px}.diceres.win em{color:#f2d27a;font-style:normal;font-weight:700}.diceres.lose em{color:#f0a49a;font-style:normal}
+.dicebets{display:flex;align-items:center;gap:6px;margin:10px 0 8px;flex-wrap:wrap}
+.chipb{font:inherit;font-size:13px;padding:4px 10px;border-radius:999px;border:1px dashed var(--ink-3);background:var(--paper);color:var(--ink-2);cursor:pointer}.chipb.on{border:1px solid #8a5a1a;background:#f2d27a;color:#2b2622;font-weight:700}.chipb:disabled{opacity:.4}
+.dicepicks{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.dpick{font:inherit;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;border-radius:10px;border:2px solid var(--ink);background:var(--paper);color:var(--ink);cursor:pointer}
+.dpick b{font-family:var(--f-brush),serif;font-weight:400;font-size:24px;line-height:1}.dpick span{font-size:12px;color:var(--ink-3)}.dpick em{font-style:normal;font-size:12px;font-weight:700;color:var(--seal)}
+.dp-big{border-color:#b0382a}.dp-big b{color:#b0382a}.dp-small{border-color:#2f4f8f}.dp-small b{color:#2f4f8f}.dp-tri{border-color:#8a5a1a;background:#fbf2dc}.dp-tri b{color:#8a5a1a}
+.dpick:disabled{opacity:.45;cursor:default}
+/* 무림일보 */
+.npaper{background:#f4ecd8;color:#2b2622;border:1px solid #d8c9a8;border-radius:4px;padding:14px 14px 10px;box-shadow:0 1px 0 #e3d6b8,0 6px 14px rgba(0,0,0,.06);font-family:var(--f-body)}
+:root[data-theme="dark"] .npaper{filter:brightness(.86)}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .npaper{filter:brightness(.86)}}
+.mast{text-align:center;border-bottom:3px double #2b2622;padding-bottom:6px;margin-bottom:10px}
+.mast b{display:block;font-family:var(--f-brush),serif;font-weight:400;font-size:38px;letter-spacing:.3em;line-height:1.1;margin-right:-.3em}
+.mast span{display:block;font-size:13px;letter-spacing:.6em;margin-right:-.6em;color:#5a524a}
+.mast i{display:block;font-style:normal;font-size:11.5px;color:#5a524a;margin-top:6px;border-top:1px solid #2b2622;padding-top:4px}
+.npaper .lead{border-bottom:1px solid #b9a988;padding-bottom:10px;margin-bottom:10px}
+.npaper .kick{display:inline-block;font-size:11px;letter-spacing:.2em;color:#fff;background:#b0382a;padding:1px 8px;margin-bottom:4px}
+.npaper h2{font-family:var(--f-brush),serif;font-weight:400;font-size:26px;line-height:1.25;margin:2px 0 6px}
+.npaper h3{font-size:16px;margin:0 0 4px;line-height:1.35}
+.npaper p{margin:0;line-height:1.65;font-size:14px}.npaper .by{color:#7a6e60;font-size:12px}
+.npaper .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 14px;border-bottom:1px solid #b9a988;padding-bottom:10px;margin-bottom:10px}
+.npaper .cols article:nth-child(even){border-left:1px solid #d8c9a8;padding-left:12px}
+.npaper .psec{font-size:12px;letter-spacing:.3em;text-align:center;border-top:2px solid #2b2622;border-bottom:1px solid #2b2622;padding:3px 0;margin:4px 0 8px}
+.kings{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:10px}
+.king{display:flex;flex-direction:column;gap:1px;padding:8px;border:1px solid #d1c09c;background:#f8f1e1}
+.king .kt{font-size:11px;letter-spacing:.12em;color:#b0382a}.king .pn{font-size:17px}.king .kv{font-size:12.5px;color:#3b332c}.king .kj{font-size:12px;color:#6d6357;line-height:1.5;margin-top:2px}
+.npaper .cols2{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px 14px;margin-bottom:10px}
+.npaper .cols2 article{border-top:1px solid #b9a988;padding-top:6px}
+.npaper .pn{font-weight:700}
+.ads{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 8px}
+.adbox{border:1.5px solid #2b2622;padding:6px 8px;text-align:center;display:flex;flex-direction:column;gap:2px;background:#fbf6e9}.adbox b{font-family:var(--f-brush),serif;font-weight:400;font-size:16px}.adbox span{font-size:11.5px;color:#5a524a;line-height:1.45}
+.pfoot,.pnote{font-size:11.5px!important;color:#7a6e60;text-align:center;margin-top:6px!important}.pnote{font-size:14px!important;color:#3b332c;padding:6px 4px 10px}
+.newslive{margin-top:16px}.newslive ul{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.newslive li{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.newslive li span{width:60px;color:var(--ink-3);font-size:12.5px}.newslive li b{font-weight:400;color:var(--ink-2)}.newslive li b.top{font-weight:700;color:var(--ink)}
 </style>
 
 <div class="wrap">
@@ -1138,7 +1222,10 @@ const rbN=h=>Math.min(RB_MAX,h?.rb||0),asN=h=>h?.asc||0;
 const rbStatM=h=>1+rbN(h)*RB_STAT+asN(h)*AS_STAT,rbExpM=h=>1+rbN(h)*RB_EXP+asN(h)*AS_EXP;
 const RB_NAME=["","일환","이환","삼환"];
 const rbLabel=h=>asN(h)?`선인 · ${asN(h)}승`:rbN(h)?RB_NAME[rbN(h)]:"";
-const rbMark=h=>rbLabel(h)?`<span class="rbm ${asN(h)?"asc":""}">${rbLabel(h)}</span>`:"";
+/* 환골탈태 표식: 붉은 붓자국 위에 흰 한자 (一換·二換·三換, 비승은 보랏빛 仙 n昇) */
+const RB_HZ=["","一換","二換","三換"],HZ_NUM=["","一","二","三","四","五","六","七","八","九","十"];
+const rbHz=h=>asN(h)?`仙${HZ_NUM[asN(h)]||asN(h)}昇`:rbN(h)?RB_HZ[rbN(h)]:"";
+const rbMark=h=>rbLabel(h)?`<span class="rbm2 ${asN(h)?"asc":""}" title="${rbLabel(h)}" aria-label="${rbLabel(h)}"><b>${rbHz(h)}</b></span>`:"";
 const expPerHour=l=>l*10+50;
 
 /* 지도: 지역과 길 (이동 시간은 시간 단위) */
@@ -2349,7 +2436,7 @@ function resolveGate(room){
 }
 /* 도우미로 이긴 적 있는 관문: 벽에 닿으면 다시 싸우지 않고 바로 오른다 */
 function promoteByWin(){const h=structuredClone(me),nr=h.realm+1;if(!atWall(h)||!REALMS[nr]?.gate||!(h.gateWins?.[nr]>0))return;
-  h.realm=nr;h.points+=5;applyExp(h,0);const got=[`${REALMS[nr].n}의 경지에 올랐다! (포인트 +5)`];(ADV[h.sect]||[]).filter(x=>x.r===nr).forEach(x=>got.push(`새 무공 「${x.n}」${josa(String(x.n),"을").slice(String(x.n).length)} 깨쳤다`));
+  h.realm=nr;h.points+=5;applyExp(h,0);hlite(h,"realm",40+nr*6,REALMS[nr].n);const got=[`${REALMS[nr].n}의 경지에 올랐다! (포인트 +5)`];(ADV[h.sect]||[]).filter(x=>x.r===nr).forEach(x=>got.push(`새 무공 「${x.n}」${josa(String(x.n),"을").slice(String(x.n).length)} 깨쳤다`));
   addLog(h,`${GATES[nr].title}에서 이긴 기억을 되새겨 벽을 넘었다. ${got.join(", ")}`);save(h);toast(got.join(" · "))}
 function claimGate(){
   const r=myRoom();if(!r||(r.status!=="win"&&r.status!=="fail"))return;const h=structuredClone(me);h.gateDone=h.gateDone||{};if(h.gateDone[r.id])return;
@@ -2915,7 +3002,12 @@ function bindAlarm(){
 /* ───────── 칭호: 해낸 일마다 하나씩. 얻은 칭호 중 하나를 이름 앞에 단다 ─────────
    h.titles = {칭호번호: 얻은 시각}, h.title = 달고 있는 칭호, h.cnt = 횟수 기록, h.visited = 가 본 지역 */
 const cnt=(h,k)=>h?.cnt?.[k]||0;
-function bump(h,k,n=1){h.cnt=h.cnt||{};h.cnt[k]=(h.cnt[k]||0)+n}
+/* 주간 기록(무림일보용): 월요일(KST)마다 새 주. 지난주 것은 wkPrev에 한 주만 남긴다 */
+const wkNow=()=>Math.floor((dayKey()+3)/7);
+function wkRoll(h){const W=wkNow();if(h.wk?.w===W)return h.wk;h.wkPrev=h.wk?.w===W-1?h.wk:null;h.wk={w:W,c:{},hl:[],lv0:h.level||1,r0:h.realm||0};return h.wk}
+function bump(h,k,n=1){h.cnt=h.cnt||{};h.cnt[k]=(h.cnt[k]||0)+n;try{const w=wkRoll(h);w.c[k]=(w.c[k]||0)+n;w.lv=h.level;w.r=h.realm}catch(e){}}
+/* 이번 주 '기삿거리' 한 줄: {k:종류, v:값(클수록 큰 기사), t:문구} 가장 큰 것 몇 개만 남긴다 */
+function hlite(h,k,v,t){try{const w=wkRoll(h);w.hl=[...(w.hl||[]),{k,v,t}].sort((a,b)=>b.v-a.v).slice(0,6)}catch(e){}}
 const maxPlus=h=>Math.max(0,...[...Object.values(h.gear||{}),...(h.bag||[])].filter(Boolean).map(i=>i.plus||0));
 /* 칭호 확인은 내 기록을 저장할 때만 하므로, 관계는 나와 다른 사람 사이로 본다 */
 const anyRel=(h,r)=>others.some(o=>o._id&&!String(o._id).startsWith("fake-")&&(PAIR[r]?sajeRole(myId(),o._id)===r:relMutual(myId(),o._id)===r));
@@ -3545,18 +3637,41 @@ function pxScene(k){let u=pxsCache[k];if(!u){try{u=pxsCache[k]=pxsDraw(k)}catch(
   return u?`<img class="pxscene" src="${u}" alt="" aria-hidden="true" decoding="async" draggable="false">`:""}
 
 let innTab="buy";
+/* ───── 투전판: 주사위 셋을 굴려 대(11~17)·소(4~10)를 맞힌다. 같은 눈 셋(표자)이 나오면 대소는 모두 진다.
+   표자에 걸면 25배. 하루 다섯 판 ───── */
+const DICE_DAY=5,DICE_BETS=[100,500,1000,3000],DICE_PICK={small:{n:"소",d:"4~10",x:2},big:{n:"대",d:"11~17",x:2},tri:{n:"표자",d:"같은 눈 셋",x:25}};
+const diceUsed=h=>h.dice?.day===dayKey()?h.dice.n:0;
+let diceBet=100,diceLast=null,diceRolling=false;
+function dieSvg(n,cls=""){const P={1:[[50,50]],2:[[28,28],[72,72]],3:[[26,26],[50,50],[74,74]],4:[[28,28],[72,28],[28,72],[72,72]],5:[[26,26],[74,26],[50,50],[26,74],[74,74]],6:[[28,24],[72,24],[28,50],[72,50],[28,76],[72,76]]}[n]||[];
+  const red=n===1||n===4;return `<svg class="dz ${cls}" viewBox="0 0 100 100" aria-label="${n}"><rect x="4" y="4" width="92" height="92" rx="18" fill="#fbf7ee" stroke="#2b2622" stroke-width="4"/><rect x="10" y="10" width="80" height="80" rx="14" fill="none" stroke="#e7dccb" stroke-width="3"/>${P.map(([x,y])=>`<circle cx="${x}" cy="${y}" r="${n===1?15:9}" fill="${red?"#b0382a":"#2b2622"}"/>`).join("")}</svg>`}
+function diceBox(h){const used=diceUsed(h),left=DICE_DAY-used,L=diceLast,can=left>0&&!diceRolling;
+  const faces=L?L.d:[3,5,6];
+  return `<div class="dicebox"><div class="dicetable"><div class="dicebowl" id="diceFaces">${faces.map(n=>dieSvg(n,L&&!diceRolling?(L.win?"win":"lose"):"")).join("")}</div>
+      ${L&&!diceRolling?`<div class="diceres ${L.win?"win":"lose"}"><b>${L.tri?"표자!":L.sum>=11?"대":"소"}</b> · ${L.d.join("+")}=${L.sum} · ${L.win?`<em>+${silverTxt(L.pay)}</em>`:`<em>-${silverTxt(L.bet)}</em>`}</div>`:diceRolling?`<div class="diceres">주사위가 구른다…</div>`:`<div class="diceres">걸고 굴려라. 오늘 ${left}판 남았다.</div>`}</div>
+    <div class="dicebets"><span class="note" style="margin:0">판돈</span>${DICE_BETS.map(b=>`<button type="button" class="chipb ${diceBet===b?"on":""}" data-dbet="${b}" ${(h.silver||0)<b?"disabled":""}>${b.toLocaleString()}냥</button>`).join("")}</div>
+    <div class="dicepicks">${Object.entries(DICE_PICK).map(([k,P])=>`<button type="button" class="dpick dp-${k}" data-dpick="${k}" ${!can||(h.silver||0)<diceBet?"disabled":""}><b>${P.n}</b><span>${P.d}</span><em>×${P.x}</em></button>`).join("")}</div>
+    <p class="note" style="margin:8px 0 0">오늘 ${used}/${DICE_DAY}판 · 대·소는 건 돈의 두 배, 표자는 스물다섯 배를 돌려받는다. 같은 눈 셋이 나오면 대·소는 모두 진다. 큰돈을 따거나 잃으면 무림일보에 실린다.</p></div>`}
+function diceRoll(pick){if(diceRolling)return;const h=structuredClone(me),bet=diceBet;if(diceUsed(h)>=DICE_DAY){toast("오늘 투전판은 문을 닫았다. 내일 다시 와라.");return}
+  if((h.silver||0)<bet){toast(`은자가 모자라다. (${silverTxt(bet)})`);return}
+  const d=[0,0,0].map(()=>1+Math.floor(Math.random()*6)),sum=d[0]+d[1]+d[2],tri=d[0]===d[1]&&d[1]===d[2];
+  const win=pick==="tri"?tri:!tri&&(pick==="big"?sum>=11:sum<=10),pay=win?bet*(DICE_PICK[pick].x-1):-bet;
+  h.silver=(h.silver||0)+pay;h.dice={day:dayKey(),n:diceUsed(h)+1};bump(h,"dice");bump(h,"diceNet",pay);if(Math.abs(pay)>=3000)hlite(h,"dice",pay>0?40+Math.min(40,pay/1000):25,pay>0?`+${silverTxt(pay)}`:`-${silverTxt(-pay)}`);
+  addLog(h,`투전판에서 ${DICE_PICK[pick].n}에 ${silverTxt(bet)}을 걸었다. ${d.join("·")} (${tri?"표자":sum>=11?"대":"소"}) → ${win?`땄다! +${silverTxt(pay)}`:"잃었다."}`);
+  diceRolling=true;render();const el=()=>document.getElementById("diceFaces");let n=0;
+  const iv=setInterval(()=>{const e=el();if(e)e.innerHTML=[0,0,0].map(()=>dieSvg(1+Math.floor(Math.random()*6),"spin")).join("");if(++n>=9){clearInterval(iv);diceRolling=false;diceLast={d,sum,tri,win,pay,bet,pick};save(h);toast(win?`${tri?"표자! ":""}+${silverTxt(pay)}`:`${tri&&pick!=="tri"?"표자… ":""}-${silverTxt(bet)}`)}},90)}
 function innHub(h){if(h.travel)return "";const home=atHome(h);
   const head=shopHead("inn",`${REGIONS[h.loc].n} 객잔 · 가진 돈 ${silverTxt(h.silver)}${home?` · <span class="disc">${SECTS[h.sect].n} 사람이라 15% 싸게</span>`:""}${priceTags(h)}`);
   if(!shopOpen.inn)return `<div class="shop">${head}</div>`;
-  const T={buy:"물건 사기",smith:"대장간",decor:"가구"};
+  const T={buy:"물건 사기",smith:"대장간",decor:"가구",dice:`투전판${diceUsed(h)<DICE_DAY?` ${DICE_DAY-diceUsed(h)}`:""}`};
   let body="";
   if(innTab==="buy")body=`<div class="shopl">${Object.keys(INN).map(k=>[k,innPrice(h,k)]).map(([k,p])=>`<button class="shopi" type="button" data-inn="${k}" ${(h.silver||0)<p?"disabled":""}><b>${ITEMS[k][0]}</b><span>${GIFT_VAL[k]?`${ITEMS[k][1]} · 인연 +${GIFT_VAL[k]}`:ITEMS[k][1]}</span><em>${home?`<s>${INN[k]}</s> `:""}${p}냥</em></button>`).join("")}</div>`;
   else if(innTab==="smith"){const sp=smithSpec||SECT_SPEC[h.sect]||"dps";
     const cell=(slot,g)=>{const it=makeItem(slot,g,sp),p=SMITH[g][slot],lock=g>h.realm;return `<button class="shopi" type="button" data-smith="${slot}|${g}|${sp}" ${lock||(h.silver||0)<p?"disabled":""}><b>${it.name}</b><span>${statLine(it)}${lock?` · ${REALMS[g].n}부터`:""}</span><em>${p}냥</em></button>`};
     body=`<p class="note" style="margin:4px 0 6px">일류 전까지 쓰는 기본 장비. 뒷마당 대장장이가 두드려 준다.</p><div class="chips" style="margin:0 0 8px">${SPECS.map(k=>`<button type="button" class="btn sm ${k===sp?"sealb":"ghost"}" data-smsp="${k}">${SPEC[k].n}</button>`).join("")}</div>
       <div class="shopl">${cell("weapon",0)}${cell("armor",0)}${cell("weapon",1)}${cell("armor",1)}</div>`}
+  else if(innTab==="dice")body=diceBox(h);
   else body=decorTab(h);
-  return `<div class="shop">${head}<div class="innseg" role="tablist">${Object.entries(T).map(([k,n])=>`<button type="button" role="tab" aria-selected="${innTab===k}" class="${innTab===k?"on":""}" data-innt="${k}">${n}</button>`).join("")}</div>${pxScene(innTab)}${body}</div>`}
+  return `<div class="shop">${head}<div class="innseg" role="tablist">${Object.entries(T).map(([k,n])=>`<button type="button" role="tab" aria-selected="${innTab===k}" class="${innTab===k?"on":""}" data-innt="${k}">${n}</button>`).join("")}</div>${innTab==="dice"?"":pxScene(innTab)}${body}</div>`}
 function decorTab(h){const G={};for(const [k,D] of Object.entries(DECOR))(G[D.g||"꾸밈"]=G[D.g||"꾸밈"]||[]).push([k,D]);
   const item=([k,D])=>{const own=furnLv(h,k),c=decorCost(D),ok=Object.entries(c).every(([m,v])=>matHave(h,m)>=v);
     return `<button class="shopi ${own?"own":""}" type="button" data-decor="${k}" ${own||!ok?"disabled":""}><b>${D.n}</b><span>${D.d}${D.eff?` · ${D.u} +${D.per}`:""}${D.cost&&!own?`<span class="fcost">${Object.entries(c).map(([m,v])=>`<i class="${matHave(h,m)>=v?"":"lack"}">${m==="silver"?silverTxt(v):`${matName(m)} ${matHave(h,m)}/${v}`}</i>`).join(" ")}</span>`:""}</span><em>${own?(D.hire?"고용함":"들였다"):D.cost?"만든다":D.hire?`고용 ${silverTxt(D.price)}`:silverTxt(D.price)}</em></button>`};
@@ -3862,8 +3977,8 @@ function happenDuel(id){const e=happenNow().find(x=>x.id===id),h=structuredClone
   const L=win?["고수가 검을 거두며 웃었다. \"좋은 칼이다. 잊지 않겠다.\"","세 합 만에 고수의 소매가 찢어졌다. 고수는 술 한 병을 내밀고 떠났다.","끝내 고수의 무릎을 꿇렸다. 객잔이 떠나갈 듯 환호했다."]:["고수의 손가락 하나에 검이 튕겨 나갔다. \"아직 멀었다. 그래도 눈빛은 좋구나.\"","열 합을 버텼지만 결국 밀려났다. 고수가 한 수를 짚어 주고 떠났다."];
   addLog(h,`떠돌이 고수와 겨뤘다. ${pickOne(L)} (${got.join(", ")})`);save(h);toast(win?`고수를 꺾었다! ${got.join(" · ")}`:`졌다. 그래도 배운 게 있다 · ${got[0]}`)}
 function happenBox(h){const now=happenNow(),nx=happenNext();
-  if(!now.length)return nx?`<section><p class="note hapnext">다음 강호 소식: ${kstHM(nx.start)}쯤 어딘가에서 무슨 일이 터진다.</p></section>`:"";
-  return `<section>${now.map(e=>{const T=HAPPEN_T[e.type],R=REGIONS[e.region],here=!h.travel&&h.loc===e.region,c=happenCache[e.id];
+  if(!now.length)return nx?`<section><div class="hapnext2"><i>聞</i><span>다음 강호 소식 · <b>${kstHM(nx.start)}</b>쯤 어딘가에서 무슨 일이 터진다.</span></div></section>`:"";
+  return `<section class="haps">${now.map(e=>{const T=HAPPEN_T[e.type],R=REGIONS[e.region],here=!h.travel&&h.loc===e.region,c=happenCache[e.id];
     if(e.type==="treasure"&&mode==="db"&&!c)happenLoad(e.id);
     const taken=e.type==="treasure"&&(c?.v||(mode!=="db"&&h.happen?.[e.id]));
     let act="";
@@ -3871,7 +3986,12 @@ function happenBox(h){const now=happenNow(),nx=happenNext();
     if(e.type==="master")act=h.happen?.[e.id]?`<p class="note" style="margin:0">이미 겨뤘다 · ${h.happen[e.id]==="win"?"이겼다":"졌다"}</p>`:here?`<button class="btn sealb" type="button" data-hduel="${e.id}">고수에게 한 수 청한다</button>`:`<button class="btn" type="button" data-hgo="${e.region}">지도에서 ${R.n} 보기</button>`;
     if(e.type==="fishing")act=here?`<p class="note" style="margin:0">지금 이곳 물가에서 낚시하면 된다.</p>`:`<button class="btn" type="button" data-hgo="${e.region}">지도에서 ${R.n} 보기</button>`;
     if(e.type==="market")act=here?`<p class="note" style="margin:0">지금 이곳 객잔과 마방이 30% 싸다.</p>`:`<button class="btn" type="button" data-hgo="${e.region}">지도에서 ${R.n} 보기</button>`;
-    return `<div class="hap"><div class="kicker"><i class="hapmk">${T.ch}</i> 강호 돌발 · ${T.n} · <span data-suntil="${e.end}"></span> 남음</div><p>${T.d(R.n)}</p><div class="row">${act}</div></div>`}).join("")}</section>`}
+    const pct=Math.max(0,Math.min(100,(e.end-Date.now())/(e.end-e.start)*100)),done=taken||(e.type==="master"&&h.happen?.[e.id]);
+    return `<article class="hap2 hap-${e.type} ${here?"here":""} ${done?"done":""}"><div class="hapseal" aria-hidden="true">${T.ch}</div>
+      <div class="hapbody"><div class="haptop"><span class="hapk">강호 돌발</span><b>${T.n}</b><button type="button" class="hapreg" data-hgo="${e.region}">${R.n}${here?" · 지금 여기":""}</button></div>
+        <p>${T.d(R.n)}</p>
+        <div class="hapbar" title="남은 시간"><i style="width:${pct.toFixed(1)}%"></i></div><div class="hapleft"><span data-suntil="${e.end}"></span> 남음</div>
+        <div class="row hapact">${act}</div></div></article>`}).join("")}</section>`}
 const kstHM=t=>{const d=new Date(t+KST);return `${String(d.getUTCHours()).padStart(2,"0")}:${String(d.getUTCMinutes()).padStart(2,"0")}`};
 
 /* ───────── 낚시: 하루 다섯 번 던진다. 입질이 오면 재빨리 챈다 ───────── */
@@ -3940,7 +4060,7 @@ function fishPull(late){clearTimeout(fishTimer);if(!fishState)return;const ph=fi
   const k=fishRoll(h);let text;
   if(k==="boot")text="낡은 짚신이 걸려 나왔다… 누가 버린 걸까.";
   else if(k==="box"){const s=addSilver(h,20+Math.floor(Math.random()*40));h.items.stone+=2;text=`녹슨 함이 걸렸다! 열어 보니 ${silverTxt(s)}과 강화석 2개.`}
-  else{h.fish={...(h.fish||{}),[k]:((h.fish||{})[k]||0)+1};bump(h,"fish");const first=!h.fdex?.[k];h.fdex={...(h.fdex||{}),[k]:(h.fdex?.[k]||0)+1};const tr=FISHDB[k][3];if(tr>=3)bump(h,"fishLeg");
+  else{h.fish={...(h.fish||{}),[k]:((h.fish||{})[k]||0)+1};bump(h,"fish");const first=!h.fdex?.[k];h.fdex={...(h.fdex||{}),[k]:(h.fdex?.[k]||0)+1};const tr=FISHDB[k][3];if(tr>=3)bump(h,"fishLeg");if(tr>=2)hlite(h,"fish",tr>=3?60:20,FISHDB[k][0]);
     text=`${fishName(k)}${josa(fishName(k),"을").slice(fishName(k).length)} 낚았다!${tr===3?" 전설 속의 고기다!!":tr===2?" 귀한 고기다!":""}${first?` 처음 보는 고기라 어보에 올렸다. (${Object.keys(h.fdex).length}/${FISH_N})`:""}`}
   fishLast={ok:true,text,k};addLog(h,`${REGIONS[h.loc].n} 물가에서 낚시 · ${text}`);save(h)}
 let fishLast=null,fishSellOpen=false;
@@ -4786,7 +4906,7 @@ function huntShoot(late){clearTimeout(huntTimer);const s=huntState;if(!s||s.phas
   if(late)text=`${josa(nm,"이")} 낌새를 채고 숲 속으로 사라졌다. 너무 오래 겨눴다.`;
   else if(p>=s.z0&&p<=s.z1){ok=true;const got=[];
     for(const [m,a,b,c] of A[5]){if(Math.random()>c)continue;const q=a+Math.floor(Math.random()*(b-a+1));h.mats={...(h.mats||{}),[m]:((h.mats||{})[m]||0)+q};got.push(`${matN(m)} ${q}`)}
-    const first=!h.hdex?.[s.k];h.hdex={...(h.hdex||{}),[s.k]:(h.hdex?.[s.k]||0)+1};bump(h,"hunt");if(t>=3)bump(h,"huntLeg");if(s.k==="white")bump(h,"huntWhite");
+    const first=!h.hdex?.[s.k];h.hdex={...(h.hdex||{}),[s.k]:(h.hdex?.[s.k]||0)+1};bump(h,"hunt");if(t>=3){bump(h,"huntLeg");hlite(h,"hunt",55,nm)}if(s.k==="white")bump(h,"huntWhite");
     const mp=tmapDrop(h,.012);
     text=`${josa(nm,"을")} 잡았다!${t===3?" 전설 속 짐승이다!!":t===2?" 귀한 짐승이다!":""} ${got.join(" · ")}${first?` · 처음 잡은 짐승이라 사냥 도감에 올렸다 (${Object.keys(h.hdex).filter(k=>HUNTDB[k]).length}/${HUNT_N})`:""}${mp?` · ${mp}`:""}`}
   else if(p>=s.z0-pad&&p<=s.z1+pad){if(t<=1&&Math.random()<.5){h.mats={...(h.mats||{}),meat_game:((h.mats||{}).meat_game||0)+1};text=`화살이 ${josa(nm,"을")} 스쳤다. 달아난 자리에 떨어진 산짐승 고기 1을 주웠다.`}else text=`화살이 ${josa(nm,"을")} 아슬아슬하게 스쳤다. 놓쳤다.`}
@@ -4938,7 +5058,7 @@ function tombClaim(){const T=myTomb(),h=structuredClone(me);if(!T||T.status!=="t
   for(const [k,v] of Object.entries(L.mats||{})){const q=Math.max(1,Math.round(v*half));h.mats={...(h.mats||{}),[k]:((h.mats||{})[k]||0)+q};got.push(`${matN(k)} ${q}`)}
   if(L.herb){h.items.herb=(h.items.herb||0)+L.herb;got.push(`약초 ${L.herb}`)}if(L.clue){h.items.clue+=L.clue;got.push(`비급 단서 ${L.clue}`)}
   for(let i=0;i<(L.guard||0);i++)got.push("장비 「"+gainItem(h,setRar(makeItem(pickOne(["weapon","armor","acc"]),Math.min(6,h.realm),pickOne(SPECS)),Math.random()<.35?2:1))+"」");
-  if(L.gold){const big=tombN(T),k=Math.max(1,L.gold|0);for(let i=0;i<k;i++)got.push("장비 「"+gainItem(h,setRar(makeItem(pickOne(["weapon","armor","acc"]),Math.min(6,h.realm),pickOne(SPECS)),big===5&&i===0?3:Math.random()<(big===4?.4:.25)?3:2))+"」");bump(h,"tombGold")}
+  if(L.gold){const big=tombN(T),k=Math.max(1,L.gold|0);for(let i=0;i<k;i++)got.push("장비 「"+gainItem(h,setRar(makeItem(pickOne(["weapon","armor","acc"]),Math.min(6,h.realm),pickOne(SPECS)),big===5&&i===0?3:Math.random()<(big===4?.4:.25)?3:2))+"」");bump(h,"tombGold");hlite(h,"tomb",big===5?100:big===4?80:50,`${REGIONS[T.region]?.n||""}의 ${TOMB_SIZE[big].n}`)}
   const x=Math.round(expPerHour(h.level)*(tombN(T)===5?3:tombN(T)===4?2:1.5));applyExp(h,x);got.push(`경험치 +${x}`);
   h.tombDone={...Object.fromEntries(Object.entries(h.tombDone||{}).slice(-20)),[T.id]:1};h.tomb=null;
   tombMsg=`고묘에서 챙겨 나온 것: ${got.join(" · ")}${half<1?" (기절해서 절반)":""}`;addLog(h,tombMsg);save(h);toast(L.gold?"보물을 찾았다!":"고묘에서 나왔다")}
@@ -6162,7 +6282,7 @@ function enhance(slot){
   if(it.plus>=10){toast("이미 최고 강화입니다.");return}
   const cost=enhCost(it);if(h.items.stone<cost){toast(`강화석이 ${cost-h.items.stone}개 모자랍니다.`);return}
   const jr=!!h.buff?.enh,ch=Math.min(100,enhChance(it)+(jr?15:0)),before=statLine(it),target=it.plus+1;h.items.stone-=cost;bump(h,"enh");if(jr)delete h.buff.enh;
-  if(Math.random()*100<ch){it.plus++;it.fails=0;gmsg={slot,ok:true,text:fill(pickOne(SUCC),{i:it.name}),tag:`+${it.plus} 성공`,sub:`${before} → ${statLine(it)}`};addLog(h,`${it.name} 강화 성공 · +${it.plus}`)}
+  if(Math.random()*100<ch){it.plus++;it.fails=0;if(it.plus>=7)hlite(h,"enh",30+it.plus*4,`${it.name} +${it.plus}`);gmsg={slot,ok:true,text:fill(pickOne(SUCC),{i:it.name}),tag:`+${it.plus} 성공`,sub:`${before} → ${statLine(it)}`};addLog(h,`${it.name} 강화 성공 · +${it.plus}`)}
   else{it.fails=(it.fails||0)+1;gmsg={slot,ok:false,text:fill(pickOne(FAILT),{i:it.name}),tag:`+${target} 실패`,sub:`강화석 ${cost}개 소모 · 다음 확률 +${it.fails}% (실패 보정)`};addLog(h,`${it.name} +${target} 강화 실패 · 강화석 ${cost}개 소모`)}
   gmsg.n=++gmsgSeq;if(slot==="bag")gbag=bagKey(it); save(h);
 }
@@ -6252,7 +6372,7 @@ function finishTrain(cancel){
 function promote(){
   const h=structuredClone(me); if(!atWall(h)) return;
   const next=REALMS[h.realm+1]; if(!next||next.gate) return;
-  h.realm++; h.points+=5; applyExp(h,0);
+  h.realm++; h.points+=5; applyExp(h,0);hlite(h,"realm",40+h.realm*6,next.n);
   addLog(h,`${next.n}의 경지에 올랐다.`); save(h); toast(`${next.n}에 올랐습니다! 보너스 포인트 +5`);
 }
 /* 문파를 옮기면 한 번, 직접 찍은 능력치를 모두 되돌려 다시 찍을 수 있다 (수련으로 오른 몫은 그대로) */
@@ -6617,8 +6737,8 @@ function introView(){
 function heroView(){
   const h=me,s=SECTS[h.sect],r=REALMS[h.realm],next=REALMS[h.realm+1],wall=atWall(h);
   const pct=Math.min(100,h.exp/need(h.level)*100);
-  const tabs=[["train","수련"],["world","강호"],["raid","토벌"],["gate","관문"],["league","친선"],["self","인물"],["gear","장비"],["alarm","알림"],["mates","인연"],["mail","우편"],["notice","공지"],["qna","문답"]];
-  const dot={world2:0,qna:qnaOK()&&tab!=="qna"&&qnaUnread(),notice:mode==="db"&&noticeUnread()>0,alarm:mode==="db"&&alarmUnread()>0,mail:mode==="db"&&(mailUnread()>0||myParcels().length>0),train:(h.training&&Date.now()>=h.training.end)||!attOf(h).done||festTodo(h),world:(h.travel&&Date.now()>=h.travel.end)||dosaHere(h)||!!followOffer(h)||(h.mission&&(h.mission.phase==="scene"||Date.now()>=h.mission.end))||(!h.tomb&&tombInvites().length>0)||myTomb()?.status==="tdone",league:lgDot(h),self:h.points>0||!!h.respec||!!postOffer(h),mates:giftsToMe().some(g=>g.t>(h.seenGift||0))||others.some(o=>{const B=bondOf(o._id,myId()),A=bondOf(myId(),o._id);return (B.want&&B.want!=="지인"&&!relMatch(B.want,A.want)&&relNorm(B.want)!==relMutual(myId(),o._id))||false})||partyCallsForMe().length>0||duelInvitesForMe().length>0||(()=>{const d=myDuel();return !!d&&(d.status==="done"||(d.status==="fight"&&!duelActOf(d,myId())))})(),gate:(()=>{const r=myRoom();if(r&&r.status==="fight"){const m=r.party.find(x=>x.id===myId());return !!(m&&m.hp>0&&!playerReady(r,m))}if(r&&(r.status==="win"||r.status==="fail")&&!h.gateDone?.[r.id])return true;return atWall(h)&&!!GATES[h.realm+1]?.ready&&!r})(),raid:(()=>{const st=raidState(periodNow());if(coInvitesForMe().length&&!h.colair)return true;if(h.colair)return true;if(h.lair&&h.lair.phase!=="done")return true;return st.down&&h.raid?.period===periodNow()&&!h.raid.claimed})()};
+  const tabs=[["train","수련"],["world","강호"],["raid","토벌"],["gate","관문"],["league","친선"],["self","인물"],["gear","장비"],["alarm","알림"],["mates","인연"],["mail","우편"],["notice","공지"],["news","일보"],["qna","문답"]];
+  const dot={news:newsUnread(),world2:0,qna:qnaOK()&&tab!=="qna"&&qnaUnread(),notice:mode==="db"&&noticeUnread()>0,alarm:mode==="db"&&alarmUnread()>0,mail:mode==="db"&&(mailUnread()>0||myParcels().length>0),train:(h.training&&Date.now()>=h.training.end)||!attOf(h).done||festTodo(h),world:(h.travel&&Date.now()>=h.travel.end)||dosaHere(h)||!!followOffer(h)||(h.mission&&(h.mission.phase==="scene"||Date.now()>=h.mission.end))||(!h.tomb&&tombInvites().length>0)||myTomb()?.status==="tdone",league:lgDot(h),self:h.points>0||!!h.respec||!!postOffer(h),mates:giftsToMe().some(g=>g.t>(h.seenGift||0))||others.some(o=>{const B=bondOf(o._id,myId()),A=bondOf(myId(),o._id);return (B.want&&B.want!=="지인"&&!relMatch(B.want,A.want)&&relNorm(B.want)!==relMutual(myId(),o._id))||false})||partyCallsForMe().length>0||duelInvitesForMe().length>0||(()=>{const d=myDuel();return !!d&&(d.status==="done"||(d.status==="fight"&&!duelActOf(d,myId())))})(),gate:(()=>{const r=myRoom();if(r&&r.status==="fight"){const m=r.party.find(x=>x.id===myId());return !!(m&&m.hp>0&&!playerReady(r,m))}if(r&&(r.status==="win"||r.status==="fail")&&!h.gateDone?.[r.id])return true;return atWall(h)&&!!GATES[h.realm+1]?.ready&&!r})(),raid:(()=>{const st=raidState(periodNow());if(coInvitesForMe().length&&!h.colair)return true;if(h.colair)return true;if(h.lair&&h.lair.phase!=="done")return true;return st.down&&h.raid?.period===periodNow()&&!h.raid.claimed})()};
   return `<div>
   <section style="margin-top:8px">
     <div class="who"><button type="button" class="facebtn" data-go="self" aria-label="프로필 사진 바꾸기">${face(myId(),h.sect,"big")}</button>
@@ -6635,8 +6755,8 @@ function heroView(){
   </section>
   ${mode==="db"&&tab!=="mates"&&myDuel()?.status==="fight"?`<button class="mailnew" type="button" data-tab="mates">논검 중이다 · ${myDuel().round}합 · 보러 가기</button>`:""}
   ${mode==="db"&&tab!=="alarm"&&alarmUnread()?`<button class="mailnew" type="button" data-tab="alarm">새 알림 ${alarmUnread()}개 · 알림 보기</button>`:""}
-  <div class="tabs" role="tablist">${tabs.map(([k,n])=>`<button class="tab" role="tab" type="button" data-tab="${k}" aria-selected="${tab===k}">${n}${dot[k]?`<span class="dot" aria-label="확인할 것 있음"></span>`:""}</button>`).join("")}</div>
-  <div id="tabbody">${tab==="train"?trainTab():tab==="world"?worldTab():tab==="raid"?raidTab():tab==="gate"?gateTab():tab==="league"?leagueTab():tab==="self"?selfTab():tab==="gear"?gearTab():tab==="mail"?mailTab():tab==="alarm"?alarmTab():tab==="notice"?noticeTab():tab==="qna"?qnaTab():bondTab()}</div>
+  ${tabBar(tabs,dot)}
+  <div id="tabbody">${tab==="train"?trainTab():tab==="world"?worldTab():tab==="raid"?raidTab():tab==="gate"?gateTab():tab==="league"?leagueTab():tab==="self"?selfTab():tab==="gear"?gearTab():tab==="mail"?mailTab():tab==="alarm"?alarmTab():tab==="notice"?noticeTab():tab==="news"?newsTab():tab==="qna"?qnaTab():bondTab()}</div>
   ${isOwner||mode==="local"?`<details class="tools"><summary>시험용 도구 (만드는 동안만 쓰고 나중에 없앱니다)</summary>
     <div class="row"><button class="btn ghost" id="stoneBtn" type="button">강화석 +20</button><button class="btn ghost" id="warpBtn" type="button">보스 지역으로 순간이동</button><button class="btn ghost" id="triesBtn" type="button">진입 횟수 초기화</button><button class="btn ghost" id="dropBtn" type="button">장비 하나 얻기</button><button class="btn ghost" id="horseBtn" type="button">말 얻기/놓아주기</button></div>
     <div class="row">${fakeOthers.length?`<button class="btn ghost" id="fakeUpBtn" type="button">백운 쪽 인연 +100</button>${["친우","사형제","연인","스승","제자"].map(r=>`<button class="btn ghost" type="button" data-fakerel="${r}">백운이 ${r==="스승"?"제자로 받기":r==="제자"?"사부로 모시기":r} 청하기</button>`).join("")}<button class="btn ghost" id="fakePartyBtn" type="button">백운이 무리 부름 받기</button><button class="btn ghost" id="fakeDelBtn" type="button">가상 동료 내보내기</button>`:`<button class="btn ghost" id="fakeMateBtn" type="button">가상 동료 넣기 (이 기기에서만)</button>`}</div>
@@ -6672,7 +6792,11 @@ function attClaim(){if(!me)return;const h=structuredClone(me),A=attOf(h);if(A.do
 function attBox(h){const A=attOf(h),filled=A.done?((A.streak-1)%7)+1:A.streak%7,next=ATT[A.streak%7];
   const cells=ATT.map((R,i)=>`<li class="${i<filled?"got":""} ${!A.done&&i===filled?"now":""} ${i===6?"big":""}"><i>${i<filled?"印":i+1}</i><span>${R.silver?`${R.silver}냥`:""}${R.silver&&R.items?"+":""}${R.items?Object.entries(R.items).map(([k,n])=>`${ITEMS[k][0]}${n>1?" "+n:""}`).join("·"):""}</span></li>`).join("");
   const nf=festNext();
-  return `<section class="att ${A.done?"done":""}"><div class="atth"><b>출석부</b><span>${A.streak?`${A.streak}일째 이어가는 중`:"오늘부터 다시 첫 칸"} · 모두 ${A.total}번${A.best>=7?` · 최고 ${A.best}일`:""}</span></div>
+  /* 오늘 도장을 찍었으면 한 줄로 접는다. 누르면 펼친다 */
+  if(A.done&&!shopOpen.attx)return `<section class="att attmini"><button type="button" class="attfold" data-attx="1" aria-expanded="false">
+      <b>출석부</b><span class="attdots">${ATT.map((R,i)=>`<i class="${i<filled?"got":""} ${i===6?"big":""}"></i>`).join("")}</span>
+      <span class="attsum">${A.streak}일째 · 내일 ${rewardTxt(next)}</span><em>펼치기 ▾</em></button></section>`;
+  return `<section class="att ${A.done?"done":""}">${A.done?`<button type="button" class="attfold up" data-attx="0" aria-expanded="true">접기 ▴</button>`:""}<div class="atth"><b>출석부</b><span>${A.streak?`${A.streak}일째 이어가는 중`:"오늘부터 다시 첫 칸"} · 모두 ${A.total}번${A.best>=7?` · 최고 ${A.best}일`:""}</span></div>
     <ol class="attl">${cells}</ol>
     ${A.done?`<p class="note" style="margin:8px 0 0">오늘 도장은 찍었다. 내일: <b>${rewardTxt(next)}</b>${nf?` · 다음 명절 ${nf.F.n} ${nf.m}/${nf.d}${nf.left>0?` (${nf.left}일 뒤)`:""}`:""}</p>`
       :`<div class="row" style="margin-top:10px"><button class="btn sealb" type="button" id="attBtn">도장 찍기 · ${rewardTxt(next)}</button><span class="note" style="margin:0">하루 거르면 첫 칸부터 다시 센다.</span></div>`}</section>`}
@@ -6769,6 +6893,54 @@ function caseBook(h){const p=periodNow(),here=h.travel?h.travel.to:h.loc,rows=[]
     <div class="row cbhead"><span class="note" style="margin:0">새 사건까지 <span data-until="${periodEnds(p)}"></span></span><span class="cbsort">${[["near","가까운 순"],["left","남은 순"]].map(([k,n])=>`<button type="button" class="${caseSort===k?"on":""}" data-csort="${k}">${n}</button>`).join("")}</span></div>
     <ul class="clist">${rows.map(row).join("")}</ul>
     <p class="note" style="margin:6px 0 0"><i class="cbt d0 on">쉬</i><i class="cbt d1 on">보</i><i class="cbt d2 on">어</i> 쉬움·보통·어려움 · 색이 찬 것이 이번 시기에 해결한 사건이다. 지도의 작은 점 세 개도 같은 뜻이다. 지역 이름을 누르면 지도에서 고른다.</p></div></section>`}
+/* ───────── 무림일보: 매주 월요일, 지난주 모두의 기록으로 신문이 나온다 ───────── */
+const NEWS_KINGS=[["mis","사건 해결","건","강호의 해결사","관아에서 감사패를 보내왔다."],["fish","낚시","마리","낚시왕","강의 물고기들 사이에 수배령이 돌았다."],["hunt","사냥","마리","사냥왕","산짐승들이 이 이름만 들으면 굴로 숨는다."],
+  ["trainH","수련","시간","폐관의 달인","방문 앞에 쌓인 밥상이 높이를 더해 간다."],["lair","소굴 토벌","번","소굴 사냥꾼","소굴 우두머리들이 이사를 고민 중이다."],["tomb","고묘 도굴","번","도굴의 귀재","관부가 무덤마다 자물쇠를 더 달았다."],
+  ["gather","채집","번","산나물 박사","산마다 빈 자리가 늘었다는 제보가 들어왔다."],["cook","요리","번","강호 숙수","객잔 주방장들이 비법을 캐러 줄을 섰다."],["enh","강화 시도","번","대장간 단골","대장장이가 이 사람 얼굴만 보면 웃는다."],
+  ["dice","투전","판","투전판 단골","객잔 주인이 의자에 이름을 새겨 주었다."],["lgRoll","친선 주사위","번","친선의 기둥","무림맹이 주사위를 새로 깎았다."],["gift","선물","번","강호의 산타","받은 사람들이 고맙다며 줄을 섰다."]];
+const NEWS_ADS=[["떠돌이 도사 天機","오늘의 운수 봐 드립니다. 어느 지역 저잣거리에서 우연히 만나실 수 있습니다."],["대홍포 입하","먼 길 가는 무인의 벗. 각 지역 객잔에서 1,000냥."],["장원 방 들이기","정원만 한 방 한 칸, 3만 냥. 침상·서안·자개장 입고."],
+  ["투전판 개장","대·소·표자. 하루 다섯 판. 무리한 베팅은 문파 사정에 해롭습니다."],["무림맹 친선","월~금 신청, 주말 밤 아홉 시에 주사위가 굴러갑니다."],["사건부 출간","지역마다 남은 사건을 한눈에. 강호 탭 지도 아래에서."]];
+const wkOf=(o,w)=>o?.wk?.w===w?o.wk:o?.wkPrev?.w===w?o.wkPrev:null;
+const newsPeople=()=>[me,...others.filter(o=>o?.name&&o._id&&o._id!==myId())].filter(Boolean);
+const newsHas=w=>newsPeople().some(o=>wkOf(o,w)&&Object.keys(wkOf(o,w).c||{}).length);
+const newsUnread=()=>{try{const w=wkNow()-1;return mode==="db"&&tab!=="news"&&newsHas(w)&&me?.newsSeen!==w}catch(e){return false}};
+const wkRange=w=>{const a=w*7-3,f=d=>{const t=new Date(d*86400e3);return `${t.getUTCMonth()+1}/${t.getUTCDate()}`};return `${f(a)}~${f(a+6)}`};
+function newsHead(o,x){const n=esc(o.name),t=esc(x.t);return {tomb:[`${n}, ${t}에서 보물 궤를 열다`,"금은보화가 쏟아지자 일행은 말을 잃었다는 후문이다."],rebirth:[`${n}, ${t} 감행`,"새 몸으로 강호에 다시 섰다. 지인들은 '얼굴은 그대로'라고 전했다."],
+  realm:[`${n}, ${t}의 경지에 오르다`,"벽을 넘는 순간 산새들이 일제히 날아올랐다고 한다."],fish:[`${n}, ${t} 낚아 올려`,"낚싯대가 휘청였다는 목격담이 잇따랐다."],hunt:[`${n}, ${t} 사냥 성공`,"마을 사람들이 잔치를 열자고 나섰다."],
+  enh:[`대장간 들썩 · ${n}의 「${t}」`,"망치 소리가 사흘 밤낮 그치지 않았다."],dice:x.t.startsWith("+")?[`${n}, 투전판에서 ${t.slice(1)} 땄다`,"객잔 주인의 얼굴이 하얗게 질렸다."]:[`${n}, 투전판에서 ${t.slice(1)} 날려`,"본인은 '운이 잠시 쉬었을 뿐'이라고 밝혔다."]}[x.k]||[`${n}의 한 주`,""]}
+function newsEdition(w){const P=newsPeople(),S=P.map(o=>({o,w:wkOf(o,w)})),act=S.filter(x=>x.w&&Object.keys(x.w.c||{}).length),idle=S.filter(x=>!x.w||!Object.keys(x.w.c||{}).length);
+  const hl=act.flatMap(x=>(x.w.hl||[]).map(h=>({...h,o:x.o}))).sort((a,b)=>b.v-a.v),used=new Set(),pick=[];for(const h of hl){if(pick.length>=4)break;if(used.has(h.o._id)&&pick.length<3)continue;used.add(h.o._id);pick.push(h)}
+  const kings=NEWS_KINGS.map(([k,n,u,title,joke])=>{const L=act.map(x=>({o:x.o,v:x.w.c[k]||0})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);return L.length?{k,n,u,title,joke,top:L[0],second:L[1]}:null}).filter(Boolean);
+  const grow=act.map(x=>({o:x.o,d:(x.w.r??x.o.realm)>(x.w.r0??0)?99:(x.w.lv||x.o.level)-(x.w.lv0||1)})).filter(x=>x.d>0&&x.d<99).sort((a,b)=>b.d-a.d)[0];
+  const dice=act.map(x=>({o:x.o,v:x.w.c.diceNet||0,n:x.w.c.dice||0})).filter(x=>x.n>0).sort((a,b)=>b.v-a.v);
+  return {act,idle,pick,kings,grow,dice}}
+function newsTab(){const w=wkNow()-1,has=newsHas(w),no=Math.max(1,w-2967),R=seeded(w*7919+3),ad=[...NEWS_ADS].sort(()=>R()-.5).slice(0,2);
+  const live=newsLive();
+  if(!has)return `<section class="npaper"><div class="mast"><b>武林日報</b><span>무림일보</span></div><p class="pnote">창간 준비 중이다. 이번 주 기록이 모이면 <b>다음 주 월요일</b>에 첫 호가 나온다. 낚시·사냥·사건·고묘·투전판… 무엇이든 기사가 된다.</p></section>${live}`;
+  const E=newsEdition(w),[lead,...rest]=E.pick,nm=o=>`<b class="pn">${esc(o.name)}</b>`;
+  const leadH=lead?newsHead(lead.o,lead):null;
+  return `<section class="npaper"><div class="mast"><b>武林日報</b><span>무림일보</span><i>제 ${no}호 · ${wkRange(w)} · 값 공짜</i></div>
+    ${lead?`<article class="lead"><div class="kick">1면</div><h2>${leadH[0]}</h2><p>${leadH[1]} <span class="by">— 본지 강호부 기자</span></p></article>`:`<article class="lead"><div class="kick">1면</div><h2>조용한 한 주</h2><p>큰 사건은 없었지만 다들 부지런히 칼을 갈았다. 폭풍 전의 고요라는 분석이다.</p></article>`}
+    ${rest.length?`<div class="cols">${rest.map(x=>{const H=newsHead(x.o,x);return `<article><h3>${H[0]}</h3><p>${H[1]}</p></article>`}).join("")}</div>`:""}
+    ${E.kings.length?`<div class="psec">이주의 강호 명인</div><div class="kings">${E.kings.slice(0,8).map(K=>`<div class="king"><span class="kt">${K.title}</span>${nm(K.top.o)}<span class="kv">${K.n} ${K.top.v.toLocaleString()}${K.u}</span><span class="kj">${K.joke}${K.second?` 2위는 ${esc(K.second.o.name)}(${K.second.v.toLocaleString()}${K.u}).`:""}</span></div>`).join("")}</div>`:""}
+    <div class="cols2">${E.grow?`<article><h3>쑥쑥 자란 사람</h3><p>${nm(E.grow.o)}, 한 주 만에 <b>${E.grow.d}레벨</b>을 올렸다. 비결을 묻자 "밥 잘 먹고 잘 잤다"고 답했다.</p></article>`:""}
+      ${E.dice.length?`<article><h3>투전판 소식</h3><p>${E.dice[0].v>0?`가장 많이 딴 사람은 ${nm(E.dice[0].o)} (+${E.dice[0].v.toLocaleString()}냥).`:"이번 주는 딴 사람이 없었다."}${E.dice.length>1&&E.dice.at(-1).v<0?` 가장 많이 잃은 사람은 ${nm(E.dice.at(-1).o)} (${E.dice.at(-1).v.toLocaleString()}냥). "다시는 안 한다"는 말을 남겼다.`:""}</p></article>`:""}
+      ${E.idle.length?`<article><h3>행방불명</h3><p>${E.idle.slice(0,5).map(x=>nm(x.o)).join(", ")}${E.idle.length>5?` 외 ${E.idle.length-5}명`:""}, 지난주 강호에서 자취를 감췄다. 폐관 수련설과 늦잠설이 엇갈린다.</p></article>`:""}</div>
+    <div class="ads">${ad.map(([t,d])=>`<div class="adbox"><b>${t}</b><span>${d}</span></div>`).join("")}</div>
+    <p class="pfoot">무림일보는 매주 월요일 새벽에 지난주 기록으로 찍혀 나온다. 오보가 있으면 편집부(관리자)에게 항의하라.</p></section>${live}`}
+/* 이번 주 판세: 월요일부터 지금까지 */
+function newsLive(){const w=wkNow(),P=newsPeople(),act=P.map(o=>({o,w:wkOf(o,w)})).filter(x=>x.w);
+  const rows=NEWS_KINGS.slice(0,6).map(([k,n,u])=>{const L=act.map(x=>({o:x.o,v:x.w.c?.[k]||0})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v).slice(0,3);return L.length?`<li><span>${n}</span>${L.map((x,i)=>`<b class="${i?"":"top"}">${esc(x.o.name)} ${x.v.toLocaleString()}${u}</b>`).join("")}</li>`:""}).join("");
+  return `<section class="newslive"><div class="label">이번 주 판세 · ${wkRange(w)} · 다음 호에 실린다</div>${rows?`<ul>${rows}</ul>`:`<p class="note">아직 이번 주 기록이 없다.</p>`}</section>`}
+/* ───── 탭 묶음: 큰 탭 다섯 개, 그 안에 작은 탭. 큰 탭을 누르면 그 묶음에서 마지막으로 본 작은 탭으로 간다 ───── */
+const TAB_GROUPS=[{k:"g_train",n:"수련",kids:["train"]},{k:"g_world",n:"강호",kids:["world"]},{k:"g_fight",n:"겨루기",kids:["raid","gate","league"]},{k:"g_me",n:"인물",kids:["self","gear","mates"]},{k:"g_news",n:"소식",kids:["news","alarm","mail","notice","qna"]}];
+const tabLast={};
+function tabBar(tabs,dot){const names=Object.fromEntries(tabs),G=TAB_GROUPS.map(g=>({...g,kids:g.kids.filter(k=>names[k])})).filter(g=>g.kids.length),cur=G.find(g=>g.kids.includes(tab));
+  if(cur)tabLast[cur.k]=tab;
+  const top=`<div class="tabs tabs5" role="tablist">${G.map(g=>{const to=g.kids.includes(tabLast[g.k])?tabLast[g.k]:g.kids[0],on=g===cur,d=g.kids.some(k=>dot[k]);
+    return `<button class="tab" role="tab" type="button" data-tab="${to}" aria-selected="${on}">${g.n}${d?`<span class="dot" aria-label="확인할 것 있음"></span>`:""}</button>`}).join("")}</div>`;
+  const subs=cur&&cur.kids.length>1?`<div class="subtabs" role="tablist">${cur.kids.map(k=>`<button type="button" role="tab" class="stab" data-tab="${k}" aria-selected="${tab===k}">${names[k]}${dot[k]?`<span class="dot" aria-label="확인할 것 있음"></span>`:""}</button>`).join("")}</div>`:"";
+  return top+subs}
 /* 강호 탭: 지도 + 지역 + 임무 */
 /* 지역을 고르면 지금 그곳에 있는 사람(그곳으로 가는 중인 사람은 '이동 중')을 보여 준다 */
 function regionPeople(k){const L=others.filter(o=>o?.name&&o._id&&(o.travel?o.travel.to===k:o.loc===k)).sort((a,b)=>(!!a.travel-!!b.travel)||(b.level||0)-(a.level||0));
@@ -6806,7 +6978,7 @@ function mapSvg(){
   const nodes=Object.entries(REGIONS).map(([k,R])=>{const lock=R.minRealm&&h.realm<R.minRealm,hz=REGION_HZ[k]||R.n,tilt=((k.charCodeAt(0)+k.length)%5-2)*1.6;
     return `<g class="node ${sel===k?"sel":""} ${lock?"lock":""} ${k===here?"me":""}" data-r="${k}" tabindex="0" role="button" aria-label="${R.n}${k===here?" (현재 위치)":""}${cnt[k]?` · ${cnt[k]}명`:""}">
       <circle class="hit" cx="${R.x}" cy="${R.y}" r="22"/>${sel===k?`<circle class="ring2" cx="${R.x}" cy="${R.y}" r="15"/>`:""}
-      <g transform="translate(${R.x} ${R.y}) rotate(${tilt})"><rect class="seal" x="-9.5" y="-9.5" width="19" height="19" rx="2"/>
+      <g transform="translate(${R.x} ${R.y}) rotate(${tilt})"><rect class="rseal" x="-9.5" y="-9.5" width="19" height="19" rx="2"/>
         <text class="sealt" y="-1.2">${hz[0]}</text><text class="sealt" y="7">${hz[1]||""}</text></g>
       <text class="name" x="${R.x}" y="${R.y+22}">${R.n}</text>${cnt[k]?`<g class="ppl" transform="translate(${R.x-15} ${R.y-12})"><circle r="5.5"/><text y="2.3">${cnt[k]}</text></g>`:""}${lock?"":casePips(h,k,R.x,R.y+28)}</g>`}).join("");
   let me2="";
@@ -6908,7 +7080,7 @@ function rebirthBox(h){const asc=rbN(h)>=RB_MAX,nx=asc?"비승":"환골탈태",b
       :rbAsk?`<div class="row"><button class="btn sealb" type="button" id="rbGo">정말 ${nx}한다</button><button class="btn ghost" type="button" id="rbNo">아직 아니다</button></div>`
       :`<button class="btn sealb" type="button" id="rbAsk">${nx}</button>`}</div>`}
 function doRebirth(){const h=structuredClone(me);if(!atWall(h)||REALMS[h.realm+1]||activity(h))return;
-  const asc=rbN(h)>=RB_MAX;if(asc)h.asc=(h.asc||0)+1;else h.rb=(h.rb||0)+1;
+  const asc=rbN(h)>=RB_MAX;if(asc)h.asc=(h.asc||0)+1;else h.rb=(h.rb||0)+1;hlite(h,"rebirth",95,asc?"비승":"환골탈태");
   h.realm=0;h.level=1;h.exp=0;h.points=0;h.stats={nei:10,wai:10,shen:10};h.frac={nei:0,wai:0,shen:0};h.post=null;h.respec=null;h.alloc={nei:0,wai:0,shen:0};
   const half=it=>{if(it&&it.plus)it.plus=Math.floor(it.plus/2)};Object.values(h.gear||{}).forEach(half);(h.bag||[]).forEach(half);
   /* 새 몸이 되어도 문파 사람들은 얼굴을 기억한다: 우호도는 절반만 남는다 */
@@ -7048,7 +7220,7 @@ function bind(){
   document.querySelectorAll("[data-cleather]").forEach(b=>b.addEventListener("click",()=>craftLeather(b.dataset.cleather)));
   document.querySelectorAll("[data-chide]").forEach(s=>s.addEventListener("change",()=>{craftHide[s.dataset.chide]=s.value;render()}));
   document.querySelectorAll("[data-bagsort]").forEach(b=>b.addEventListener("click",()=>bagSort(b.dataset.bagsort)));
-  on("#followGo",followGo);document.querySelectorAll("[data-csort]").forEach(b=>b.addEventListener("click",()=>{caseSort=b.dataset.csort;render()}));on("#huntBuy",huntBuy);on("#raidBuy",raidBuy);document.querySelectorAll("[data-stambuy]").forEach(b=>b.addEventListener("click",stamBuy));
+  on("#followGo",followGo);if(tab==="news"&&mode==="db"){const w=wkNow()-1;if(newsHas(w)&&me.newsSeen!==w){const h2=structuredClone(me);h2.newsSeen=w;setTimeout(()=>save(h2),0)}}document.querySelectorAll("[data-dbet]").forEach(b=>b.addEventListener("click",()=>{diceBet=+b.dataset.dbet;render()}));document.querySelectorAll("[data-dpick]").forEach(b=>b.addEventListener("click",()=>diceRoll(b.dataset.dpick)));document.querySelectorAll("[data-attx]").forEach(b=>b.addEventListener("click",()=>{shopOpen.attx=b.dataset.attx==="1";render()}));document.querySelectorAll("[data-csort]").forEach(b=>b.addEventListener("click",()=>{caseSort=b.dataset.csort;render()}));on("#huntBuy",huntBuy);on("#raidBuy",raidBuy);document.querySelectorAll("[data-stambuy]").forEach(b=>b.addEventListener("click",stamBuy));
   document.querySelectorAll("[data-cos]").forEach(b=>b.addEventListener("click",()=>{const [k,id]=b.dataset.cos.split(":");cosHas(me,k,id)?cosWear(k,id):cosBuy(k,id)}));
   document.querySelectorAll("[data-coswear]").forEach(b=>b.addEventListener("click",()=>{const [k]=b.dataset.coswear.split(":");cosWear(k,null)}));
   on("#followStay",followStay);on("#adSummon",adSummon);on("#adFinish",adFinish);{const a=$("#adTarget");if(a)a.addEventListener("change",()=>{adTarget=a.value})}
