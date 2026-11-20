@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261120031500">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261120143000">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1050,9 +1050,9 @@ button.tc.go em{position:absolute;top:3px;right:4px;font-style:normal;font-size:
 .cgo b{font-weight:600;white-space:nowrap}.cdist{font-size:12px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cdist.here{color:var(--ink)}
 .cdist em{font-style:normal;color:#8a5a1a;border:1px solid #d9b46a;border-radius:999px;padding:0 5px;margin-left:2px;font-size:11px}
 .ctags{display:inline-flex;gap:3px;flex:none}
-.ct{font-style:normal;display:inline-grid;place-items:center;width:20px;height:20px;border-radius:4px;font-size:11px;border:1px solid var(--line);color:var(--ink-3);background:transparent}
-.ct.on{color:#fff;border-color:transparent}.ct.on.d0{background:#6c9a6a}.ct.on.d1{background:#c69a2e}.ct.on.d2{background:var(--seal)}
-.casebook .note .ct{width:16px;height:16px;font-size:10px;vertical-align:-3px;margin-right:1px}
+.cbt{font-style:normal;display:inline-grid;place-items:center;width:20px;height:20px;border-radius:4px;font-size:11px;border:1px solid var(--line);color:var(--ink-3);background:transparent}
+.cbt.on{color:#fff;border-color:transparent}.cbt.on.d0{background:#6c9a6a}.cbt.on.d1{background:#c69a2e}.cbt.on.d2{background:var(--seal)}
+.casebook .note .cbt{width:16px;height:16px;font-size:10px;vertical-align:-3px;margin-right:1px}
 </style>
 
 <div class="wrap">
@@ -6734,11 +6734,11 @@ function caseBook(h){const p=periodNow(),here=h.travel?h.travel.to:h.loc,rows=[]
   const dist=r=>r.k===here?`<span class="cdist here">${h.travel?"가는 곳":"지금 여기"}</span>`:r.legs>=99?`<span class="cdist">길 없음</span>`:`<span class="cdist">${r.adj?"이웃":`${r.legs}구간`} · ${hrsTxt(r.hrs)}${!r.adj&&farTea(h,r.legs)<1?` <em>대홍포</em>`:""}</span>`;
   const row=r=>`<li class="crow ${r.lock?"lock":""} ${r.n===3?"clear":""} ${r.k===here?"here":""}">
       <button type="button" class="cgo" data-tgo="${r.k}" ${r.lock?"disabled":""}><b>${r.R.n}</b>${r.lock?`<span class="cdist">${REALMS[r.R.minRealm].n}부터</span>`:dist(r)}</button>
-      <span class="ctags">${r.lock?"":r.D.map((v,i)=>`<i class="ct d${i} ${v?"on":""}" title="${DIFF[i].n}${v?" · 해결":""}">${DIFF[i].n[0]}</i>`).join("")}</span></li>`;
+      <span class="ctags">${r.lock?"":r.D.map((v,i)=>`<i class="cbt d${i} ${v?"on":""}" title="${DIFF[i].n}${v?" · 해결":""}">${DIFF[i].n[0]}</i>`).join("")}</span></li>`;
   return `<section class="casebook">${foldHead("casebook",`사건부 · 이번 시기 ${done}/${tot}${left?` · 남은 지역 ${left}곳`:" · 모두 해결"}`)}<div class="foldb" ${foldOpen("casebook")?"":"hidden"}>
     <div class="row cbhead"><span class="note" style="margin:0">새 사건까지 <span data-until="${periodEnds(p)}"></span></span><span class="cbsort">${[["near","가까운 순"],["left","남은 순"]].map(([k,n])=>`<button type="button" class="${caseSort===k?"on":""}" data-csort="${k}">${n}</button>`).join("")}</span></div>
     <ul class="clist">${rows.map(row).join("")}</ul>
-    <p class="note" style="margin:6px 0 0"><i class="ct d0 on">쉬</i><i class="ct d1 on">보</i><i class="ct d2 on">어</i> 쉬움·보통·어려움 · 색이 찬 것이 이번 시기에 해결한 사건이다. 지도의 작은 점 세 개도 같은 뜻이다. 지역 이름을 누르면 지도에서 고른다.</p></div></section>`}
+    <p class="note" style="margin:6px 0 0"><i class="cbt d0 on">쉬</i><i class="cbt d1 on">보</i><i class="cbt d2 on">어</i> 쉬움·보통·어려움 · 색이 찬 것이 이번 시기에 해결한 사건이다. 지도의 작은 점 세 개도 같은 뜻이다. 지역 이름을 누르면 지도에서 고른다.</p></div></section>`}
 /* 강호 탭: 지도 + 지역 + 임무 */
 function mapSvg(){
   const h=me,here=h.travel?null:h.loc,sel=dest;
