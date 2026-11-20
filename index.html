@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261120143000">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261120200000">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1053,6 +1053,36 @@ button.tc.go em{position:absolute;top:3px;right:4px;font-style:normal;font-size:
 .cbt{font-style:normal;display:inline-grid;place-items:center;width:20px;height:20px;border-radius:4px;font-size:11px;border:1px solid var(--line);color:var(--ink-3);background:transparent}
 .cbt.on{color:#fff;border-color:transparent}.cbt.on.d0{background:#6c9a6a}.cbt.on.d1{background:#c69a2e}.cbt.on.d2{background:var(--seal)}
 .casebook .note .cbt{width:16px;height:16px;font-size:10px;vertical-align:-3px;margin-right:1px}
+
+/* 수묵 지도 */
+.inkmap{border-radius:6px;border:1px solid #d9ccb0;background:#efe5cf}
+:root[data-theme="dark"] .inkmap{filter:brightness(.82) sepia(.1)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .inkmap{filter:brightness(.82) sepia(.1)}}
+.inkmap .ink-river{fill:none;stroke:#5f7680;stroke-opacity:.55;stroke-width:3.2;stroke-linecap:round}
+.inkmap .ink-rname{font-size:8px;fill:#4d6670;opacity:.8;letter-spacing:3px;font-family:var(--f-body)}
+.inkmap .road{stroke:#3b332c;stroke-width:1;stroke-dasharray:2 3;stroke-linecap:round;opacity:.4}
+.inkmap .road.near{stroke:#2b2622;stroke-width:1.4;stroke-dasharray:5 3;opacity:.8}
+.inkmap .road.selr{stroke:#b0382a;stroke-width:1.4;stroke-dasharray:5 3;opacity:.75}
+.inkmap .road.go{stroke:#b0382a;stroke-dasharray:none;stroke-width:2;opacity:.9}
+.inkmap .hrs{fill:#3b332c;font-size:10px;font-weight:700;paint-order:stroke;stroke:#efe5cf;stroke-width:3px}
+.inkmap .seal{fill:#f6efe0;stroke:#b0382a;stroke-width:1.6}
+.inkmap .sealt{fill:#b0382a;font-size:7.4px;font-weight:700;text-anchor:middle;font-family:var(--f-brush),serif}
+.inkmap .node.me .seal{fill:#b0382a}.inkmap .node.me .sealt{fill:#fff}
+.inkmap .node.lock .seal{stroke-dasharray:2 2;fill:#ece4d2;opacity:.75}.inkmap .node.lock .sealt{opacity:.6}
+.inkmap .node:focus-visible .seal{stroke-width:3}
+.inkmap .node.sel .ring2{fill:none;stroke:#b0382a;stroke-width:1.4;stroke-dasharray:3 3}
+.inkmap .name{fill:#2b2622;font-size:12px;font-weight:700;font-family:var(--f-brush),serif;paint-order:stroke;stroke:#efe5cf;stroke-width:3.5px}
+.inkmap .here{fill:#b0382a;stroke:#7e1f17}.inkmap .heret{fill:#fff}
+.inkmap .ppl circle{fill:#2b2622}.inkmap .ppl text{fill:#f6efe0;font-size:7px;text-anchor:middle;font-family:var(--f-body);font-weight:700}
+.inkmap .cpips .cp{fill:#efe5cf;stroke:#8d8378}
+.mklegend .mk-ppl{display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;background:#2b2622;color:#f6efe0;font-style:normal;font-size:9px;font-weight:700}
+/* 지역 사람 */
+.rppl{margin:10px 0 4px}.rppl .kicker{margin-bottom:6px}
+.rpplist{display:flex;flex-wrap:wrap;gap:6px}
+.rpp{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 4px;border:1px solid var(--line);border-radius:999px;background:var(--paper);font:inherit;color:var(--ink);cursor:pointer}
+.rpp .face,.rpp svg{width:24px;height:24px}.rpp em{font-style:normal;font-size:12px;color:var(--ink-3)}
+.rpp.moving{border-style:dashed;opacity:.85}
+.rppl0{margin:8px 0 0}
 </style>
 
 <div class="wrap">
@@ -6740,23 +6770,47 @@ function caseBook(h){const p=periodNow(),here=h.travel?h.travel.to:h.loc,rows=[]
     <ul class="clist">${rows.map(row).join("")}</ul>
     <p class="note" style="margin:6px 0 0"><i class="cbt d0 on">쉬</i><i class="cbt d1 on">보</i><i class="cbt d2 on">어</i> 쉬움·보통·어려움 · 색이 찬 것이 이번 시기에 해결한 사건이다. 지도의 작은 점 세 개도 같은 뜻이다. 지역 이름을 누르면 지도에서 고른다.</p></div></section>`}
 /* 강호 탭: 지도 + 지역 + 임무 */
+/* 지역을 고르면 지금 그곳에 있는 사람(그곳으로 가는 중인 사람은 '이동 중')을 보여 준다 */
+function regionPeople(k){const L=others.filter(o=>o?.name&&o._id&&(o.travel?o.travel.to===k:o.loc===k)).sort((a,b)=>(!!a.travel-!!b.travel)||(b.level||0)-(a.level||0));
+  if(!L.length)return `<p class="note rppl0">지금 이곳에 있는 사람이 없다.</p>`;
+  return `<div class="rppl"><div class="kicker">지금 이곳에 · ${L.length}명</div><div class="rpplist">${L.map(o=>`<button type="button" class="rpp ${o.travel?"moving":""}" data-pf="${o._id}">${face(o._id,o.sect,"sm")}<span>${nameHtml(o)}${o.travel?` <em>(이동 중 · ${REGIONS[o.travel.from]?.n||""}에서)</em>`:""}</span></button>`).join("")}</div></div>`}
+/* 수묵 지도: 한지 위에 먹으로 친 산맥·사막·바다, 지역은 붉은 낙관. 배경은 한 번만 그려 둔다 */
+const REGION_HZ={xiyu:"西域",shaanxi:"陝西",henan:"河南",shandong:"山東",sichuan:"四川",hubei:"湖北",jiangnan:"江南",qinghai:"靑海",anhui:"安徽",hebei:"河北",yunnan:"雲南",liaodong:"遼東",makbuk:"漠北",fujian:"福建",miao:"苗疆"};
+let MAP_BG="";
+function mapBg(){if(MAP_BG)return MAP_BG;let sd=11;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;
+  let o=`<defs><filter id="mkPaper"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="3"/><feColorMatrix values="0 0 0 0 .55  0 0 0 0 .47  0 0 0 0 .36  0 0 0 .07 0"/></filter>
+    <filter id="mkWash" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="3" seed="8"/><feDisplacementMap in="SourceGraphic" scale="14"/><feGaussianBlur stdDeviation="2.2"/></filter>
+    <filter id="mkBrush"><feTurbulence type="fractalNoise" baseFrequency=".6" numOctaves="1" seed="2"/><feDisplacementMap in="SourceGraphic" scale="1.6"/></filter>
+    <radialGradient id="mkMt" cx=".5" cy=".2" r=".9"><stop offset="0" stop-color="#2b2622" stop-opacity=".75"/><stop offset="1" stop-color="#2b2622" stop-opacity="0"/></radialGradient>
+    <linearGradient id="mkSea" x1="0" x2="1"><stop offset="0" stop-color="#7d95a0" stop-opacity="0"/><stop offset=".35" stop-color="#7d95a0" stop-opacity=".28"/><stop offset="1" stop-color="#6d8792" stop-opacity=".42"/></linearGradient></defs>
+    <rect width="400" height="304" fill="#efe5cf"/><rect width="400" height="304" filter="url(#mkPaper)"/>
+    <path filter="url(#mkWash)" fill="url(#mkSea)" d="M384,0 C378,40 400,70 392,110 C384,140 398,170 390,200 C384,240 400,260 396,304 L400,304 L400,0Z"/>
+    <ellipse filter="url(#mkWash)" cx="48" cy="70" rx="60" ry="40" fill="#c8a368" opacity=".35"/><ellipse filter="url(#mkWash)" cx="120" cy="18" rx="80" ry="22" fill="#9aa86a" opacity=".22"/>
+    <ellipse filter="url(#mkWash)" cx="40" cy="170" rx="34" ry="26" fill="#dfe6ea" opacity=".55"/><ellipse filter="url(#mkWash)" cx="370" cy="40" rx="30" ry="22" fill="#dfe6ea" opacity=".5"/>`;
+  const peak=(x,y,sz,al)=>`<path filter="url(#mkBrush)" d="M${(x-sz).toFixed(1)},${y.toFixed(1)} Q${(x-sz*.35).toFixed(1)},${(y-sz*1.25).toFixed(1)} ${x.toFixed(1)},${(y-sz*1.5).toFixed(1)} Q${(x+sz*.4).toFixed(1)},${(y-sz*1.1).toFixed(1)} ${(x+sz).toFixed(1)},${y.toFixed(1)} Z" fill="url(#mkMt)" opacity="${al.toFixed(2)}"/><path filter="url(#mkBrush)" d="M${(x-sz*.9).toFixed(1)},${y.toFixed(1)} Q${(x-sz*.3).toFixed(1)},${(y-sz*1.2).toFixed(1)} ${x.toFixed(1)},${(y-sz*1.48).toFixed(1)}" fill="none" stroke="#2b2622" stroke-opacity="${al.toFixed(2)}" stroke-width=".9"/>`;
+  const clear=(x,y)=>Object.values(REGIONS).every(R=>Math.hypot(R.x-x,R.y-y)>24);
+  const range=(cx,cy,n,sp,sz)=>{let r="";for(let i=0;i<n;i++){const x=cx+(rnd()-.5)*sp,y=cy+(rnd()-.5)*sp*.6,z=sz*(.6+rnd()*.7),al=.3+rnd()*.35;if(clear(x,y-z*.6))r+=peak(x,y,z,al)}return r};
+  o+=range(80,140,18,70,9)+range(80,190,10,50,8)+range(176,232,8,40,7)+range(110,240,8,50,7)+range(330,40,5,40,7)+range(270,180,5,30,6)+range(190,150,5,24,5)+range(352,245,5,30,6)+range(200,40,4,40,6);
+  o+=`<path filter="url(#mkBrush)" class="ink-river" d="M20,58 C80,52 120,74 175,82 S290,70 395,58"/><path filter="url(#mkBrush)" class="ink-river" d="M70,248 C130,236 180,250 240,242 S330,252 395,236"/>
+    <text class="ink-rname" x="196" y="73">黃河</text><text class="ink-rname" x="290" y="261">長江</text>
+    <g transform="translate(22 284)" opacity=".65"><circle r="11" fill="none" stroke="#2b2622" stroke-width=".8"/><text y="-13" text-anchor="middle" font-size="7" fill="#2b2622">北</text><path d="M0,-9 L2.6,0 L0,9 L-2.6,0Z" fill="#2b2622"/></g>`;
+  return MAP_BG=o}
 function mapSvg(){
   const h=me,here=h.travel?null:h.loc,sel=dest;
   const roads=ROADS.map(([a,b,x])=>{const A=REGIONS[a],B=REGIONS[b];
     const go=h.travel&&((h.travel.from===a&&h.travel.to===b)||(h.travel.from===b&&h.travel.to===a));
-    const near=here&&(a===here||b===here);
-    return `<line class="road ${go?"go":near?"near":""} ${sel&&sel!==here&&(a===sel||b===sel)?"selr":""}" x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}"/>
-      ${(()=>{const L=Math.hypot(B.x-A.x,B.y-A.y),nx=-(B.y-A.y)/L,ny=(B.x-A.x)/L,s=ny>0?-1:1;return `<text class="hrs ${go||near||(sel&&(a===sel||b===sel))?"":"dim"}" x="${((A.x+B.x)/2+nx*9*s).toFixed(1)}" y="${((A.y+B.y)/2+ny*9*s+3).toFixed(1)}">${x}h</text>`})()}`}).join("");
-  const nodes=Object.entries(REGIONS).map(([k,R])=>{const lock=R.minRealm&&h.realm<R.minRealm;
-    return `<g class="node ${sel===k?"sel":""} ${lock?"lock":""}" data-r="${k}" tabindex="0" role="button" aria-label="${R.n}${k===here?" (현재 위치)":""}">
-      <circle class="hit" cx="${R.x}" cy="${R.y}" r="22"/>${sel===k?`<circle class="ring2" cx="${R.x}" cy="${R.y}" r="13"/>`:""}
-      ${k===here?`<rect class="here" x="${R.x-10}" y="${R.y-10}" width="20" height="20" rx="2" transform="rotate(-6 ${R.x} ${R.y})"/><text class="heret" x="${R.x}" y="${R.y+3}">我</text>`:`<circle class="pt" cx="${R.x}" cy="${R.y}" r="5"/>`}
-      <text class="name" x="${R.x}" y="${R.y+28}">${R.n}</text>${lock?"":casePips(h,k,R.x,R.y+35)}</g>`}).join("");
-  const mates=others.map((o,i)=>{const R=REGIONS[o.travel?o.travel.from:o.loc||"henan"];if(!R)return "";const dx=14+((i*9)%18),dy=-12-((i*7)%10);
-    return `<circle class="mate" cx="${R.x+dx}" cy="${R.y+dy}" r="3"/><text class="matet" x="${R.x+dx+5}" y="${R.y+dy+3}">${esc(o.name)}</text>`}).join("");
+    const near=here&&(a===here||b===here),sr=sel&&sel!==here&&(a===sel||b===sel);
+    return `<line class="road ${go?"go":near?"near":""} ${sr?"selr":""}" x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}"/>
+      ${(()=>{const L=Math.hypot(B.x-A.x,B.y-A.y),nx=-(B.y-A.y)/L,ny=(B.x-A.x)/L,s=ny>0?-1:1;return `<text class="hrs ${go||near||sr?"":"dim"}" x="${((A.x+B.x)/2+nx*9*s).toFixed(1)}" y="${((A.y+B.y)/2+ny*9*s+3).toFixed(1)}">${x}h</text>`})()}`}).join("");
+  const cnt={};for(const o of others){if(!o?.name)continue;const r=o.travel?o.travel.to:o.loc;if(r)cnt[r]=(cnt[r]||0)+1}
+  const nodes=Object.entries(REGIONS).map(([k,R])=>{const lock=R.minRealm&&h.realm<R.minRealm,hz=REGION_HZ[k]||R.n,tilt=((k.charCodeAt(0)+k.length)%5-2)*1.6;
+    return `<g class="node ${sel===k?"sel":""} ${lock?"lock":""} ${k===here?"me":""}" data-r="${k}" tabindex="0" role="button" aria-label="${R.n}${k===here?" (현재 위치)":""}${cnt[k]?` · ${cnt[k]}명`:""}">
+      <circle class="hit" cx="${R.x}" cy="${R.y}" r="22"/>${sel===k?`<circle class="ring2" cx="${R.x}" cy="${R.y}" r="15"/>`:""}
+      <g transform="translate(${R.x} ${R.y}) rotate(${tilt})"><rect class="seal" x="-9.5" y="-9.5" width="19" height="19" rx="2"/>
+        <text class="sealt" y="-1.2">${hz[0]}</text><text class="sealt" y="7">${hz[1]||""}</text></g>
+      <text class="name" x="${R.x}" y="${R.y+22}">${R.n}</text>${cnt[k]?`<g class="ppl" transform="translate(${R.x-15} ${R.y-12})"><circle r="5.5"/><text y="2.3">${cnt[k]}</text></g>`:""}${lock?"":casePips(h,k,R.x,R.y+28)}</g>`}).join("");
   let me2="";
-  if(h.travel){const A=REGIONS[h.travel.from],B=REGIONS[h.travel.to];
-    me2=`<g id="traveler"><rect class="here" x="-8" y="-8" width="16" height="16" rx="2" transform="rotate(-6)"/><text class="heret" y="3">我</text></g>`;}
+  if(h.travel){me2=`<g id="traveler"><rect class="here" x="-8" y="-8" width="16" height="16" rx="2" transform="rotate(-6)"/><text class="heret" y="3">我</text></g>`;}
   /* 지도 표식: 이번 토벌 보스, 마교 침공, 떠돌이 상단 */
   const marks={};const addM=(r,ch,cls,lab)=>{(marks[r]=marks[r]||[]).push({ch,cls,lab})};
   {const B=bossFor(periodNow());addM(B.region,"討","mk-boss",`토벌 · ${B.n}`)}
@@ -6765,12 +6819,10 @@ function mapSvg(){
   if(invasion&&festival(invasion.region))addM(invasion.region,"祭","mk-hap","해방 축제");
   {const c=caravan();if(c.here)addM(c.region,"商","mk-cv","떠돌이 상단")}
   happenNow().forEach(e=>addM(e.region,HAPPEN_T[e.type].ch,"mk-hap",`강호 돌발 · ${HAPPEN_T[e.type].n}`));
-  const markSvg=Object.entries(marks).map(([r,list])=>{const R=REGIONS[r];return list.map((m,i)=>`<g class="mk ${m.cls}" transform="translate(${R.x+13+i*15} ${R.y-22})"><title>${m.lab}</title><rect x="-7" y="-7" width="14" height="14" rx="2"/><text y="3.6">${m.ch}</text></g>`).join("")}).join("");
-  return `<div class="mapbox"><svg class="map" viewBox="0 0 400 304" role="img" aria-label="중원 지도">
-    <path class="river" d="M20,58 C80,52 120,74 175,82 S290,70 395,58"/><text class="rname" x="196" y="74">황하</text>
-    <path class="river" d="M70,248 C130,236 180,250 240,242 S330,252 395,236"/><text class="rname" x="300" y="262">장강</text>
-    ${roads}${nodes}${markSvg}${mates}${me2}</svg></div>
-    <div class="mklegend"><span><i class="mk-boss">討</i>이번 토벌 · ${bossFor(periodNow()).n}</span>${invOn()&&sNow()<invasion.end?`<span><i class="mk-inv">魔</i>마교 침공</span>`:""}${invasion&&occupied(invasion.region)?`<span><i class="mk-inv">占</i>마교 점령 · ${REGIONS[invasion.region].n}</span>`:""}${invasion&&festival(invasion.region)?`<span><i class="mk-hap">祭</i>해방 축제 · ${REGIONS[invasion.region].n}</span>`:""}${caravan().here?`<span><i class="mk-cv">商</i>떠돌이 상단</span>`:""}${happenNow().map(e=>`<span><i class="mk-hap">${HAPPEN_T[e.type].ch}</i>${HAPPEN_T[e.type].n} · ${REGIONS[e.region].n}</span>`).join("")}</div>`;
+  const markSvg=Object.entries(marks).map(([r,list])=>{const R=REGIONS[r];return list.map((m,i)=>`<g class="mk ${m.cls}" transform="translate(${R.x+15+i*15} ${R.y-16})"><title>${m.lab}</title><rect x="-7" y="-7" width="14" height="14" rx="2"/><text y="3.6">${m.ch}</text></g>`).join("")}).join("");
+  return `<div class="mapbox"><svg class="map inkmap" viewBox="0 0 400 304" role="img" aria-label="중원 지도">${mapBg()}
+    ${roads}${nodes}${markSvg}${me2}</svg></div>
+    <div class="mklegend"><span><i class="mk-ppl">2</i>지금 그곳에 있는 사람</span><span><i class="mk-boss">討</i>이번 토벌 · ${bossFor(periodNow()).n}</span>${invOn()&&sNow()<invasion.end?`<span><i class="mk-inv">魔</i>마교 침공</span>`:""}${invasion&&occupied(invasion.region)?`<span><i class="mk-inv">占</i>마교 점령 · ${REGIONS[invasion.region].n}</span>`:""}${invasion&&festival(invasion.region)?`<span><i class="mk-hap">祭</i>해방 축제 · ${REGIONS[invasion.region].n}</span>`:""}${caravan().here?`<span><i class="mk-cv">商</i>떠돌이 상단</span>`:""}${happenNow().map(e=>`<span><i class="mk-hap">${HAPPEN_T[e.type].ch}</i>${HAPPEN_T[e.type].n} · ${REGIONS[e.region].n}</span>`).join("")}</div>`;
 }
 function worldTab(){
   const h=me,a=activity(h),now=Date.now();
@@ -6785,7 +6837,7 @@ function worldTab(){
         :confirmAbort?`<button class="btn sealb" id="abYes" type="button">돌아가기</button><button class="btn ghost" id="abNo" type="button">계속 가기</button>`
         :`<button class="btn ghost" id="abBtn" type="button">발길 돌리기</button>`}</div></div>`}
   const focus=dest||(h.travel?h.travel.to:h.loc),R=REGIONS[focus];
-  let regionBox=`<div class="region"><div><h3>${R.n} <span class="wx" title="오늘 날씨">${WEATHER[weatherOf(focus)].ch} ${WEATHER[weatherOf(focus)].n}</span></h3><div class="place">${R.place}</div></div><p>${R.note}</p>${(REGION_SECTS[focus]||[]).length?`<div class="homes">${REGION_SECTS[focus].map(k=>`<span>${emblem(k,"sm")}${SECTS[k].n}의 근거지</span>`).join("")}</div>`:""}`;
+  let regionBox=`<div class="region"><div><h3>${R.n} <span class="wx" title="오늘 날씨">${WEATHER[weatherOf(focus)].ch} ${WEATHER[weatherOf(focus)].n}</span></h3><div class="place">${R.place}</div></div><p>${R.note}</p>${(REGION_SECTS[focus]||[]).length?`<div class="homes">${REGION_SECTS[focus].map(k=>`<span>${emblem(k,"sm")}${SECTS[k].n}의 근거지</span>`).join("")}</div>`:""}${regionPeople(focus)}`;
   if(!h.travel&&dest&&dest!==h.loc){
     const hv=h.escort&&h.buff?.cart?{...h,buff:{...h.buff,cart:0}}:h,direct=teaHrs(hv,hrsFor(h,roadHours(h.loc,dest),dest)),tg=speedTags(hv,dest),lock=R.minRealm&&h.realm<R.minRealm;
     if(lock) regionBox+=`<p class="note">${REALMS[R.minRealm].n} 이상만 들어갈 수 있다.</p>`;
