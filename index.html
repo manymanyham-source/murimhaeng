@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261121a">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261121b">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -4686,61 +4686,65 @@ function isoFree(h,draft,k,x,y,r,sc=isoScene,ld=isoLocDraft){const [fw,fd]=isoFp
 let isoRoofDraft=null,isoPathDraft=null,isoPathMode=false,isoRoofNow=null;
 let isoView=null,isoSel=null,isoEdit=false,isoDraft=null,isoMsg="",visits={},visitsExtra={},visitQ=false;
 /* ───────── 동거: 깊은 인연(600)부터 한 집(장원+방)을 함께 쓴다.
-   · 가구는 산 사람 것(각자 기록의 manor). 집 배치는 visits/home__집주인 문서(kind:"home")에 둔다
-   · 둘 다 자기 기록에 home={with,host}를 적어야 함께 사는 것으로 친다. 효과는 사는 집 가구 기준(둘이 같이) ───────── */
-const HOME_BOND=600;let visitsLoaded=false;
+   모든 기록은 각자 자기 인물 기록에만 쓴다 (남의 기록·공용 문서를 쓰지 않아 권한 문제가 없다)
+   · 청: homeAsk={to,host,t} · 받아들임: home={with,host} · 거절: homeDeny={청한사람:청한시각}
+   · 둘 다 home이 서로를 가리켜야 함께 사는 것. 집 배치는 각자 homeLay에 적고, 더 나중에 고친 쪽을 쓴다
+   · 가구는 산 사람 것(각자 manor). 효과는 사는 집 가구 기준으로 둘이 같이 받는다 ───────── */
+const HOME_BOND=600,HOME_ASK_TTL=7*86400e3;let visitsLoaded=false,homeLeaveArm=0;
 const hid=h=>h?._id||myId();
-const homeDocId=host=>("home__"+host).replace(/[^A-Za-z0-9_-]/g,"").slice(0,120);
-const homeDocs=()=>Object.values(visits).filter(v=>v.kind==="home");
-const myHomeDoc=()=>homeDocs().find(v=>v.host===myId()||v.visitor===myId());
-const liveHomeOf=host=>homeDocs().find(v=>v.host===host&&v.state==="live");
-function mateOf(h){const w=h?.home?.with;if(!w)return null;const p=w===myId()?me:heroById(w);return p&&p.home?.with===hid(h)&&p.home.host===h.home.host?p:null}
+const heroOf=id=>id===myId()?me:heroById(id);
+function mateOf(h){const w=h?.home?.with;if(!w)return null;const p=heroOf(w);return p&&p.home?.with===hid(h)&&p.home.host===h.home.host?p:null}
 function homeManor(h){const p=mateOf(h);if(!p)return h?.manor||{};const M={...(h.manor||{})};
   for(const [k,v] of Object.entries(p.manor||{})){if(k.startsWith("pet_")||k.startsWith("roof_"))continue;M[k]=Math.max(M[k]||0,v||0)}return M}
+const homeLayOf=(H,G,host)=>[H.homeLay,G.homeLay].filter(L=>L&&L.host===host).sort((x,y)=>(y.t||0)-(x.t||0))[0]||null;
 /* 함께 사는 집을 그릴 때 쓰는 가상 인물: 집주인 기록 + 둘의 가구 + 함께 정한 배치 */
-function homeView(host){const H=host===myId()?me:heroById(host);if(!H)return null;const G=mateOf(H);if(!G||H.home.host!==host)return null;
+function homeView(host){const H=heroOf(host);if(!H)return null;const G=mateOf(H);if(!G||H.home.host!==host)return null;
   const M={...(H.manor||{})};for(const [k,v] of Object.entries(G.manor||{})){if(k.startsWith("pet_")||k.startsWith("roof_"))continue;M[k]=Math.max(M[k]||0,v||0)}
-  const d=liveHomeOf(host),keys=new Set(d?.keys||Object.keys(H.manor||{})),p2=d?.p2||H.mpos2||{},p3=d?.p3||H.mpos3||{},L={...(d?.loc||H.mloc||{})};
+  const d=homeLayOf(H,G,host),keys=new Set(d?.keys||Object.keys(H.manor||{})),p2=d?.p2||H.mpos2||{},p3=d?.p3||H.mpos3||{},L={...(d?.loc||H.mloc||{})};
   for(const k of MANOR_KEYS())if(M[k]&&!keys.has(k)&&!L[k]&&!p2[k]&&!p3[k])L[k]="store";
   return {...H,manor:M,mpos2:p2,mpos3:p3,mloc:L,mpath:d?.path||H.mpath||[],_host:host,_mate:hid(G),_mateName:G.name}}
 /* 처음 합칠 때: 집주인 배치를 그대로 두고, 손님 가구는 빈 자리에 (없으면 창고) */
-function homeInitLayout(H,G){const T={...structuredClone(H),manor:{...(H.manor||{})},mpos2:{...(H.mpos2||{})},mpos3:{...(H.mpos3||{})},mloc:{...(H.mloc||{})}};
+function homeInitLayout(H,G,host){const T={...structuredClone(H),manor:{...(H.manor||{})},mpos2:{...(H.mpos2||{})},mpos3:{...(H.mpos3||{})},mloc:{...(H.mloc||{})}};
   for(const [k,v] of Object.entries(G.manor||{})){if(k.startsWith("pet_")||k.startsWith("roof_"))continue;if(T.manor[k]){T.manor[k]=Math.max(T.manor[k],v);continue}T.manor[k]=v;if(FURN[k]||DECOR[k])manorPlaceNew(T,k)}
-  return {p2:T.mpos2,p3:T.mpos3,loc:T.mloc,path:[...(H.mpath||[])],keys:MANOR_KEYS().filter(k=>T.manor[k])}}
-const homeBusyWith=id=>{const o=id===myId()?me:heroById(id);return !!mateOf(o)||homeDocs().some(v=>v.host===id||v.visitor===id)};
+  return {host,p2:T.mpos2,p3:T.mpos3,loc:T.mloc,path:[...(H.mpath||[])],keys:MANOR_KEYS().filter(k=>T.manor[k]),t:Date.now()}}
+const askLive=(o,to)=>!!o?.homeAsk&&o.homeAsk.to===to&&Date.now()-(o.homeAsk.t||0)<HOME_ASK_TTL&&heroOf(to)?.homeDeny?.[hid(o)]!==o.homeAsk.t;
+const homeAsksToMe=()=>me?others.filter(o=>o._id&&!String(o._id).startsWith("fake-")&&askLive(o,myId())&&!o.home):[];
+const homeTaken=id=>{const o=heroOf(id);return !!o?.home||!!(o?.homeAsk&&askLive(o,o.homeAsk.to))};
 function canAskHome(id){if(mode!=="db"||!id||id===myId()||String(id).startsWith("fake-"))return false;return bondTotal(myId(),id)>=HOME_BOND}
-async function askHome(id,atMine){if(!canAskHome(id))return;if(mateOf(me)||myHomeDoc()){toast("이미 함께 살거나 청한 사람이 있다.");return}
-  const o=heroById(id);if(!o)return;if(mateOf(o)){toast(`${josa(o.name,"은")} 이미 다른 사람과 함께 산다.`);return}
-  const host=atMine?myId():id,guest=atMine?id:myId(),key=homeDocId(host);if(visits[key]){toast(`${atMine?"내":josa(o.name,"의")} 집에 이미 이야기가 오가는 중이다.`);return}
-  const v={kind:"home",state:"ask",host,visitor:guest,asker:myId(),aname:me.name,bname:o.name,t:Date.now()};
-  try{await db.doc("visits/"+key).set(v);visits[key]={...v,id:key}}catch(e){toast("청하지 못했어요. 잠시 뒤 다시 해 주세요.");return}
-  toast(`${josa(o.name,"에게")} 함께 살자고 청했다`);render();paintProfile()}
-async function answerHome(ok){const d=myHomeDoc();if(!d||d.state!=="ask"||d.asker===myId())return;const other=d.asker;
-  if(!ok){try{await db.doc("visits/"+d.id).delete();delete visits[d.id]}catch(e){}toast("동거 청을 거절했다");render();return}
-  const H=d.host===myId()?me:heroById(d.host),G=d.visitor===myId()?me:heroById(d.visitor);if(!H||!G){toast("상대 기록을 아직 못 받았어요.");return}
-  const v={...d,state:"live",t:Date.now(),...homeInitLayout(H,G)};delete v.id;
-  try{await db.doc("visits/"+d.id).set(v);visits[d.id]={...v,id:d.id}}catch(e){toast("받아들이지 못했어요. 잠시 뒤 다시 해 주세요.");return}
-  const h=structuredClone(me),o=heroById(other);h.home={with:other,host:d.host,since:Date.now()};
-  addLog(h,`${josa(o?.name||"상대","과")} 함께 살기로 했다. ${d.host===myId()?"내 집":josa(o?.name||"상대","의")+" 집"}에서 지낸다.`);addBond(h,other,20);save(h);toast("이제 한집에 산다");render()}
-function confirmHome(){const d=myHomeDoc();if(d?.state!=="live")return true;if(homeLeaveArm&&Date.now()-homeLeaveArm<4000){homeLeaveArm=0;return true}homeLeaveArm=Date.now();toast("한 번 더 누르면 따로 산다");return false}let homeLeaveArm=0;
-async function cancelHome(){const d=myHomeDoc();if(!d)return;try{await db.doc("visits/"+d.id).delete();delete visits[d.id]}catch(e){}
-  if(me.home){const h=structuredClone(me),o=heroById(me.home.with);delete h.home;addLog(h,`${josa(o?.name||"상대","과")} 따로 살기로 했다. 내 가구는 내 집으로 돌아왔다.`);save(h)}
-  toast(d.state==="live"?"따로 살기로 했다":"청을 거두었다");render()}
-/* 받아들인 걸 본 사람(청한 쪽)은 자기 기록에도 적고, 상대가 끝낸 집은 내 기록에서도 지운다 */
-function syncHome(){if(mode!=="db"||!me||!visitsLoaded||!heroLive)return;const d=myHomeDoc();
-  if(d?.state==="live"&&!me.home){const other=d.host===myId()?d.visitor:d.host,o=heroById(other);if(!o)return;
-    const h=structuredClone(me);h.home={with:other,host:d.host,since:Date.now()};addLog(h,`${josa(o.name,"이")} 함께 살자는 청을 받아들였다. ${d.host===myId()?"내 집":josa(o.name,"의")+" 집"}에서 지낸다.`);addBond(h,other,20);save(h);return}
-  if(me.home&&(!d||d.state!=="live")){const o=heroById(me.home.with);const h=structuredClone(me);delete h.home;addLog(h,`${josa(o?.name||"상대","과")} 따로 살게 되었다. 내 가구는 내 집으로 돌아왔다.`);save(h)}}
-function homeBox(h){if(mode!=="db")return "";const d=myHomeDoc(),mate=mateOf(h);
-  if(mate){const host=h.home.host,atMine=host===myId();return `<div class="homebox"><div class="kicker">동거</div><p><b>${esc(mate.name)}</b>${pj(mate.name,"과")} ${atMine?"내 집":esc(josa(mate.name,"의"))+" 집"}에서 함께 산다. 둘 다 이 집 가구를 놓고 옮길 수 있고, 가구 효과도 이 집 것으로 같이 받는다.</p>
+function askHome(id,atMine){if(!canAskHome(id))return;if(homeTaken(myId())){toast("이미 함께 살거나 청한 사람이 있다.");return}
+  const o=heroById(id);if(!o)return;if(o.home){toast(`${josa(o.name,"은")} 이미 다른 사람과 함께 산다.`);return}
+  const h=structuredClone(me);h.homeAsk={to:id,host:atMine?myId():id,t:Date.now()};addLog(h,`${josa(o.name,"에게")} ${atMine?"내 집":josa(o.name,"의")+" 집"}에서 함께 살자고 청했다.`);save(h);
+  toast(`${josa(o.name,"에게")} 함께 살자고 청했다`);paintProfile()}
+function answerHome(ok,from){const o=heroById(from);if(!o||!askLive(o,myId()))return;const h=structuredClone(me);
+  if(!ok){h.homeDeny={...(h.homeDeny||{}),[from]:o.homeAsk.t};save(h);toast("동거 청을 거절했다");return}
+  if(h.home||o.home){toast("이미 함께 사는 사람이 있다.");return}
+  const host=o.homeAsk.host,H=heroOf(host),G=heroOf(host===from?myId():from);if(!H||!G)return;
+  delete h.homeAsk;h.home={with:from,host,since:Date.now()};h.homeLay=homeInitLayout(H,G,host);
+  addLog(h,`${josa(o.name,"과")} 함께 살기로 했다. ${host===myId()?"내 집":josa(o.name,"의")+" 집"}에서 지낸다.`);addBond(h,from,20);save(h);toast("이제 한집에 산다")}
+function confirmHome(){if(!mateOf(me))return true;if(homeLeaveArm&&Date.now()-homeLeaveArm<4000){homeLeaveArm=0;return true}homeLeaveArm=Date.now();toast("한 번 더 누르면 따로 산다");return false}
+function cancelHome(){const h=structuredClone(me),was=mateOf(me),o=heroById(h.home?.with||h.homeAsk?.to);
+  delete h.home;delete h.homeAsk;delete h.homeLay;addLog(h,was?`${josa(o?.name||"상대","과")} 따로 살기로 했다. 내 가구는 내 집으로 돌아왔다.`:"동거 이야기를 거두었다.");save(h);toast(was?"따로 살기로 했다":"청을 거두었다")}
+/* 내 기록 맞추기: 상대가 받아들이면 나도 적고, 상대가 거절·따로 살기를 하면 나도 지운다 */
+function syncHome(){if(mode!=="db"||!me||!heroLive||!ready||pendHero)return;
+  const A=me.homeAsk;if(A){const o=heroById(A.to);
+    if(o?.home?.with===myId()&&o.home.host===A.host){const h=structuredClone(me);delete h.homeAsk;h.home={with:A.to,host:A.host,since:Date.now()};addLog(h,`${josa(o.name,"이")} 함께 살자는 청을 받아들였다. ${A.host===myId()?"내 집":josa(o.name,"의")+" 집"}에서 지낸다.`);addBond(h,A.to,20);save(h);toast(`${josa(o.name,"과")} 한집에 살게 되었다`);return}
+    if(!o||o.homeDeny?.[myId()]===A.t||(o.home&&o.home.with!==myId())||Date.now()-(A.t||0)>=HOME_ASK_TTL){const h=structuredClone(me);delete h.homeAsk;addLog(h,`${o?josa(o.name,"이"):"상대가"} 동거 청을 받아들이지 않았다.`);save(h);return}}
+  const H=me.home;if(H){const o=heroById(H.with);
+    const waiting=o&&askLive(o,myId())&&o.homeAsk.host===H.host;
+    if(!o||(!waiting&&!(o.home?.with===myId()&&o.home.host===H.host))){const h=structuredClone(me);delete h.home;delete h.homeLay;addLog(h,`${josa(o?.name||"상대","과")} 따로 살게 되었다. 내 가구는 내 집으로 돌아왔다.`);save(h)}}}
+function homeBox(h){if(mode!=="db")return "";const mate=mateOf(h),asks=h.home?[]:homeAsksToMe();
+  if(h.home){const host=h.home.host,atMine=host===myId(),o=heroById(h.home.with);if(!mate)return `<div class="homebox"><div class="kicker">동거</div><p><b>${esc(o?.name||"상대")}</b>${pj(o?.name||"상대","과")} 함께 살기로 했다. ${esc(o?.name||"상대")}${pj(o?.name||"상대","이")} 접속하면 한집 살림이 시작된다.</p><div class="row"><button class="btn sm ghost" type="button" id="homeLeave">없던 일로 하기</button></div></div>`;
+    return `<div class="homebox"><div class="kicker">동거</div><p><b>${esc(mate.name)}</b>${pj(mate.name,"과")} ${atMine?"내 집":esc(josa(mate.name,"의"))+" 집"}에서 함께 산다. 둘 다 이 집 가구를 놓고 옮길 수 있고, 가구 효과도 이 집 것으로 같이 받는다.</p>
     <div class="row"><button class="btn sm sealb" type="button" data-manor="${host}">함께 사는 집 가기</button><button class="btn sm ghost" type="button" id="homeLeave">따로 살기</button></div>
     <p class="note" style="margin:6px 0 0">가구는 산 사람 것이다. 따로 살면 각자 가구를 들고 원래 집으로 돌아간다. 함께 사는 동안 새로 들인 물건은 집 창고에 먼저 들어간다.</p></div>`}
-  if(d?.state==="ask"){const other=d.asker===myId()?d.visitor===myId()?d.host:d.visitor:d.asker,o=heroById(other),place=d.host===myId()?"내 집":`${esc(josa(o?.name||"상대","의"))} 집`;
-    return d.asker===myId()?`<div class="homebox"><div class="kicker">동거</div><p><b>${esc(o?.name||"상대")}</b>에게 ${place}에서 함께 살자고 청했다. 대답을 기다리는 중.</p><div class="row"><button class="btn sm ghost" type="button" id="homeLeave">청 거두기</button></div></div>`
-      :`<div class="homebox ask"><div class="kicker">동거 청</div><p><b>${esc(o?.name||"상대")}</b>${pj(o?.name||"상대","이")} ${place}에서 함께 살자고 한다.</p><div class="row"><button class="btn sm sealb" type="button" id="homeYes">함께 산다</button><button class="btn sm ghost" type="button" id="homeNo">거절</button></div></div>`}
-  return ""}
-function homeAskRow(id){if(!canAskHome(id))return "";const o=heroById(id);if(!o)return "";
-  if(mateOf(me)||myHomeDoc())return "";if(mateOf(o)||homeDocs().some(v=>v.host===id||v.visitor===id))return `<p class="note" style="margin:8px 0 0">${josa(o.name,"은")} 이미 다른 사람과 함께 살거나 이야기가 오가는 중이다.</p>`;
+  let out="";
+  if(h.homeAsk&&askLive(h,h.homeAsk.to)){const o=heroById(h.homeAsk.to),place=h.homeAsk.host===myId()?"내 집":`${esc(josa(o?.name||"상대","의"))} 집`;
+    out+=`<div class="homebox"><div class="kicker">동거</div><p><b>${esc(o?.name||"상대")}</b>에게 ${place}에서 함께 살자고 청했다. 대답을 기다리는 중.</p><div class="row"><button class="btn sm ghost" type="button" id="homeLeave">청 거두기</button></div></div>`}
+  for(const o of asks){const place=o.homeAsk.host===myId()?"내 집":`${esc(josa(o.name,"의"))} 집`;
+    out+=`<div class="homebox ask"><div class="kicker">동거 청</div><p><b>${esc(o.name)}</b>${pj(o.name,"이")} ${place}에서 함께 살자고 한다.</p><div class="row"><button class="btn sm sealb" type="button" data-homeyes="${o._id}">함께 산다</button><button class="btn sm ghost" type="button" data-homeno="${o._id}">거절</button></div></div>`}
+  return out}
+function homeAskRow(id){if(!canAskHome(id))return "";const o=heroById(id);if(!o)return "";if(homeTaken(myId()))return "";
+  if(o.home)return `<p class="note" style="margin:8px 0 0">${josa(o.name,"은")} 이미 다른 사람과 함께 산다.</p>`;
   return `<div class="kicker" style="margin-top:12px">동거 · 깊은 인연</div><div class="row"><button class="btn sm" type="button" data-homeask="1">내 집으로 들이기</button><button class="btn sm" type="button" data-homeask="0">${esc(josa(o.name,"의"))} 집으로 들어가기</button></div>`}
 
 const NOTICE_LIM=5,MAIL_LIM=10;
@@ -4809,14 +4813,12 @@ function paintManor(){let el=document.getElementById("isoWrap");if(!isoView){if(
   on2("#isoVisit",()=>leaveVisit(isoView));on2("#isoTea",()=>visitTea(isoView));on2("#isoPet",()=>visitPet(isoView));const mi=el.querySelector("#isoMsg");if(mi)mi.oninput=()=>isoMsg=mi.value;
   el.onkeydown=e=>{if(e.key==="Escape")closeManor()}}
 
-async function saveHomeLayout(V){const d=liveHomeOf(V._host);if(!d){toast("함께 사는 집 기록을 아직 못 받았어요. 잠시 뒤 다시 해 주세요.");return}
-  const D={...(isoDraft||{})};for(const k of Object.keys(D))if(locOf(V,k,isoLocDraft)!==isoScene)delete D[k];
+function saveHomeLayout(V){const D={...(isoDraft||{})};for(const k of Object.keys(D))if(locOf(V,k,isoLocDraft)!==isoScene)delete D[k];
   const LD={};for(const [k,v] of Object.entries(isoLocDraft||{}))if(v&&v!=="yard")LD[k]=v;
-  const nv={...d,[isoScene==="room"?"p3":"p2"]:D,loc:LD,keys:MANOR_KEYS().filter(k=>V.manor[k]),by:myId(),t2:Date.now()};if(V.manor?.path)nv.path=[...(isoPathDraft||[])];delete nv.id;
-  const roof=isoRoofDraft;isoPathMode=false;isoEdit=false;isoDraft=null;isoSel=null;isoLocDraft=null;isoRoofDraft=null;isoPathDraft=null;
-  try{await db.doc("visits/"+d.id).set(nv);visits[d.id]={...nv,id:d.id}}catch(e){toast("배치를 저장하지 못했어요. 잠시 뒤 다시 해 주세요.");paintManor();return}
-  if(V._host===myId()&&roof&&roofOwn(me,roof)&&roof!==me.roof){const h=structuredClone(me);h.roof=roof;save(h)}
-  toast("함께 사는 집 배치를 저장했다.");setTimeout(paintManor,50)}
+  const h=structuredClone(me),lay={host:V._host,p2:isoScene==="room"?V.mpos2:D,p3:isoScene==="room"?D:V.mpos3,loc:LD,path:V.manor?.path?[...(isoPathDraft||[])]:(V.mpath||[]),keys:MANOR_KEYS().filter(k=>V.manor[k]),t:Date.now()};
+  h.homeLay=lay;if(V._host===myId()&&isoRoofDraft&&roofOwn(me,isoRoofDraft))h.roof=isoRoofDraft;
+  isoPathMode=false;isoEdit=false;isoDraft=null;isoSel=null;isoLocDraft=null;isoRoofDraft=null;isoPathDraft=null;
+  addLog(h,"함께 사는 집의 물건들을 새로 놓았다.");save(h);toast("함께 사는 집 배치를 저장했다.");setTimeout(paintManor,50)}
 
 function manorView(h,mine){const all={...FURN,...DECOR},L=MANOR_KEYS().filter(k=>furnLv(h,k)&&all[k]),id=mine?myId():h._id,nv=visitsTo(id).length;
   return `<div class="mgo"><button class="btn sm sealb" type="button" data-manor="${id}">${mine?"내 장원 가기":`${esc(josa(h.name,"의"))} 장원 가기`}</button>
@@ -7029,7 +7031,7 @@ function heroView(){
   const h=me,s=SECTS[h.sect],r=REALMS[h.realm],next=REALMS[h.realm+1],wall=atWall(h);
   const pct=Math.min(100,h.exp/need(h.level)*100);
   const tabs=[["train","수련"],["world","강호"],["raid","토벌"],["gate","관문"],["league","친선"],["self","인물"],["gear","장비"],["craft","제작"],["manor","장원"],["alarm","알림"],["mates","인연"],["mail","우편"],["notice","공지"],["news","일보"],["qna","문답"]];
-  const dot={manor:mode==="db"&&!!myHomeDoc()&&myHomeDoc().state==="ask"&&myHomeDoc().asker!==myId(),news:newsUnread(),world2:0,qna:qnaOK()&&tab!=="qna"&&qnaUnread(),notice:mode==="db"&&noticeUnread()>0,alarm:mode==="db"&&alarmUnread()>0,mail:mode==="db"&&(mailUnread()>0||myParcels().length>0),train:(h.training&&Date.now()>=h.training.end)||!attOf(h).done||festTodo(h),world:(h.travel&&Date.now()>=h.travel.end)||dosaHere(h)||!!followOffer(h)||(h.mission&&(h.mission.phase==="scene"||Date.now()>=h.mission.end))||(!h.tomb&&tombInvites().length>0)||myTomb()?.status==="tdone",league:lgDot(h),self:h.points>0||!!h.respec||!!postOffer(h),mates:giftsToMe().some(g=>g.t>(h.seenGift||0))||others.some(o=>{const B=bondOf(o._id,myId()),A=bondOf(myId(),o._id);return (B.want&&B.want!=="지인"&&!relMatch(B.want,A.want)&&relNorm(B.want)!==relMutual(myId(),o._id))||false})||partyCallsForMe().length>0||duelInvitesForMe().length>0||(()=>{const d=myDuel();return !!d&&(d.status==="done"||(d.status==="fight"&&!duelActOf(d,myId())))})(),gate:(()=>{const r=myRoom();if(r&&r.status==="fight"){const m=r.party.find(x=>x.id===myId());return !!(m&&m.hp>0&&!playerReady(r,m))}if(r&&(r.status==="win"||r.status==="fail")&&!h.gateDone?.[r.id])return true;return atWall(h)&&!!GATES[h.realm+1]?.ready&&!r})(),raid:(()=>{const st=raidState(periodNow());if(coInvitesForMe().length&&!h.colair)return true;if(h.colair)return true;if(h.lair&&h.lair.phase!=="done")return true;return st.down&&h.raid?.period===periodNow()&&!h.raid.claimed})()};
+  const dot={manor:mode==="db"&&!me.home&&homeAsksToMe().length>0,news:newsUnread(),world2:0,qna:qnaOK()&&tab!=="qna"&&qnaUnread(),notice:mode==="db"&&noticeUnread()>0,alarm:mode==="db"&&alarmUnread()>0,mail:mode==="db"&&(mailUnread()>0||myParcels().length>0),train:(h.training&&Date.now()>=h.training.end)||!attOf(h).done||festTodo(h),world:(h.travel&&Date.now()>=h.travel.end)||dosaHere(h)||!!followOffer(h)||(h.mission&&(h.mission.phase==="scene"||Date.now()>=h.mission.end))||(!h.tomb&&tombInvites().length>0)||myTomb()?.status==="tdone",league:lgDot(h),self:h.points>0||!!h.respec||!!postOffer(h),mates:giftsToMe().some(g=>g.t>(h.seenGift||0))||others.some(o=>{const B=bondOf(o._id,myId()),A=bondOf(myId(),o._id);return (B.want&&B.want!=="지인"&&!relMatch(B.want,A.want)&&relNorm(B.want)!==relMutual(myId(),o._id))||false})||partyCallsForMe().length>0||duelInvitesForMe().length>0||(()=>{const d=myDuel();return !!d&&(d.status==="done"||(d.status==="fight"&&!duelActOf(d,myId())))})(),gate:(()=>{const r=myRoom();if(r&&r.status==="fight"){const m=r.party.find(x=>x.id===myId());return !!(m&&m.hp>0&&!playerReady(r,m))}if(r&&(r.status==="win"||r.status==="fail")&&!h.gateDone?.[r.id])return true;return atWall(h)&&!!GATES[h.realm+1]?.ready&&!r})(),raid:(()=>{const st=raidState(periodNow());if(coInvitesForMe().length&&!h.colair)return true;if(h.colair)return true;if(h.lair&&h.lair.phase!=="done")return true;return st.down&&h.raid?.period===periodNow()&&!h.raid.claimed})()};
   return `<div>
   <section style="margin-top:8px">
     <div class="who"><button type="button" class="facebtn" data-go="self" aria-label="프로필 사진 바꾸기">${face(myId(),h.sect,"big")}</button>
@@ -7516,7 +7518,7 @@ function bind(){
   document.querySelectorAll("[data-cleather]").forEach(b=>b.addEventListener("click",()=>craftLeather(b.dataset.cleather)));
   document.querySelectorAll("[data-chide]").forEach(s=>s.addEventListener("change",()=>{craftHide[s.dataset.chide]=s.value;render()}));
   document.querySelectorAll("[data-bagsort]").forEach(b=>b.addEventListener("click",()=>bagSort(b.dataset.bagsort)));
-  on("#followGo",followGo);on("#homeYes",()=>answerHome(true));on("#homeNo",()=>answerHome(false));on("#homeLeave",()=>{if(confirmHome())cancelHome()});if(tab==="news"&&mode==="db"){const w=wkNow()-1;if(newsHas(w)&&me.newsSeen!==w){const h2=structuredClone(me);h2.newsSeen=w;setTimeout(()=>save(h2),0)}}document.querySelectorAll("[data-dbet]").forEach(b=>b.addEventListener("click",()=>{diceBet=+b.dataset.dbet;render()}));document.querySelectorAll("[data-dpick]").forEach(b=>b.addEventListener("click",()=>diceRoll(b.dataset.dpick)));document.querySelectorAll("[data-attx]").forEach(b=>b.addEventListener("click",()=>{shopOpen.attx=b.dataset.attx==="1";render()}));document.querySelectorAll("[data-csort]").forEach(b=>b.addEventListener("click",()=>{caseSort=b.dataset.csort;render()}));on("#huntBuy",huntBuy);on("#raidBuy",raidBuy);document.querySelectorAll("[data-stambuy]").forEach(b=>b.addEventListener("click",stamBuy));
+  on("#followGo",followGo);document.querySelectorAll("[data-homeyes]").forEach(b=>b.addEventListener("click",()=>answerHome(true,b.dataset.homeyes)));document.querySelectorAll("[data-homeno]").forEach(b=>b.addEventListener("click",()=>answerHome(false,b.dataset.homeno)));on("#homeLeave",()=>{if(confirmHome())cancelHome()});if(tab==="news"&&mode==="db"){const w=wkNow()-1;if(newsHas(w)&&me.newsSeen!==w){const h2=structuredClone(me);h2.newsSeen=w;setTimeout(()=>save(h2),0)}}document.querySelectorAll("[data-dbet]").forEach(b=>b.addEventListener("click",()=>{diceBet=+b.dataset.dbet;render()}));document.querySelectorAll("[data-dpick]").forEach(b=>b.addEventListener("click",()=>diceRoll(b.dataset.dpick)));document.querySelectorAll("[data-attx]").forEach(b=>b.addEventListener("click",()=>{shopOpen.attx=b.dataset.attx==="1";render()}));document.querySelectorAll("[data-csort]").forEach(b=>b.addEventListener("click",()=>{caseSort=b.dataset.csort;render()}));on("#huntBuy",huntBuy);on("#raidBuy",raidBuy);document.querySelectorAll("[data-stambuy]").forEach(b=>b.addEventListener("click",stamBuy));
   document.querySelectorAll("[data-cos]").forEach(b=>b.addEventListener("click",()=>{const [k,id]=b.dataset.cos.split(":");cosHas(me,k,id)?cosWear(k,id):cosBuy(k,id)}));
   document.querySelectorAll("[data-coswear]").forEach(b=>b.addEventListener("click",()=>{const [k]=b.dataset.coswear.split(":");cosWear(k,null)}));
   on("#followStay",followStay);on("#adSummon",adSummon);on("#adFinish",adFinish);{const a=$("#adTarget");if(a)a.addEventListener("change",()=>{adTarget=a.value})}
