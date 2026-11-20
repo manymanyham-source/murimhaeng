@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261120k">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261121a">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1269,6 +1269,14 @@ select,input[type=number],input[type=text],input:not([type]),textarea{border-rad
 .feedwrap .feed{padding-left:18px;padding-right:18px}
 .feed li{grid-template-columns:4.6em 1fr}
 .feed .tm:not(:empty)::before{content:"◆";color:var(--seal);font-size:7px;vertical-align:2px;margin-right:6px;opacity:.75}
+/* 인물 카드: 떠 있는 창이니 흰 종이 바탕 + 먹 테두리 */
+.pfcard{background:#FFFFFF;border:1px solid rgba(48,51,47,.18);border-top:3px solid var(--ink);padding:20px 18px;box-shadow:0 14px 44px rgba(0,0,0,.22)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .pfcard{background:var(--paper-2)}}
+:root[data-theme=dark] .pfcard{background:var(--paper-2)}
+/* 동거 */
+.homebox{border-top:1px solid var(--ink);border-bottom:1px solid var(--line);padding:12px 0 14px;margin:6px 0 14px}
+.homebox p{margin:6px 0 10px;font-size:14px;line-height:1.7}
+.homebox.ask{border-top-color:var(--seal)}.homebox.ask .kicker{color:var(--seal)}
 </style>
 
 <div class="wrap">
@@ -3234,7 +3242,7 @@ const TITLES=[
   {id:"fest1",g:"절기",n:"명절 나그네",hint:"설·단오·추석·동지 가운데 하나를 쇤다",ok:h=>Object.keys(h.festGot||{}).length>=1},
   {id:"fest4",g:"절기",n:"사철 풍류객",hint:"설·단오·추석·동지를 모두 쇤다",ok:h=>Object.keys(h.festGot||{}).length>=4},
   /* 장원 */
-  {id:"room7",g:"장원",n:"안채의 주인",hint:"방을 들이고 방 가구 일곱 가지를 모두 방에 놓는다",ok:h=>hasRoom(h)&&Object.entries(DECOR).filter(([,D])=>D.room).every(([k])=>furnLv(h,k)&&locOf(h,k)==="room")},
+  {id:"room7",g:"장원",n:"안채의 주인",hint:"방을 들이고 방 가구 일곱 가지를 모두 방에 놓는다",ok:h=>{const X=(h.home&&typeof homeView==="function"&&homeView(h.home.host))||h;return hasRoom(X)&&Object.entries(DECOR).filter(([,D])=>D.room).every(([k])=>furnLv(X,k)&&locOf(X,k)==="room")}},
   {id:"hunt30",g:"강호",n:"산군 사냥꾼",hint:"짐승을 서른 마리 잡는다",ok:h=>cnt(h,"hunt")>=30},
   {id:"huntw",g:"강호",n:"백호를 잡은 자",hint:"장백산의 백호를 잡는다",ok:h=>cnt(h,"huntWhite")>=1},
   {id:"tomb1",g:"강호",n:"고묘 도굴꾼",hint:"고묘에서 보물 상자를 연다",ok:h=>cnt(h,"tombGold")>=1},
@@ -4394,7 +4402,7 @@ const furnLv=(h,k)=>h?.manor?.[k]||0;
 const furnCost=(k,lv)=>Object.fromEntries(Object.entries(FURN[k].cost).map(([m,v])=>[m,v*Math.pow(2,lv)]));
 const matName=m=>m==="silver"?"은자":m.startsWith("f_")?fishName(m.slice(2)):m.startsWith("m_")?matN(m.slice(2)):ITEMS[m]?.[0]||m;
 const matHave=(h,m)=>m==="silver"?(h.silver||0):m.startsWith("f_")?((h.fish||{})[m.slice(2)]||0):m.startsWith("m_")?((h.mats||{})[m.slice(2)]||0):(h.items?.[m]||0);
-function manorBonus(h){const o={nei:0,wai:0,shen:0,hpP:0,qi:0,atkP:0,defP:0,trainP:0,cast:0,travelP:0,fishBuyP:0,huntBuyP:0};for(const k in FURN){const lv=furnLv(h,k);if(lv)o[FURN[k].eff]+=FURN[k].per*lv}for(const k in DECOR){if(furnLv(h,k)&&DECOR[k].eff)o[DECOR[k].eff]+=DECOR[k].per}return o}
+function manorBonus(h){const o={nei:0,wai:0,shen:0,hpP:0,qi:0,atkP:0,defP:0,trainP:0,cast:0,travelP:0,fishBuyP:0,huntBuyP:0},M=homeManor(h);for(const k in FURN){const lv=M[k]||0;if(lv)o[FURN[k].eff]+=FURN[k].per*lv}for(const k in DECOR){if(M[k]&&DECOR[k].eff)o[DECOR[k].eff]+=DECOR[k].per}return o}
 function craftFurn(k){const h=structuredClone(me),lv=furnLv(h,k);if(!FURN[k]||lv>=FURN_MAX)return;const c=furnCost(k,lv);
   const lack=Object.entries(c).filter(([m,v])=>matHave(h,m)<v).map(([m,v])=>`${matName(m)} ${v-matHave(h,m)}`);if(lack.length){toast(`모자라다: ${lack.join(", ")}`);return}
   for(const [m,v] of Object.entries(c)){if(m==="silver")h.silver-=v;else if(m.startsWith("f_"))h.fish[m.slice(2)]-=v;else if(m.startsWith("m_"))h.mats[m.slice(2)]-=v;else h.items[m]-=v}
@@ -4677,14 +4685,72 @@ function isoFree(h,draft,k,x,y,r,sc=isoScene,ld=isoLocDraft){const [fw,fd]=isoFp
 /* 장원 가기 (전체 화면) */
 let isoRoofDraft=null,isoPathDraft=null,isoPathMode=false,isoRoofNow=null;
 let isoView=null,isoSel=null,isoEdit=false,isoDraft=null,isoMsg="",visits={},visitsExtra={},visitQ=false;
+/* ───────── 동거: 깊은 인연(600)부터 한 집(장원+방)을 함께 쓴다.
+   · 가구는 산 사람 것(각자 기록의 manor). 집 배치는 visits/home__집주인 문서(kind:"home")에 둔다
+   · 둘 다 자기 기록에 home={with,host}를 적어야 함께 사는 것으로 친다. 효과는 사는 집 가구 기준(둘이 같이) ───────── */
+const HOME_BOND=600;let visitsLoaded=false;
+const hid=h=>h?._id||myId();
+const homeDocId=host=>("home__"+host).replace(/[^A-Za-z0-9_-]/g,"").slice(0,120);
+const homeDocs=()=>Object.values(visits).filter(v=>v.kind==="home");
+const myHomeDoc=()=>homeDocs().find(v=>v.host===myId()||v.visitor===myId());
+const liveHomeOf=host=>homeDocs().find(v=>v.host===host&&v.state==="live");
+function mateOf(h){const w=h?.home?.with;if(!w)return null;const p=w===myId()?me:heroById(w);return p&&p.home?.with===hid(h)&&p.home.host===h.home.host?p:null}
+function homeManor(h){const p=mateOf(h);if(!p)return h?.manor||{};const M={...(h.manor||{})};
+  for(const [k,v] of Object.entries(p.manor||{})){if(k.startsWith("pet_")||k.startsWith("roof_"))continue;M[k]=Math.max(M[k]||0,v||0)}return M}
+/* 함께 사는 집을 그릴 때 쓰는 가상 인물: 집주인 기록 + 둘의 가구 + 함께 정한 배치 */
+function homeView(host){const H=host===myId()?me:heroById(host);if(!H)return null;const G=mateOf(H);if(!G||H.home.host!==host)return null;
+  const M={...(H.manor||{})};for(const [k,v] of Object.entries(G.manor||{})){if(k.startsWith("pet_")||k.startsWith("roof_"))continue;M[k]=Math.max(M[k]||0,v||0)}
+  const d=liveHomeOf(host),keys=new Set(d?.keys||Object.keys(H.manor||{})),p2=d?.p2||H.mpos2||{},p3=d?.p3||H.mpos3||{},L={...(d?.loc||H.mloc||{})};
+  for(const k of MANOR_KEYS())if(M[k]&&!keys.has(k)&&!L[k]&&!p2[k]&&!p3[k])L[k]="store";
+  return {...H,manor:M,mpos2:p2,mpos3:p3,mloc:L,mpath:d?.path||H.mpath||[],_host:host,_mate:hid(G),_mateName:G.name}}
+/* 처음 합칠 때: 집주인 배치를 그대로 두고, 손님 가구는 빈 자리에 (없으면 창고) */
+function homeInitLayout(H,G){const T={...structuredClone(H),manor:{...(H.manor||{})},mpos2:{...(H.mpos2||{})},mpos3:{...(H.mpos3||{})},mloc:{...(H.mloc||{})}};
+  for(const [k,v] of Object.entries(G.manor||{})){if(k.startsWith("pet_")||k.startsWith("roof_"))continue;if(T.manor[k]){T.manor[k]=Math.max(T.manor[k],v);continue}T.manor[k]=v;if(FURN[k]||DECOR[k])manorPlaceNew(T,k)}
+  return {p2:T.mpos2,p3:T.mpos3,loc:T.mloc,path:[...(H.mpath||[])],keys:MANOR_KEYS().filter(k=>T.manor[k])}}
+const homeBusyWith=id=>{const o=id===myId()?me:heroById(id);return !!mateOf(o)||homeDocs().some(v=>v.host===id||v.visitor===id)};
+function canAskHome(id){if(mode!=="db"||!id||id===myId()||String(id).startsWith("fake-"))return false;return bondTotal(myId(),id)>=HOME_BOND}
+async function askHome(id,atMine){if(!canAskHome(id))return;if(mateOf(me)||myHomeDoc()){toast("이미 함께 살거나 청한 사람이 있다.");return}
+  const o=heroById(id);if(!o)return;if(mateOf(o)){toast(`${josa(o.name,"은")} 이미 다른 사람과 함께 산다.`);return}
+  const host=atMine?myId():id,guest=atMine?id:myId(),key=homeDocId(host);if(visits[key]){toast(`${atMine?"내":josa(o.name,"의")} 집에 이미 이야기가 오가는 중이다.`);return}
+  const v={kind:"home",state:"ask",host,visitor:guest,asker:myId(),aname:me.name,bname:o.name,t:Date.now()};
+  try{await db.doc("visits/"+key).set(v);visits[key]={...v,id:key}}catch(e){toast("청하지 못했어요. 잠시 뒤 다시 해 주세요.");return}
+  toast(`${josa(o.name,"에게")} 함께 살자고 청했다`);render();paintProfile()}
+async function answerHome(ok){const d=myHomeDoc();if(!d||d.state!=="ask"||d.asker===myId())return;const other=d.asker;
+  if(!ok){try{await db.doc("visits/"+d.id).delete();delete visits[d.id]}catch(e){}toast("동거 청을 거절했다");render();return}
+  const H=d.host===myId()?me:heroById(d.host),G=d.visitor===myId()?me:heroById(d.visitor);if(!H||!G){toast("상대 기록을 아직 못 받았어요.");return}
+  const v={...d,state:"live",t:Date.now(),...homeInitLayout(H,G)};delete v.id;
+  try{await db.doc("visits/"+d.id).set(v);visits[d.id]={...v,id:d.id}}catch(e){toast("받아들이지 못했어요. 잠시 뒤 다시 해 주세요.");return}
+  const h=structuredClone(me),o=heroById(other);h.home={with:other,host:d.host,since:Date.now()};
+  addLog(h,`${josa(o?.name||"상대","과")} 함께 살기로 했다. ${d.host===myId()?"내 집":josa(o?.name||"상대","의")+" 집"}에서 지낸다.`);addBond(h,other,20);save(h);toast("이제 한집에 산다");render()}
+function confirmHome(){const d=myHomeDoc();if(d?.state!=="live")return true;if(homeLeaveArm&&Date.now()-homeLeaveArm<4000){homeLeaveArm=0;return true}homeLeaveArm=Date.now();toast("한 번 더 누르면 따로 산다");return false}let homeLeaveArm=0;
+async function cancelHome(){const d=myHomeDoc();if(!d)return;try{await db.doc("visits/"+d.id).delete();delete visits[d.id]}catch(e){}
+  if(me.home){const h=structuredClone(me),o=heroById(me.home.with);delete h.home;addLog(h,`${josa(o?.name||"상대","과")} 따로 살기로 했다. 내 가구는 내 집으로 돌아왔다.`);save(h)}
+  toast(d.state==="live"?"따로 살기로 했다":"청을 거두었다");render()}
+/* 받아들인 걸 본 사람(청한 쪽)은 자기 기록에도 적고, 상대가 끝낸 집은 내 기록에서도 지운다 */
+function syncHome(){if(mode!=="db"||!me||!visitsLoaded||!heroLive)return;const d=myHomeDoc();
+  if(d?.state==="live"&&!me.home){const other=d.host===myId()?d.visitor:d.host,o=heroById(other);if(!o)return;
+    const h=structuredClone(me);h.home={with:other,host:d.host,since:Date.now()};addLog(h,`${josa(o.name,"이")} 함께 살자는 청을 받아들였다. ${d.host===myId()?"내 집":josa(o.name,"의")+" 집"}에서 지낸다.`);addBond(h,other,20);save(h);return}
+  if(me.home&&(!d||d.state!=="live")){const o=heroById(me.home.with);const h=structuredClone(me);delete h.home;addLog(h,`${josa(o?.name||"상대","과")} 따로 살게 되었다. 내 가구는 내 집으로 돌아왔다.`);save(h)}}
+function homeBox(h){if(mode!=="db")return "";const d=myHomeDoc(),mate=mateOf(h);
+  if(mate){const host=h.home.host,atMine=host===myId();return `<div class="homebox"><div class="kicker">동거</div><p><b>${esc(mate.name)}</b>${pj(mate.name,"과")} ${atMine?"내 집":esc(josa(mate.name,"의"))+" 집"}에서 함께 산다. 둘 다 이 집 가구를 놓고 옮길 수 있고, 가구 효과도 이 집 것으로 같이 받는다.</p>
+    <div class="row"><button class="btn sm sealb" type="button" data-manor="${host}">함께 사는 집 가기</button><button class="btn sm ghost" type="button" id="homeLeave">따로 살기</button></div>
+    <p class="note" style="margin:6px 0 0">가구는 산 사람 것이다. 따로 살면 각자 가구를 들고 원래 집으로 돌아간다. 함께 사는 동안 새로 들인 물건은 집 창고에 먼저 들어간다.</p></div>`}
+  if(d?.state==="ask"){const other=d.asker===myId()?d.visitor===myId()?d.host:d.visitor:d.asker,o=heroById(other),place=d.host===myId()?"내 집":`${esc(josa(o?.name||"상대","의"))} 집`;
+    return d.asker===myId()?`<div class="homebox"><div class="kicker">동거</div><p><b>${esc(o?.name||"상대")}</b>에게 ${place}에서 함께 살자고 청했다. 대답을 기다리는 중.</p><div class="row"><button class="btn sm ghost" type="button" id="homeLeave">청 거두기</button></div></div>`
+      :`<div class="homebox ask"><div class="kicker">동거 청</div><p><b>${esc(o?.name||"상대")}</b>${pj(o?.name||"상대","이")} ${place}에서 함께 살자고 한다.</p><div class="row"><button class="btn sm sealb" type="button" id="homeYes">함께 산다</button><button class="btn sm ghost" type="button" id="homeNo">거절</button></div></div>`}
+  return ""}
+function homeAskRow(id){if(!canAskHome(id))return "";const o=heroById(id);if(!o)return "";
+  if(mateOf(me)||myHomeDoc())return "";if(mateOf(o)||homeDocs().some(v=>v.host===id||v.visitor===id))return `<p class="note" style="margin:8px 0 0">${josa(o.name,"은")} 이미 다른 사람과 함께 살거나 이야기가 오가는 중이다.</p>`;
+  return `<div class="kicker" style="margin-top:12px">동거 · 깊은 인연</div><div class="row"><button class="btn sm" type="button" data-homeask="1">내 집으로 들이기</button><button class="btn sm" type="button" data-homeask="0">${esc(josa(o.name,"의"))} 집으로 들어가기</button></div>`}
+
 const NOTICE_LIM=5,MAIL_LIM=10;
 /* 남의 장원 방명록: 들어갈 때 그 장원 것만 한 번 읽어 둔다 */
 async function loadVisits(host){if(!visitQ||mode!=="db"||host===myId())return;try{const s=await db.collection("visits").where("host","==",host).get();
   for(const k of Object.keys(visitsExtra))if(visitsExtra[k].host===host)delete visitsExtra[k];s.docs.forEach(d=>{if(d.exists)visitsExtra[d.id]={...structuredClone(d.data()),id:d.id}});
   Object.assign(visits,visitsExtra);if(isoView===host)paintManor()}catch(e){}}
-const visitsTo=id=>Object.values(visits).filter(v=>v.host===id).sort((a,b)=>b.t-a.t);
-const myVisitToday=host=>Object.values(visits).some(v=>v.host===host&&v.visitor===myId()&&v.day===dayKey());
-function openManor(id){const o=id===myId()?me:heroById(id);if(!o)return;isoView=id;isoSel=null;isoEdit=false;isoDraft=null;isoMsg="";isoScene="yard";isoLocDraft=null;loadVisits(id);
+const visitsTo=id=>Object.values(visits).filter(v=>v.host===id&&v.kind!=="home").sort((a,b)=>b.t-a.t);
+const myVisitToday=host=>Object.values(visits).some(v=>v.kind!=="home"&&v.host===host&&v.visitor===myId()&&v.day===dayKey());
+function openManor(id){{const o0=id===myId()?me:heroById(id);if(o0?.home&&mateOf(o0)&&o0.home.host!==id)id=o0.home.host}const o=id===myId()?me:heroById(id);if(!o)return;isoView=id;isoSel=null;isoEdit=false;isoDraft=null;isoMsg="";isoScene="yard";isoLocDraft=null;loadVisits(id);
   if(id===myId()&&mode==="db"){const h=structuredClone(me),seen=h.visitSeen||0,news=visitsTo(myId()).filter(v=>v.t>seen&&v.visitor!==myId());
     const fed=h.pet&&PETS[h.pet.k]?visitsTo(myId()).filter(v=>(v.pt||0)>seen&&v.visitor!==myId()):[];
     if(news.length||fed.length){news.forEach(v=>addBond(h,v.visitor,5));h.visitSeen=Date.now();
@@ -4698,7 +4764,7 @@ async function leaveVisit(host){if(mode!=="db"||host===myId()||myVisitToday(host
   try{await db.doc("visits/"+id).set(v);visits[id]={...v,id}}catch(e){toast("발자국을 남기지 못했어요. 잠시 뒤 다시 해 주세요.");return}
   const h=structuredClone(me);addBond(h,host,5);addLog(h,`${josa(o.name,"의")} 장원에 놀러 가 발자국을 남겼다. (인연 +5)${v.msg?` "${v.msg}"`:""}`);save(h);isoMsg="";toast(`${josa(o.name,"의")} 장원에 발자국을 남겼다 · 인연 +5`);paintManor()}
 function paintManor(){let el=document.getElementById("isoWrap");if(!isoView){if(el)el.remove();document.body.classList.remove("noscroll");return}
-  const mine=isoView===myId(),h=mine?me:heroById(isoView);if(!h){closeManor();return}
+  const hv=homeView(isoView),mine=isoView===myId()||hv?._mate===myId(),h=hv||(isoView===myId()?me:heroById(isoView));if(!h){closeManor();return}const E=h;
   if(!el){el=document.createElement("div");el.id="isoWrap";el.className="isowrap";document.body.appendChild(el)}document.body.classList.add("noscroll");
   if(isoScene==="room"&&!hasRoom(h))isoScene="yard";
   const ld=isoEdit?isoLocDraft:null,all={...FURN,...DECOR},own=MANOR_KEYS().filter(k=>furnLv(h,k)&&all[k]),L=own.filter(k=>locOf(h,k,ld)===isoScene),ST=own.filter(k=>locOf(h,k,ld)==="store"),sel=isoSel&&all[isoSel]&&L.includes(isoSel)?isoSel:null;
@@ -4707,13 +4773,13 @@ function paintManor(){let el=document.getElementById("isoWrap");if(!isoView){if(
     :mine?`<div class="row isoroom"><button class="btn sm" type="button" id="buyRoom" ${(me.silver||0)<ROOM_PRICE?"disabled":""}>방 들이기 · ${silverTxt(ROOM_PRICE)}</button><span class="note" style="margin:0">정원만 한 방 한 칸. 방 가구를 따로 놓을 수 있다.</span></div>`:"";
   const store=mine&&isoEdit?`<div class="isostore"><div class="kicker">창고 · ${ST.length}개${ST.length?" · 누르면 꺼내 놓는다":""}</div>${ST.length?`<div class="chips">${ST.map(k=>`<button type="button" class="btn sm ghost" data-istore="${k}">${esc(all[k].n)}</button>`).join("")}</div>`:`<p class="note" style="margin:0">물건을 고르고 「창고에 넣기」를 누르면 여기로 들어온다. 창고에 넣어도 효과는 그대로다.</p>`}</div>`:"";
   el.innerHTML=`<div class="isobox" role="dialog" aria-modal="true" aria-label="${esc(h.name)}의 장원">
-    <div class="isohead"><b>${esc(josa(h.name,"의"))} ${inRoom?"방":"장원"}</b><button type="button" class="btn sm ghost" id="isoClose">돌아가기</button></div>${tabs}
+    <div class="isohead"><b>${hv?`${esc(h.name)} · ${esc(h._mateName)}의 집${inRoom?" · 방":""}`:`${esc(josa(h.name,"의"))} ${inRoom?"방":"장원"}`}</b><button type="button" class="btn sm ghost" id="isoClose">돌아가기</button></div>${tabs}
     <canvas id="isoCv" class="isocv ${isoEdit?"edit":""}"></canvas>
     <div class="isocap">${sel?`<b>${all[sel].n}</b>${FURN[sel]?` · ${furnLv(h,sel)}단계 · ${FURN[sel].u} +${FURN[sel].per*furnLv(h,sel)}`:DECOR[sel].eff?` · ${DECOR[sel].u} +${DECOR[sel].per}`:" · 꾸밈"}<span>${esc(all[sel].d)}</span>`:L.length?`<span>${isoEdit?"옮길 물건을 누른다.":"물건을 누르면 이름이 보인다."}</span>`:`<span>${inRoom?(mine?"아직 텅 빈 방이다. 「배치 바꾸기」에서 창고나 정원의 물건을 옮겨 오자.":"아직 텅 빈 방이다."):mine?"아직 텅 빈 마당이다. 재료를 모아 물건을 들여 보자.":"아직 텅 빈 마당이다."}</span>`}${mine&&!isoEdit&&ST.length?`<span>창고에 ${ST.length}개 넣어 둠</span>`:""}</div>
     ${mine?(isoEdit?`<div class="isoedit"><p class="note" style="margin:0 0 6px">${isoPathMode?`돌길 깔기 · 칸을 누르면 깔고, 다시 누르면 걷어낸다 (${(isoPathDraft||[]).length}/${PATH_MAX})`:sel?`「${all[sel].n}」 고름 · 빈 칸을 누르면 옮겨진다`:"옮길 물건을 먼저 누른다"}</p>
-      ${!inRoom&&Object.keys(ROOFS).filter(k=>roofOwn(me,k)).length>1?`<div class="chips" style="margin:0 0 6px">${Object.entries(ROOFS).filter(([k])=>roofOwn(me,k)).map(([k,R])=>`<button type="button" class="btn sm ${isoRoofDraft===k?"sealb":"ghost"}" data-iroof="${k}"><i class="rsw" style="background:${R.b}"></i>${R.n}</button>`).join("")}</div>`:""}
-      <div class="row">${me.manor?.path&&!inRoom?`<button class="btn sm ${isoPathMode?"sealb":""}" type="button" id="isoPath">${isoPathMode?"돌길 깔기 끝":"돌길 깔기"}</button>`:""}<button class="btn sm" type="button" id="isoRot" ${sel&&!isoPathMode?"":"disabled"}>방향 돌리기</button><button class="btn sm" type="button" id="isoStore" ${sel&&!isoPathMode?"":"disabled"}>창고에 넣기</button>${inRoom?"":`<button class="btn sm ghost" type="button" id="isoBack" ${sel&&ISO_SLOT[sel]&&!isoPathMode?"":"disabled"}>원래 자리로</button>`}<button class="btn sm sealb" type="button" id="isoSave">배치 저장</button><button class="btn sm ghost" type="button" id="isoCancel">그만두기</button></div>${store}</div>`
-      :own.length||me.manor?.path||Object.keys(ROOFS).some(k=>k!=="black"&&roofOwn(me,k))?`<div class="row" style="margin-top:8px"><button class="btn sm" type="button" id="isoEditBtn">배치 바꾸기</button></div>`:"")
+      ${!inRoom&&(!hv||isoView===myId())&&Object.keys(ROOFS).filter(k=>roofOwn(E,k)).length>1?`<div class="chips" style="margin:0 0 6px">${Object.entries(ROOFS).filter(([k])=>roofOwn(E,k)).map(([k,R])=>`<button type="button" class="btn sm ${isoRoofDraft===k?"sealb":"ghost"}" data-iroof="${k}"><i class="rsw" style="background:${R.b}"></i>${R.n}</button>`).join("")}</div>`:""}
+      <div class="row">${E.manor?.path&&!inRoom?`<button class="btn sm ${isoPathMode?"sealb":""}" type="button" id="isoPath">${isoPathMode?"돌길 깔기 끝":"돌길 깔기"}</button>`:""}<button class="btn sm" type="button" id="isoRot" ${sel&&!isoPathMode?"":"disabled"}>방향 돌리기</button><button class="btn sm" type="button" id="isoStore" ${sel&&!isoPathMode?"":"disabled"}>창고에 넣기</button>${inRoom?"":`<button class="btn sm ghost" type="button" id="isoBack" ${sel&&ISO_SLOT[sel]&&!isoPathMode?"":"disabled"}>원래 자리로</button>`}<button class="btn sm sealb" type="button" id="isoSave">배치 저장</button><button class="btn sm ghost" type="button" id="isoCancel">그만두기</button></div>${store}</div>`
+      :own.length||E.manor?.path||Object.keys(ROOFS).some(k=>k!=="black"&&roofOwn(E,k))?`<div class="row" style="margin-top:8px"><button class="btn sm" type="button" id="isoEditBtn">배치 바꾸기</button></div>`:"")
      :`<div class="isovisit">${visited?`<p class="note" style="margin:0">오늘 발자국을 남겼다. 내일 또 놀러 오자.</p>${visitPlayBox(h)}`:`<div class="mailf" style="margin:0"><label>한마디 (선택)<input id="isoMsg" maxlength="40" value="${esc(isoMsg)}" placeholder="장원이 멋지네!"></label></div><button class="btn sm sealb" type="button" id="isoVisit" style="margin-top:6px">발자국 남기기 · 서로 인연 +5</button><p class="note" style="margin:6px 0 0">발자국을 남기면 차를 얻어 마시거나 영수에게 먹이를 줄 수 있다.</p>`}</div>`}
     <div class="label" style="margin-top:16px">방명록</div>
     ${V.length?`<div class="isogb">${V.map(v=>`<div><b>${esc(v.vname)}</b> <span>${hhmm(v.t)}${v.pday===v.day?" · 영수에게 먹이를 주고 감":""}</span>${v.msg?`<p>"${esc(v.msg)}"</p>`:""}</div>`).join("")}</div>`:`<p class="note">아직 다녀간 사람이 없다.</p>`}
@@ -4724,24 +4790,33 @@ function paintManor(){let el=document.getElementById("isoWrap");if(!isoView){if(
     if(isoPathMode){if(t.gx<0||t.gy<0||t.gx>=ISO_N||t.gy>=ISO_N)return;const key=t.gx+","+t.gy,P=new Set(isoPathDraft||[]);
       if(P.has(key))P.delete(key);else{if(P.size>=PATH_MAX){toast(`돌길은 ${PATH_MAX}칸까지 깔 수 있다.`);return}P.add(key)}isoPathDraft=[...P];paintManor();return}
     if(t.item&&t.item!==isoSel){isoSel=t.item;paintManor();return}
-    if(isoSel){const [,,r]=isoPos(me,isoSel,isoDraft),[fw,fd]=isoFp(isoSel,r),x=t.gx-Math.floor((fw-1)/2),y=t.gy-Math.floor((fd-1)/2);
-      if(!isoFree(me,isoDraft,isoSel,x,y,r)){toast("거기엔 놓을 수 없다.");return}isoDraft={...isoDraft,[isoSel]:[x,y,r]};paintManor()}};
+    if(isoSel){const [,,r]=isoPos(E,isoSel,isoDraft),[fw,fd]=isoFp(isoSel,r),x=t.gx-Math.floor((fw-1)/2),y=t.gy-Math.floor((fd-1)/2);
+      if(!isoFree(E,isoDraft,isoSel,x,y,r)){toast("거기엔 놓을 수 없다.");return}isoDraft={...isoDraft,[isoSel]:[x,y,r]};paintManor()}};
   const on2=(s,f)=>{const b=el.querySelector(s);if(b)b.onclick=f};
-  on2("#isoClose",closeManor);on2("#isoEditBtn",()=>{isoEdit=true;isoDraft={...((isoScene==="room"?me.mpos3:me.mpos2)||{})};isoLocDraft={...(me.mloc||{})};isoRoofDraft=me.roof||"black";isoPathDraft=[...(me.mpath||[])];isoPathMode=false;isoSel=null;paintManor()});
+  on2("#isoClose",closeManor);on2("#isoEditBtn",()=>{isoEdit=true;isoDraft={...((isoScene==="room"?E.mpos3:E.mpos2)||{})};isoLocDraft={...(E.mloc||{})};isoRoofDraft=E.roof||"black";isoPathDraft=[...(E.mpath||[])];isoPathMode=false;isoSel=null;paintManor()});
   on2("#isoPath",()=>{isoPathMode=!isoPathMode;isoSel=null;paintManor()});
   el.querySelectorAll("[data-iroof]").forEach(b=>b.onclick=()=>{isoRoofDraft=b.dataset.iroof;paintManor()});
   on2("#isoCancel",()=>{isoEdit=false;isoDraft=null;isoSel=null;isoPathMode=false;isoRoofDraft=null;isoPathDraft=null;isoLocDraft=null;paintManor()});
-  on2("#isoSave",()=>{const h2=structuredClone(me),D={...(isoDraft||{})};for(const k of Object.keys(D))if(locOf(h2,k,isoLocDraft)!==isoScene)delete D[k];
+  on2("#isoSave",()=>{if(hv){saveHomeLayout(hv);return}const h2=structuredClone(me),D={...(isoDraft||{})};for(const k of Object.keys(D))if(locOf(h2,k,isoLocDraft)!==isoScene)delete D[k];
     if(isoScene==="room")h2.mpos3=D;else h2.mpos2=D;const LD={};for(const [k,v] of Object.entries(isoLocDraft||{}))if(v&&v!=="yard")LD[k]=v;h2.mloc=LD;isoLocDraft=null;if(isoRoofDraft&&roofOwn(h2,isoRoofDraft))h2.roof=isoRoofDraft;if(h2.manor?.path)h2.mpath=[...(isoPathDraft||[])];isoPathMode=false;isoEdit=false;isoDraft=null;isoSel=null;addLog(h2,"장원의 물건들을 새로 놓았다.");save(h2);toast("장원 배치를 저장했다.");setTimeout(paintManor,50)});
-  on2("#isoRot",()=>{if(!isoSel)return;const [x,y,r]=isoPos(me,isoSel,isoDraft),nr=(r+1)%4;if(!isoFree(me,isoDraft,isoSel,x,y,nr)){toast("돌리면 옆 물건과 겹친다.");return}isoDraft={...isoDraft,[isoSel]:[x,y,nr]};paintManor()});
-  on2("#isoBack",()=>{if(!isoSel||!ISO_SLOT[isoSel])return;const [x,y,r]=ISO_SLOT[isoSel];if(!isoFree(me,isoDraft,isoSel,x,y,r)){toast("원래 자리에 다른 물건이 있다.");return}const d={...isoDraft};delete d[isoSel];isoDraft=d;paintManor()});
+  on2("#isoRot",()=>{if(!isoSel)return;const [x,y,r]=isoPos(E,isoSel,isoDraft),nr=(r+1)%4;if(!isoFree(E,isoDraft,isoSel,x,y,nr)){toast("돌리면 옆 물건과 겹친다.");return}isoDraft={...isoDraft,[isoSel]:[x,y,nr]};paintManor()});
+  on2("#isoBack",()=>{if(!isoSel||!ISO_SLOT[isoSel])return;const [x,y,r]=ISO_SLOT[isoSel];if(!isoFree(E,isoDraft,isoSel,x,y,r)){toast("원래 자리에 다른 물건이 있다.");return}const d={...isoDraft};delete d[isoSel];isoDraft=d;paintManor()});
   el.querySelectorAll("[data-iscene]").forEach(b=>b.onclick=()=>{if(isoEdit)return;isoScene=b.dataset.iscene;isoSel=null;paintManor()});
   on2("#buyRoom",buyRoom);
   on2("#isoStore",()=>{if(!isoSel)return;const d={...isoDraft};delete d[isoSel];isoDraft=d;isoLocDraft={...isoLocDraft,[isoSel]:"store"};toast(`「${all[isoSel].n}」 창고에 넣었다`);isoSel=null;paintManor()});
-  el.querySelectorAll("[data-istore]").forEach(b=>b.onclick=()=>{const k=b.dataset.istore,ld2={...isoLocDraft,[k]:isoScene},P=isoSpot(me,k,isoScene,isoDraft,ld2);
+  el.querySelectorAll("[data-istore]").forEach(b=>b.onclick=()=>{const k=b.dataset.istore,ld2={...isoLocDraft,[k]:isoScene},P=isoSpot(E,k,isoScene,isoDraft,ld2);
     if(!P){toast(`${inRoom?"방":"정원"}에 빈 칸이 없다. 다른 물건을 먼저 창고에 넣자.`);return}isoLocDraft=ld2;isoDraft={...isoDraft,[k]:P};isoSel=k;paintManor()});
   on2("#isoVisit",()=>leaveVisit(isoView));on2("#isoTea",()=>visitTea(isoView));on2("#isoPet",()=>visitPet(isoView));const mi=el.querySelector("#isoMsg");if(mi)mi.oninput=()=>isoMsg=mi.value;
   el.onkeydown=e=>{if(e.key==="Escape")closeManor()}}
+
+async function saveHomeLayout(V){const d=liveHomeOf(V._host);if(!d){toast("함께 사는 집 기록을 아직 못 받았어요. 잠시 뒤 다시 해 주세요.");return}
+  const D={...(isoDraft||{})};for(const k of Object.keys(D))if(locOf(V,k,isoLocDraft)!==isoScene)delete D[k];
+  const LD={};for(const [k,v] of Object.entries(isoLocDraft||{}))if(v&&v!=="yard")LD[k]=v;
+  const nv={...d,[isoScene==="room"?"p3":"p2"]:D,loc:LD,keys:MANOR_KEYS().filter(k=>V.manor[k]),by:myId(),t2:Date.now()};if(V.manor?.path)nv.path=[...(isoPathDraft||[])];delete nv.id;
+  const roof=isoRoofDraft;isoPathMode=false;isoEdit=false;isoDraft=null;isoSel=null;isoLocDraft=null;isoRoofDraft=null;isoPathDraft=null;
+  try{await db.doc("visits/"+d.id).set(nv);visits[d.id]={...nv,id:d.id}}catch(e){toast("배치를 저장하지 못했어요. 잠시 뒤 다시 해 주세요.");paintManor();return}
+  if(V._host===myId()&&roof&&roofOwn(me,roof)&&roof!==me.roof){const h=structuredClone(me);h.roof=roof;save(h)}
+  toast("함께 사는 집 배치를 저장했다.");setTimeout(paintManor,50)}
 
 function manorView(h,mine){const all={...FURN,...DECOR},L=MANOR_KEYS().filter(k=>furnLv(h,k)&&all[k]),id=mine?myId():h._id,nv=visitsTo(id).length;
   return `<div class="mgo"><button class="btn sm sealb" type="button" data-manor="${id}">${mine?"내 장원 가기":`${esc(josa(h.name,"의"))} 장원 가기`}</button>
@@ -5919,10 +5994,11 @@ function paintProfile(){
     <div class="label" style="margin-top:14px">인물 설정</div>
     ${bio.origin||bio.age||bio.note||traitsOf(o).length?`<div class="pfrows">${row("출신",esc(bio.origin||""))}${row("나이",esc(bio.age||""))}${row("성격",traitsOf(o).map(k=>`<span class="trt on sm">${k}</span>`).join(" "))}</div>${bio.note?`<p class="pfnote">${esc(bio.note).replace(/\n/g,"<br>")}</p>`:""}`
       :`<p class="note">${mine?"아직 적어 둔 설정이 없다. 인물 탭에서 출신, 나이, 특이사항을 적을 수 있다.":"아직 적어 둔 설정이 없다."}</p>`}
-    <div class="kicker" style="margin-top:12px">장원</div>${manorView(o,false)}
+    <div class="kicker" style="margin-top:12px">장원${mateOf(o)?` · ${esc(mateOf(o).name)}${pj(mateOf(o).name,"과")} 함께 산다`:""}</div>${manorView(o,false)}${mine?"":homeAskRow(profileId)}
     <div class="row" style="margin-top:12px">${mine?`<button class="btn sm" type="button" data-pfgo="self">인물 탭에서 고치기</button>`:`<button class="btn sm" type="button" data-pfgo="mates">인연 탭에서 보기</button>${mode==="db"&&!myDuel()&&duelDayN(me)<DUEL_DAY?`<button class="btn sm ghost" type="button" data-pfduel="${profileId}">논검 청하기</button>`:""}${mode==="db"?`<button class="btn sm ghost" type="button" id="pfGive">건네주기</button>`:""}`}</div>${!mine&&giveOpen?giveBox(profileId):""}</div>`;
   el.querySelector(".pfx").onclick=()=>{profileId=null;paintProfile()};
   el.querySelectorAll("[data-pfgo]").forEach(b=>b.onclick=()=>{tab=b.dataset.pfgo;profileId=null;paintProfile();try{const cb=document.querySelector(".chat-box");if(cb&&innerWidth<700)cb.hidden=true}catch(e){}render()});
+  el.querySelectorAll("[data-homeask]").forEach(b=>b.onclick=()=>askHome(profileId,b.dataset.homeask==="1"));
   el.querySelectorAll("[data-pfduel]").forEach(b=>b.onclick=()=>{duelInvite(b.dataset.pfduel);profileId=null;paintProfile()});
   {const q=x=>el.querySelector(x),sync=()=>{if(q("#gKey"))givePick.key=q("#gKey").value;if(q("#gQty"))givePick.qty=+q("#gQty").value||1;if(q("#gNote"))givePick.note=q("#gNote").value};
     if(q("#gQty")&&q("#gSend")?.dataset.ship==="1")q("#gQty").oninput=()=>{sync();const o=heroById(profileId),f=shipFee(me,o,givePick.kind,Math.max(1,Math.floor(givePick.qty||1)),givePick.key);q("#gSend").textContent=`표국에 맡긴다 (${f}냥)`};
@@ -6559,7 +6635,7 @@ function gearTab(){
 }
 /* 살림 묶음: 제작(공방·부엌)과 장원(장원·영수)을 따로 뺀 탭 */
 function craftTab(){const h=me;return `${workshop(h)}${kitchen(h)}`}
-function manorTab(){const h=me;return `${manorSection(h)}${petSection(h)}`}
+function manorTab(){const h=me;return `${homeBox(h)}${manorSection(h)}${petSection(h)}`}
 
 /* ───────── 행동: 입문·수련·승급·배분 ───────── */
 function create(){
@@ -6953,7 +7029,7 @@ function heroView(){
   const h=me,s=SECTS[h.sect],r=REALMS[h.realm],next=REALMS[h.realm+1],wall=atWall(h);
   const pct=Math.min(100,h.exp/need(h.level)*100);
   const tabs=[["train","수련"],["world","강호"],["raid","토벌"],["gate","관문"],["league","친선"],["self","인물"],["gear","장비"],["craft","제작"],["manor","장원"],["alarm","알림"],["mates","인연"],["mail","우편"],["notice","공지"],["news","일보"],["qna","문답"]];
-  const dot={news:newsUnread(),world2:0,qna:qnaOK()&&tab!=="qna"&&qnaUnread(),notice:mode==="db"&&noticeUnread()>0,alarm:mode==="db"&&alarmUnread()>0,mail:mode==="db"&&(mailUnread()>0||myParcels().length>0),train:(h.training&&Date.now()>=h.training.end)||!attOf(h).done||festTodo(h),world:(h.travel&&Date.now()>=h.travel.end)||dosaHere(h)||!!followOffer(h)||(h.mission&&(h.mission.phase==="scene"||Date.now()>=h.mission.end))||(!h.tomb&&tombInvites().length>0)||myTomb()?.status==="tdone",league:lgDot(h),self:h.points>0||!!h.respec||!!postOffer(h),mates:giftsToMe().some(g=>g.t>(h.seenGift||0))||others.some(o=>{const B=bondOf(o._id,myId()),A=bondOf(myId(),o._id);return (B.want&&B.want!=="지인"&&!relMatch(B.want,A.want)&&relNorm(B.want)!==relMutual(myId(),o._id))||false})||partyCallsForMe().length>0||duelInvitesForMe().length>0||(()=>{const d=myDuel();return !!d&&(d.status==="done"||(d.status==="fight"&&!duelActOf(d,myId())))})(),gate:(()=>{const r=myRoom();if(r&&r.status==="fight"){const m=r.party.find(x=>x.id===myId());return !!(m&&m.hp>0&&!playerReady(r,m))}if(r&&(r.status==="win"||r.status==="fail")&&!h.gateDone?.[r.id])return true;return atWall(h)&&!!GATES[h.realm+1]?.ready&&!r})(),raid:(()=>{const st=raidState(periodNow());if(coInvitesForMe().length&&!h.colair)return true;if(h.colair)return true;if(h.lair&&h.lair.phase!=="done")return true;return st.down&&h.raid?.period===periodNow()&&!h.raid.claimed})()};
+  const dot={manor:mode==="db"&&!!myHomeDoc()&&myHomeDoc().state==="ask"&&myHomeDoc().asker!==myId(),news:newsUnread(),world2:0,qna:qnaOK()&&tab!=="qna"&&qnaUnread(),notice:mode==="db"&&noticeUnread()>0,alarm:mode==="db"&&alarmUnread()>0,mail:mode==="db"&&(mailUnread()>0||myParcels().length>0),train:(h.training&&Date.now()>=h.training.end)||!attOf(h).done||festTodo(h),world:(h.travel&&Date.now()>=h.travel.end)||dosaHere(h)||!!followOffer(h)||(h.mission&&(h.mission.phase==="scene"||Date.now()>=h.mission.end))||(!h.tomb&&tombInvites().length>0)||myTomb()?.status==="tdone",league:lgDot(h),self:h.points>0||!!h.respec||!!postOffer(h),mates:giftsToMe().some(g=>g.t>(h.seenGift||0))||others.some(o=>{const B=bondOf(o._id,myId()),A=bondOf(myId(),o._id);return (B.want&&B.want!=="지인"&&!relMatch(B.want,A.want)&&relNorm(B.want)!==relMutual(myId(),o._id))||false})||partyCallsForMe().length>0||duelInvitesForMe().length>0||(()=>{const d=myDuel();return !!d&&(d.status==="done"||(d.status==="fight"&&!duelActOf(d,myId())))})(),gate:(()=>{const r=myRoom();if(r&&r.status==="fight"){const m=r.party.find(x=>x.id===myId());return !!(m&&m.hp>0&&!playerReady(r,m))}if(r&&(r.status==="win"||r.status==="fail")&&!h.gateDone?.[r.id])return true;return atWall(h)&&!!GATES[h.realm+1]?.ready&&!r})(),raid:(()=>{const st=raidState(periodNow());if(coInvitesForMe().length&&!h.colair)return true;if(h.colair)return true;if(h.lair&&h.lair.phase!=="done")return true;return st.down&&h.raid?.period===periodNow()&&!h.raid.claimed})()};
   return `<div>
   <section style="margin-top:8px">
     <div class="who"><button type="button" class="facebtn" data-go="self" aria-label="프로필 사진 바꾸기">${face(myId(),h.sect,"big")}</button>
@@ -7440,7 +7516,7 @@ function bind(){
   document.querySelectorAll("[data-cleather]").forEach(b=>b.addEventListener("click",()=>craftLeather(b.dataset.cleather)));
   document.querySelectorAll("[data-chide]").forEach(s=>s.addEventListener("change",()=>{craftHide[s.dataset.chide]=s.value;render()}));
   document.querySelectorAll("[data-bagsort]").forEach(b=>b.addEventListener("click",()=>bagSort(b.dataset.bagsort)));
-  on("#followGo",followGo);if(tab==="news"&&mode==="db"){const w=wkNow()-1;if(newsHas(w)&&me.newsSeen!==w){const h2=structuredClone(me);h2.newsSeen=w;setTimeout(()=>save(h2),0)}}document.querySelectorAll("[data-dbet]").forEach(b=>b.addEventListener("click",()=>{diceBet=+b.dataset.dbet;render()}));document.querySelectorAll("[data-dpick]").forEach(b=>b.addEventListener("click",()=>diceRoll(b.dataset.dpick)));document.querySelectorAll("[data-attx]").forEach(b=>b.addEventListener("click",()=>{shopOpen.attx=b.dataset.attx==="1";render()}));document.querySelectorAll("[data-csort]").forEach(b=>b.addEventListener("click",()=>{caseSort=b.dataset.csort;render()}));on("#huntBuy",huntBuy);on("#raidBuy",raidBuy);document.querySelectorAll("[data-stambuy]").forEach(b=>b.addEventListener("click",stamBuy));
+  on("#followGo",followGo);on("#homeYes",()=>answerHome(true));on("#homeNo",()=>answerHome(false));on("#homeLeave",()=>{if(confirmHome())cancelHome()});if(tab==="news"&&mode==="db"){const w=wkNow()-1;if(newsHas(w)&&me.newsSeen!==w){const h2=structuredClone(me);h2.newsSeen=w;setTimeout(()=>save(h2),0)}}document.querySelectorAll("[data-dbet]").forEach(b=>b.addEventListener("click",()=>{diceBet=+b.dataset.dbet;render()}));document.querySelectorAll("[data-dpick]").forEach(b=>b.addEventListener("click",()=>diceRoll(b.dataset.dpick)));document.querySelectorAll("[data-attx]").forEach(b=>b.addEventListener("click",()=>{shopOpen.attx=b.dataset.attx==="1";render()}));document.querySelectorAll("[data-csort]").forEach(b=>b.addEventListener("click",()=>{caseSort=b.dataset.csort;render()}));on("#huntBuy",huntBuy);on("#raidBuy",raidBuy);document.querySelectorAll("[data-stambuy]").forEach(b=>b.addEventListener("click",stamBuy));
   document.querySelectorAll("[data-cos]").forEach(b=>b.addEventListener("click",()=>{const [k,id]=b.dataset.cos.split(":");cosHas(me,k,id)?cosWear(k,id):cosBuy(k,id)}));
   document.querySelectorAll("[data-coswear]").forEach(b=>b.addEventListener("click",()=>{const [k]=b.dataset.coswear.split(":");cosWear(k,null)}));
   on("#followStay",followStay);on("#adSummon",adSummon);on("#adFinish",adFinish);{const a=$("#adTarget");if(a)a.addEventListener("change",()=>{adTarget=a.value})}
@@ -7609,10 +7685,10 @@ async function boot(){
   Q("notices",c=>c.orderBy("t","desc").limit(NOTICE_LIM)).onSnapshot(snap=>{notices={};snap.docs.forEach(d=>{if(d.exists)notices[d.id]=structuredClone(d.data())});if(ready)render()},()=>{});
   if(canQ(db.collection("visits"))){visitQ=true;
     /* 방명록은 내 장원에 온 발자국과 내가 남긴 발자국만 늘 지켜본다. 남의 장원은 들어갈 때 한 번 읽는다 */
-    const vs={to:{},by:{}},vput=()=>{visits={...visitsExtra,...vs.to,...vs.by};if(isoView&&!isoEdit)paintManor();if(ready)render()};
-    db.collection("visits").where("host","==",uid).onSnapshot(snap=>{vs.to={};snap.docs.forEach(d=>{if(d.exists)vs.to[d.id]={...structuredClone(d.data()),id:d.id}});vput()},()=>{});
-    db.collection("visits").where("visitor","==",uid).onSnapshot(snap=>{vs.by={};snap.docs.forEach(d=>{if(d.exists)vs.by[d.id]={...structuredClone(d.data()),id:d.id}});vput()},()=>{})}
-  else db.collection("visits").onSnapshot(snap=>{visits={};snap.docs.forEach(d=>{if(d.exists)visits[d.id]={...structuredClone(d.data()),id:d.id}});if(isoView&&!isoEdit)paintManor();if(ready)render()},()=>{});
+    const vs={to:{},by:{}},vput=()=>{visits={...visitsExtra,...vs.to,...vs.by};if(vs.a&&vs.b)visitsLoaded=true;syncHome();if(isoView&&!isoEdit)paintManor();if(ready)render()};
+    db.collection("visits").where("host","==",uid).onSnapshot(snap=>{vs.a=1;vs.to={};snap.docs.forEach(d=>{if(d.exists)vs.to[d.id]={...structuredClone(d.data()),id:d.id}});vput()},()=>{});
+    db.collection("visits").where("visitor","==",uid).onSnapshot(snap=>{vs.b=1;vs.by={};snap.docs.forEach(d=>{if(d.exists)vs.by[d.id]={...structuredClone(d.data()),id:d.id}});vput()},()=>{})}
+  else db.collection("visits").onSnapshot(snap=>{visits={};snap.docs.forEach(d=>{if(d.exists)visits[d.id]={...structuredClone(d.data()),id:d.id}});visitsLoaded=true;syncHome();if(isoView&&!isoEdit)paintManor();if(ready)render()},()=>{});
   both("parcels","to","from",docs=>{parcels={};docs.forEach(d=>{parcels[d.id]={...structuredClone(d.data()),id:d.id}});if(ready)render()});
   Q("mail",c=>c.orderBy("t","desc").limit(MAIL_LIM)).onSnapshot(snap=>{mails={};snap.docs.forEach(d=>{if(d.exists)mails[d.id]=structuredClone(d.data())});if(ready)render()},()=>{});
   if(canQ(db.collection("avatars"))){
@@ -7635,7 +7711,7 @@ async function boot(){
     const mine=snap.docs.find(x=>x.id===uid);if(snap.fromCache!==true&&!(mine?.metadata?.fromCache))heroLive=true;
     if(!pendHero&&!(mine?.metadata?.hasPendingWrites)){me=mine?.exists?normalize(structuredClone(mine.data())):null;if(me){if(me.journal&&!journalCache)journalCache=me.journal;me.journal=journalCache||me.journal||[]}}
     others=snap.docs.filter(x=>x.id!==uid&&x.exists).map(x=>Object.assign(normalize(structuredClone(x.data())),{_id:x.id}));
-    mergeFake();if(!heroLive&&!ready)return;ready=true;render();syncBonds();
+    mergeFake();if(!heroLive&&!ready)return;ready=true;render();syncBonds();try{syncHome()}catch(e){}
   },e=>{toast("강호 소식이 끊겼어요. 새로고침해 주세요.")});
   setTimeout(()=>{if(!ready){ready=true;render()}},8000);
 }
