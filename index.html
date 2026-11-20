@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261120i">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261120k">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1261,6 +1261,14 @@ select,input[type=number],input[type=text],input:not([type]),textarea{border-rad
 .bimgcap p{font-size:14px;color:var(--ink-2);line-height:1.7;margin:0}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) .bimg img{mix-blend-mode:screen;filter:invert(1) hue-rotate(180deg)}}
 :root[data-theme=dark] .bimg img{mix-blend-mode:screen;filter:invert(1) hue-rotate(180deg)}
+/* 탐문 일지: 바탕보다 밝은 흰 종이 */
+.feed{background:#FFFFFF;border-color:rgba(48,51,47,.12)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .feed{background:rgba(255,255,255,.05)}}
+:root[data-theme=dark] .feed{background:rgba(255,255,255,.05)}
+/* 탐문 일지 시간 앞에 작은 붉은 마름모, 안쪽 여백 */
+.feedwrap .feed{padding-left:18px;padding-right:18px}
+.feed li{grid-template-columns:4.6em 1fr}
+.feed .tm:not(:empty)::before{content:"◆";color:var(--seal);font-size:7px;vertical-align:2px;margin-right:6px;opacity:.75}
 </style>
 
 <div class="wrap">
