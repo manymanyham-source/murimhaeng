@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261121c">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261121d">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1336,7 +1336,12 @@ const cap=r=>(r+1)*10;
 /* 환골탈태 · 비승: 현경 끝(Lv.70 경험치 가득)에서 삼류로 돌아가며 영구 보너스를 얻는다.
    1~3번째는 환골탈태(능력치 +5%, 경험치 +20%씩). 삼환 뒤로는 비승: 선계에 오른 몸이 수련하러 인계로 내려온 것이라 힘은 조금만 더 붙는다(+2%, +10%씩) */
 const RB_MAX=3,RB_STAT=.05,RB_EXP=.2,AS_STAT=.02,AS_EXP=.1;
+/* 환골탈태할수록 관문 보스도 세진다 (일환 +30%/+15%, 이환 +60%/+30% …). 관문은 매 생마다 새로 넘어야 한다 */
+const GATE_CYC_HP=.3,GATE_CYC_DMG=.15;
 const rbN=h=>Math.min(RB_MAX,h?.rb||0),asN=h=>h?.asc||0;
+const gateCyc=h=>rbN(h)+asN(h);
+/* 이번 생에 이긴 관문인가 (예전 기록은 환골탈태 전이면 이번 생으로 친다) */
+const gateWonNow=(h,k)=>h?.gateCyc?h.gateCyc[k]===gateCyc(h):gateCyc(h)===0&&(h?.gateWins?.[k]||0)>0;
 const rbStatM=h=>1+rbN(h)*RB_STAT+asN(h)*AS_STAT,rbExpM=h=>1+rbN(h)*RB_EXP+asN(h)*AS_EXP;
 const RB_NAME=["","일환","이환","삼환"];
 const rbLabel=h=>asN(h)?`선인 · ${asN(h)}승`:rbN(h)?RB_NAME[rbN(h)]:"";
@@ -2559,9 +2564,11 @@ function startGate(){
   n.party=buildGateParty(r);n.status="fight";n.act=1;
   /* 사람이 늘수록 보스도 단단해진다 (gateScale) */
   gateSetup(n,G,r.realm);n.rage=false;n.minions=0;n.poison={};
+  {const c=gateCyc(me);n.cyc=c;if(c){n.bossHp=n.bossMax=Math.round(n.bossHp*(1+GATE_CYC_HP*c));n.hpS*=1+GATE_CYC_HP*c;n.needS=n.hpS;n.dmgS*=1+GATE_CYC_DMG*c}}
   n.log=[{k:"sec",x:`${G.title} · ${G.boss}`},{k:"amb",x:G.lore},{k:"comp",x:`${G.sn}: ${GA(r.realm)[1].say}`}];
   if(n.aura<1)n.log.push({k:"ev2",sub:"hit",x:`${josa(G.sn,"의")} 호신강기가 짙다. 사람 ${GATE_MIN}명이 모이지 않아(지금 ${n.hum}명) 피해가 ${Math.round(n.aura*100)}%만 스며든다.`});
   else n.log.push({k:"ev2",sub:"act",x:`${n.hum}명의 기세가 모여 ${josa(G.sn,"의")} 호신강기를 깨뜨렸다.`});
+  if(n.cyc)n.log.push({k:"ev2",sub:"hit",x:`${rbLabel(me)||"환골탈태"}의 몸으로 다시 찾아온 관문. ${josa(G.sn,"도")} 그만큼 독기를 품었다. (체력 +${Math.round(GATE_CYC_HP*n.cyc*100)}% · 위력 +${Math.round(GATE_CYC_DMG*n.cyc*100)}%)`});
   n.omen=gateOmen(n);n.deadline=sNow()+GATE_WAIT;GS.setRoom(r.id,n);
   GS.setAct({...myAct(),act:1,action:null});
 }
@@ -2662,7 +2669,7 @@ function resolveGate(room){
   n.log=log.slice(-160);return n;
 }
 /* 도우미로 이긴 적 있는 관문: 벽에 닿으면 다시 싸우지 않고 바로 오른다 */
-function promoteByWin(){const h=structuredClone(me),nr=h.realm+1;if(!atWall(h)||!REALMS[nr]?.gate||!(h.gateWins?.[nr]>0))return;
+function promoteByWin(){const h=structuredClone(me),nr=h.realm+1;if(!atWall(h)||!REALMS[nr]?.gate||!gateWonNow(h,nr))return;
   h.realm=nr;h.points+=5;applyExp(h,0);hlite(h,"realm",40+nr*6,REALMS[nr].n);const got=[`${REALMS[nr].n}의 경지에 올랐다! (포인트 +5)`];(ADV[h.sect]||[]).filter(x=>x.r===nr).forEach(x=>got.push(`새 무공 「${x.n}」${josa(String(x.n),"을").slice(String(x.n).length)} 깨쳤다`));
   addLog(h,`${GATES[nr].title}에서 이긴 기억을 되새겨 벽을 넘었다. ${got.join(", ")}`);save(h);toast(got.join(" · "))}
 function claimGate(){
@@ -2670,6 +2677,8 @@ function claimGate(){
   const G=GATES[r.realm],got=[];
   if(r.status==="win"){
     h.gateWins={...(h.gateWins||{}),[r.realm]:(h.gateWins?.[r.realm]||0)+1};if(r.owner!==myId())bump(h,"gateHelp");
+    /* 이번 생 기록: 내 생보다 쉬운 관문(낮은 환)을 도와 이긴 건 건너뛰기에 쓰지 않는다 */
+    {const base=h.gateCyc||(gateCyc(h)===0?Object.fromEntries(Object.keys(h.gateWins).filter(k=>+k!==r.realm&&h.gateWins[k]>0).map(k=>[k,0])):{});h.gateCyc=(r.cyc||0)>=gateCyc(h)?{...base,[r.realm]:gateCyc(h)}:base}
     if(h.realm===r.realm-1&&atWall(h)){h.realm=r.realm;h.points+=5;applyExp(h,0);got.push(`${REALMS[r.realm].n}의 경지에 올랐다! (포인트 +5)`);(ADV[h.sect]||[]).filter(x=>x.r===r.realm).forEach(x=>got.push(`새 무공 「${x.n}」${josa(String(x.n),"을").slice(String(x.n).length)} 깨쳤다 · ${x.d}`))}
     else{const exp=expPerHour(h.level)*3;applyExp(h,exp);got.push(`도우미 보상 · 경험치 +${exp}`)}
     h.items.stone+=5;got.push("강화석 +5");got.push(silverTxt(addSilver(h,r.owner===myId()?150:100)));{const ip=addInv(h,200);if(ip)got.push(`마교 침공 기여 +${ip}`)}
@@ -2699,9 +2708,9 @@ function gateTab0(){
   /* 모집 중인 방은 연 사람이 아직 그 방에 있고, 아직 그 경지에 오르지 않았을 때만 보인다 */
   const lobbyLive=x=>{const oa=x.owner===myId()?myAct():gateActs[x.owner],ow=heroById(x.owner);return oa?.room===x.id&&(!ow||ow.realm<x.realm)};
   const open=Object.values(gateRooms).filter(x=>((x.status==="lobby"&&lobbyLive(x))||(x.status==="fight"&&(!x.deadline||sNow()-x.deadline<10*60e3)))&&now-(x.updated||0)<6*3600e3&&!h.gateDone?.[x.id]);
-  const table=`<div class="gates">${[3,4,5,6].map(k=>{const g=GATES[k],done=h.realm>=k,won=!done&&h.gateWins?.[k];return `<div class="gt ${done||won?"done":""}"><span class="kicker">${g.title}</span><b>${g.boss}</b><span>${REGIONS[g.region].n} · ${done?"돌파함":won?`도우미로 ${h.gateWins[k]}번 이김`:g.ready?"도전 가능":"준비 중"}</span></div>`}).join("")}</div>`;
+  const table=`<div class="gates">${[3,4,5,6].map(k=>{const g=GATES[k],done=h.realm>=k,won=!done&&gateWonNow(h,k);return `<div class="gt ${done||won?"done":""}"><span class="kicker">${g.title}</span><b>${g.boss}</b><span>${REGIONS[g.region].n} · ${done?"돌파함":won?"이번 생에 이김":g.ready?"도전 가능":"준비 중"}</span></div>`}).join("")}</div>`;
   let mine;
-  if(canOpen&&h.gateWins?.[nr]>0) mine=`<div class="wall"><p>이미 <b>${G.title}</b>에서 ${josa(G.boss,"을")} 쓰러뜨린 적이 있다. 다시 싸우지 않고 ${REALMS[nr].n}에 오를 수 있다.</p><button class="btn sealb" id="promoteWinBtn" type="button">${REALMS[nr].n}에 오른다</button></div>`;
+  if(canOpen&&gateWonNow(h,nr)) mine=`<div class="wall"><p>이번 생에 이미 <b>${G.title}</b>에서 ${josa(G.boss,"을")} 쓰러뜨렸다. 다시 싸우지 않고 ${REALMS[nr].n}에 오를 수 있다.</p><button class="btn sealb" id="promoteWinBtn" type="button">${REALMS[nr].n}에 오른다</button></div>`;
   else if(canOpen) mine=`<div class="wall"><p><b>${G.title}</b>이 열렸다. ${REGIONS[G.region].n}에서 <b>${G.boss}</b>${josa(G.boss,"을").slice(G.boss.length)} 쓰러뜨리면 ${REALMS[nr].n}에 오른다. 혼자 열어도 NPC 셋이 함께하고, 다른 사람이 도우미로 합류할 수 있다.</p>
     ${h.loc===G.region?`<button class="btn sealb" id="openGateBtn" type="button" ${activity(h)?"disabled":""}>관문을 연다</button>`:`<p class="note" style="margin:0">${REGIONS[G.region].n}에 있어야 열 수 있다.</p><button class="btn" type="button" id="toGateBtn" data-region="${G.region}">지도에서 ${REGIONS[G.region].n} 보기</button>`}</div>`;
   else if(atWall(h)&&REALMS[nr]?.gate) mine=`<p class="note">${josa(G.title,"은")} 아직 준비 중이다.</p>`;
@@ -2712,7 +2721,7 @@ function gateTab0(){
   const list=open.length?open.map(x=>{const g=GATES[x.realm],cnt=roomMembers(x).length;return `<div class="itemrow"><div><b>${g.boss}</b><div class="gs">${esc(x.ownerName)}의 ${g.title} · ${REGIONS[g.region].n} · ${x.status==="lobby"?`모집 중 ${cnt}/4`:`${x.act}막 싸우는 중`}</div></div>
     <div class="acts">${x.status==="lobby"&&cnt<4?`<button class="btn sm" type="button" data-join="${x.id}">도우미로 합류</button>`:""}</div></div>`}).join(""):`<p class="empty">지금 열린 관문이 없다.</p>`;
   const gk=G&&REALMS[nr]?.gate?nr:h.realm<3?3:null,GH=gk?GATES[gk]:null;
-  return `<section>${GH?`${bossImg(GH.boss)}<div class="bimgcap"><i>관문 · ${GH.title}</i><b>${GH.boss}</b><p>${GH.lore}</p></div>`:""}<div class="label">경지의 관문</div>${table}${mine}<p class="note">관문의 보스는 <b>호신강기</b>를 두르고 있다. 사람 ${GATE_MIN}명 이상이 함께 들어가야 강기가 깨지고, 둘이면 피해의 50%, 혼자면 25%만 들어간다. 보스의 체력과 공격은 들어온 사람들의 힘에 맞춰 세진다.</p></section><section><div class="label">열린 관문</div><div class="items">${list}</div></section>`;
+  return `<section>${GH?`${bossImg(GH.boss)}<div class="bimgcap"><i>관문 · ${GH.title}</i><b>${GH.boss}</b><p>${GH.lore}</p></div>`:""}<div class="label">경지의 관문</div>${gateCyc(h)?`<p class="note" style="margin:-4px 0 12px">${rbLabel(h)}의 몸이라 관문을 처음부터 다시 넘어야 한다. 내가 여는 관문의 보스는 체력 +${Math.round(GATE_CYC_HP*gateCyc(h)*100)}% · 위력 +${Math.round(GATE_CYC_DMG*gateCyc(h)*100)}%로 더 세다.</p>`:""}${table}${mine}<p class="note">관문의 보스는 <b>호신강기</b>를 두르고 있다. 사람 ${GATE_MIN}명 이상이 함께 들어가야 강기가 깨지고, 둘이면 피해의 50%, 혼자면 25%만 들어간다. 보스의 체력과 공격은 들어온 사람들의 힘에 맞춰 세진다.</p></section><section><div class="label">열린 관문</div><div class="items">${list}</div></section>`;
 }
 function gateRoomView(r){
   const G=GATES[r.realm],mineA=myAct(),isOwner2=r.owner===myId();
