@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261121b">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261121c">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1277,6 +1277,14 @@ select,input[type=number],input[type=text],input:not([type]),textarea{border-rad
 .homebox{border-top:1px solid var(--ink);border-bottom:1px solid var(--line);padding:12px 0 14px;margin:6px 0 14px}
 .homebox p{margin:6px 0 10px;font-size:14px;line-height:1.7}
 .homebox.ask{border-top-color:var(--seal)}.homebox.ask .kicker{color:var(--seal)}
+/* 하위 탭 알림 점 + 무엇 때문인지 한 줄 */
+.subtabs .stab .sdot,.dwhys .sdot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--seal);margin-left:5px;vertical-align:.3em}
+.subtabs .stab.hasdot{color:var(--ink)}
+.dwhys{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;margin:2px 0 10px;font-size:12.5px;color:var(--ink-2)}
+.dwhys .sdot{margin:0 -6px 0 0}
+.dwhy{font:inherit;background:none;border:0;padding:2px 0;color:inherit;cursor:pointer;text-align:left}
+.dwhy b{font-weight:600;color:var(--seal);margin-right:5px}
+.dwhy span{border-bottom:1px dotted var(--ink-3)}
 </style>
 
 <div class="wrap">
@@ -7233,12 +7241,35 @@ const chapHead=k=>CHAP[k]?`<div class="chap" aria-hidden="true"><b>${CHAP[k][0]}
 /* ───── 탭 묶음: 큰 탭 다섯 개, 그 안에 작은 탭. 큰 탭을 누르면 그 묶음에서 마지막으로 본 작은 탭으로 간다 ───── */
 const TAB_GROUPS=[{k:"g_train",n:"수련",kids:["train"]},{k:"g_world",n:"강호",kids:["world"]},{k:"g_fight",n:"겨루기",kids:["raid","gate","league"]},{k:"g_me",n:"인물",kids:["self","gear","mates"]},{k:"g_home",n:"살림",kids:["craft","manor"]},{k:"g_news",n:"소식",kids:["news","alarm","mail","notice","qna"]}];
 const tabLast={};
+/* 빨간 점이 왜 떴는지: 탭별로 짧은 이유 목록 (점 조건과 같은 기준) */
+function dotWhy(h){const W={},add=(k,c,t)=>{if(c)(W[k]=W[k]||[]).push(t)};const T=x=>{try{return x()}catch(e){return false}};
+  add("train",h.training&&Date.now()>=h.training.end,"수련 끝남");add("train",!attOf(h).done,"출석 도장");add("train",T(()=>festTodo(h)),"명절 행사");
+  add("world",h.travel&&Date.now()>=h.travel.end,"도착함");add("world",T(()=>dosaHere(h)),"떠돌이 도사");add("world",T(()=>!!followOffer(h)),"동행 제안");
+  add("world",h.mission&&h.mission.phase==="scene","탐문 선택");add("world",h.mission&&h.mission.phase!=="scene"&&Date.now()>=h.mission.end,"탐문 끝남");
+  add("world",!h.tomb&&T(()=>tombInvites().length>0),"고묘 초대");add("world",T(()=>myTomb()?.status==="tdone"),"고묘 결과");
+  add("self",h.points>0,"능력치 점수");add("self",!!h.respec,"환골탈태");add("self",T(()=>!!postOffer(h)),"직위 제안");
+  add("mates",T(()=>giftsToMe().some(g=>g.t>(h.seenGift||0))),"받은 선물");add("mates",T(()=>partyCallsForMe().length>0),"무리 부름");add("mates",T(()=>duelInvitesForMe().length>0),"논검 청");
+  add("mates",T(()=>others.some(o=>{const B=bondOf(o._id,myId()),A=bondOf(myId(),o._id);return B.want&&B.want!=="지인"&&!relMatch(B.want,A.want)&&relNorm(B.want)!==relMutual(myId(),o._id)})),"관계 청");
+  add("mates",T(()=>{const d=myDuel();return !!d&&(d.status==="done"||(d.status==="fight"&&!duelActOf(d,myId())))}),"논검 진행");
+  add("manor",mode==="db"&&!h.home&&T(()=>homeAsksToMe().length>0),"동거 청");
+  add("news",T(()=>newsUnread()),"새 신문");add("notice",mode==="db"&&T(()=>noticeUnread()>0),"새 공지");add("alarm",mode==="db"&&T(()=>alarmUnread()>0),"새 알림");
+  add("mail",mode==="db"&&T(()=>mailUnread()>0),"새 편지");add("mail",mode==="db"&&T(()=>myParcels().length>0),"받을 꾸러미");add("qna",T(()=>qnaOK()&&tab!=="qna"&&qnaUnread()),"새 문답");
+  add("league",T(()=>lgDot(h)),"친선 차례");
+  add("gate",T(()=>{const r=myRoom();if(r&&r.status==="fight"){const m=r.party.find(x=>x.id===myId());return !!(m&&m.hp>0&&!playerReady(r,m))}return false}),"관문 내 차례");
+  add("gate",T(()=>{const r=myRoom();return r&&(r.status==="win"||r.status==="fail")&&!h.gateDone?.[r.id]}),"관문 결과");
+  add("gate",T(()=>atWall(h)&&!!GATES[h.realm+1]?.ready&&!myRoom()),"관문 도전 가능");
+  add("raid",T(()=>coInvitesForMe().length&&!h.colair),"합동 토벌 초대");add("raid",!!h.colair||(h.lair&&h.lair.phase!=="done"),"소굴 진행 중");
+  add("raid",T(()=>{const st=raidState(periodNow());return st.down&&h.raid?.period===periodNow()&&!h.raid.claimed}),"토벌 보상");
+  return W}
+
 function tabBar(tabs,dot){const names=Object.fromEntries(tabs),G=TAB_GROUPS.map(g=>({...g,kids:g.kids.filter(k=>names[k])})).filter(g=>g.kids.length),cur=G.find(g=>g.kids.includes(tab));
   if(cur)tabLast[cur.k]=tab;
   const top=`<div class="tabs tabs5" role="tablist">${G.map(g=>{const to=g.kids.includes(tabLast[g.k])?tabLast[g.k]:g.kids[0],on=g===cur,d=g.kids.some(k=>dot[k]);
     return `<button class="tab" role="tab" type="button" data-tab="${to}" aria-selected="${on}"><i class="tnum" aria-hidden="true">${"壹貳參肆伍陸柒"[G.indexOf(g)]}</i>${g.n}${d?`<span class="dot" aria-label="확인할 것 있음"></span>`:""}</button>`}).join("")}</div>`;
-  const subs=cur&&cur.kids.length>1?`<div class="subtabs" role="tablist">${cur.kids.map(k=>`<button type="button" role="tab" class="stab" data-tab="${k}" aria-selected="${tab===k}">${names[k]}${dot[k]?`<span class="dot" aria-label="확인할 것 있음"></span>`:""}</button>`).join("")}</div>`:"";
-  return top+subs}
+  const subs=cur&&cur.kids.length>1?`<div class="subtabs" role="tablist">${cur.kids.map(k=>`<button type="button" role="tab" class="stab${dot[k]?" hasdot":""}" data-tab="${k}" aria-selected="${tab===k}">${names[k]}${dot[k]?`<span class="sdot" aria-label="확인할 것 있음"></span>`:""}</button>`).join("")}</div>`:"";
+  let why="";if(cur&&me){const W=dotWhy(me),items=cur.kids.filter(k=>dot[k]).map(k=>{const r=(W[k]||[]).slice(0,3).join(" · ");return `<button type="button" class="dwhy" data-tab="${k}">${cur.kids.length>1?`<b>${names[k]}</b>`:""}${r?`<span>${r}</span>`:cur.kids.length>1?"":"<span>확인할 것 있음</span>"}</button>`});
+    if(items.length)why=`<div class="dwhys"><i class="sdot" aria-hidden="true"></i>${items.join("")}</div>`}
+  return top+subs+why}
 /* 강호 탭: 지도 + 지역 + 임무 */
 /* 지역을 고르면 지금 그곳에 있는 사람(그곳으로 가는 중인 사람은 '이동 중')을 보여 준다 */
 function regionPeople(k){const L=others.filter(o=>o?.name&&o._id&&(o.travel?o.travel.to===k:o.loc===k)).sort((a,b)=>(!!a.travel-!!b.travel)||(b.level||0)-(a.level||0));
