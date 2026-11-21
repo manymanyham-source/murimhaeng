@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261121l">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261121n">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1305,6 +1305,9 @@ select,input[type=number],input[type=text],input:not([type]),textarea{border-rad
 .lgwho{font-weight:600}.lgtm{float:right;font-size:11px;color:var(--ink-3)}
 .lgfeed .lggood{color:#3f7a4a;font-weight:600}.lgfeed .lgbad{color:var(--seal);font-weight:600}
 .lgnext{border-top:1px solid var(--ink);border-bottom:1px solid var(--line);padding:10px 0 12px;margin:10px 0}.lgnext p{margin:0 0 8px;font-size:14px}.lgnext .row{gap:8px}
+/* 무림일보 망신살 */
+.npaper .shame h3{color:var(--seal)}.npaper .shame p{margin:0 0 6px}.npaper .shame .kt{margin-right:4px}
+.newslive li.shame>span{color:var(--seal)}
 </style>
 
 <div class="wrap">
@@ -4312,8 +4315,8 @@ function fishCast(){const h=me;if(h.travel){toast("길 위에서는 낚시할 �
   fishState={phase:"wait"};render();clearTimeout(fishTimer);fishTimer=setTimeout(()=>{fishState={phase:"bite",t:Date.now()};render();fishTimer=setTimeout(()=>fishPull(true),1500)},2000+Math.random()*5000)}
 function fishPull(late){clearTimeout(fishTimer);if(!fishState)return;const ph=fishState.phase,h=structuredClone(me);fishState=null;
   const extra=fishUsed(h)>=fishBase(h);if(extra&&h.fishBuy?.day===dayKey())h.fishBuy={...h.fishBuy,left:Math.max(0,fishBuyLeft(h)-1)};h.fishDay={day:dayKey(),n:fishUsed(h)+1};if(h.buff?.bait){h.buff.bait--;if(h.buff.bait<=0)delete h.buff.bait}
-  if(ph!=="bite"||late){const msg=ph==="wait"?"너무 일찍 챘다. 고기가 놀라 달아났다.":"입질을 놓쳤다. 미끼만 사라졌다.";fishLast={ok:false,text:msg};save(h);return}
-  if(extra&&Math.random()<FISH_SNAP){fishLast={ok:false,text:"묵직하게 걸렸는데… 산 미끼가 시원찮았는지 줄이 툭 끊어졌다."};save(h);return}
+  if(ph!=="bite"||late){const msg=ph==="wait"?"너무 일찍 챘다. 고기가 놀라 달아났다.":"입질을 놓쳤다. 미끼만 사라졌다.";bump(h,"fishMiss");fishLast={ok:false,text:msg};save(h);return}
+  if(extra&&Math.random()<FISH_SNAP){bump(h,"fishMiss");fishLast={ok:false,text:"묵직하게 걸렸는데… 산 미끼가 시원찮았는지 줄이 툭 끊어졌다."};save(h);return}
   const k=fishRoll(h);let text;
   if(k==="boot")text="낡은 짚신이 걸려 나왔다… 누가 버린 걸까.";
   else if(k==="box"){const s=addSilver(h,20+Math.floor(Math.random()*40));h.items.stone+=2;text=`녹슨 함이 걸렸다! 열어 보니 ${silverTxt(s)}과 강화석 2개.`}
@@ -5237,7 +5240,7 @@ function huntShoot(late){clearTimeout(huntTimer);const s=huntState;if(!s||s.phas
     text=`${josa(nm,"을")} 잡았다!${t===3?" 전설 속 짐승이다!!":t===2?" 귀한 짐승이다!":""} ${got.join(" · ")}${first?` · 처음 잡은 짐승이라 사냥 도감에 올렸다 (${Object.keys(h.hdex).filter(k=>HUNTDB[k]).length}/${HUNT_N})`:""}${mp?` · ${mp}`:""}`}
   else if(p>=s.z0-pad&&p<=s.z1+pad){if(t<=1&&Math.random()<.5){h.mats={...(h.mats||{}),meat_game:((h.mats||{}).meat_game||0)+1};text=`화살이 ${josa(nm,"을")} 스쳤다. 달아난 자리에 떨어진 산짐승 고기 1을 주웠다.`}else text=`화살이 ${josa(nm,"을")} 아슬아슬하게 스쳤다. 놓쳤다.`}
   else text=t>=2?`화살이 빗나갔다! 성난 ${josa(nm,"이")} 덤벼들어 겨우 나무 위로 몸을 피했다.`:`화살이 빗나갔다. ${josa(nm,"이")} 놀라 달아났다.`;
-  huntLast={ok,text,k:s.k};addLog(h,`${REGIONS[h.loc].n} 사냥 · ${text}`);save(h)}
+  if(!ok)bump(h,"huntMiss");huntLast={ok,text,k:s.k};addLog(h,`${REGIONS[h.loc].n} 사냥 · ${text}`);save(h)}
 function huntBox(h){const used=huntUsed(h),left=Math.max(0,huntMax(h)-used),wx=weatherOf(h.loc),W=WEATHER[wx],ex=Object.keys(HUNTDB).filter(k=>HUNTDB[k][3]?.includes(h.loc));
   const s=huntState;let stage;
   if(s?.phase==="track")stage=`<div class="fishpond wait"><span>발자국을 따라 숲으로 든다…</span></div><button class="btn" type="button" disabled>숨을 죽인다</button>`;
@@ -6702,7 +6705,7 @@ function enhance(slot){
   const cost=enhCost(it);if(h.items.stone<cost){toast(`강화석이 ${cost-h.items.stone}개 모자랍니다.`);return}
   const jr=!!h.buff?.enh,ch=Math.min(100,enhChance(it)+(jr?15:0)),before=statLine(it),target=it.plus+1;h.items.stone-=cost;bump(h,"enh");if(jr)delete h.buff.enh;
   if(Math.random()*100<ch){it.plus++;it.fails=0;if(it.plus>=7)hlite(h,"enh",30+it.plus*4,`${it.name} +${it.plus}`);gmsg={slot,ok:true,text:fill(pickOne(SUCC),{i:it.name}),tag:`+${it.plus} 성공`,sub:`${before} → ${statLine(it)}`};addLog(h,`${it.name} 강화 성공 · +${it.plus}`)}
-  else{it.fails=(it.fails||0)+1;gmsg={slot,ok:false,text:fill(pickOne(FAILT),{i:it.name}),tag:`+${target} 실패`,sub:`강화석 ${cost}개 소모 · 다음 확률 +${it.fails}% (실패 보정)`};addLog(h,`${it.name} +${target} 강화 실패 · 강화석 ${cost}개 소모`)}
+  else{it.fails=(it.fails||0)+1;bump(h,"enhFail");gmsg={slot,ok:false,text:fill(pickOne(FAILT),{i:it.name}),tag:`+${target} 실패`,sub:`강화석 ${cost}개 소모 · 다음 확률 +${it.fails}% (실패 보정)`};addLog(h,`${it.name} +${target} 강화 실패 · 강화석 ${cost}개 소모`)}
   gmsg.n=++gmsgSeq;if(slot==="bag")gbag=bagKey(it); save(h);
 }
 function equip(idx,inherit){
@@ -7320,7 +7323,8 @@ function caseBook(h){const p=periodNow(),here=h.travel?h.travel.to:h.loc,rows=[]
 const NEWS_KINGS=[["mis","사건 해결","건","강호의 해결사","관아에서 감사패를 보내왔다."],["fish","낚시","마리","낚시왕","강의 물고기들 사이에 수배령이 돌았다."],["hunt","사냥","마리","사냥왕","산짐승들이 이 이름만 들으면 굴로 숨는다."],
   ["trainH","수련","시간","폐관의 달인","방문 앞에 쌓인 밥상이 높이를 더해 간다."],["lair","소굴 토벌","번","소굴 사냥꾼","소굴 우두머리들이 이사를 고민 중이다."],["tomb","고묘 도굴","번","도굴의 귀재","관부가 무덤마다 자물쇠를 더 달았다."],
   ["gather","채집","번","산나물 박사","산마다 빈 자리가 늘었다는 제보가 들어왔다."],["cook","요리","번","강호 숙수","객잔 주방장들이 비법을 캐러 줄을 섰다."],["enh","강화 시도","번","대장간 단골","대장장이가 이 사람 얼굴만 보면 웃는다."],
-  ["dice","투전","판","투전판 단골","객잔 주인이 의자에 이름을 새겨 주었다."],["lgRoll","친선 주사위","번","친선의 기둥","무림맹이 주사위를 새로 깎았다."],["gift","선물","번","강호의 산타","받은 사람들이 고맙다며 줄을 섰다."]];
+  ["dice","투전","판","투전판 단골","객잔 주인이 의자에 이름을 새겨 주었다."],["lgRoll","친선 주사위","번","친선의 기둥","무림맹이 주사위를 새로 깎았다."],["gift","선물","번","강호의 산타","받은 사람들이 고맙다며 줄을 섰다."],
+  ["fishMiss","놓친 입질","번","미끼 공양왕","물고기들 사이에서 '먹이 주는 분'으로 통한다."],["huntMiss","빗나간 화살","번","헛화살 장인","숲속 짐승들이 화살을 구경하러 모여든다."],["enhFail","강화 실패","번","대장간 기부왕","대장장이가 이 사람 덕에 새 집을 올렸다."]];
 const NEWS_ADS=[["떠돌이 도사 天機","오늘의 운수 봐 드립니다. 어느 지역 저잣거리에서 우연히 만나실 수 있습니다."],["대홍포 입하","먼 길 가는 무인의 벗. 각 지역 객잔에서 1,000냥."],["장원 방 들이기","정원만 한 방 한 칸, 3만 냥. 침상·서안·자개장 입고."],
   ["투전판 개장","대·소·표자. 하루 다섯 판. 무리한 베팅은 문파 사정에 해롭습니다."],["무림맹 친선","월~금 신청, 주말 밤 아홉 시에 주사위가 굴러갑니다."],["사건부 출간","지역마다 남은 사건을 한눈에. 강호 탭 지도 아래에서."]];
 const wkOf=(o,w)=>o?.wk?.w===w?o.wk:o?.wkPrev?.w===w?o.wkPrev:null;
@@ -7345,7 +7349,7 @@ function newsTab(){const w=wkNow()-1,has=newsHas(w),no=Math.max(1,w-2967),R=seed
   return `<section class="npaper"><div class="mast"><b>武林日報</b><span>무림일보</span><i>제 ${no}호 · ${wkRange(w)} · 값 공짜</i></div>
     ${lead?`<article class="lead"><div class="kick">1면</div><h2>${leadH[0]}</h2><p>${leadH[1]} <span class="by">— 본지 강호부 기자</span></p></article>`:`<article class="lead"><div class="kick">1면</div><h2>조용한 한 주</h2><p>큰 사건은 없었지만 다들 부지런히 칼을 갈았다. 폭풍 전의 고요라는 분석이다.</p></article>`}
     ${rest.length?`<div class="cols">${rest.map(x=>{const H=newsHead(x.o,x);return `<article><h3>${H[0]}</h3><p>${H[1]}</p></article>`}).join("")}</div>`:""}
-    ${E.kings.length?`<div class="psec">이주의 강호 명인</div><div class="kings">${E.kings.slice(0,8).map(K=>`<div class="king"><span class="kt">${K.title}</span>${nm(K.top.o)}<span class="kv">${K.n} ${K.top.v.toLocaleString()}${K.u}</span><span class="kj">${K.joke}${K.second?` 2위는 ${esc(K.second.o.name)}(${K.second.v.toLocaleString()}${K.u}).`:""}</span></div>`).join("")}</div>`:""}
+    ${E.kings.length?`<div class="psec">이주의 강호 명인</div><div class="kings">${E.kings.map(K=>`<div class="king"><span class="kt">${K.title}</span>${nm(K.top.o)}<span class="kv">${K.n} ${K.top.v.toLocaleString()}${K.u}</span><span class="kj">${K.joke}${K.second?` 2위는 ${esc(K.second.o.name)}(${K.second.v.toLocaleString()}${K.u}).`:""}</span></div>`).join("")}</div>`:""}
     <div class="cols2">${E.grow?`<article><h3>쑥쑥 자란 사람</h3><p>${nm(E.grow.o)}, 한 주 만에 <b>${E.grow.d}레벨</b>을 올렸다. 비결을 묻자 "밥 잘 먹고 잘 잤다"고 답했다.</p></article>`:""}
       ${E.dice.length?`<article><h3>투전판 소식</h3><p>${E.dice[0].v>0?`가장 많이 딴 사람은 ${nm(E.dice[0].o)} (+${E.dice[0].v.toLocaleString()}냥).`:"이번 주는 딴 사람이 없었다."}${E.dice.length>1&&E.dice.at(-1).v<0?` 가장 많이 잃은 사람은 ${nm(E.dice.at(-1).o)} (${E.dice.at(-1).v.toLocaleString()}냥). "다시는 안 한다"는 말을 남겼다.`:""}</p></article>`:""}
       ${E.idle.length?`<article><h3>행방불명</h3><p>${E.idle.slice(0,5).map(x=>nm(x.o)).join(", ")}${E.idle.length>5?` 외 ${E.idle.length-5}명`:""}, 지난주 강호에서 자취를 감췄다. 폐관 수련설과 늦잠설이 엇갈린다.</p></article>`:""}</div>
