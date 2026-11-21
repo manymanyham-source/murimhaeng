@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261121d">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261121e">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -5418,7 +5418,10 @@ const LG_TEAM={A:{n:"청룡",c:"a"},B:{n:"백호",c:"b"}};
 const lgClock=()=>{const t=sNow()+KST,d=Math.floor(t/86400e3),m=Math.floor((t%86400e3)/60000);return {d,m,wd:(d+3)%7,ms:t%86400e3}};
 const lgWeek=(d=lgClock().d)=>Math.floor((d+3)/7),lgStart=w=>w*7-3,lgSat=w=>lgStart(w)+5,lgSun=w=>lgStart(w)+6;
 const LG_DAYN=["월","화","수","목","금","토","일"];
-const lgSignupOpen=()=>lgClock().wd<=4;
+/* 2968주(2026-11-21 토)부터: 토·일 따로 한 판씩. 그날 21시 전에 신청한 사람끼리 그날 패를 새로 짠다 */
+const LG2W=2968,lgOpenAt=d=>d*86400e3-KST+LG_OPEN*60e3;
+const lgSignupOpen=()=>{const c=lgClock();return !(c.wd===6&&c.m>=LG_OPEN)};
+const lgIn=(L,d,w)=>!!L&&(w<LG2W||(L.joined||0)<lgOpenAt(d));
 function lgLive(){const c=lgClock();if(c.wd<5||c.m<LG_OPEN||c.m>=LG_CLOSE)return null;return {d:c.d,end:sNow()-c.ms+LG_CLOSE*60e3}}
 const lgFinal=w=>{const c=lgClock();return c.d>lgSun(w)||(c.d===lgSun(w)&&c.m>=LG_CLOSE)};
 const lgDayOver=(w,d)=>{const c=lgClock();return c.d>d||(c.d===d&&c.m>=LG_CLOSE)};
@@ -5433,23 +5436,23 @@ const LG_KINDS=Object.keys(LG_KIND);
 const lgLandKind=i=>LG_KINDS[((i-1)/2)%LG_KINDS.length];
 const lgRC=i=>i<=6?[6,6-i]:i<=12?[12-i,0]:i<=18?[0,i-12]:[i-18,6];
 const lgOf=(o,w=lgWeek())=>o?.league?.week===w&&o.league.v===3?o.league:o?.leaguePrev?.week===w&&o.leaguePrev.v===3?o.leaguePrev:null;
-function lgTeams(w=lgWeek()){const ids=[me,...others].filter(o=>o&&lgOf(o,w)).map(o=>o===me?myId():o._id).sort(),R=seeded(w*7919+17);
+function lgTeams(w=lgWeek(),d){const v2=w>=LG2W&&d!=null,ids=[me,...others].filter(o=>o&&lgOf(o,w)&&(!v2||lgIn(lgOf(o,w),d,w))).map(o=>o===me?myId():o._id).sort(),R=seeded(w*7919+17+(v2&&d===lgSun(w)?7717:0));
   for(let i=ids.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[ids[i],ids[j]]=[ids[j],ids[i]]}const half=Math.ceil(ids.length/2),t={};ids.forEach((id,i)=>t[id]=i<half?"A":"B");return t}
-const lgPeople=(w=lgWeek())=>{const T=lgTeams(w);return [me,...others].filter(o=>o&&lgOf(o,w)).map(o=>{const id=o===me?myId():o._id;return {o,id,L:lgOf(o,w),team:T[id]}})};
+const lgPeople=(w=lgWeek(),d)=>{const T=lgTeams(w,d);return [me,...others].filter(o=>o&&lgOf(o,w)).map(o=>{const id=o===me?myId():o._id;return {o,id,L:lgOf(o,w),team:T[id]}}).filter(p=>p.team)};
 const lgDay=(L,d)=>L?.days?.[d]||{pts:0,rolls:0,pos:0,served:0,slow:0,last:0,island:0};
-function lgAgainst(id,w){const out=[];for(const p of lgPeople(w)){if(p.id===id)continue;for(const e of p.L.log||[])if(e.vs===id&&e.duel)out.push({...e,by:p.id})}return out}
-const lgPts=(id,L,d,w)=>lgDay(L,d).pts+lgAgainst(id,w).filter(e=>e.day===d&&!e.win).length*LG_DEF;
-const lgOwe=(id,L,d,w)=>(L.log||[]).filter(e=>e.day===d&&e.duel&&!e.win).length+lgAgainst(id,w).filter(e=>e.day===d&&e.win).length;
+function lgAgainst(id,w,d){const out=[];for(const p of lgPeople(w,d)){if(p.id===id)continue;for(const e of p.L.log||[])if(e.vs===id&&e.duel)out.push({...e,by:p.id})}return out}
+const lgPts=(id,L,d,w)=>lgDay(L,d).pts+lgAgainst(id,w,d).filter(e=>e.day===d&&!e.win).length*LG_DEF;
+const lgOwe=(id,L,d,w)=>(L.log||[]).filter(e=>e.day===d&&e.duel&&!e.win).length+lgAgainst(id,w,d).filter(e=>e.day===d&&e.win).length;
 /* 땅 주인: 그날 모두의 기록에서 땅을 차지한 일을 시간 순으로 */
-function lgOwners(w,d){const ev=[];for(const p of lgPeople(w))for(const e of p.L.log||[])if(e.day===d&&e.cap?.ok&&e.t)ev.push({t:e.t,cell:e.cap.cell,team:p.team,by:p.id});
+function lgOwners(w,d){const ev=[];for(const p of lgPeople(w,d))for(const e of p.L.log||[])if(e.day===d&&e.cap?.ok&&e.t)ev.push({t:e.t,cell:e.cap.cell,team:p.team,by:p.id});
   ev.sort((a,b)=>a.t-b.t);const own={};for(const e of ev)own[e.cell]={team:e.team,by:e.by};return own}
 function lgLands(w,d){const own=lgOwners(w,d),c={A:0,B:0};for(const k in own)c[own[k].team]++;return c}
-function lgScore(w,d){const s={A:0,B:0};for(const p of lgPeople(w))s[p.team]+=lgPts(p.id,p.L,d,w);return s}
+function lgScore(w,d){const s={A:0,B:0};for(const p of lgPeople(w,d))s[p.team]+=lgPts(p.id,p.L,d,w);return s}
 const lgTotal=w=>{const a=lgLands(w,lgSat(w)),b=lgLands(w,lgSun(w)),pa=lgScore(w,lgSat(w)),pb=lgScore(w,lgSun(w));return {A:a.A+b.A,B:a.B+b.B,pA:pa.A+pb.A,pB:pa.B+pb.B,sat:a,sun:b}};
 /* 차례: 그날 덜 굴린 패. 같으면 마지막에 굴린 패의 반대. 차례인 패가 60초 안 굴리면 넘어간다.
    패 안에서는 덜 굴린 사람이 먼저(그 사람이 20초 안 굴리면 아무나) */
-function lgTurn(w,d){const T=lgTeams(w),my=T[myId()],L=lgOf(me,w);if(!L||!my)return {ok:false,why:"not"};
-  const ppl=lgPeople(w).map(p=>({...p,D:lgDay(p.L,d)})),cnt={A:0,B:0};let last=null;
+function lgTurn(w,d){const T=lgTeams(w,d),my=T[myId()],L=lgOf(me,w);if(!L||!my)return {ok:false,why:"not"};
+  const ppl=lgPeople(w,d).map(p=>({...p,D:lgDay(p.L,d)})),cnt={A:0,B:0};let last=null;
   for(const p of ppl){cnt[p.team]+=p.D.rolls;if(p.D.rolls&&(!last||p.D.last>last.D.last))last=p}
   const since=last?sNow()-last.D.last:Infinity,turn=cnt.A!==cnt.B?(cnt.A<cnt.B?"A":"B"):last?(last.team==="A"?"B":"A"):null;
   const waitT=turn?ppl.filter(p=>p.team===turn&&p.D.rolls>0).map(p=>p.o.name):[];
@@ -5458,10 +5461,11 @@ function lgTurn(w,d){const T=lgTeams(w),my=T[myId()],L=lgOf(me,w);if(!L||!my)ret
   if(mates.length&&since<LG_MATE)return {ok:false,why:"mate",turn:my,names:mates.map(p=>p.o.name),until:last.D.last+LG_MATE};
   return {ok:true,turn:turn||my,passed:!!turn&&turn!==my}}
 function lgRoll(h){const w=lgWeek();if(h.league&&h.league.week!==w){if(h.league.week===w-1)h.leaguePrev=h.league;else if(h.leaguePrev?.week!==w-1)h.leaguePrev=null;h.league=null}return h}
-function lgJoin(){if(mode!=="db"){toast("여럿이 함께 쓰는 강호에서만 열린다.");return}if(!lgSignupOpen()){toast("신청은 월~금요일에만 받는다.");return}
-  const h=lgRoll(structuredClone(me)),w=lgWeek();if(lgOf(h,w))return;h.league={v:3,week:w,joined:Date.now(),days:{},log:[],claimed:false};bump(h,"lgJoin");
-  addLog(h,"이번 주말 무림맹 친선에 이름을 올렸다.");save(h);toast("신청했다 · 토요일 0시에 패가 정해진다")}
-function lgCancel(){if(!lgSignupOpen())return;const h=lgRoll(structuredClone(me));if(!lgOf(h))return;h.league=null;addLog(h,"무림맹 친선 신청을 거두었다.");save(h)}
+function lgJoin(){if(mode!=="db"){toast("여럿이 함께 쓰는 강호에서만 열린다.");return}if(!lgSignupOpen()){toast("이번 주 신청은 끝났다. 다음 주 월요일부터 받는다.");return}
+  const h=lgRoll(structuredClone(me)),w=lgWeek();if(lgOf(h,w))return;const sat=sNow()<lgOpenAt(lgSat(w));h.league={v:3,week:w,joined:sNow(),days:{},log:[],claimed:false};bump(h,"lgJoin");
+  addLog(h,`무림맹 친선에 이름을 올렸다. ${sat?"토요일":"일요일"} 판부터 나간다.`);save(h);toast(`신청했다 · ${sat?"토요일":"일요일"} 21시에 패가 정해진다`)}
+const lgCanCancel=(L,w)=>!!L&&lgSignupOpen()&&![lgSat(w),lgSun(w)].some(d=>sNow()>=lgOpenAt(d)&&lgIn(L,d,w));
+function lgCancel(){const h=lgRoll(structuredClone(me));if(!lgCanCancel(lgOf(h),lgWeek()))return;h.league=null;addLog(h,"무림맹 친선 신청을 거두었다.");save(h)}
 let lgLast=null,lgBusy=false;
 function lgDuel(a,b,seed){const R=seeded(seed),P={a:{hp:DUEL_HP,lw:null,h:a},b:{hp:DUEL_HP,lw:null,h:b}},lines=[];
   const pick=x=>{const s=x.h.stats||{},w=["nei","wai","shen"].map(k=>Math.max(5,s[k]||0)),t=w[0]+w[1]+w[2];let r=R()*t;return r<w[0]?"nei":r<w[0]+w[1]?"wai":"shen"};
@@ -5476,12 +5480,12 @@ const lgRatio=(o,k)=>{const s=o?.stats||{},t=(s.nei||0)+(s.wai||0)+(s.shen||0);r
 const lgOdds=(a,b)=>Math.max(.2,Math.min(.8,.5+(a-b)*1.5));
 const LG_STATN={wai:"외공",nei:"내공",shen:"신법"};
 async function lgDice(){if(lgBusy||!me)return;const lv=lgLive();if(!lv){toast("판은 토·일요일 21시~22시에만 열린다.");return}
-  const w=lgWeek(),d=lv.d;if(!lgOf(me,w)){toast("이번 주 친선에 신청하지 않았다.");return}
+  const w=lgWeek(),d=lv.d;if(!lgOf(me,w)){toast("이번 주 친선에 신청하지 않았다.");return}if(!lgTeams(w,d)[myId()]){toast("오늘 21시가 지나 신청해서 내일 판부터 나간다.");return}
   let t=lgTurn(w,d);if(!t.ok){toast(t.why==="team"?`${LG_TEAM[t.turn].n} 패 차례다.`:`${t.names.join(", ")}${pj(t.names[t.names.length-1],"이")} 먼저 굴릴 차례다.`);return}
   lgBusy=true;render();let got=false;try{got=(await db.doc(`duels/lg-${w}-${d}`).acquire({holder:uid,ttlMs:LG_LOCK})).acquired}catch(e){got=false}
   if(!got){lgBusy=false;render();toast("다른 사람이 막 주사위를 굴렸다. 판을 보고 다시 굴려 주세요.");return}
   t=lgTurn(w,d);if(!t.ok||!lgLive()){lgBusy=false;render();toast("차례가 넘어갔다. 판을 다시 본다.");return}
-  const h=lgRoll(structuredClone(me)),L=lgOf(h,w),T=lgTeams(w),myTeam=T[myId()],foeTeam=myTeam==="A"?"B":"A",D={...lgDay(L,d)};
+  const h=lgRoll(structuredClone(me)),L=lgOf(h,w),T=lgTeams(w,d),myTeam=T[myId()],foeTeam=myTeam==="A"?"B":"A",D={...lgDay(L,d)};
   D.rolls++;D.last=sNow();L.days={...(L.days||{}),[d]:D};const ev={day:d,n:D.rolls,t:sNow(),team:myTeam},out=[];
   const fin=()=>{L.log=[...(L.log||[]),ev].slice(-LG_LOGMAX);bump(h,"lgRoll");save(h);setTimeout(()=>{lgBusy=false;render()},800)};
   if(t.passed)out.push(`${LG_TEAM[foeTeam].n} 패가 60초 동안 굴리지 않아 차례를 가져왔다`);
@@ -5495,7 +5499,7 @@ async function lgDice(){if(lgBusy||!me)return;const lv=lgLive();if(!lv){toast("�
   for(let i=1;i<=step;i++){pos=(pos+1)%LG_N;if(pos===0&&i<step)gain(3,"본부를 지나며")}
   let c=LG_BOARD[pos][0];
   if(c==="post"){out.push(`${LG_BOARD[pos][1]}에서 말을 갈아탔다`);pos=(pos+4)%LG_N;c=LG_BOARD[pos][0]}
-  const ppl=lgPeople(w),foes=ppl.filter(p=>p.team===foeTeam&&lgDay(p.L,d).rolls>0);let duelWith=null,duelWhy="";
+  const ppl=lgPeople(w,d),foes=ppl.filter(p=>p.team===foeTeam&&lgDay(p.L,d).rolls>0);let duelWith=null,duelWhy="";
   if(c==="land"){const own=lgOwners(w,d)[pos],K=lgLandKind(pos),nm=LG_BOARD[pos][1];
     if(own?.team===myTeam)gain(2,`우리 패 땅 ${nm}에서 숨을 돌렸다`);
     else{const holder=own?ppl.find(p=>p.id===own.by)?.o:null,steal=!!own;let ok=false,why="";
@@ -5525,12 +5529,17 @@ async function lgDice(){if(lgBusy||!me)return;const lv=lgLive();if(!lv){toast("�
 /* 보상: 일요일 22시 이후, 토·일 중 한 번이라도 굴린 사람 */
 const LG_WPAY={win:{silver:1200,stone:8,clue:2},draw:{silver:800,stone:6,clue:1},lose:{silver:500,stone:4,clue:1}};
 function lgResult(w,team){const t=lgTotal(w),ot=team==="A"?"B":"A",my=t[team],o=t[ot],pm=t["p"+team],po=t["p"+ot];return {my,ot:o,res:my>o||(my===o&&pm>po)?"win":my<o||(my===o&&pm<po)?"lose":"draw",pm,po}}
-function lgUnclaimed(h){const out=[];for(const w of [lgWeek()-1,lgWeek()]){const L=lgOf(h,w);if(!L||L.claimed||!lgFinal(w))continue;
-  if(!(lgDay(L,lgSat(w)).rolls>0||lgDay(L,lgSun(w)).rolls>0))continue;const team=lgTeams(w)[myId()];out.push({w,team,...lgResult(w,team)})}return out}
+/* 2968주부터 하루 한 판: 그날 22시에 그날 땅 수로 승패(같으면 그날 활약도), 그날 굴린 사람만 보상 */
+const LG_DPAY={win:{silver:700,stone:5,clue:1},draw:{silver:500,stone:4,clue:1},lose:{silver:300,stone:3,clue:1}};
+function lgResultD(w,d,team){const l=lgLands(w,d),sc=lgScore(w,d),ot=team==="A"?"B":"A",my=l[team],o=l[ot],pm=sc[team],po=sc[ot];return {my,ot:o,res:my>o||(my===o&&pm>po)?"win":my<o||(my===o&&pm<po)?"lose":"draw",pm,po}}
+const lgClaimedD=(L,d)=>L.claimed===true||!!L.claimedD?.[d];
+function lgUnclaimed(h){const out=[];for(const w of [lgWeek()-1,lgWeek()]){const L=lgOf(h,w);if(!L)continue;
+    if(w<LG2W){if(L.claimed||!lgFinal(w))continue;if(!(lgDay(L,lgSat(w)).rolls>0||lgDay(L,lgSun(w)).rolls>0))continue;const team=lgTeams(w)[myId()];out.push({w,team,...lgResult(w,team)});continue}
+    for(const d of [lgSat(w),lgSun(w)]){if(lgClaimedD(L,d)||!lgDayOver(w,d)||!(lgDay(L,d).rolls>0))continue;const team=lgTeams(w,d)[myId()];if(team)out.push({w,d,team,...lgResultD(w,d,team)})}}return out}
 function lgClaim(){const h=lgRoll(structuredClone(me)),U=lgUnclaimed(h);if(!U.length)return;let sv=0,st=0,cl=0,ww=0;
-  for(const u of U){const L=h.league?.week===u.w?h.league:h.leaguePrev;if(!L)continue;L.claimed=true;const P=LG_WPAY[u.res];sv+=P.silver;st+=P.stone;cl+=P.clue;if(u.res==="win"){ww++;bump(h,"lgWeekWin")}}
+  for(const u of U){const L=h.league?.week===u.w?h.league:h.leaguePrev;if(!L)continue;if(u.d!=null)L.claimedD={...(L.claimedD||{}),[u.d]:true};else L.claimed=true;const P=(u.d!=null?LG_DPAY:LG_WPAY)[u.res];sv+=P.silver;st+=P.stone;cl+=P.clue;if(u.res==="win"){ww++;bump(h,"lgWeekWin")}}
   addSilver(h,sv);h.items.stone+=st;h.items.clue+=cl;const msg=`무림맹 친선 보상 · ${silverTxt(sv)} · 강화석 ${st} · 비급 단서 ${cl}${ww?" · 우승!":""}`;addLog(h,msg);save(h);toast(msg)}
-function lgBoard(w,d){const ppl=lgPeople(w),at={},myL=lgOf(me,w),own=lgOwners(w,d);ppl.forEach(p=>{if(!(lgDay(p.L,d).rolls>0))return;const q=lgDay(p.L,d).pos||0;(at[q]=at[q]||[]).push(p)});
+function lgBoard(w,d){const ppl=lgPeople(w,d),at={},myL=lgOf(me,w),own=lgOwners(w,d);ppl.forEach(p=>{if(!(lgDay(p.L,d).rolls>0))return;const q=lgDay(p.L,d).pos||0;(at[q]=at[q]||[]).push(p)});
   const myPos=myL&&lgDay(myL,d).rolls>0?lgDay(myL,d).pos||0:-1;
   const cells=LG_BOARD.map(([t,n],i)=>{const [r,c]=lgRC(i),C=LG_CELL[t],ps=at[i]||[],o=own[i],K=t==="land"?LG_KIND[lgLandKind(i)]:null;
     return `<div class="lgc lg-${t} ${o?"own-"+LG_TEAM[o.team].c:""} ${myPos===i?"me":""}" style="grid-row:${r+1};grid-column:${c+1}" title="${esc(n)} · ${K?`${K.n}${o?` · ${LG_TEAM[o.team].n} 땅`:""}`:C.d}">
@@ -5539,26 +5548,31 @@ function lgBoard(w,d){const ppl=lgPeople(w),at={},myL=lgOf(me,w),own=lgOwners(w,
   const lands=lgLands(w,d),t=lgTotal(w),lv=lgLive(),c=lgClock(),tn=lv&&myL?lgTurn(w,d):null;
   let turnTxt="";if(lv){const ppl2=ppl.map(p=>({...p,D:lgDay(p.L,d)})),cnt={A:0,B:0};let last=null;for(const p of ppl2){cnt[p.team]+=p.D.rolls;if(p.D.rolls&&(!last||p.D.last>last.D.last))last=p}
     const turn=cnt.A!==cnt.B?(cnt.A<cnt.B?"A":"B"):last?(last.team==="A"?"B":"A"):null;turnTxt=turn?`<span class="t-${LG_TEAM[turn].c}">${LG_TEAM[turn].n}</span> 차례`:"먼저 누르는 패부터"}
-  const sub=lv?`${turnTxt} · 닫히기까지 <span data-suntil="${lv.end}"></span>`:`주말 땅 합계 청룡 ${t.A} · 백호 ${t.B}`;
+  const sub=lv?`${turnTxt} · 닫히기까지 <span data-suntil="${lv.end}"></span>`:w>=LG2W?(lgDayOver(w,d)?`${d===lgSun(w)?"일요일":"토요일"} 판 끝 · 그날 땅 수로 승패`:"21시에 판이 열린다"):`주말 땅 합계 청룡 ${t.A} · 백호 ${t.B}`;
   return `<div class="lgboard">${cells}<div class="lgmid">
     <div class="lgvs"><span class="t-a">청룡 <b>${lands.A}</b></span><em>${d===lgSun(w)?"일요일":"토요일"} 땅</em><span class="t-b"><b>${lands.B}</b> 백호</span></div>
     <p class="lgsub">${sub}</p>
     ${lgLast&&lv?`<div class="lgdie ${lgLast.die?"":"rest"} t-${LG_TEAM[lgLast.team]?.c||"a"}"><b>${lgLast.die||"休"}</b><span>${lgLast.cell?esc(lgLast.cell):""}</span></div>`:""}</div></div>`}
-const lgRules=()=>`<p class="note"><b>월~금</b> 신청 → <b>토요일 0시</b> 신청자를 청룡·백호 두 패로 반씩 무작위로 나눔 → <b>토·일 21시~22시</b> 판이 열린다. 두 패가 <b>번갈아 한 명씩</b> 굴린다(패 안에서는 덜 굴린 사람이 먼저, 인원이 적은 패는 한 사람이 여러 번 굴린다). 여럿이 동시에 누르면 한 사람만 굴린 것으로 친다. 차례인 패가 60초 동안 안 굴리면 차례가 넘어간다.<br>
+const lgRules=()=>`<p class="note"><b>토·일 21시~22시</b>에 하루 한 판씩, 두 판이 열린다. 신청은 <b>일요일 21시 전까지</b> 받는다. <b>그날 21시</b>가 되면 그때까지 신청한 사람을 청룡·백호 두 패로 반씩 무작위로 나눈다. 토요일에 나간 사람도 일요일엔 패를 새로 짠다. 토요일 21시가 지나 신청하면 일요일 판부터 나간다. 두 패가 <b>번갈아 한 명씩</b> 굴린다(패 안에서는 덜 굴린 사람이 먼저, 인원이 적은 패는 한 사람이 여러 번 굴린다). 여럿이 동시에 누르면 한 사람만 굴린 것으로 친다. 차례인 패가 60초 동안 안 굴리면 차례가 넘어간다.<br>
   지역 칸(땅) 12곳은 칸마다 차지하는 조건이 다르다: 주사위 4 이상, 짝수, 외공·내공·신법 겨루기, 논검. 겨루기는 능력치 숫자가 아니라 <b>성향</b>(그 능력치가 내 내공·외공·신법 합에서 차지하는 비율)으로 한다. 비율이 높을수록 승률이 오르지만(20%~80%) 주사위로 뒤집힐 수 있어 경지와 상관없이 누구나 이길 수 있다. 상대 패 땅이면 그 땅을 차지한 사람과, 빈 땅이면 상대 패 평균과 겨룬다. 상대 패 땅도 같은 조건으로 빼앗는다. 새 땅 +3, 빼앗으면 +5, 우리 땅에 서면 +2.
   땅이 아닌 칸에서 상대 패와 마주치거나 비무대에 서면 논검을 벌이고, 진 사람은 다음 차례를 쉰다. 절해고도에 서면 다음 두 차례 동안 6이 나와야 빠져나온다.<br>
-  <b>22시</b>에 닫힐 때 가진 땅을 센다. <b>일요일 22시</b>에 토·일 땅 수 합으로 승패를 낸다(같으면 활약도 합).</p>`;
+  <b>22시</b>에 닫힐 때 가진 땅 수로 <b>그날 판의 승패</b>를 낸다(같으면 그날 활약도). 토요일 판, 일요일 판 보상을 따로 받는다.</p>`;
 function leagueTab(){const h=me,c=lgClock(),w=lgWeek(),L=lgOf(h,w),lv=lgLive(),U=lgUnclaimed(h);
   if(mode!=="db")return `<section><div class="label">무림맹 친선</div><p class="empty">여럿이 함께 쓰는 강호에서만 열린다.</p>${lgRules()}</section>`;
-  const claim=U.length?`<div class="wall" style="margin-top:12px"><p style="margin:0 0 8px"><b>지난 친선 결과</b> · ${U.map(u=>`${LG_TEAM[u.team].n} 땅 ${u.my} : ${u.ot}${u.my===u.ot?` (활약도 ${u.pm} : ${u.po})`:""} · ${u.res==="win"?"우승!":u.res==="lose"?"준우승":"무승부"}`).join(" / ")}</p><button class="btn sealb" type="button" id="lgClaim">보상 받기</button></div>`:"";
+  const claim=U.length?`<div class="wall" style="margin-top:12px"><p style="margin:0 0 8px"><b>지난 친선 결과</b> · ${U.map(u=>`${u.d!=null?(u.d===lgSun(u.w)?"일요일 ":"토요일 "):""}${LG_TEAM[u.team].n} 땅 ${u.my} : ${u.ot}${u.my===u.ot?` (활약도 ${u.pm} : ${u.po})`:""} · ${u.res==="win"?"우승!":u.res==="lose"?"준우승":"무승부"}`).join(" / ")}</p><button class="btn sealb" type="button" id="lgClaim">보상 받기</button></div>`:"";
   const ppl=lgPeople(w);
+  const satOpen=sNow()>=lgOpenAt(lgSat(w)),joinBox=!L&&lgSignupOpen()?`<div class="row" style="margin-top:10px"><button class="btn sealb" type="button" id="lgJoin">${satOpen?"일요일 판에 이름을 올린다":"이번 주말 친선에 이름을 올린다"}</button></div>`:L&&lgCanCancel(L,w)?`<div class="row" style="margin-top:10px"><button class="btn ghost" type="button" id="lgCancel">신청 거두기</button></div>`:"";
   if(c.wd<=4)return `<section><div class="label">무림맹 친선 · 이번 주말</div>${claim}
-      <p>${L?`<b>신청했다.</b> 토요일 0시에 패가 정해지고, 토·일 21시에 판이 열린다.`:"이번 주말 친선에 이름을 올릴 수 있다. 신청은 금요일 자정까지."} 지금 ${ppl.length}명 신청.</p>
+      <p>${L?`<b>신청했다.</b> 토·일 21시에 그날 패가 정해지고 판이 열린다.`:"이번 주말 친선에 이름을 올릴 수 있다. 신청은 일요일 21시 전까지."} 지금 ${ppl.length}명 신청.</p>
       ${ppl.length?`<p class="note" style="margin:0">신청한 사람: ${ppl.map(p=>esc(p.o.name)).join(" · ")}</p>`:""}
-      <div class="row" style="margin-top:10px">${L?`<button class="btn ghost" type="button" id="lgCancel">신청 거두기</button>`:`<button class="btn sealb" type="button" id="lgJoin">이번 주말 친선에 이름을 올린다</button>`}</div>${lgRules()}</section>`;
-  const team=lgTeams(w)[myId()],d=c.wd===6?lgSun(w):lgSat(w);
-  const roster=k=>ppl.filter(p=>p.team===k).map(p=>`${esc(p.o.name)}${lgDay(p.L,d).rolls>0?` <small>${lgPts(p.id,p.L,d,w)}</small>`:""}`).join(" · ")||"없음";
-  const status=lv?"":c.m<LG_OPEN?`오늘 21시에 판이 열린다 (<span data-suntil="${sNow()-c.ms+LG_OPEN*60e3}"></span> 남음).`:c.wd===5?(()=>{const s=lgLands(w,lgSat(w));return `오늘 판은 닫혔다. 토요일 땅 청룡 ${s.A} · 백호 ${s.B}. 내일(일요일) 21시에 다시 열린다.`})():"이번 주 친선이 끝났다.";
+      ${joinBox}${lgRules()}</section>`;
+  const d=c.wd===6&&c.m>=LG_OPEN?lgSun(w):lgSat(w),team=lgTeams(w,d)[myId()],dp=lgPeople(w,d),pre=sNow()<lgOpenAt(d);
+  const sunPre=d===lgSat(w)&&lgDayOver(w,lgSat(w))?lgPeople(w,lgSun(w)):null;
+  const roster=k=>dp.filter(p=>p.team===k).map(p=>`${esc(p.o.name)}${lgDay(p.L,d).rolls>0?` <small>${lgPts(p.id,p.L,d,w)}</small>`:""}`).join(" · ")||"없음";
+  const satRes=()=>{const s=lgLands(w,lgSat(w)),sc=lgScore(w,lgSat(w)),win=s.A!==s.B?(s.A>s.B?"A":"B"):sc.A!==sc.B?(sc.A>sc.B?"A":"B"):null;return `토요일 판 끝 · 땅 청룡 ${s.A} : 백호 ${s.B}${s.A===s.B?` (활약도 ${sc.A} : ${sc.B})`:""} → ${win?`<span class="t-${LG_TEAM[win].c}">${LG_TEAM[win].n}</span> 승`:"무승부"}.`};
+  const status=lv?"":c.wd===5&&pre?`오늘 21시에 판이 열리고 그때 패가 정해진다 (<span data-suntil="${lgOpenAt(lgSat(w))}"></span> 남음). 아래 패는 미리 보기다.`
+    :c.wd===5||(c.wd===6&&c.m<LG_OPEN)?`${satRes()} 일요일 21시에 패를 새로 짜서 한 판 더 한다${c.wd===6?` (<span data-suntil="${lgOpenAt(lgSun(w))}"></span> 남음)`:""}.`
+    :`${satRes()} 일요일 판도 끝났다. 이번 주 친선이 끝났다.`;
   let me2="";
   if(L){const D=lgDay(L,d),owe=lgOwe(myId(),L,d,w)-D.served,tn=lv?lgTurn(w,d):{ok:false};
     const mine=(L.log||[]).filter(e=>e.day===d).slice(-6).map(e=>`<li class="${e.rest||e.island?"bad":e.cap?(e.cap.ok?"good":"bad"):e.duel?(e.win?"good":"bad"):""}">${e.n}번째 · ${e.rest?"쉬었다":`${e.island?"":`주사위 ${e.die}${e.slow?`(-${e.slow})`:""} → ${esc(LG_BOARD[e.pos][1])} · `}${esc((e.got||[]).join(" · "))}`}</li>`).join("");
@@ -5570,13 +5584,14 @@ function leagueTab(){const h=me,c=lgClock(),w=lgWeek(),L=lgOf(h,w),lv=lgLive(),U
       ${waitTxt?`<p class="note" style="margin:6px 0 0">${waitTxt}</p>`:""}`:""}
       ${lgLast?.duel&&lv?`<div class="lgduel ${lgLast.duel.win?"good":"bad"}"><b>논검 · ${esc(lgLast.duel.name)}</b>${(lgLast.duel.lines||[]).map(x=>`<p>${esc(x)}</p>`).join("")}<p><b>${lgLast.duel.win?"이겼다!":"졌다…"}</b></p></div>`:""}
       ${mine||vsMe?`<ul class="lglog">${mine}${vsMe}</ul>`:""}`}
-  return `<section><div class="label">무림맹 친선 · ${team?`<span class="t-${LG_TEAM[team].c}">${LG_TEAM[team].n}</span> 패`:"구경"}</div>${claim}
+  return `<section><div class="label">무림맹 친선 · ${d===lgSun(w)?"일요일":"토요일"} 판 · ${team?`<span class="t-${LG_TEAM[team].c}">${LG_TEAM[team].n}</span> 패`:"구경"}</div>${claim}
     ${status?`<p style="margin:6px 0 0">${status}</p>`:""}${lgBoard(w,d)}${me2}
-    ${!L?`<p class="note">이번 주에 신청하지 않아 구경만 한다. 다음 주 월~금에 신청할 수 있다.</p>`:""}
-    <p class="note"><span class="t-a">청룡</span>: ${roster("A")}<br><span class="t-b">백호</span>: ${roster("B")}</p>
+    ${!L?`<p class="note">이번 주에 신청하지 않아 구경만 한다.${lgSignupOpen()?" 일요일 21시 전까지 신청하면 일요일 판에 나갈 수 있다.":" 다음 주 월요일부터 다시 신청할 수 있다."}</p>`:!team?`<p class="note">토요일 21시가 지나 신청해서 일요일 판부터 나간다.</p>`:""}${joinBox}
+    <p class="note">${d===lgSun(w)?"일요일":"토요일"} 패${pre?" (미리 보기)":""} · <span class="t-a">청룡</span>: ${roster("A")}<br><span class="t-b">백호</span>: ${roster("B")}</p>
+    ${sunPre&&d!==lgSun(w)?`<p class="note">일요일 패 (미리 보기 · 21시에 확정) · <span class="t-a">청룡</span>: ${sunPre.filter(p=>p.team==="A").map(p=>esc(p.o.name)).join(" · ")||"없음"}<br><span class="t-b">백호</span>: ${sunPre.filter(p=>p.team==="B").map(p=>esc(p.o.name)).join(" · ")||"없음"}</p>`:""}
     <details class="lgrule"><summary>칸 설명과 규칙</summary><ul>${Object.entries(LG_CELL).map(([k,C])=>`<li><b>${C.ch}</b> ${k==="land"?"지역":LG_BOARD.find(x=>x[0]===k)[1]} · ${C.d}</li>`).join("")}
       ${Object.entries(LG_KIND).map(([k,K])=>`<li><b>${K.ch}</b> ${K.n} · ${LG_BOARD.map((x,i)=>x[0]==="land"&&lgLandKind(i)===k?x[1]:null).filter(Boolean).join(", ")}</li>`).join("")}</ul>${lgRules()}
-      <p class="note">보상 (토·일 중 한 번이라도 굴렸으면): 우승 패 은자 1,200·강화석 8·비급 단서 2, 비기면 800·6·1, 준우승 패 500·4·1.</p></details></section>`}
+      <p class="note">보상 (그날 한 번이라도 굴렸으면, 판마다): 이긴 패 은자 700·강화석 5·비급 단서 1, 비기면 500·4·1, 진 패 300·3·1.</p></details></section>`}
 const lgDot=h=>{if(mode!=="db"||!h)return false;const L=lgOf(h),lv=lgLive();return (!!L&&!!lv&&lgTurn(lgWeek(),lv.d).ok)||lgUnclaimed(h).length>0};
 let lgPhase="";function lgTick(){if(tab!=="league")return;const lv=lgLive(),k=lv?"L"+(lgOf(me)?lgTurn(lgWeek(),lv.d).ok?1:0:"x"):"c"+lgClock().wd+(lgClock().m>=LG_CLOSE)+(lgClock().m>=LG_OPEN);if(k!==lgPhase){lgPhase=k;render()}}
 
