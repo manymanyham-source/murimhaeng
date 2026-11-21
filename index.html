@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261121g">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261121j">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1293,6 +1293,17 @@ select,input[type=number],input[type=text],input:not([type]),textarea{border-rad
 .lgx{margin-left:auto;background:none;border:0;font-size:14px;color:var(--ink-2);cursor:pointer;padding:4px}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) .lginfo{background:var(--paper-2)}}
 :root[data-theme=dark] .lginfo{background:var(--paper-2)}
+/* 친선 논검 고르기 */
+.lgpend{border-top:2px solid var(--seal);background:#fff;padding:10px 12px 12px;margin:8px 0 12px}
+.lgpend b{color:var(--seal)}.lgpend p{margin:6px 0 8px;font-size:13.5px;line-height:1.7}.lgpend .row{gap:8px}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .lgpend{background:var(--paper-2)}}
+:root[data-theme=dark] .lgpend{background:var(--paper-2)}
+/* 친선 판 일지 */
+.lgfeed{margin:14px 0 6px}.lgfeed .lglog{max-height:360px;overflow:auto;margin-top:6px}
+.lgfeed .lglog li{font-size:13px;line-height:1.6}
+.lgfeed .lglog li.mine{background:rgba(166,60,45,.05)}
+.lgwho{font-weight:600}.lgtm{float:right;font-size:11px;color:var(--ink-3)}
+.lgfeed .lggood{color:#3f7a4a;font-weight:600}.lgfeed .lgbad{color:var(--seal);font-weight:600}
 </style>
 
 <div class="wrap">
@@ -5519,26 +5530,74 @@ async function lgDice(){if(lgBusy||!me)return;const lv=lgLive();if(!lv){toast("�
       if(K==="dice4"){const r=1+Math.floor(Math.random()*6);ok=r>=4;why=`땅 주사위 ${r}${ok?" (4 이상)":" (4에 못 미침)"}`}
       else if(K==="even"){const r=1+Math.floor(Math.random()*6);ok=r%2===0;why=`땅 주사위 ${r}${ok?" (짝수)":" (홀수)"}`}
       else if(K==="duel"){const o=holder||(foes.length?pickOne(foes).o:null);if(!o){ok=true;why="겨룰 상대가 없어 그대로 깃발을 꽂았다"}
-        else{const r=lgDuel(h,o,Date.now()%2147483647);ok=r.win;duelWith={o,r,id:ppl.find(p=>p.o===o)?.id};why=`${josa(o.name,"과")} 논검 ${ok?"승리":"패배"}`}}
+        else{duelWith={o,id:ppl.find(p=>p.o===o)?.id,land:{cell:pos,steal,nm},why:"land"}}}
       else{const k=K,mine=lgRatio(h,k),pool=holder?[holder]:foes.length?foes.map(p=>p.o):ppl.filter(p=>lgDay(p.L,d).rolls>0||p.id===myId()).map(p=>p.o),
         tgt=pool.reduce((a,o)=>a+lgRatio(o,k),0)/Math.max(1,pool.length),odds=lgOdds(mine,tgt),roll=1+Math.floor(Math.random()*100);ok=roll<=Math.round(odds*100);
         why=`${LG_STATN[k]} 성향 ${Math.round(mine*100)}% : ${Math.round(tgt*100)}%${holder?` (${holder.name})`:" (상대 패 평균)"} · 승률 ${Math.round(odds*100)}% · 주사위 ${roll}`}
-      ev.cap={cell:pos,ok,kind:K,steal};
+      if(duelWith)out.push(`${nm}${pj(nm,"을")} 두고 ${josa(duelWith.o.name,"과")} 맞섰다`);
+      else{ev.cap={cell:pos,ok,kind:K,steal};
       if(ok){gain(steal?5:3,`${why} · ${nm}${steal?`을 ${LG_TEAM[foeTeam].n} 패에게서 빼앗았다`:`에 깃발을 꽂았다`}`);bump(h,"lgCap")}
-      else out.push(`${why} · ${nm}${pj(nm,"을")} 차지하지 못했다`)}}
+      else out.push(`${why} · ${nm}${pj(nm,"을")} 차지하지 못했다`)}}}
   else if(c==="hq")gain(5,"무림맹 본부");else if(c==="inn"){gain(1,"객잔");h.items.mandu=(h.items.mandu||0)+1;out.push("만두 1")}
   else if(c==="gy"){const v=1+Math.floor(Math.random()*8);gain(v,v>=7?"큰 기연":"기연")}else if(c==="amb"){gain(1,"산적을 쫓아냈다");D.slow=1;out.push("다리를 다쳐 다음 주사위 -2")}
   else if(c==="shrine")gain(6,"명당");else if(c==="island"){D.island=2;D.isleAt=sNow();D.isleN=lgPeople(w,d).filter(p=>p.team===myTeam&&p.id!==myId()).reduce((a,p)=>a+lgDay(p.L,d).rolls,0)+D.rolls;out.push("풍랑에 휩쓸려 절해고도에 갇혔다! 6이 나오면 바로 빠져나오고, 우리 패가 두 번 굴리거나 2분이 지나면 저절로 풀린다")}
-  else if(c==="arena"){if(foes.length){const o=pickOne(foes).o;duelWith={o,r:lgDuel(h,o,Date.now()%2147483647),id:ppl.find(p=>p.o===o)?.id};duelWhy="비무대"}else gain(2,"비무대에 상대가 없어 연무만 했다")}
+  else if(c==="arena"){if(foes.length){const o=pickOne(foes).o;duelWith={o,id:ppl.find(p=>p.o===o)?.id,why:"arena"};duelWhy="비무대"}else gain(2,"비무대에 상대가 없어 연무만 했다")}
   D.pos=pos;
   /* 땅이 아닌 칸에서 상대 패와 마주치면 논검 */
-  if(!duelWith&&c!=="land"){const here=foes.filter(p=>(lgDay(p.L,d).pos||0)===pos);if(here.length){const p=pickOne(here);duelWith={o:p.o,r:lgDuel(h,p.o,Date.now()%2147483647),id:p.id};duelWhy="마주침"}}
-  if(duelWith){const {o,r}=duelWith;Object.assign(ev,{duel:1,vs:duelWith.id,vn:o.name,win:r.win,lines:r.lines});
-    if(c!=="land"){if(r.win){gain(LG_DUEL,`${josa(o.name,"을")} 논검으로 꺾었다`);bump(h,"lgDuelWin")}else out.push(`${o.name}에게 논검으로 졌다`)}
-    out.push(r.win?`${o.name} 다음 차례 쉼`:"나는 다음 차례 쉼")}
+  if(!duelWith&&c!=="land"){const here=foes.filter(p=>(lgDay(p.L,d).pos||0)===pos);if(here.length){const p=pickOne(here);duelWith={o:p.o,id:p.id,why:"meet"};duelWhy="마주침"}}
+  if(duelWith){const o=duelWith.o;ev.pend={id:`${myId()}:${d}:${D.rolls}`,vs:duelWith.id,vn:o.name,t:sNow(),land:duelWith.land||null,why:duelWith.why};
+    out.push(`${josa(o.name,"과")} 논검이 붙었다! 외공·내공·신법 중 하나를 고른다`)}
   Object.assign(ev,{die,slow,pos,got:out});
-  lgLast={die,slow,team:myTeam,txt:out.join(" · ")||"아무 일도 없었다",cell:LG_BOARD[pos][1],duel:duelWith?{name:duelWith.o.name,win:duelWith.r.win,lines:duelWith.r.lines}:null};
+  lgLast={die,slow,team:myTeam,txt:out.join(" · ")||"아무 일도 없었다",cell:LG_BOARD[pos][1],duel:null};
   addLog(h,`무림맹 친선 · 주사위 ${die}${slow?`(-${slow})`:""} → ${LG_BOARD[pos][1]} · ${lgLast.txt}`);fin()}
+
+/* ───────── 친선 논검: 가위바위보처럼 둘이 외공·내공·신법 중 하나를 고른다 (외공>내공>신법>외공)
+   건 사람 기록의 ev.pend.a, 받은 사람 기록의 league.ans[논검id]. 둘 다 고르거나 30초가 지나면 건 사람 쪽에서 판정한다.
+   못 고른 쪽은 자기 성향대로 고른 것으로 친다. 같은 걸 내면 그 성향 비율이 높은 쪽이 이긴다 ───────── */
+const LG_PICK_MS=30e3,LG_STANCES=["wai","nei","shen"];
+function lgAutoPick(o,seed){const R=seeded(seed),s=o?.stats||{},w=LG_STANCES.map(k=>Math.max(5,s[k]||0)),t=w[0]+w[1]+w[2];let r=R()*t;return r<w[0]?"wai":r<w[0]+w[1]?"nei":"shen"}
+const lgSeed=id=>{let x=7;for(const c of String(id))x=(x*31+c.charCodeAt(0))%2147483647;return x};
+function lgFight(a,b,ap,bp,seed){const R=seeded(seed+3);let win,why;
+  if(ap===bp){const ra=lgRatio(a,ap),rb=lgRatio(b,bp);win=Math.abs(ra-rb)<1e-9?R()<.5:ra>rb;why=`같은 ${LG_STATN[ap]} · 성향 ${Math.round(ra*100)}% : ${Math.round(rb*100)}%${Math.abs(ra-rb)<1e-9?" · 하늘이 갈랐다":""}`}
+  else{win=DSTANCE[ap].beat===bp;why=DS_CLASH[ap]?`${LG_STATN[win?ap:bp]}${pj(LG_STATN[win?ap:bp],"이")} ${LG_STATN[win?bp:ap]}${pj(LG_STATN[win?bp:ap],"을")} 눌렀다`:""}
+  const ws=win?ap:bp,line=ap===bp?DS_CLASH[ap]:fill(DS_WIN[ws][Math.floor(R()*DS_WIN[ws].length)],{x:win?a.name:b.name,y:win?b.name:a.name});
+  return {win,lines:[`${a.name} ${LG_STATN[ap]} · ${b.name} ${LG_STATN[bp]}`,line,why].filter(Boolean)}}
+const lgPendOpen=e=>e?.pend&&!e.pend.done;
+/* 나에게 걸린 논검 (아직 안 고른 것) */
+function lgPendVsMe(w=lgWeek()){const out=[],L=lgOf(me,w);if(!L)return out;for(const p of lgPeople(w)){if(p.id===myId())continue;for(const e of p.L.log||[])if(lgPendOpen(e)&&e.pend.vs===myId()&&!L.ans?.[e.pend.id]&&sNow()-e.pend.t<LG_PICK_MS+5e3)out.push({...e,by:p.id,byName:p.o.name})}return out}
+function lgPickA(id,st){if(!LG_STANCES.includes(st))return;const h=lgRoll(structuredClone(me)),L=lgOf(h,lgWeek());const e=(L?.log||[]).find(x=>x.pend?.id===id);if(!e||!lgPendOpen(e)||e.pend.a)return;
+  e.pend.a=st;e.pend.at=sNow();save(h);toast(`${LG_STATN[st]}${pj(LG_STATN[st],"으로")} 나섰다`)}
+function lgPickB(id,st){if(!LG_STANCES.includes(st))return;const h=lgRoll(structuredClone(me)),L=lgOf(h,lgWeek());if(!L)return;L.ans={...(L.ans||{}),[id]:st};save(h);toast(`${LG_STATN[st]}${pj(LG_STATN[st],"으로")} 맞섰다`)}
+/* 건 사람 쪽에서 판정해 내 기록에 결과를 적는다 */
+function lgSettle(){if(mode!=="db"||!me||pendHero||!heroLive)return;const w=lgWeek();let h=null;
+  for(const ww of [w-1,w]){const L0=lgOf(me,ww);if(!L0)continue;for(const e0 of L0.log||[]){if(!lgPendOpen(e0))continue;
+    const P=e0.pend,o=heroById(P.vs),oL=o?lgOf(o,ww):null,b=oL?.ans?.[P.id],late=sNow()-P.t>=LG_PICK_MS;
+    if(!((P.a||late)&&(b||late||!o)))continue;
+    if(!h)h=lgRoll(structuredClone(me));const L=h.league?.week===ww?h.league:h.leaguePrev;const e=(L?.log||[]).find(x=>x.pend?.id===P.id);if(!e)continue;
+    const ap=P.a||lgAutoPick(h,lgSeed(P.id)),bp=b||lgAutoPick(o||{},lgSeed(P.id)+11),f=lgFight(h,o||{name:P.vn},ap,bp,lgSeed(P.id));
+    const D={...lgDay(L,e.day)},gain=(v,tx)=>{D.pts+=v;e.got=[...(e.got||[]),`${tx} +${v}`]};
+    e.pend={...P,done:1,a:ap,b:bp,auto:(P.a?"":"a")+(b?"":"b")};Object.assign(e,{duel:1,vs:P.vs,vn:P.vn,win:f.win,lines:f.lines});
+    if(P.land){e.cap={cell:P.land.cell,ok:f.win,kind:"duel",steal:P.land.steal};if(f.win){gain(P.land.steal?5:3,`${josa(P.vn,"과")} 논검 승리 · ${P.land.nm}${P.land.steal?"을 빼앗았다":"에 깃발을 꽂았다"}`);bump(h,"lgCap")}else e.got=[...(e.got||[]),`${P.vn}에게 논검으로 져 ${P.land.nm}${pj(P.land.nm,"을")} 차지하지 못했다`]}
+    else if(f.win){gain(LG_DUEL,`${josa(P.vn,"을")} 논검으로 꺾었다`);bump(h,"lgDuelWin")}else e.got=[...(e.got||[]),`${P.vn}에게 논검으로 졌다`];
+    e.got=[...e.got,f.win?`${P.vn} 다음 차례 쉼`:"나는 다음 차례 쉼"];L.days={...(L.days||{}),[e.day]:D};
+    if(ww===w)lgLast={die:e.die,team:e.team,txt:e.got.join(" · "),cell:LG_BOARD[e.pos||0][1],duel:{name:P.vn,win:f.win,lines:f.lines}};
+    addLog(h,`무림맹 친선 · ${P.vn}과 논검 (${LG_STATN[ap]} : ${LG_STATN[bp]}) · ${f.win?"이겼다":"졌다"}`)}}
+  if(h)save(h)}
+/* 판 일지: 그날 모두가 굴린 기록을 시간 순으로 */
+function lgFeed(w,d,n=20){const ev=[];for(const p of lgPeople(w,d))for(const e of p.L.log||[])if(e.day===d)ev.push({...e,who:p.o.name,me:p.id===myId(),tm:p.team});
+  ev.sort((a,b)=>(b.t||0)-(a.t||0));if(!ev.length)return "";
+  const row=e=>{const cls=e.rest||e.island?"bad":e.pend&&!e.pend.done?"":e.cap?(e.cap.ok?"good":"bad"):e.duel?(e.win?"good":"bad"):"";
+    const head=e.rest?"논검에 진 여파로 쉬었다":e.island?"":`주사위 ${e.die}${e.slow?`(-${e.slow})`:""} → ${esc(LG_BOARD[e.pos||0][1])}`;
+    const body=[...(e.got||[]).filter(x=>x!=="가짜"&&!(e.pend?.done&&/논검이 붙었다/.test(x))),...(e.pend?.done?[`(${LG_STATN[e.pend.a]} : ${LG_STATN[e.pend.b]})`]:[])].map(esc).join(" · ");
+    return `<li class="${cls}${e.me||e.vs===myId()?" mine":""}"><span class="lgwho t-${LG_TEAM[e.tm]?.c||"a"}">${esc(e.who)}</span><span class="lgtm">${new Date((e.t||0)+KST).toISOString().slice(11,16)}</span><br>${head}${head&&body?" · ":""}${body}${e.pend&&!e.pend.done?" · 논검 고르는 중":""}${e.duel&&e.vs===myId()?` · <b class="${e.win?"lgbad":"lggood"}">${e.win?"내가 졌다 (다음 차례 쉼)":`내가 막아 냈다 (+${LG_DEF})`}</b>`:""}</li>`};
+  return `<div class="lgfeed"><div class="kicker">판 일지 · 모두의 주사위</div><ul class="lglog">${ev.slice(0,n).map(row).join("")}</ul>${ev.length>n?`<p class="note" style="margin:4px 0 0">최근 ${n}개만 보인다 (전체 ${ev.length}번)</p>`:""}</div>`}
+function lgPendBox(w,d){const L=lgOf(me,w);if(!L)return "";let out="";const btn=(attr,id)=>LG_STANCES.map(k=>`<button class="btn sm" type="button" ${attr}="${id}|${k}">${LG_STATN[k]}</button>`).join("");
+  for(const e of (L.log||[]).filter(x=>x.day===d&&lgPendOpen(x))){const P=e.pend,left=P.t+LG_PICK_MS;
+    out+=P.a?`<div class="lgpend"><b>⚔ ${esc(P.vn)}과 논검</b><p>${LG_STATN[P.a]}${pj(LG_STATN[P.a],"으로")} 나섰다. ${esc(P.vn)}의 응수를 기다린다 · <span data-suntil="${left}"></span></p></div>`
+      :`<div class="lgpend me"><b>⚔ ${esc(P.vn)}과 논검이 붙었다!</b><p>무엇으로 나설까? 외공은 내공을, 내공은 신법을, 신법은 외공을 누른다. <span data-suntil="${left}"></span> 안에 안 고르면 내 성향대로 나간다.</p><div class="row">${btn("data-lgpa",P.id)}</div></div>`}
+  for(const e of lgPendVsMe(w).filter(x=>x.day===d))out+=`<div class="lgpend vs"><b>⚔ ${esc(e.byName)}${pj(e.byName,"이")} 논검을 걸어왔다!</b><p>무엇으로 맞설까? 외공은 내공을, 내공은 신법을, 신법은 외공을 누른다. <span data-suntil="${e.pend.t+LG_PICK_MS}"></span> 안에 안 고르면 내 성향대로 나간다.</p><div class="row">${btn("data-lgpb",e.pend.id)}</div></div>`;
+  return out}
+
 /* 보상: 일요일 22시 이후, 토·일 중 한 번이라도 굴린 사람 */
 const LG_WPAY={win:{silver:1200,stone:8,clue:2},draw:{silver:800,stone:6,clue:1},lose:{silver:500,stone:4,clue:1}};
 function lgResult(w,team){const t=lgTotal(w),ot=team==="A"?"B":"A",my=t[team],o=t[ot],pm=t["p"+team],po=t["p"+ot];return {my,ot:o,res:my>o||(my===o&&pm>po)?"win":my<o||(my===o&&pm<po)?"lose":"draw",pm,po}}
@@ -5558,7 +5617,7 @@ const LG_HOW={dice4:"땅 주사위를 한 번 더 굴려 4 이상이 나오면 �
   wai:"외공 성향 겨루기. 내 능력치 합에서 외공이 차지하는 비율로 겨룬다. 주인이 있으면 주인과, 없으면 상대 패 평균과 견주고 승률은 20~80%.",
   nei:"내공 성향 겨루기. 내 능력치 합에서 내공이 차지하는 비율로 겨룬다. 주인이 있으면 주인과, 없으면 상대 패 평균과 견주고 승률은 20~80%.",
   shen:"신법 성향 겨루기. 내 능력치 합에서 신법이 차지하는 비율로 겨룬다. 주인이 있으면 주인과, 없으면 상대 패 평균과 견주고 승률은 20~80%.",
-  duel:"논검에서 이기면 차지한다. 주인이 있으면 주인과, 없으면 상대 패 아무나와 겨룬다."};
+  duel:"논검에서 이기면 차지한다. 주인이 있으면 주인과, 없으면 상대 패 아무나와 겨룬다. 둘이 외공·내공·신법 중 하나를 골라 가위바위보처럼 맞선다."};
 function lgInfo(w,d){if(lgPick==null||!LG_BOARD[lgPick])return "";const i=lgPick,[t,n]=LG_BOARD[i],own=t==="land"?lgOwners(w,d)[i]:null,K=t==="land"?lgLandKind(i):null,
   here=lgPeople(w,d).filter(p=>lgDay(p.L,d).rolls>0&&(lgDay(p.L,d).pos||0)===i).map(p=>esc(p.o.name));
   const body=t==="land"?`<b>${LG_KIND[K].ch} ${LG_KIND[K].n}</b> · ${LG_HOW[K]} 빈 땅이면 +3, 상대 땅을 빼앗으면 +5, 우리 패 땅에 서면 +2.<br>${own?`지금 <span class="t-${LG_TEAM[own.team].c}">${LG_TEAM[own.team].n}</span> 땅 (${esc(heroById(own.by)?.name||(own.by===myId()?me.name:"?"))})`:"아직 주인 없음"}`
@@ -5580,7 +5639,7 @@ function lgBoard(w,d){const ppl=lgPeople(w,d),at={},myL=lgOf(me,w),own=lgOwners(
     ${lgLast&&lv&&lgPick==null?`<div class="lgdie ${lgLast.die?"":"rest"} t-${LG_TEAM[lgLast.team]?.c||"a"}"><b>${lgLast.die||"休"}</b><span>${lgLast.cell?esc(lgLast.cell):""}</span></div>`:""}</div></div>`}
 const lgRules=()=>`<p class="note"><b>토·일 21시~22시</b>에 하루 한 판씩, 두 판이 열린다. 신청은 <b>일요일 21시 전까지</b> 받는다. <b>그날 21시</b>가 되면 그때까지 신청한 사람을 청룡·백호 두 패로 반씩 무작위로 나눈다. 토요일에 나간 사람도 일요일엔 패를 새로 짠다. 토요일 21시가 지나 신청하면 일요일 판부터 나간다. 두 패가 <b>번갈아 한 명씩</b> 굴린다(패 안에서는 덜 굴린 사람이 먼저, 인원이 적은 패는 한 사람이 여러 번 굴린다). 여럿이 동시에 누르면 한 사람만 굴린 것으로 친다. 차례인 패가 60초 동안 안 굴리면 차례가 넘어간다.<br>
   지역 칸(땅) 12곳은 칸마다 차지하는 조건이 다르다: 주사위 4 이상, 짝수, 외공·내공·신법 겨루기, 논검. 겨루기는 능력치 숫자가 아니라 <b>성향</b>(그 능력치가 내 내공·외공·신법 합에서 차지하는 비율)으로 한다. 비율이 높을수록 승률이 오르지만(20%~80%) 주사위로 뒤집힐 수 있어 경지와 상관없이 누구나 이길 수 있다. 상대 패 땅이면 그 땅을 차지한 사람과, 빈 땅이면 상대 패 평균과 겨룬다. 상대 패 땅도 같은 조건으로 빼앗는다. 새 땅 +3, 빼앗으면 +5, 우리 땅에 서면 +2.
-  땅이 아닌 칸에서 상대 패와 마주치거나 비무대에 서면 논검을 벌이고, 진 사람은 다음 차례를 쉰다. 절해고도에 서면 갇힌다. 6이 나오면 바로 빠져나오고, 못 나와도 우리 패가 두 번 굴리거나 2분이 지나면 다음 내 차례에 떠난다.<br>
+  땅이 아닌 칸에서 상대 패와 마주치거나 비무대에 서면 논검을 벌인다. 논검은 가위바위보처럼 둘이 <b>외공·내공·신법</b> 중 하나를 고른다(외공은 내공을, 내공은 신법을, 신법은 외공을 누른다). 같은 걸 내면 그 성향 비율이 높은 쪽이 이긴다. 30초 안에 안 고르면 내 성향대로 나간다. 진 사람은 다음 차례를 쉰다. 절해고도에 서면 갇힌다. 6이 나오면 바로 빠져나오고, 못 나와도 우리 패가 두 번 굴리거나 2분이 지나면 다음 내 차례에 떠난다.<br>
   <b>22시</b>에 닫힐 때 가진 땅 수로 <b>그날 판의 승패</b>를 낸다(같으면 그날 활약도). 토요일 판, 일요일 판 보상을 따로 받는다.</p>`;
 function leagueTab(){const h=me,c=lgClock(),w=lgWeek(),L=lgOf(h,w),lv=lgLive(),U=lgUnclaimed(h);
   if(mode!=="db")return `<section><div class="label">무림맹 친선</div><p class="empty">여럿이 함께 쓰는 강호에서만 열린다.</p>${lgRules()}</section>`;
@@ -5608,16 +5667,16 @@ function leagueTab(){const h=me,c=lgClock(),w=lgWeek(),L=lgOf(h,w),lv=lgLive(),U
       <span class="note" style="margin:0">오늘 ${D.rolls}번 굴림 · 내 활약도 <b>${lgPts(myId(),L,d,w)}</b>${owe>0?` · 쉴 차례 ${owe}`:""}${D.slow?" · 다음 주사위 -2":""}${D.island>0?(lgIsleFree(w,d,D,lgTeams(w,d)[myId()])&&(D.isleAt||D.isleN!=null)?" · 절해고도 풀림 · 다음 차례에 떠난다":` · 절해고도${D.isleAt?` · <span data-suntil="${D.isleAt+LG_ISLE_MS}"></span> 뒤 풀림`:` ${D.island}차례`}`):""}</span></div>
       ${waitTxt?`<p class="note" style="margin:6px 0 0">${waitTxt}</p>`:""}`:""}
       ${lgLast?.duel&&lv?`<div class="lgduel ${lgLast.duel.win?"good":"bad"}"><b>논검 · ${esc(lgLast.duel.name)}</b>${(lgLast.duel.lines||[]).map(x=>`<p>${esc(x)}</p>`).join("")}<p><b>${lgLast.duel.win?"이겼다!":"졌다…"}</b></p></div>`:""}
-      ${mine||vsMe?`<ul class="lglog">${mine}${vsMe}</ul>`:""}`}
+`}
   return `<section><div class="label">무림맹 친선 · ${d===lgSun(w)?"일요일":"토요일"} 판 · ${team?`<span class="t-${LG_TEAM[team].c}">${LG_TEAM[team].n}</span> 패`:"구경"}</div>${claim}
-    ${status?`<p style="margin:6px 0 0">${status}</p>`:""}${lgBoard(w,d)}${lgInfo(w,d)}${me2}
+    ${status?`<p style="margin:6px 0 0">${status}</p>`:""}${lgPendBox(w,d)}${lgBoard(w,d)}${lgInfo(w,d)}${me2}${lgFeed(w,d)}
     ${!L?`<p class="note">이번 주에 신청하지 않아 구경만 한다.${lgSignupOpen()?" 일요일 21시 전까지 신청하면 일요일 판에 나갈 수 있다.":" 다음 주 월요일부터 다시 신청할 수 있다."}</p>`:!team?`<p class="note">토요일 21시가 지나 신청해서 일요일 판부터 나간다.</p>`:""}${joinBox}
     <p class="note">${d===lgSun(w)?"일요일":"토요일"} 패${pre?" (미리 보기)":""} · <span class="t-a">청룡</span>: ${roster("A")}<br><span class="t-b">백호</span>: ${roster("B")}</p>
     ${sunPre&&d!==lgSun(w)?`<p class="note">일요일 패 (미리 보기 · 21시에 확정) · <span class="t-a">청룡</span>: ${sunPre.filter(p=>p.team==="A").map(p=>esc(p.o.name)).join(" · ")||"없음"}<br><span class="t-b">백호</span>: ${sunPre.filter(p=>p.team==="B").map(p=>esc(p.o.name)).join(" · ")||"없음"}</p>`:""}
     <details class="lgrule"><summary>칸 설명과 규칙</summary><ul>${Object.entries(LG_CELL).map(([k,C])=>`<li><b>${C.ch}</b> ${k==="land"?"지역":LG_BOARD.find(x=>x[0]===k)[1]} · ${C.d}</li>`).join("")}
       ${Object.entries(LG_KIND).map(([k,K])=>`<li><b>${K.ch}</b> ${K.n} · ${LG_BOARD.map((x,i)=>x[0]==="land"&&lgLandKind(i)===k?x[1]:null).filter(Boolean).join(", ")}</li>`).join("")}</ul>${lgRules()}
       <p class="note">보상 (그날 한 번이라도 굴렸으면, 판마다): 이긴 패 은자 700·강화석 5·비급 단서 1, 비기면 500·4·1, 진 패 300·3·1.</p></details></section>`}
-const lgDot=h=>{if(mode!=="db"||!h)return false;const L=lgOf(h),lv=lgLive();return (!!L&&!!lv&&lgTurn(lgWeek(),lv.d).ok)||lgUnclaimed(h).length>0};
+const lgDot=h=>{if(mode!=="db"||!h)return false;const L=lgOf(h),lv=lgLive();if(L&&(lgPendVsMe().length||(L.log||[]).some(e=>lgPendOpen(e)&&!e.pend.a)))return true;return (!!L&&!!lv&&lgTurn(lgWeek(),lv.d).ok)||lgUnclaimed(h).length>0};
 let lgPhase="";function lgTick(){if(tab!=="league")return;const lv=lgLive(),k=lv?"L"+(lgOf(me)?lgTurn(lgWeek(),lv.d).ok?1:0:"x"):"c"+lgClock().wd+(lgClock().m>=LG_CLOSE)+(lgClock().m>=LG_OPEN);if(k!==lgPhase){lgPhase=k;render()}}
 
 Object.assign(MATS,HUNT_MATS);
@@ -7303,7 +7362,7 @@ function dotWhy(h){const W={},add=(k,c,t)=>{if(c)(W[k]=W[k]||[]).push(t)};const 
   add("manor",mode==="db"&&!h.home&&T(()=>homeAsksToMe().length>0),"동거 청");
   add("news",T(()=>newsUnread()),"새 신문");add("notice",mode==="db"&&T(()=>noticeUnread()>0),"새 공지");add("alarm",mode==="db"&&T(()=>alarmUnread()>0),"새 알림");
   add("mail",mode==="db"&&T(()=>mailUnread()>0),"새 편지");add("mail",mode==="db"&&T(()=>myParcels().length>0),"받을 꾸러미");add("qna",T(()=>qnaOK()&&tab!=="qna"&&qnaUnread()),"새 문답");
-  add("league",T(()=>lgDot(h)),"친선 차례");
+  add("league",T(()=>lgPendVsMe().length>0||(lgOf(h)?.log||[]).some(e=>lgPendOpen(e)&&!e.pend.a)),"논검 고르기");add("league",T(()=>lgDot(h))&&!T(()=>lgPendVsMe().length>0||(lgOf(h)?.log||[]).some(e=>lgPendOpen(e)&&!e.pend.a)),"친선 차례");
   add("gate",T(()=>{const r=myRoom();if(r&&r.status==="fight"){const m=r.party.find(x=>x.id===myId());return !!(m&&m.hp>0&&!playerReady(r,m))}return false}),"관문 내 차례");
   add("gate",T(()=>{const r=myRoom();return r&&(r.status==="win"||r.status==="fail")&&!h.gateDone?.[r.id]}),"관문 결과");
   add("gate",T(()=>atWall(h)&&!!GATES[h.realm+1]?.ready&&!myRoom()),"관문 도전 가능");
@@ -7598,7 +7657,7 @@ function bind(){
   document.querySelectorAll("[data-cleather]").forEach(b=>b.addEventListener("click",()=>craftLeather(b.dataset.cleather)));
   document.querySelectorAll("[data-chide]").forEach(s=>s.addEventListener("change",()=>{craftHide[s.dataset.chide]=s.value;render()}));
   document.querySelectorAll("[data-bagsort]").forEach(b=>b.addEventListener("click",()=>bagSort(b.dataset.bagsort)));
-  on("#followGo",followGo);document.querySelectorAll("[data-lgpick]").forEach(b=>{const f=()=>{const v=+b.dataset.lgpick;lgPick=v<0||lgPick===v?null:v;render();if(lgPick!=null)document.querySelector(".lginfo")?.scrollIntoView({block:"nearest",behavior:"smooth"})};b.addEventListener("click",f);b.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();f()}})});document.querySelectorAll("[data-homeyes]").forEach(b=>b.addEventListener("click",()=>answerHome(true,b.dataset.homeyes)));document.querySelectorAll("[data-homeno]").forEach(b=>b.addEventListener("click",()=>answerHome(false,b.dataset.homeno)));on("#homeLeave",()=>{if(confirmHome())cancelHome()});if(tab==="news"&&mode==="db"){const w=wkNow()-1;if(newsHas(w)&&me.newsSeen!==w){const h2=structuredClone(me);h2.newsSeen=w;setTimeout(()=>save(h2),0)}}document.querySelectorAll("[data-dbet]").forEach(b=>b.addEventListener("click",()=>{diceBet=+b.dataset.dbet;render()}));document.querySelectorAll("[data-dpick]").forEach(b=>b.addEventListener("click",()=>diceRoll(b.dataset.dpick)));document.querySelectorAll("[data-attx]").forEach(b=>b.addEventListener("click",()=>{shopOpen.attx=b.dataset.attx==="1";render()}));document.querySelectorAll("[data-csort]").forEach(b=>b.addEventListener("click",()=>{caseSort=b.dataset.csort;render()}));on("#huntBuy",huntBuy);on("#raidBuy",raidBuy);document.querySelectorAll("[data-stambuy]").forEach(b=>b.addEventListener("click",stamBuy));
+  on("#followGo",followGo);document.querySelectorAll("[data-lgpa]").forEach(b=>b.addEventListener("click",()=>{const [id,k]=b.dataset.lgpa.split("|");lgPickA(id,k)}));document.querySelectorAll("[data-lgpb]").forEach(b=>b.addEventListener("click",()=>{const [id,k]=b.dataset.lgpb.split("|");lgPickB(id,k)}));document.querySelectorAll("[data-lgpick]").forEach(b=>{const f=()=>{const v=+b.dataset.lgpick;lgPick=v<0||lgPick===v?null:v;render();if(lgPick!=null)document.querySelector(".lginfo")?.scrollIntoView({block:"nearest",behavior:"smooth"})};b.addEventListener("click",f);b.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();f()}})});document.querySelectorAll("[data-homeyes]").forEach(b=>b.addEventListener("click",()=>answerHome(true,b.dataset.homeyes)));document.querySelectorAll("[data-homeno]").forEach(b=>b.addEventListener("click",()=>answerHome(false,b.dataset.homeno)));on("#homeLeave",()=>{if(confirmHome())cancelHome()});if(tab==="news"&&mode==="db"){const w=wkNow()-1;if(newsHas(w)&&me.newsSeen!==w){const h2=structuredClone(me);h2.newsSeen=w;setTimeout(()=>save(h2),0)}}document.querySelectorAll("[data-dbet]").forEach(b=>b.addEventListener("click",()=>{diceBet=+b.dataset.dbet;render()}));document.querySelectorAll("[data-dpick]").forEach(b=>b.addEventListener("click",()=>diceRoll(b.dataset.dpick)));document.querySelectorAll("[data-attx]").forEach(b=>b.addEventListener("click",()=>{shopOpen.attx=b.dataset.attx==="1";render()}));document.querySelectorAll("[data-csort]").forEach(b=>b.addEventListener("click",()=>{caseSort=b.dataset.csort;render()}));on("#huntBuy",huntBuy);on("#raidBuy",raidBuy);document.querySelectorAll("[data-stambuy]").forEach(b=>b.addEventListener("click",stamBuy));
   document.querySelectorAll("[data-cos]").forEach(b=>b.addEventListener("click",()=>{const [k,id]=b.dataset.cos.split(":");cosHas(me,k,id)?cosWear(k,id):cosBuy(k,id)}));
   document.querySelectorAll("[data-coswear]").forEach(b=>b.addEventListener("click",()=>{const [k]=b.dataset.coswear.split(":");cosWear(k,null)}));
   on("#followStay",followStay);on("#adSummon",adSummon);on("#adFinish",adFinish);{const a=$("#adTarget");if(a)a.addEventListener("change",()=>{adTarget=a.value})}
@@ -7675,7 +7734,7 @@ const RTRY={};
 function mayTry(key){if(document.hidden)return false;const now=Date.now(),r=RTRY[key]||(RTRY[key]={n:0,t:0});const gap=r.n?Math.min(60e3,3e3*2**(r.n-1)):0;
   if(now-r.t<gap)return false;r.n++;r.t=now;for(const k in RTRY)if(now-RTRY[k].t>600e3)delete RTRY[k];return true}
 function tick(){
-  maybeResolve();maybeResolveLair();try{maybeResolveDuel()}catch(e){}try{maybeResolveTomb()}catch(e){}try{lgTick()}catch(e){}
+  maybeResolve();maybeResolveLair();try{maybeResolveDuel()}catch(e){}try{maybeResolveTomb()}catch(e){}try{lgTick()}catch(e){}try{lgSettle()}catch(e){}
   if(!me) return;
   const k=curPhase(); if(k!==phaseKey){phaseKey=k;render();return}
   const now=Date.now();
