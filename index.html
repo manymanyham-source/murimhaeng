@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261122b">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261122c">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1361,6 +1361,25 @@ const cap=r=>(r+1)*10;
 const RB_MAX=3,RB_STAT=.05,RB_EXP=.2,AS_STAT=.02,AS_EXP=.1;
 /* 환골탈태할수록 관문 보스도 세진다 (일환 +30%/+15%, 이환 +60%/+30% …). 관문은 매 생마다 새로 넘어야 한다 */
 const GATE_CYC_HP=.3,GATE_CYC_DMG=.15;
+/* 환골탈태하고 다시 온 사람을 관문 보스가 알아본다 (회귀). [처음 돌아옴, 두 번째, 세 번째 이상] */
+const GATE_DEJA={
+  3:{open:["혈안산군이 코를 킁킁거리며 낯설고도 익은 냄새를 맡는다. 붉은 눈이 가늘어진다. 이 짐승은 죽기 전의 일을 기억하는 듯하다.",
+      "혈안산군이 그대를 보자마자 꼬리를 바짝 세운다. 두 번이나 쓰러뜨린 상대의 냄새는 잊지 않는다. 이번엔 먼저 달려들 기세다.",
+      "숲이 고요하다. 혈안산군은 울지도 않고 그대가 걸어올 길목에 미리 엎드려 있었다. 몇 번이고 되풀이된 밤을 짐승도 알고 있다."],
+    win:["쓰러지며 혈안산군이 그대를 한참 바라본다. 원망보다는 어딘가 체념한 눈빛이었다.","혈안산군이 마지막으로 낮게 운다. 마치 \"또 보자\"는 것처럼.","혈안산군은 이번에도 같은 자리에서 쓰러졌다. 목의 가죽 끈만 매번 조금씩 더 낡아 있다."]},
+  4:{open:["진무악이 찻잔을 내려놓는다. \"이상하군. 처음 보는 얼굴인데, 그 칼끝이 어디로 올지 내가 안다.\"",
+      "진무악이 누선 난간에 기대 웃는다. \"또 너냐. 꿈인 줄 알았지. 이번엔 다른 결말이 날 거다.\" 흑사련 무사들이 미리 길목을 막아섰다.",
+      "진무악이 웃지 않는다. \"몇 번째지? 셀 수가 없군. 네가 올 때마다 나는 같은 자리에서 쓰러진다. 이번엔… 아니다.\""],
+    win:["진무악이 무릎을 꿇으며 중얼거린다. \"…역시. 이 장면을 본 적이 있어.\"","\"다음에도 오겠지.\" 진무악이 피 묻은 웃음을 남기고 쓰러졌다.","\"끝나지 않는구나, 이 강호는.\" 진무악의 눈이 천천히 감긴다."]},
+  5:{open:["사도현이 핏빛 안개 속에서 고개를 갸웃한다. \"그대의 피 냄새가 낯익다. 한 번 흘려 본 피로군.\"",
+      "\"돌아왔구나, 윤회를 거스른 자여.\" 사도현의 혈영이 두 배로 짙어진다. \"마교는 이미 그대를 적어 두었다.\"",
+      "사도현이 손가락으로 허공을 센다. \"하나, 둘, 셋… 그대는 매번 다시 태어나 이곳에 서지. 마교 서고에는 그대 이름만 적힌 장이 따로 있다.\""],
+    win:["\"이 피… 기억해 두겠다.\" 사도현의 몸이 안개로 흩어진다.","\"다음 생에서 또 보자.\" 안개가 웃음소리를 남기고 걷힌다.","사도현이 흩어지며 속삭인다. \"서고에 한 줄이 또 늘었군.\""]},
+  6:{open:["천마가 눈을 뜬다. \"회귀자로구나. 하늘이 판을 다시 깔았다 해도 천마는 같은 자리에 앉아 있다.\"",
+      "\"두 번째인가.\" 천마가 일어선다. \"지난 생의 너는 여기서 이겼다. 그러니 이번엔 천마도 지난 생의 천마가 아니다.\"",
+      "천마가 웃는다. \"몇 번을 돌아와도 좋다. 네가 강해지는 만큼 마도 깊어진다. 이 끝없는 수레바퀴가 곧 천마신교의 법이다.\""],
+    win:["천마가 무너지며 속삭인다. \"…다음 생에서 기다리마.\"","\"또 오겠지. 그때도 나는 여기 있다.\" 천마의 기운이 하늘로 흩어진다.","\"좋다. 이번 생도 네가 이겼다.\" 천마는 처음으로 웃으며 눈을 감았다."]}};
+const gateDeja=(realm,c,k)=>{const L=GATE_DEJA[realm]?.[k];return c>0&&L?L[Math.min(c,3)-1]:""};
 const rbN=h=>Math.min(RB_MAX,h?.rb||0),asN=h=>h?.asc||0;
 const gateCyc=h=>rbN(h)+asN(h);
 /* 이번 생에 이긴 관문인가 (예전 기록은 환골탈태 전이면 이번 생으로 친다) */
@@ -2591,7 +2610,7 @@ function startGate(){
   n.log=[{k:"sec",x:`${G.title} · ${G.boss}`},{k:"amb",x:G.lore},{k:"comp",x:`${G.sn}: ${GA(r.realm)[1].say}`}];
   if(n.aura<1)n.log.push({k:"ev2",sub:"hit",x:`${josa(G.sn,"의")} 호신강기가 짙다. 사람 ${GATE_MIN}명이 모이지 않아(지금 ${n.hum}명) 피해가 ${Math.round(n.aura*100)}%만 스며든다.`});
   else n.log.push({k:"ev2",sub:"act",x:`${n.hum}명의 기세가 모여 ${josa(G.sn,"의")} 호신강기를 깨뜨렸다.`});
-  if(n.cyc)n.log.push({k:"ev2",sub:"hit",x:`${rbLabel(me)||"환골탈태"}의 몸으로 다시 찾아온 관문. ${josa(G.sn,"도")} 그만큼 독기를 품었다. (체력 +${Math.round(GATE_CYC_HP*n.cyc*100)}% · 위력 +${Math.round(GATE_CYC_DMG*n.cyc*100)}%)`});
+  if(n.cyc){const dj=gateDeja(r.realm,n.cyc,"open");if(dj)n.log.push({k:"ev2",sub:"hit",x:dj});n.log.push({k:"ev2",sub:"hit",x:`${rbLabel(me)||"환골탈태"}의 몸으로 다시 찾아온 관문. ${josa(G.sn,"도")} 그만큼 독기를 품었다. (체력 +${Math.round(GATE_CYC_HP*n.cyc*100)}% · 위력 +${Math.round(GATE_CYC_DMG*n.cyc*100)}%)`})}
   n.omen=gateOmen(n);n.deadline=sNow()+GATE_WAIT;GS.setRoom(r.id,n);
   GS.setAct({...myAct(),act:1,action:null});
 }
@@ -2685,7 +2704,7 @@ function resolveGate(room){
   P.forEach(m=>{m.qi=Math.min(m.qmax,m.qi+10)});
   advEnd(C);
   log.push({k:"amb",x:`이번 막 피해 ${actDmg} · ${G.sn} 남은 체력 ${n.bossHp.toLocaleString()}/${n.bossMax.toLocaleString()}`});
-  if(n.bossHp<=0){n.status="win";log.push({k:"sec",x:"관문 돌파"},{k:"end",x:G.win})}
+  if(n.bossHp<=0){n.status="win";log.push({k:"sec",x:"관문 돌파"},{k:"end",x:G.win});{const dj=gateDeja(n.realm,n.cyc||0,"win");if(dj)log.push({k:"end",x:dj})}}
   else if(!P.some(x=>x.player&&x.hp>0)){n.status="fail";log.push({k:"sec",x:"패배"},{k:"end",x:G.lose})}
   else if(a>=roomA(n).length-1){n.status="fail";log.push({k:"sec",x:"놓침"},{k:"end",x:G.flee})}
   else{n.act=a+1;n.omen=gateOmen(n);n.deadline=sNow()+GATE_WAIT;{const NA=roomA(n)[n.act];if(NA.say&&Math.random()<.6)log.push({k:"comp",x:`${G.sn}: ${NA.say}`})}}
