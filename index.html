@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261121n">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261122a">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -3246,7 +3246,11 @@ function alarmTab(){
 }
 function bindAlarm(){
   document.querySelectorAll("[data-ago]").forEach(b=>b.addEventListener("click",()=>{const to=b.dataset.ago;
-    if(!activity(me)&&roadHours(me.loc,to)){startTravel(to,b.dataset.awith);tab="world";render()}else{dest=to;tab="world";render();if(activity(me))toast(`${busyText[activity(me)]} 지금은 떠날 수 없습니다.`);else toast("바로 가는 길이 없어요. 지도에서 「한 번에 가기」를 눌러 주세요.")}}));
+    if(activity(me)){dest=to;tab="world";render();toast(`${busyText[activity(me)]} 지금은 떠날 수 없습니다.`);return}
+    if(me.loc===to){toast("이미 그곳에 있다.");return}
+    /* 바로 붙은 길이면 한 구간, 여러 구간이면 '한 번에 가기'로 (여비는 평소와 같다) */
+    if(roadHours(me.loc,to))startTravel(to,b.dataset.awith);else{const s0=me.silver||0;startFar(to,false);if(me.travel?.to===to||(me.silver||0)!==s0)toast(`${REGIONS[to].n}까지 여러 구간을 거쳐 한 번에 간다`)}
+    tab="world";render()}));
   document.querySelectorAll("[data-atab]").forEach(b=>b.addEventListener("click",()=>{tab=b.dataset.atab;try{localStorage.setItem("murim-tab",tab)}catch(e){}render()}));
   document.querySelectorAll("[data-cojoin]").forEach(b=>b.addEventListener("click",async()=>{await coJoin(b.dataset.cojoin);tab="raid";render()}));
   document.querySelectorAll("[data-callgo]").forEach(b=>b.addEventListener("click",()=>sendCall("go",{reg:b.dataset.callgo})));
