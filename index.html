@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261122d">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261122g">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1311,6 +1311,25 @@ select,input[type=number],input[type=text],input:not([type]),textarea{border-rad
 /* PC에선 판이 화면을 다 덮지 않게: 판과 논검 고르기가 한눈에 들어오도록 */
 @media (min-width:700px){.lgboard{max-width:min(620px,calc(100vh - 210px));margin-left:auto;margin-right:auto}.lgpend,.lginfo{max-width:620px;margin-left:auto;margin-right:auto}}
 .lgfeed .lglog{list-style:none;padding-left:0}
+/* 곁들이기 줄 + 주머니 */
+.snack{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:0 0 14px;padding:8px 0;border-bottom:1px dashed var(--line)}
+.snack .snl{font-size:11px;letter-spacing:.1em;color:var(--ink-3);margin-right:2px}
+.snack em{font-style:normal;font-size:12px;color:#3f7a4a}
+.snack .sb{font:inherit;font-size:13px;background:#fff;border:1px solid var(--line);padding:5px 9px;cursor:pointer;color:var(--ink)}
+.snack .sb:hover{border-color:var(--ink)}.snack .sb small{color:var(--ink-2);font-size:11px}.snack .sb i{font-style:normal;color:var(--ink-3);font-size:11px}
+.snack .sb:disabled{opacity:.45;cursor:default}
+.pouchbtn{position:fixed;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(134px + env(safe-area-inset-bottom,0px));z-index:35;display:flex;align-items:center;gap:7px;
+  border:1px solid var(--line);background:var(--paper);color:var(--ink-2);padding:7px 14px 7px 10px;border-radius:30px;font:inherit;font-size:13px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.pouchbtn b{font-family:var(--f-brush);font-weight:400;font-size:18px;line-height:1;color:var(--ink)}.pouchbtn i{font-style:normal;font-size:11px;color:var(--ink-3)}
+.pouchbtn:hover{border-color:var(--ink)}
+.pouchbg{position:fixed;inset:0;background:rgba(0,0,0,.28);z-index:60}
+.pouch{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(560px,100%);max-height:70vh;overflow:auto;background:#fff;border-top:3px solid var(--ink);z-index:61;padding:14px 18px 22px;box-shadow:0 -10px 40px rgba(0,0,0,.2)}
+.pouch .pch{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}.pouch .pch b{font-family:var(--f-brush);font-weight:400;font-size:24px}.pouch .pch span{font-size:12px;color:var(--ink-3)}
+.pouch .pon{font-size:12.5px;color:#3f7a4a;margin:0 0 8px}
+.pouch ul{list-style:none;margin:0;padding:0}.pouch li{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.pouch li>div{flex:1;min-width:0;font-size:14px}.pouch li small{color:var(--ink-2);font-size:12px}.pouch li i{font-style:normal;color:var(--ink-3);font-size:12px}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .pouch,:root:not([data-theme=light]) .snack .sb{background:var(--paper-2)}}
+:root[data-theme=dark] .pouch,:root[data-theme=dark] .snack .sb{background:var(--paper-2)}
 </style>
 
 <div class="wrap">
@@ -1677,6 +1696,26 @@ function eatFood(it){const f=FOOD[it],h=structuredClone(me);if(!f||!(h.items[it]
   if(f.use==="exp"){h.items[it]--;const x=Math.round(expPerHour(h.level)*f.hrs);applyExp(h,x);bump(h,"eat");addLog(h,`${f.t}. 경험치 +${x}`);save(h);toast(`${ITEMS[it][0]} · 경험치 +${x}`);return}
   const ks=[].concat(f.k);if(ks.some(k=>h.buff?.[k])){toast("이미 먹은 효과가 남아 있습니다.");return}
   h.items[it]--;h.buff={...(h.buff||{}),...Object.fromEntries(ks.map(k=>[k,it]))};bump(h,"eat");addLog(h,`${josa(ITEMS[it][0],"을")} ${f.v?"마셨다":"먹었다"}. ${f.t}`);save(h);toast(`${ITEMS[it][0]} · ${f.t}`)}
+/* 먹을거리 바로 쓰기: (1) 그 행동을 하는 화면에 맞는 것만 곁들이기 줄로 (2) 위쪽 '주머니'에서 전부 */
+const FOOD_TAG={travel:"이동 -20%",far:"먼 길 -40%",train:"수련 +15%",scene:"조사 +2",ilil:"1시간 경험치 +11%",atk:"싸움 공격 +15%",hp:"싸움 체력 +20%",exp:"경험치 바로"};
+const foodKs=it=>{const f=FOOD[it];return f?.use==="exp"?["exp"]:it==="milbong"?["ilil"]:[].concat(f?.k||[])};
+const foodTag=it=>it==="nokyongtang"?`경험치 +${FOOD.nokyongtang.hrs}시간 몫`:foodKs(it).map(k=>FOOD_TAG[k]).join(" · ");
+const foodOn=(h,it)=>it==="milbong"?(h.buff?.ilil||0)>Date.now():FOOD[it]?.use==="exp"?false:foodKs(it).some(k=>h.buff?.[k]);
+let pouchOpen=false;
+function snackRow(h,kinds,label){const own=Object.keys(FOOD).filter(it=>(h.items?.[it]||0)>0&&foodKs(it).some(k=>kinds.includes(k)));
+  const on=[...new Set(kinds.flatMap(k=>k==="ilil"?((h.buff?.ilil||0)>Date.now()?[`꿀막대 ~${hhmm(h.buff.ilil)}`]:[]):h.buff?.[k]&&ITEMS[h.buff[k]]?[`${ITEMS[h.buff[k]][0]} ${FOOD_TAG[k]}`]:[]))];
+  if(!own.length&&!on.length)return "";
+  return `<div class="snack"><span class="snl">${label}</span>${on.map(t=>`<em>✓ ${esc(t)}</em>`).join("")}${own.map(it=>`<button type="button" class="sb" data-qeat="${it}" ${foodOn(h,it)?"disabled":""}>${esc(ITEMS[it][0])} <small>${foodTag(it)}</small> <i>×${h.items[it]}</i></button>`).join("")}</div>`}
+function snackFor(t){const h=me;if(!h)return "";
+  if(t==="train")return h.training?"":snackRow(h,["train","ilil","exp"],"수련 전에");
+  if(t==="world")return h.travel?"":snackRow(h,["scene"],"사건 조사 전에");
+  if(t==="raid"||t==="gate")return snackRow(h,["atk","hp"],"싸우기 전에");
+  return ""}
+function pouchSheet(){if(!pouchOpen||!me)return "";const h=me,own=Object.keys(FOOD).filter(it=>(h.items?.[it]||0)>0);
+  const on=Object.entries(h.buff||{}).filter(([k,v])=>FOOD_TAG[k]&&ITEMS[v]).map(([k,v])=>`${ITEMS[v][0]} · ${FOOD_TAG[k]}`).concat((h.buff?.ilil||0)>Date.now()?[`꿀막대 · ${hhmm(h.buff.ilil)}까지 경험치 +11%`]:[]);
+  return `<div class="pouchbg" data-pouch="0"></div><div class="pouch" role="dialog" aria-label="주머니"><div class="pch"><b>주머니</b><span>먹고 마실 것</span><button type="button" class="lgx" data-pouch="0" aria-label="닫기">✕</button></div>
+    ${on.length?`<p class="pon">붙어 있는 효과 · ${on.map(esc).join(" · ")}</p>`:""}
+    ${own.length?`<ul>${own.map(it=>`<li><div><b>${esc(ITEMS[it][0])}</b> <i>×${h.items[it]}</i><br><small>${esc(FOOD[it].t)}</small></div><button type="button" class="btn sm ${foodOn(h,it)?"ghost":"sealb"}" data-qeat="${it}" ${foodOn(h,it)?"disabled":""}>${foodOn(h,it)?"효과 남음":FOOD[it].v||"먹기"}</button></li>`).join("")}</ul>`:`<p class="note">먹고 마실 것이 없다. 객잔·찻집에서 사거나 요리해서 만든다.</p>`}</div>`}
 /* 싸움 화면에 지금 걸려 있는 음식 효과를 보여 준다 */
 function buffNote(h){const b=h?.buff||{},p=[];if(b.atk)p.push(`${ITEMS[b.atk]?.[0]||"음식"} 공격 +15%`);if(b.hp)p.push(`${ITEMS[b.hp]?.[0]||"음식"} 체력 +20%`);
   return p.length?`<p class="note buffn">먹은 효과 적용 중: ${p.join(" · ")} (이 싸움이 끝나면 사라진다)</p>`:""}
@@ -7207,7 +7246,7 @@ function heroView(){
   ${mode==="db"&&tab!=="mates"&&myDuel()?.status==="fight"?`<button class="mailnew" type="button" data-tab="mates">논검 중이다 · ${myDuel().round}합 · 보러 가기</button>`:""}
   ${mode==="db"&&tab!=="alarm"&&alarmUnread()?`<button class="mailnew" type="button" data-tab="alarm">새 알림 ${alarmUnread()}개 · 알림 보기</button>`:""}
   ${tabBar(tabs,dot)}
-  <div id="tabbody">${chapHead(tab)}${tab==="train"?trainTab():tab==="world"?worldTab():tab==="raid"?raidTab():tab==="gate"?gateTab():tab==="league"?leagueTab():tab==="self"?selfTab():tab==="gear"?gearTab():tab==="craft"?craftTab():tab==="manor"?manorTab():tab==="mail"?mailTab():tab==="alarm"?alarmTab():tab==="notice"?noticeTab():tab==="news"?newsTab():tab==="qna"?qnaTab():bondTab()}</div>
+  ${pouchOpen?"":`<button type="button" class="pouchbtn" data-pouch="1" aria-label="주머니 열기"><b>囊</b><span>주머니${(()=>{const n=Object.keys(FOOD).reduce((a,it)=>a+(me.items?.[it]||0),0);return n?` <i>${n}</i>`:""})()}</span></button>`}${pouchSheet()}<div id="tabbody">${chapHead(tab)}${snackFor(tab)}${tab==="train"?trainTab():tab==="world"?worldTab():tab==="raid"?raidTab():tab==="gate"?gateTab():tab==="league"?leagueTab():tab==="self"?selfTab():tab==="gear"?gearTab():tab==="craft"?craftTab():tab==="manor"?manorTab():tab==="mail"?mailTab():tab==="alarm"?alarmTab():tab==="notice"?noticeTab():tab==="news"?newsTab():tab==="qna"?qnaTab():bondTab()}</div>
   ${isOwner||mode==="local"?`<details class="tools"><summary>시험용 도구 (만드는 동안만 쓰고 나중에 없앱니다)</summary>
     <div class="row"><button class="btn ghost" id="stoneBtn" type="button">강화석 +20</button><button class="btn ghost" id="warpBtn" type="button">보스 지역으로 순간이동</button><button class="btn ghost" id="triesBtn" type="button">진입 횟수 초기화</button><button class="btn ghost" id="dropBtn" type="button">장비 하나 얻기</button><button class="btn ghost" id="horseBtn" type="button">말 얻기/놓아주기</button></div>
     <div class="row">${fakeOthers.length?`<button class="btn ghost" id="fakeUpBtn" type="button">백운 쪽 인연 +100</button>${["친우","사형제","연인","스승","제자"].map(r=>`<button class="btn ghost" type="button" data-fakerel="${r}">백운이 ${r==="스승"?"제자로 받기":r==="제자"?"사부로 모시기":r} 청하기</button>`).join("")}<button class="btn ghost" id="fakePartyBtn" type="button">백운이 무리 부름 받기</button><button class="btn ghost" id="fakeDelBtn" type="button">가상 동료 내보내기</button>`:`<button class="btn ghost" id="fakeMateBtn" type="button">가상 동료 넣기 (이 기기에서만)</button>`}</div>
@@ -7498,6 +7537,7 @@ function worldTab(){
       regionBox+=`<div class="farbox"><div class="farpath">${rt.path.map((p,i)=>`<span class="${i===0?"here":i===rt.path.length-1?"goal":""}">${REGIONS[p].n}</span>`).join("<i>→</i>")}</div>${ft<1?`<p class="note" style="margin:6px 0 0">대홍포 기운이 돈다 · 이번 먼 길 이동 시간 -${FAR_TEA*100}%</p>`:h.buff?.far?`<p class="note" style="margin:6px 0 0">대홍포는 두 구간 이상 먼 길에서만 든다.</p>`:""}
         <div class="row" style="margin-top:8px">${hasCart?`<button class="btn sealb" id="farCart" type="button" ${a||cpoor?"disabled":""}>표국 마차로 가기 · ${hrsTxt(chh)} · 마차 삯 +${silverTxt(cfee)}</button>`:""}<button class="btn ${hasCart?"ghost":"solid"}" id="farBtn" type="button" ${a||poor?"disabled":""}>${hasCart?"마차 없이 가기":"한 번에 가기"} · ${hrsTxt(hh)} · 여비 ${silverTxt(fee)}</button>${realMates().length?`<button class="btn ghost" type="button" data-callgo="${dest}">무리에게 같이 가자고 하기</button>`:""}</div>
         <p class="note" style="margin:6px 0 0">${a?`${busyText[a]} 떠날 수 없다. `:poor?"여비가 모자라다. ":""}거쳐 가는 곳마다 역참 삯·주막 밥값으로 ${silverTxt(FAR_FEE)}이 든다. 길에서 큰비를 만나거나 말이 지치면 늦어지고, 도적을 만나면 은자를 털릴 수도 있다(이기면 오히려 번다). 중간에 발길을 돌리면 마지막으로 지난 곳에 멈춘다.${hasCart?` <b>표국 마차</b>는 빌린 값이 한 구간 몫이라 구간이 하나 늘 때마다 ${silverTxt(cartLegCost(h))}을 더 낸다(여비는 표국이 치른다). 표사가 호위해 도적에게 털리지 않고, 말이 지칠 일도 없다. 큰비는 피할 수 없다.`:""}</p></div>`}}
+    if(!lock)regionBox+=snackRow(h,roadHours(h.loc,dest)?["travel"]:["travel","far"],"떠나기 전에")
   }
   regionBox+=(focus===h.loc?regionSectBox(focus)+ililBox(h)+shopGroup("생업 · 일하고 거두기",jobBox(h)+natureHub(h))+shopGroup("가게 · 사고 고치기",stableBox(h)+innHub(h)):"")+`</div>`;
   return `${followBox(h)}${tombTop(h)}${dosaHere(h)||(fortuneOf(h)?.at===h.loc&&!h.travel)?fortBox(h):""}${nemBox(h)}${happenBox(h)}${invBox(h)}${questBox(h)}${gihaengBox(h)}<section><div class="label">지도</div>${escortCard(h)}${mapSvg()}
@@ -7700,7 +7740,7 @@ function bind(){
   document.querySelectorAll("[data-cleather]").forEach(b=>b.addEventListener("click",()=>craftLeather(b.dataset.cleather)));
   document.querySelectorAll("[data-chide]").forEach(s=>s.addEventListener("change",()=>{craftHide[s.dataset.chide]=s.value;render()}));
   document.querySelectorAll("[data-bagsort]").forEach(b=>b.addEventListener("click",()=>bagSort(b.dataset.bagsort)));
-  on("#followGo",followGo);document.querySelectorAll("[data-lgsun]").forEach(b=>b.addEventListener("click",()=>lgSkipSun(b.dataset.lgsun==="1")));document.querySelectorAll("[data-lgpa]").forEach(b=>b.addEventListener("click",()=>{const [id,k]=b.dataset.lgpa.split("|");lgPickA(id,k)}));document.querySelectorAll("[data-lgpb]").forEach(b=>b.addEventListener("click",()=>{const [id,k]=b.dataset.lgpb.split("|");lgPickB(id,k)}));document.querySelectorAll("[data-lgpick]").forEach(b=>{const f=()=>{const v=+b.dataset.lgpick;lgPick=v<0||lgPick===v?null:v;render();if(lgPick!=null)document.querySelector(".lginfo")?.scrollIntoView({block:"nearest",behavior:"smooth"})};b.addEventListener("click",f);b.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();f()}})});document.querySelectorAll("[data-homeyes]").forEach(b=>b.addEventListener("click",()=>answerHome(true,b.dataset.homeyes)));document.querySelectorAll("[data-homeno]").forEach(b=>b.addEventListener("click",()=>answerHome(false,b.dataset.homeno)));on("#homeLeave",()=>{if(confirmHome())cancelHome()});if(tab==="news"&&mode==="db"){const w=wkNow()-1;if(newsHas(w)&&me.newsSeen!==w){const h2=structuredClone(me);h2.newsSeen=w;setTimeout(()=>save(h2),0)}}document.querySelectorAll("[data-dbet]").forEach(b=>b.addEventListener("click",()=>{diceBet=+b.dataset.dbet;render()}));document.querySelectorAll("[data-dpick]").forEach(b=>b.addEventListener("click",()=>diceRoll(b.dataset.dpick)));document.querySelectorAll("[data-attx]").forEach(b=>b.addEventListener("click",()=>{shopOpen.attx=b.dataset.attx==="1";render()}));document.querySelectorAll("[data-csort]").forEach(b=>b.addEventListener("click",()=>{caseSort=b.dataset.csort;render()}));on("#huntBuy",huntBuy);on("#raidBuy",raidBuy);document.querySelectorAll("[data-stambuy]").forEach(b=>b.addEventListener("click",stamBuy));
+  on("#followGo",followGo);document.querySelectorAll("[data-qeat]").forEach(b=>b.addEventListener("click",()=>eatFood(b.dataset.qeat)));document.querySelectorAll("[data-pouch]").forEach(b=>b.addEventListener("click",()=>{pouchOpen=b.dataset.pouch==="1";render()}));document.querySelectorAll("[data-lgsun]").forEach(b=>b.addEventListener("click",()=>lgSkipSun(b.dataset.lgsun==="1")));document.querySelectorAll("[data-lgpa]").forEach(b=>b.addEventListener("click",()=>{const [id,k]=b.dataset.lgpa.split("|");lgPickA(id,k)}));document.querySelectorAll("[data-lgpb]").forEach(b=>b.addEventListener("click",()=>{const [id,k]=b.dataset.lgpb.split("|");lgPickB(id,k)}));document.querySelectorAll("[data-lgpick]").forEach(b=>{const f=()=>{const v=+b.dataset.lgpick;lgPick=v<0||lgPick===v?null:v;render();if(lgPick!=null)document.querySelector(".lginfo")?.scrollIntoView({block:"nearest",behavior:"smooth"})};b.addEventListener("click",f);b.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();f()}})});document.querySelectorAll("[data-homeyes]").forEach(b=>b.addEventListener("click",()=>answerHome(true,b.dataset.homeyes)));document.querySelectorAll("[data-homeno]").forEach(b=>b.addEventListener("click",()=>answerHome(false,b.dataset.homeno)));on("#homeLeave",()=>{if(confirmHome())cancelHome()});if(tab==="news"&&mode==="db"){const w=wkNow()-1;if(newsHas(w)&&me.newsSeen!==w){const h2=structuredClone(me);h2.newsSeen=w;setTimeout(()=>save(h2),0)}}document.querySelectorAll("[data-dbet]").forEach(b=>b.addEventListener("click",()=>{diceBet=+b.dataset.dbet;render()}));document.querySelectorAll("[data-dpick]").forEach(b=>b.addEventListener("click",()=>diceRoll(b.dataset.dpick)));document.querySelectorAll("[data-attx]").forEach(b=>b.addEventListener("click",()=>{shopOpen.attx=b.dataset.attx==="1";render()}));document.querySelectorAll("[data-csort]").forEach(b=>b.addEventListener("click",()=>{caseSort=b.dataset.csort;render()}));on("#huntBuy",huntBuy);on("#raidBuy",raidBuy);document.querySelectorAll("[data-stambuy]").forEach(b=>b.addEventListener("click",stamBuy));
   document.querySelectorAll("[data-cos]").forEach(b=>b.addEventListener("click",()=>{const [k,id]=b.dataset.cos.split(":");cosHas(me,k,id)?cosWear(k,id):cosBuy(k,id)}));
   document.querySelectorAll("[data-coswear]").forEach(b=>b.addEventListener("click",()=>{const [k]=b.dataset.coswear.split(":");cosWear(k,null)}));
   on("#followStay",followStay);on("#adSummon",adSummon);on("#adFinish",adFinish);{const a=$("#adTarget");if(a)a.addEventListener("change",()=>{adTarget=a.value})}
