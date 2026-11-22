@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261122a">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261122b">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -7943,18 +7943,19 @@ window.FIREBASE_CONFIG = {
   const css=`.gate-auth{position:fixed;inset:0;z-index:50;background:var(--paper);display:grid;place-items:center;padding:24px max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px));overflow:auto}
   .gate-auth[hidden]{display:none}
   .ga-box{width:100%;max-width:380px;display:grid;gap:14px}
-  .ga-box h1{font-family:var(--f-brush);font-size:46px;letter-spacing:.08em;line-height:1}
+  .ga-box h1{font-family:var(--f-brush);font-size:46px;letter-spacing:.04em;line-height:1.3;margin:0 0 6px}
   .ga-load{display:grid;gap:14px;justify-items:center;text-align:center}.ga-load[hidden],.ga-main[hidden]{display:none}
   .ga-load p{color:var(--ink-2);font-size:15px;letter-spacing:.08em;margin:6px 0 0}
   .ga-dots{display:flex;gap:7px}.ga-dots i{width:7px;height:7px;border-radius:50%;background:var(--seal);opacity:.25;animation:gaDot 1.2s infinite}
   .ga-dots i:nth-child(2){animation-delay:.2s}.ga-dots i:nth-child(3){animation-delay:.4s}
   @keyframes gaDot{0%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
   @media (prefers-reduced-motion:reduce){.ga-dots i{animation:none;opacity:.6}}
-  .ga-box .sub{color:var(--ink-3);font-size:13px;letter-spacing:.14em;margin-top:-6px}
+  .ga-box .sub{color:var(--ink-3);font-size:13px;letter-spacing:.14em;margin-top:0}
   .ga-tabs{display:flex;border-bottom:1px solid var(--line)}
   .ga-tabs button{flex:1;background:none;border:0;padding:10px;font-family:var(--f-brush);font-size:18px;color:var(--ink-3);border-bottom:2px solid transparent;margin-bottom:-1px}
   .ga-tabs button[aria-selected="true"]{color:var(--ink);border-color:var(--ink)}
   .ga-f{display:grid;gap:4px}
+  .ga-warn{font-size:13px;line-height:1.6;color:var(--seal,#A63C2D);border:1px solid currentColor;padding:8px 10px;margin:0 0 4px}
   .ga-f label{font-size:12px;color:var(--ink-3);letter-spacing:.12em}
   .ga-f input{font:inherit;font-size:17px;padding:9px 4px;border:0;border-bottom:1.5px solid var(--ink);background:transparent;color:var(--ink)}
   .ga-f small{font-size:12px;color:var(--seal)}
@@ -7994,6 +7995,13 @@ window.FIREBASE_CONFIG = {
 
   if(!cfg||!cfg.apiKey||String(cfg.apiKey).includes("여기")){err("설정 파일(config.js)에 Firebase 설정값이 아직 없어요.");busy(true);return}
   firebase.initializeApp(cfg);auth=firebase.auth();fs=firebase.firestore();
+  /* 로그인 유지: 기기에 계속 남겨 두고(LOCAL), 브라우저가 저장 공간을 비울 때 지우지 말아 달라고 부탁한다 */
+  try{auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{})}catch(e){}
+  try{navigator.storage?.persist?.().catch(()=>{})}catch(e){}
+  /* 마지막으로 쓴 아이디는 채워 둔다 */
+  try{const lid=localStorage.getItem("murim-lastid");if(lid)$s("#gaId").value=lid}catch(e){}
+  /* 카톡·인스타 같은 앱 안 브라우저는 앱을 닫으면 로그인이 풀리기 쉽다 */
+  {const ua=navigator.userAgent||"";if(/KAKAOTALK|Instagram|FBAN|FBAV|NAVER\(inapp|Line\/|everytimeApp|DaumApps/i.test(ua)){const n=document.createElement("p");n.className="ga-warn";n.innerHTML="지금 <b>앱 안 브라우저</b>로 열려 있어요. 여기서는 앱을 닫으면 로그인이 자주 풀려요. 오른쪽 위 메뉴에서 <b>다른 브라우저로 열기</b>(크롬·사파리)를 눌러 주세요.";$s("#gaForm").prepend(n)}}
   /* 한 번 받은 기록과 대화는 이 기기에 저장해 두고, 바뀐 것만 다시 받는다 (읽기 횟수 절약) */
   /* 기기 저장 사본(persistence)은 쓰지 않는다: 다른 기기에서 바뀐 기록을 옛 사본이 덮어쓰는 일이 있었다 */
 
@@ -8015,6 +8023,7 @@ window.FIREBASE_CONFIG = {
         }catch(x){await cred.user.delete().catch(()=>{});signingUp=false;throw{code:"bad-code",why:x.code||x.message||""}}
         signingUp=false;await enter(cred.user);
       }else await auth.signInWithEmailAndPassword(idToEmail(id),pw);
+      try{localStorage.setItem("murim-lastid",id)}catch(e){}
     }catch(x){
       signingUp=false;
       const c=x.code||"";
