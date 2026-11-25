@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261122j">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261126b">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1360,6 +1360,16 @@ select,input[type=number],input[type=text],input:not([type]),textarea{border-rad
 /* 가구 미리보기 · 하나 더 */
 .shopi .dprev{display:block;height:48px;width:auto;max-width:100%;image-rendering:pixelated;margin:0 0 6px}
 .shopi.more{opacity:1}.shopi.more em{color:var(--seal)}.shopi .dn{font-style:normal;font-weight:400;font-size:12px;color:var(--ink-3)}
+/* 의뢰 달성 띠 */
+.qbanner{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translate(-50%,-140%);z-index:80;display:flex;align-items:center;gap:10px;
+  background:#fff;border:1px solid var(--ink);border-top:3px solid var(--seal);padding:9px 16px 9px 10px;font:inherit;color:var(--ink);cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,.18);transition:transform .35s ease;width:min(380px,calc(100% - 24px));text-align:left}
+.qbanner>span{flex:1;min-width:0}
+.qbanner.on{transform:translate(-50%,0)}
+.qbanner i{font-style:normal;font-family:var(--f-brush);font-size:20px;color:#fff;background:var(--seal);width:32px;height:32px;display:grid;place-items:center;flex:none}
+.qbanner b{display:block;font-size:14px}.qbanner small{display:block;font-size:12px;color:var(--ink-2);margin-top:1px}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .qbanner{background:var(--paper-2)}}:root[data-theme=dark] .qbanner{background:var(--paper-2)}
+@media (prefers-reduced-motion:reduce){.qbanner{transition:none}}
+.fmore{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 10px;margin:-4px 0 10px;padding:6px 10px;background:var(--line-2);font-size:12.5px;color:var(--ink-2)}.fmore .row{gap:6px}
 </style>
 
 <div class="wrap">
@@ -1837,6 +1847,7 @@ function save(h){
   /* 새 날의 의뢰는 사람이 무언가 할 때 함께 기록한다. 시작점은 이번 행동 직전 상태(me)로 잡는다 */
   try{if(h.sect&&(h.quests?.day!==dayKey()||h.qweek?.wk!==weekKey()))ensureQuests(h,me&&me.name===h.name?me:h)}catch(e){}
   try{checkTitles(h)}catch(e){}
+  try{questNotice(h)}catch(e){}
   me=h; render();
   if(mode==="db"){
     const body=JSON.parse(JSON.stringify(h)),jl=body.journal||[];delete body.journal;
@@ -4129,12 +4140,21 @@ const qProg=(h,q)=>Math.min(q.need,Math.max(0,cnt(h,q.k)-q.base));
 function claimQuest(i){const h=ensureQuests(structuredClone(me)),q=h.quests.list[i];if(!q||q.claimed||qProg(h,q)<q.need)return;
   q.claimed=true;h.qweek.n++;const got=[silverTxt(addSilver(h,30+h.level))];h.items.stone+=2;got.push("강화석 +2");if(Math.random()<.35){h.items.clue++;got.push("비급 단서 +1")}
   const x=Math.round(expPerHour(h.level));applyExp(h,x);got.push(`경험치 +${x}`);
-  const Q=QPOOL.find(x=>x.k===q.k);addLog(h,`의뢰 「${Q.n}」를 마쳤다. ${got.join(", ")}`);save(h);toast(`의뢰 완료 · ${got.join(" · ")}`)}
+  const Q=QPOOL.find(x=>x.k===q.k);addLog(h,`의뢰 「${Q.n}」를 마쳤다. ${got.join(", ")}`);save(h);toast(`의뢰 완료 · ${got.join(" · ")}`);
+  if(h.qweek.n===QWEEK_NEED&&!h.qweek.claimed)setTimeout(()=>questBanner(`이번 주 의뢰 ${QWEEK_NEED}건 달성`,"무림맹의 주간 상자를 열자"),900)}
 function claimWeek(){const h=ensureQuests(structuredClone(me));if(h.qweek.claimed||h.qweek.n<QWEEK_NEED)return;h.qweek.claimed=true;
   const got=[silverTxt(addSilver(h,300)),"강화석 +10","비급 단서 +5"];h.items.stone+=10;h.items.clue+=5;
   {const it=makeItem(pickOne(["weapon","armor","acc"]),Math.min(6,h.realm),pickOne(SPECS));if(h.realm>=3)setRar(it,Math.random()<.25?2:1);got.push(`장비 「${gainItem(h,it)}」`)}
   addLog(h,`이번 주 의뢰 ${QWEEK_NEED}건을 모두 마쳐 무림맹의 상자를 받았다. ${got.join(", ")}`);save(h);toast("주간 상자를 열었다!")}
 let questOpenT=0;
+/* 의뢰를 다 채우면 위쪽에 띠를 띄운다 (한 의뢰에 한 번). 누르면 의뢰판으로 */
+const questReady=h=>{try{return (h.quests?.day===dayKey()&&h.quests.list.some(q=>!q.claimed&&qProg(h,q)>=q.need))||(h.qweek?.wk===weekKey()&&!h.qweek.claimed&&h.qweek.n>=QWEEK_NEED)}catch(e){return false}};
+function questNotice(h){if(!h?.quests||h.quests.day!==dayKey())return;const done=[];
+  for(const q of h.quests.list)if(!q.claimed&&!q.noted&&qProg(h,q)>=q.need){q.noted=1;done.push(QPOOL.find(x=>x.k===q.k)?.n||"의뢰")}
+  if(done.length)setTimeout(()=>questBanner(`의뢰 달성 · ${done.map(n=>`「${n}」`).join(" ")}`,"의뢰판에서 보상을 받자"),350)}
+function questBanner(t,sub2){let el=document.getElementById("qBanner");if(!el){el=document.createElement("button");el.id="qBanner";el.type="button";el.className="qbanner";document.body.appendChild(el);
+    el.onclick=()=>{el.classList.remove("on");tab="world";shopOpen.quest=true;render();setTimeout(()=>{const q=[...document.querySelectorAll(".shop")].find(x=>/의뢰판/.test(x.textContent));q?.scrollIntoView({block:"start",behavior:"smooth"})},60)}}
+  el.innerHTML=`<i>完</i><span><b>${esc(t)}</b><small>${esc(sub2)} ›</small></span>`;el.classList.add("on");clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove("on"),6000)}
 /* ───────── 기행(紀行): 매주 다른 지역에서 펼쳐지는 다섯 마당 이야기 ─────────
    한 주에 한 이야기, 마당마다 이야기가 이어진다. 마당 하나는 작은 던전: 단계를 하나씩 고르며 나아가고 끝에 우두머리나 부탁이 있다.
    하루에 한 마당만, 세 번까지 시도할 수 있다. 쓰러지거나 물러나면 한 번 쓴 것으로 친다. 깨면 그날은 끝, 다음 마당은 내일.
@@ -4589,6 +4609,12 @@ function craftFurn(k){const h=structuredClone(me),lv=furnLv(h,k);if(!FURN[k]||lv
   for(const [m,v] of Object.entries(c)){if(m==="silver")h.silver-=v;else if(m.startsWith("f_"))h.fish[m.slice(2)]-=v;else if(m.startsWith("m_"))h.mats[m.slice(2)]-=v;else h.items[m]-=v}
   h.manor={...(h.manor||{}),[k]:lv+1};if(!lv)manorPlaceNew(h,k);bump(h,"craft");const F=FURN[k];
   addLog(h,`장원에 「${F.n}」${josa(F.n,"을").slice(F.n.length)} ${lv?`${lv+1}단계로 고쳐 놓았다`:"들여놓았다"}. ${F.u} +${F.per*(lv+1)}`);save(h);toast(`「${F.n}」 ${lv+1}단계 · ${F.u} +${F.per*(lv+1)}`)}
+/* 기능 가구도 하나 더: 처음 만들 때 값으로 꾸밈용 한 개를 더 만든다. 효과는 원래 한 개 몫만. 정원·방 고를 수 있다 */
+function copyFurn(k,sc){const F=FURN[k],h=structuredClone(me);if(!F||!furnLv(h,k))return;const have=copyN(h,k);if(have>=COPY_MANY){toast(`「${F.n}」${pj(F.n,"은")} ${COPY_MANY}개까지 놓을 수 있다.`);return}
+  if(!payCost(h,furnCost(k,0)))return;let n=2;while(h.manor?.[k+"~"+n])n++;const key=k+"~"+n;h.manor={...(h.manor||{}),[key]:1};
+  const room=sc==="room"&&hasRoom(h),map=room?"mpos3":"mpos2";if(room)h.mloc={...(h.mloc||{}),[key]:"room"};
+  const P=isoSpot(h,key,room?"room":"yard",null,null);if(P)h[map]={...(h[map]||{}),[key]:P};else h.mloc={...(h.mloc||{}),[key]:"store"};
+  bump(h,"craft");addLog(h,`「${F.n}」${pj(F.n,"을")} 하나 더 만들어 ${room?"방":"정원"}에 놓았다. (${have+1}개째 · 효과는 한 개 몫만)`);save(h);toast(`「${F.n}」 ${have+1}개째 · ${P?(room?"방":"정원")+"에 놓았다":"빈 칸이 없어 창고에 넣었다"}`)}
 /* ───────── 장원 도트 그림: 담장·기와·마당 위에 들인 물건이 그려진다 ───────── */
 const PX_PAL={k:"#2b2622",w:"#8a5a33",W:"#b07a45",c:"#5e3f24",s:"#8d8b84",S:"#bdbab0",T:"#d8d5cb",g:"#4c7a39",G:"#7bab58",h:"#2f5a2a",
   r:"#b0382a",R:"#dc6a52",y:"#c9952e",Y:"#f0d27a",b:"#3a6c9a",B:"#86b9de",p:"#e8a0b5",P:"#f6cfdb",o:"#e07a2e",O:"#f2a65e",
@@ -5109,11 +5135,13 @@ function petSection(h){const p=h.pet;
     ${petBye?`<div class="wall" style="margin-top:10px"><p>정말 ${josa(P.n,"을")} 산으로 돌려보낼까? 쌓은 정은 사라진다.</p><div class="row"><button class="btn sm sealb" type="button" id="petByeYes">돌려보낸다</button><button class="btn sm ghost" type="button" id="petByeNo">그만둔다</button></div></div>`
       :`<div class="row" style="margin-top:10px"><button class="btn sm ghost" type="button" id="petBye">산으로 돌려보내기</button></div>`}</div></section>`}
 function manorSection(h){const B=manorBonus(h),parts=Object.entries(FURN).filter(([k])=>furnLv(h,k)).map(([k,F])=>`${F.u} +${F.per*furnLv(h,k)}`);
-  const rows=Object.entries(FURN).map(([k,F])=>{const lv=furnLv(h,k);if(lv>=FURN_MAX)return `<div class="frow"><div><b>${F.n}</b> <span class="tag">${lv}단계 · 다 지었다</span><span>${F.d} · ${F.u} +${F.per*lv}</span></div></div>`;
+  const more=(k,F)=>{const lv=furnLv(h,k);if(!lv)return "";const n=copyN(h,k),c=furnCost(k,0),ok=Object.entries(c).every(([m,v])=>matHave(h,m)>=v);if(n>=COPY_MANY)return "";
+    return `<div class="fmore"><span>하나 더 놓기 · 지금 ${n}개 · <span class="fcost">${Object.entries(c).map(([m,v])=>`<i class="${matHave(h,m)>=v?"":"lack"}">${matName(m)} ${matHave(h,m)}/${v}</i>`).join(" ")}</span> · 효과는 한 개 몫만</span><span class="row"><button class="btn sm" type="button" data-fcopy="${k}|yard" ${ok?"":"disabled"}>정원에</button>${hasRoom(h)?`<button class="btn sm" type="button" data-fcopy="${k}|room" ${ok?"":"disabled"}>방에</button>`:""}</span></div>`};
+  const rows=Object.entries(FURN).map(([k,F])=>{const lv=furnLv(h,k);if(lv>=FURN_MAX)return `<div class="frow"><div><b>${F.n}</b> <span class="tag">${lv}단계 · 다 지었다</span><span>${F.d} · ${F.u} +${F.per*lv}</span></div></div>${more(k,F)}`;
     const c=furnCost(k,lv),ok=Object.entries(c).every(([m,v])=>matHave(h,m)>=v);
     return `<div class="frow"><div><b>${F.n}</b> <span class="tag">${lv?`${lv}단계`:"없음"}</span><span>${F.d} · ${F.u} +${F.per*(lv+1)}${lv?` (지금 +${F.per*lv})`:""}</span>
       <span class="fcost">${Object.entries(c).map(([m,v])=>`<i class="${matHave(h,m)>=v?"":"lack"}">${matName(m)} ${matHave(h,m)}/${v}</i>`).join(" ")}</span></div>
-      <button class="btn sm ${ok?"sealb":""}" type="button" data-craft="${k}" ${ok?"":"disabled"}>${lv?"고친다":"만든다"}</button></div>`}).join("");
+      <button class="btn sm ${ok?"sealb":""}" type="button" data-craft="${k}" ${ok?"":"disabled"}>${lv?"고친다":"만든다"}</button></div>${more(k,F)}`}).join("");
   return `<section>${foldHead("manor",`내 장원${parts.length?` · ${parts.length}가지 효과`:""}`)}<div class="foldb" ${foldOpen("manor")?"":"hidden"}>
     ${manorView(h,true)}
     <p class="note">${parts.length?`장원에서 받는 효과: ${parts.join(" · ")}`:"장원이 비어 있다. 재료를 모아 물건을 들이면 능력치가 오른다."} 「내 장원 가기」로 장원을 보고 배치를 바꿀 수 있다. 물건마다 세 단계까지 고칠 수 있고(단계가 오르면 반짝임이 붙는다), 단계가 오를수록 재료가 두 배씩 든다. 객잔 가구 거간에게서 은자로 꾸밈 물건을 살 수도 있다. 다른 사람이 인물 카드에서 내 장원을 구경할 수 있다.</p>
@@ -7390,7 +7418,7 @@ function heroView(){
   const h=me,s=SECTS[h.sect],r=REALMS[h.realm],next=REALMS[h.realm+1],wall=atWall(h);
   const pct=Math.min(100,h.exp/need(h.level)*100);
   const tabs=[["train","수련"],["world","강호"],["raid","토벌"],["gate","관문"],["league","친선"],["self","인물"],["gear","장비"],["craft","제작"],["manor","장원"],["alarm","알림"],["mates","인연"],["mail","우편"],["notice","공지"],["news","일보"],["qna","문답"],["pref","관리"]];
-  const dot={manor:mode==="db"&&!me.home&&homeAsksToMe().length>0,news:newsUnread(),world2:0,qna:qnaOK()&&tab!=="qna"&&qnaUnread(),notice:mode==="db"&&noticeUnread()>0,alarm:mode==="db"&&alarmUnread()>0,mail:mode==="db"&&(mailUnread()>0||myParcels().length>0),train:(h.training&&Date.now()>=h.training.end)||!attOf(h).done||festTodo(h),world:(h.travel&&Date.now()>=h.travel.end)||dosaHere(h)||!!followOffer(h)||(h.mission&&(h.mission.phase==="scene"||Date.now()>=h.mission.end))||(!h.tomb&&tombInvites().length>0)||myTomb()?.status==="tdone",league:lgDot(h),self:h.points>0||!!h.respec||!!postOffer(h),mates:giftsToMe().some(g=>g.t>(h.seenGift||0))||others.some(o=>{const B=bondOf(o._id,myId()),A=bondOf(myId(),o._id);return (B.want&&B.want!=="지인"&&!relMatch(B.want,A.want)&&relNorm(B.want)!==relMutual(myId(),o._id))||false})||partyCallsForMe().length>0||duelInvitesForMe().length>0||(()=>{const d=myDuel();return !!d&&(d.status==="done"||(d.status==="fight"&&!duelActOf(d,myId())))})(),gate:(()=>{const r=myRoom();if(r&&r.status==="fight"){const m=r.party.find(x=>x.id===myId());return !!(m&&m.hp>0&&!playerReady(r,m))}if(r&&(r.status==="win"||r.status==="fail")&&!h.gateDone?.[r.id])return true;return atWall(h)&&!!GATES[h.realm+1]?.ready&&!r})(),raid:(()=>{const st=raidState(periodNow());if(coInvitesForMe().length&&!h.colair)return true;if(h.colair)return true;if(h.lair&&h.lair.phase!=="done")return true;return st.down&&h.raid?.period===periodNow()&&!h.raid.claimed})()};
+  const dot={manor:mode==="db"&&!me.home&&homeAsksToMe().length>0,news:newsUnread(),world2:0,qna:qnaOK()&&tab!=="qna"&&qnaUnread(),notice:mode==="db"&&noticeUnread()>0,alarm:mode==="db"&&alarmUnread()>0,mail:mode==="db"&&(mailUnread()>0||myParcels().length>0),train:(h.training&&Date.now()>=h.training.end)||!attOf(h).done||festTodo(h),world:questReady(h)||(h.travel&&Date.now()>=h.travel.end)||dosaHere(h)||!!followOffer(h)||(h.mission&&(h.mission.phase==="scene"||Date.now()>=h.mission.end))||(!h.tomb&&tombInvites().length>0)||myTomb()?.status==="tdone",league:lgDot(h),self:h.points>0||!!h.respec||!!postOffer(h),mates:giftsToMe().some(g=>g.t>(h.seenGift||0))||others.some(o=>{const B=bondOf(o._id,myId()),A=bondOf(myId(),o._id);return (B.want&&B.want!=="지인"&&!relMatch(B.want,A.want)&&relNorm(B.want)!==relMutual(myId(),o._id))||false})||partyCallsForMe().length>0||duelInvitesForMe().length>0||(()=>{const d=myDuel();return !!d&&(d.status==="done"||(d.status==="fight"&&!duelActOf(d,myId())))})(),gate:(()=>{const r=myRoom();if(r&&r.status==="fight"){const m=r.party.find(x=>x.id===myId());return !!(m&&m.hp>0&&!playerReady(r,m))}if(r&&(r.status==="win"||r.status==="fail")&&!h.gateDone?.[r.id])return true;return atWall(h)&&!!GATES[h.realm+1]?.ready&&!r})(),raid:(()=>{const st=raidState(periodNow());if(coInvitesForMe().length&&!h.colair)return true;if(h.colair)return true;if(h.lair&&h.lair.phase!=="done")return true;return st.down&&h.raid?.period===periodNow()&&!h.raid.claimed})()};
   return `<div>
   <section style="margin-top:8px">
     <div class="who"><button type="button" class="facebtn" data-go="self" aria-label="프로필 사진 바꾸기">${face(myId(),h.sect,"big")}</button>
@@ -7596,7 +7624,7 @@ const tabLast={};
 /* 빨간 점이 왜 떴는지: 탭별로 짧은 이유 목록 (점 조건과 같은 기준) */
 function dotWhy(h){const W={},add=(k,c,t)=>{if(c)(W[k]=W[k]||[]).push(t)};const T=x=>{try{return x()}catch(e){return false}};
   add("train",h.training&&Date.now()>=h.training.end,"수련 끝남");add("train",!attOf(h).done,"출석 도장");add("train",T(()=>festTodo(h)),"명절 행사");
-  add("world",h.travel&&Date.now()>=h.travel.end,"도착함");add("world",T(()=>dosaHere(h)),"떠돌이 도사");add("world",T(()=>!!followOffer(h)),"동행 제안");
+  add("world",T(()=>questReady(h)),"의뢰 보상");add("world",h.travel&&Date.now()>=h.travel.end,"도착함");add("world",T(()=>dosaHere(h)),"떠돌이 도사");add("world",T(()=>!!followOffer(h)),"동행 제안");
   add("world",h.mission&&h.mission.phase==="scene","탐문 선택");add("world",h.mission&&h.mission.phase!=="scene"&&Date.now()>=h.mission.end,"탐문 끝남");
   add("world",!h.tomb&&T(()=>tombInvites().length>0),"고묘 초대");add("world",T(()=>myTomb()?.status==="tdone"),"고묘 결과");
   add("self",h.points>0,"능력치 점수");add("self",!!h.respec,"환골탈태");add("self",T(()=>!!postOffer(h)),"직위 제안");
@@ -7917,7 +7945,7 @@ function bind(){
   document.querySelectorAll("[data-msell]").forEach(b=>b.onclick=()=>{const k=b.dataset.msell,i=document.querySelector(`[data-msq="${k}"]`);matSellOne(k,+(i?.value||1))});
   document.querySelectorAll("[data-msall]").forEach(b=>b.onclick=()=>matSellAll(b.dataset.msall));{const t=document.getElementById("matSellT");if(t)t.onclick=()=>{matSellOpen=!matSellOpen;render()}}
   document.querySelectorAll("[data-fsell]").forEach(b=>b.onclick=()=>{const k=b.dataset.fsell,i=document.querySelector(`[data-fsq="${k}"]`);fishSellOne(k,+(i?.value||1))});
-  document.querySelectorAll("[data-craft]").forEach(b=>b.addEventListener("click",()=>craftFurn(b.dataset.craft)));document.querySelectorAll("[data-decor]").forEach(b=>b.addEventListener("click",()=>buyDecor(b.dataset.decor)));document.querySelectorAll("[data-roof]").forEach(b=>b.addEventListener("click",()=>buyRoof(b.dataset.roof)));{const bp=document.getElementById("buyPath");if(bp)bp.onclick=buyPath}
+  document.querySelectorAll("[data-craft]").forEach(b=>b.addEventListener("click",()=>craftFurn(b.dataset.craft)));document.querySelectorAll("[data-fcopy]").forEach(b=>b.addEventListener("click",()=>{const [k,sc]=b.dataset.fcopy.split("|");copyFurn(k,sc)}));document.querySelectorAll("[data-decor]").forEach(b=>b.addEventListener("click",()=>buyDecor(b.dataset.decor)));document.querySelectorAll("[data-roof]").forEach(b=>b.addEventListener("click",()=>buyRoof(b.dataset.roof)));{const bp=document.getElementById("buyPath");if(bp)bp.onclick=buyPath}
   document.querySelectorAll("[data-fold]").forEach(b=>b.addEventListener("click",()=>toggleFold(b.dataset.fold)));
   document.querySelectorAll("[data-reroll]").forEach(b=>b.addEventListener("click",()=>rerollOpt(gsel,+b.dataset.reroll)));
   document.querySelectorAll("[data-job]").forEach(b=>b.addEventListener("click",()=>{jobPick.k=b.dataset.job;render()}));
