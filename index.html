@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261127a">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261127c">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1370,6 +1370,11 @@ select,input[type=number],input[type=text],input:not([type]),textarea{border-rad
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) .qbanner{background:var(--paper-2)}}:root[data-theme=dark] .qbanner{background:var(--paper-2)}
 @media (prefers-reduced-motion:reduce){.qbanner{transition:none}}
 .fmore{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 10px;margin:-4px 0 10px;padding:6px 10px;background:var(--line-2);font-size:12.5px;color:var(--ink-2)}.fmore .row{gap:6px}
+
+/* 중도에 빠지기 */
+.lvreq{border:1px solid var(--ink,#222);border-left-width:4px;background:var(--card2,var(--card));padding:10px 12px;margin:0 0 12px}
+.lvreq p{margin:0 0 8px}.lvreq.mine{border-left-color:var(--line);margin:12px 0 0}
+.lvrow{margin-top:12px}
 </style>
 
 <div class="wrap">
@@ -2705,8 +2710,27 @@ function startGate(){
 }
 function chooseGate(action){const r=myRoom();if(!r||r.status!=="fight")return;GS.setAct({...myAct(),act:r.act,action})}
 function setGateMode(m){GS.setAct({...myAct(),mode:m})}
-function playerReady(room,m){const a=m.id===myId()?myAct():gateActs[m.id]||{};return a.room===room.id&&(a.mode==="auto"||(a.act===room.act&&a.action))}
-function maybeResolve(){
+async function gateEdit(rid,check,fn){try{if(!(await GS.lease(rid)))return false;const fresh=await GS.getRoom(rid);if(!fresh||!check(fresh))return false;if(fn(fresh)===false)return false;await GS.setRoom(rid,fresh);return true}catch(e){return false}}
+function gateLeaveApply(n,id){const x=n.party?.find(p=>p.id===id);if(!x||x.left)return false;x.left=true;x.hp=0;delete n.leaveReq;
+  n.log.push({k:"amb",x:`${josa(x.name,"이")} 무리를 떠나 관문에서 빠져나갔다.`});
+  if(!n.party.some(p=>p.player&&!p.left))n.status="fail";
+  else if(n.omen?.target===id){try{n.omen=gateOmen(n)}catch(e){}}
+  return true}
+function gtLvTick(){const r=myRoom();if(!r||r.status!=="fight")return;const mine=r.party?.find(x=>x.id===myId());
+  if(mine?.left){GS.setAct({room:null,joined:false,mode:"manual"});toast("관문에서 빠져나왔습니다.");return}
+  const q=r.leaveReq;if(q){const key="g"+r.id+q.id+q.t;if(q.id!==myId()&&!lvSeen[key]){lvSeen[key]=1;toast(`${lvName(q.id)}님이 관문에서 빠지려 합니다. 관문 탭에서 답해 주세요.`)}
+    if(sNow()-q.t>LV_MS&&mayTry("lv:"+key))gateEdit(r.id,f=>f.leaveReq?.id===q.id&&f.leaveReq.t===q.t,f=>gateLeaveApply(f,q.id))}
+  const n=r.leaveNo;if(n&&n.id===myId()){const key="n"+r.id+n.t;if(!lvSeen[key]){lvSeen[key]=1;if(sNow()-n.t<5*60e3)toast(`${n.by||"동행"}님이 붙잡았습니다. 다시 청하거나 끝까지 함께하세요.`)}}}
+function gtLeave(kind){const r=myRoom();if(!r||r.status!=="fight")return;const id=myId();
+  if(kind==="ask"){lvAsk="gt";render();return}if(kind==="back"){lvAsk="";render();return}
+  if(kind==="send"){lvAsk="";const alone=!r.party.some(x=>x.player&&!x.left&&x.id!==id);
+    gateEdit(r.id,f=>f.status==="fight",f=>{if(alone)return gateLeaveApply(f,id);f.leaveReq={id,t:sNow()};f.log.push({k:"amb",x:`${josa(lvName(id),"이")} 관문에서 빠지겠다고 한다.`})});return}
+  if(kind==="undo"){gateEdit(r.id,f=>f.leaveReq?.id===id,f=>{delete f.leaveReq;f.log.push({k:"amb",x:`${josa(lvName(id),"이")} 마음을 고쳐먹고 남기로 했다.`})});return}
+  const q=r.leaveReq;if(!q||q.id===id)return;
+  if(kind==="ok")gateEdit(r.id,f=>f.leaveReq?.id===q.id,f=>gateLeaveApply(f,q.id));
+  if(kind==="no")gateEdit(r.id,f=>f.leaveReq?.id===q.id,f=>{delete f.leaveReq;f.leaveNo={id:q.id,by:me.name,t:sNow()};f.log.push({k:"amb",x:`${josa(me.name,"이")} ${josa(lvName(q.id),"을")} 붙잡았다.`})})}
+function playerReady(room,m){if(m.left||room.leaveReq?.id===m.id)return true;const a=m.id===myId()?myAct():gateActs[m.id]||{};return a.room===room.id&&(a.mode==="auto"||(a.act===room.act&&a.action))}
+function maybeResolve(){try{gtLvTick()}catch(e){}
   const r=myRoom();if(!r||r.status!=="fight"||gateResolving)return;
   const ps=r.party.filter(x=>x.player&&x.hp>0),allIn=ps.every(m=>playerReady(r,m));
   if(!allIn&&sNow()<r.deadline)return;
@@ -2859,7 +2883,7 @@ function gateRoomView(r){
   if(r.status==="lobby"){const ids=roomMembers(r),party=buildGateParty(r);const roles=SECT_ROLES[me.sect];
     return `<section><div class="case"><div class="kicker">${G.title} · ${REGIONS[G.region].n} · 모집 중</div><h3>${G.boss}</h3><p>${G.lore}</p>
       <div class="label" style="margin-top:14px">파티 (사람 ${ids.length}/4 · 빈자리는 NPC)</div>
-      <div class="party">${party.map(x=>`<div class="pm2">${x.player?face(x.id,x.sect,"sm"):emblem(x.sect,"sm")}<div><b>${esc(x.name)}${x.id===myId()?" (나)":x.player?"":" · NPC"}</b><span>${ROLE_N[x.role]} · 체력 ${x.max} · 공격 ${x.atk}${x.player&&x.sm&&Math.abs(x.sm-1)>.005?` <small class="smn">(인물 공격 ${x.baseAtk} × ${SECTS[x.sect].n} ${ROLE_N[x.role]} 보정 ${x.sm.toFixed(2)}${x.sahyung?" · 사형제 +15%":""})</small>`:x.sahyung?` <small class="smn">(사형제 +15%)</small>`:""}</span></div></div>`).join("")}</div>
+      <div class="party">${party.map(x=>`<div class="pm2">${x.player?face(x.id,x.sect,"sm"):emblem(x.sect,"sm")}<div><b>${esc(x.name)}${x.id===myId()?" (나)":x.player?"":" · NPC"}${x.left?" · 빠짐":""}</b><span>${ROLE_N[x.role]} · 체력 ${x.max} · 공격 ${x.atk}${x.player&&x.sm&&Math.abs(x.sm-1)>.005?` <small class="smn">(인물 공격 ${x.baseAtk} × ${SECTS[x.sect].n} ${ROLE_N[x.role]} 보정 ${x.sm.toFixed(2)}${x.sahyung?" · 사형제 +15%":""})</small>`:x.sahyung?` <small class="smn">(사형제 +15%)</small>`:""}</span></div></div>`).join("")}</div>
       ${party.some(x=>x.player&&x.sm&&Math.abs(x.sm-1)>.005)?`<p class="note" style="margin:4px 0 0">관문·소굴 전투에서는 문파와 역할마다 공격에 보정이 붙는다 (문파끼리 고르게 맞추려는 것). 인물 탭 공격과 다른 건 그래서다. 체력·방어는 그대로다.</p>`:""}
       ${roles.length>1?`<div class="chips" style="margin-top:10px">${roles.map(rr=>`<label class="chip"><input type="radio" name="grole" value="${rr}" id="gr-${rr}" ${(mineA.role||roles[0])===rr?"checked":""}><span>${ROLE_N[rr]}로 서기</span></label>`).join("")}</div>`:""}
       <p class="note">8막 동안 싸운다. 매 막 전조를 보고 각자 행동을 고른다. 모두 고르면 바로 진행되고, 90초가 지나면 안 고른 사람은 자동으로 움직인다.</p>
@@ -2869,10 +2893,11 @@ function gateRoomView(r){
       <button class="btn ghost" id="leaveGateBtn" type="button">${isOwner2?"관문 닫기":"빠지기"}</button></div></div></section>`}
   const P=r.party,me2=P.find(x=>x.id===myId()),feed=`<div class="feedwrap" style="margin:14px -18px 0"><ul class="feed" id="gateFeed">${r.log.map(battleLine).join("")}</ul></div>`;
   const dots=`<div class="acts8">${GA(r.realm).slice(1).map((g,i)=>`<span class="${i+1<r.act||r.status!=="fight"?"past":i+1===r.act?"now":""}">${i+1}<em>${g.n}</em></span>`).join("")}</div>`;
-  const bars=`<div class="lparty">${P.map(x=>`<div class="lp ${x.hp<=0?"dead":""}">${x.player?face(x.id,x.sect,"sm"):emblem(x.sect,"sm")}<div><b>${esc(x.name)}${x.id===myId()?" (나)":x.player?"":" · NPC"}</b><span>${ROLE_N[x.role]}${x.sahyung?" · 사형제 +15%":""} · ${x.hp}/${x.max}${r.status==="fight"&&x.player&&x.hp>0?` · ${playerReady(r,x)?"골랐다":"고르는 중"}`:""}</span><div class="hpb"><i style="width:${x.hp/x.max*100}%"></i></div></div></div>`).join("")}</div>`;
+  const bars=`<div class="lparty">${P.map(x=>`<div class="lp ${x.hp<=0?"dead":""}">${x.player?face(x.id,x.sect,"sm"):emblem(x.sect,"sm")}<div><b>${esc(x.name)}${x.id===myId()?" (나)":x.player?"":" · NPC"}${x.left?" · 빠짐":""}</b><span>${ROLE_N[x.role]}${x.sahyung?" · 사형제 +15%":""} · ${x.hp}/${x.max}${r.status==="fight"&&x.player&&x.hp>0?` · ${playerReady(r,x)?"골랐다":"고르는 중"}`:""}</span><div class="hpb"><i style="width:${x.hp/x.max*100}%"></i></div></div></div>`).join("")}</div>`;
   let ctl="";
+  const gLvQ=r.status==="fight"?r.leaveReq:null,gLvH=r.status==="fight"?lvBox("gt",gLvQ,!!me2&&!me2.left&&me2.hp>0):"",gLvTop=gLvQ&&gLvQ.id!==myId()?gLvH:"",gLvBot=gLvTop?"":gLvH;
   if(r.status==="fight"){
-    if(!me2||me2.hp<=0) ctl=`<p class="note">쓰러져 있다. 동료들의 싸움을 지켜본다.</p>`;
+    if(!me2||me2.hp<=0) ctl=`<p class="note">${me2?.left?"무리를 떠났다.":"쓰러져 있다. 동료들의 싸움을 지켜본다."}</p>`;
     else{const chosen=mineA.act===r.act?mineA.action:null,auto=mineA.mode==="auto";
       const btn=(k,b,s,dis)=>`<button class="opt ${chosen===k?"chosen":""}" type="button" data-gact="${k}" ${dis?"disabled":""}><b>${b}</b><span>${s}</span>${chosen===k?"<small>골랐다</small>":""}</button>`;
       ctl=`<div class="omen">◆ ${r.act}막 · ${esc(r.omen.text).replace(/\u0001(.*?)\u0002/g,"<b>$1</b>")}</div>
@@ -2886,7 +2911,7 @@ function gateRoomView(r){
   return `<section><div class="case"><div class="kicker">${G.title} · ${REGIONS[G.region].n}</div><h3>${G.boss}</h3>
     <div class="bar seal-c"><i style="width:${(r.bossHp/r.bossMax*100).toFixed(1)}%"></i></div>
     <div class="barnote"><span>체력 ${r.bossHp.toLocaleString()} / ${r.bossMax.toLocaleString()}${r.rage?" · 광폭":""}${r.minions>0?` · 새끼 요괴 ${r.minions}`:""}</span><span>${r.status==="fight"?`${r.act}/8막`:r.status==="win"?"돌파":"실패"}</span></div>
-    ${dots}${bars}<div style="margin-top:14px">${ctl}</div>${feed}</div></section>`;
+    ${dots}${bars}<div style="margin-top:14px">${gLvTop}${ctl}${gLvBot}</div>${feed}</div></section>`;
 }
 
 /* ───────── 인연 · 선물 · 동행 · 문파 우호도 · 직위 ─────────
@@ -6555,14 +6580,43 @@ function coOmen(f,party){
   return {type,target:type==="smash"?(tank&&Math.random()<.55?tank:pickOne(alive)).id:null};
 }
 const coActOf=id=>(id===myId()?myAct():gateActs[id])||{};
-function coReady(f,m){const a=coActOf(m.id);return a.lr===f.id&&(a.lm==="auto"||(a.lt===f.boss.t&&a.la))}
+/* 중도에 빠지기: 요청 → 동행이 보내주면(또는 1분 뒤 저절로) 무리에서 빠진다. 요청한 사람은 기다리지 않는다 */
+const LV_MS=60e3;let lvAsk="",lvSeen={};
+function lvName(id){return heroById(id)?.name||(id===myId()?me.name:"동행")}
+function coLeaveApply(f,id){if(!f.members.includes(id))return false;
+  f.members=f.members.filter(x=>x!==id);f.left=[...new Set([...(f.left||[]),id])];delete f.leaveReq;
+  f.log.push({k:"amb",x:`${josa(lvName(id),"이")} 무리를 떠나 소굴을 빠져나갔다.`});
+  if(!f.members.length){f.status="closed";return true}
+  if(f.boss?.omen?.target===id){const al=coParty(f).filter(x=>x.hp>0);const t=al.find(x=>x.role==="tank")||al[0];f.boss.omen.target=t?t.id:null}
+  return true}
+function coLvTick(){const r=myRun();if(!r)return;
+  if((r.left||[]).includes(myId())&&!r.members.includes(myId())){const h=structuredClone(me);h.colair=null;addLog(h,"동행을 두고 소굴에서 먼저 빠져나왔다.");save(h);toast("소굴에서 빠져나왔습니다.");return}
+  if(r.status!=="active")return;const q=r.leaveReq;if(q){const key="c"+r.id+q.id+q.t;if(q.id!==myId()&&!lvSeen[key]){lvSeen[key]=1;toast(`${lvName(q.id)}님이 소굴에서 빠지려 합니다. 토벌 탭에서 답해 주세요.`)}
+    if(sNow()-q.t>LV_MS&&mayTry("lv:"+key))coEdit(f=>f.leaveReq?.id===q.id&&f.leaveReq.t===q.t,f=>coLeaveApply(f,q.id)).catch(()=>{})}
+  const n=r.leaveNo;if(n&&n.id===myId()){const key="n"+r.id+n.t;if(!lvSeen[key]){lvSeen[key]=1;if(sNow()-n.t<5*60e3)toast(`${n.by||"동행"}님이 붙잡았습니다. 다시 청하거나 끝까지 함께하세요.`)}}}
+function coLeave(kind){const r=myRun();if(!r||r.status!=="active")return;const id=myId();
+  if(kind==="ask"){lvAsk="co";render();return}if(kind==="back"){lvAsk="";render();return}
+  if(kind==="send"){lvAsk="";const alone=r.members.filter(x=>x!==id).length===0;
+    coEdit(f=>f.status==="active"&&f.members.includes(id),f=>{if(alone)return coLeaveApply(f,id);f.leaveReq={id,t:sNow()};f.log.push({k:"amb",x:`${josa(lvName(id),"이")} 소굴에서 빠지겠다고 한다.`})});return}
+  if(kind==="undo"){coEdit(f=>f.leaveReq?.id===id,f=>{delete f.leaveReq;f.log.push({k:"amb",x:`${josa(lvName(id),"이")} 마음을 고쳐먹고 남기로 했다.`})});return}
+  const q=r.leaveReq;if(!q||q.id===id)return;
+  if(kind==="ok")coEdit(f=>f.leaveReq?.id===q.id,f=>coLeaveApply(f,q.id));
+  if(kind==="no")coEdit(f=>f.leaveReq?.id===q.id,f=>{delete f.leaveReq;f.leaveNo={id:q.id,by:me.name,t:sNow()};f.log.push({k:"amb",x:`${josa(me.name,"이")} ${josa(lvName(q.id),"을")} 붙잡았다.`})})}
+/* 빠지기 상자: 내 요청·동행의 요청·확인 단계를 한곳에서 보여준다 */
+function lvBox(k,q,canLeave){const id=myId();
+  if(q&&q.id!==id)return `<div class="lvreq"><p><b>${esc(lvName(q.id))}</b>${pj(lvName(q.id),"이")} 빠지겠다고 한다. <span class="note">답이 없으면 <span data-suntil="${q.t+LV_MS}"></span> 뒤 저절로 보내준다.</span></p><div class="row"><button class="btn sm sealb" type="button" data-lv="${k}:ok">보내준다</button><button class="btn sm ghost" type="button" data-lv="${k}:no">붙잡는다</button></div></div>`;
+  if(q&&q.id===id)return `<div class="lvreq mine"><p>빠지겠다고 알렸다. 동행이 답하는 동안 내 차례는 기다리지 않고 자동으로 넘어간다.</p><div class="row"><button class="btn sm ghost" type="button" data-lv="${k}:undo">요청 거두기</button></div></div>`;
+  if(!canLeave)return "";
+  if(lvAsk===k)return `<div class="lvreq"><p>정말 빠질까? 빠지면 이번 판에서 챙긴 것은 받지 못한다.</p><div class="row"><button class="btn sm sealb" type="button" data-lv="${k}:send">빠지겠다고 알린다</button><button class="btn sm ghost" type="button" data-lv="${k}:back">계속 싸운다</button></div></div>`;
+  return `<div class="row lvrow"><button class="btn sm ghost" type="button" data-lv="${k}:ask">중도에 빠지기</button></div>`}
+function coReady(f,m){if(f.leaveReq?.id===m.id)return true;const a=coActOf(m.id);return a.lr===f.id&&(a.lm==="auto"||(a.lt===f.boss.t&&a.la))}
 function coChoose(action){const r=myRun();if(!r||r.phase!=="boss")return;GS.setAct({...myAct(),lr:r.id,lt:r.boss.t,la:action})}
 function coSetMode(m){const r=myRun();if(!r)return;GS.setAct({...myAct(),lr:r.id,lm:m})}
 function coAuto(f,m,party){const b=f.boss,ps=b.p[m.id]||{qi:0,cd:9},hurt=party.some(x=>x.hp>0&&x.hp/x.max<.6);
   if(b.omen.type==="smash"&&b.omen.target===m.id)return "def";if(m.hp/m.max<.35)return "def";
   {const ak=advAuto(b.fx,m,party,ps);if(ak)return ak}
   if(!ps.cd&&ps.qi>=25&&(m.sect!=="ami"||hurt))return "skill";return "atk"}
-function maybeResolveLair(){
+function maybeResolveLair(){try{coLvTick()}catch(e){}
   const r=myRun();if(!r||r.status!=="active"||r.phase!=="boss"||coBusy)return;
   const party=coParty(r),ps=party.filter(x=>x.player&&x.hp>0);
   if(!ps.every(m=>coReady(r,m))&&sNow()<r.boss.deadline)return;
@@ -6651,6 +6705,7 @@ function coClaim(){
 }
 function coLairView(r){
   const B=bossFor(r.period),party=coParty(r);
+  const lvOn=r.status==="active"&&r.phase!=="done",lvQ=lvOn?r.leaveReq:null,lvH=lvOn?lvBox("co",lvQ,r.members.includes(myId())):"",lvTop=lvQ&&lvQ.id!==myId()?lvH:"",lvBot=lvTop?"":lvH;
   if(coDead(r))return `<div class="wall" style="margin-top:16px"><p>${r.status==="closed"?`<b>${esc(heroById(r.members[0])?.name||"무리장")}</b>${pj(heroById(r.members[0])?.name||"무리장","이")} 소굴 초대를 거두었다.`:"이 소굴은 끝났거나 너무 오래 멈춰 있다."}</p>
     <p class="note">${coNeverStarted(r)?"출발 전이라 오늘 쓴 입장 횟수는 돌려받는다.":""}</p><button class="btn sealb" type="button" id="coCancel">소굴에서 빠져나오기</button></div>`;
   if(r.status==="invite"){const lead=r.members[0]===myId(),wait=(r.invitees||[r.invitee]).filter(id=>!r.members.includes(id)).map(id=>esc(heroById(id)?.name||"?"));
@@ -6680,7 +6735,7 @@ function coLairView(r){
   else{const mine=r.boss?.dealtBy?.[myId()]||0;
     ctl=`<div class="wall"><p>${r.why==="boss"?`무리가 ${B.n}에게 피해를 입혔다. 내 몫은 <b>${mine.toLocaleString()}</b>.`:r.why==="retreat"?"함께 무사히 돌아 나왔다.":"쓰러져 실려 나왔다."} 챙긴 것은 모두 똑같이 받는다.</p><button class="btn sealb" type="button" id="coClaim">챙겨서 소굴에서 나온다</button></div>`}
   return `<div class="label" style="margin-top:18px">${B.n}의 소굴 · 동행과 함께 · ${r.phase==="boss"?"보스방":r.phase==="done"?"탐험 끝":`갈림길 ${r.step}/4`}</div>${bars}
-    <div class="label" style="margin-top:14px">보스 상태</div>${mods}<p class="note">챙긴 것: ${lootTxt}</p>${feed}<div style="margin-top:14px">${ctl}</div>`;
+    <div class="label" style="margin-top:14px">보스 상태</div>${mods}<p class="note">챙긴 것: ${lootTxt}</p>${feed}<div style="margin-top:14px">${lvTop}${ctl}${lvBot}</div>`;
 }
 
 /* ───────── 장비와 강화 ───────── */
@@ -7880,6 +7935,7 @@ function bind(){
   document.querySelectorAll("[data-p]").forEach(b=>b.addEventListener("click",()=>{alloc[b.dataset.p]++;render()}));
   document.querySelectorAll("[data-m]").forEach(b=>b.addEventListener("click",()=>{alloc[b.dataset.m]--;render()}));
   on("#ffBtn",fastForward);
+  document.querySelectorAll("[data-lv]").forEach(b=>b.onclick=()=>{const [k,v]=b.dataset.lv.split(":");(k==="co"?coLeave:gtLeave)(v)});
   on("#coInvite",coInvite); on("#coStart",coStart); on("#coCancel",coCancel); on("#coClaim",coClaim); on("#coHerb",coHerb);
   on("#coRetBtn",()=>{coRetreat=true;render()}); on("#coRetNo",()=>{coRetreat=false;render()}); on("#coRetYes",coRetreatNow);
   document.querySelectorAll("[data-cojoin]").forEach(b=>b.addEventListener("click",()=>coJoin(b.dataset.cojoin)));
