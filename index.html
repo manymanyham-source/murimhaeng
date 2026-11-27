@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261127c">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261128a">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -1375,6 +1375,10 @@ select,input[type=number],input[type=text],input:not([type]),textarea{border-rad
 .lvreq{border:1px solid var(--ink,#222);border-left-width:4px;background:var(--card2,var(--card));padding:10px 12px;margin:0 0 12px}
 .lvreq p{margin:0 0 8px}.lvreq.mine{border-left-color:var(--line);margin:12px 0 0}
 .lvrow{margin-top:12px}
+
+/* 도감: 누르면 나는 곳 */
+.dex .dx.tap{cursor:pointer}.dex .dx.tap.on{grid-column:1/-1;outline:1px solid var(--ink)}
+.dex .dx .dxw{display:block;font-style:normal;font-size:.86em;line-height:1.5;margin-top:5px;padding-top:5px;border-top:1px dashed var(--line);opacity:.9}
 </style>
 
 <div class="wrap">
@@ -4281,7 +4285,7 @@ function ghStart(){const h=structuredClone(me),S=ghStory(),G=ghOf(h);if(G.done||
   G.tries++;const d=derived(h);G.run={step:0,hp:d.hp,mx:d.hp,log:[],needOK:false};G.run.cur=ghMakeStep(S,G.ch,G.run);h.gh=G;save(h)}
 function ghAct(i,stance){const h=structuredClone(me),S=ghStory(),G=ghOf(h),R=G.run;if(!R)return;const c=G.ch,C=S.ch[c],o=R.cur?.o?.[i];if(!o)return;
   const lg=t=>R.log.push(t),realm=h.realm||0;let ended=null;
-  const gain=(pool,n)=>{const m=pickOne(pool);h.mats=h.mats||{};h.mats[m]=(h.mats[m]||0)+n;h.gdex=h.gdex||{};h.gdex[m]=1;return `${matN(m)} +${n}`};
+  const gain=(pool,n)=>{const m=pickOne(pool);h.mats=h.mats||{};h.mats[m]=(h.mats[m]||0)+n;h.gdex=h.gdex||{};h.gdex[m]=1;dexMark(h,"g",m);return `${matN(m)} +${n}`};
   const mob=()=>{const f=ghFight(h,R,pickOne(S.mobs),ghPow(c,false),ghBest(h));lg({t:"fight",x:`${f.win?"물리쳤다":"쓰러졌다"}`,f:f.log});return f.win};
   if(o.k==="물러남"){lg({t:"x",x:"오늘은 여기서 물러난다."});ended="retreat"}
   else if(o.k==="전진"){if(Math.random()<.2+c*.03){lg({t:"x",x:`길을 가다 ${pickOne(S.mobs)}에게 습격당했다!`});if(!mob())ended="down"}else{const r=Math.random();if(r<.3){const sv=addSilver(h,Math.round(10*(1+c)*(1+.2*realm)));lg({t:"x",x:`길에서 주운 것: ${silverTxt(sv)}`})}else lg({t:"x",x:"무사히 나아갔다."})}}
@@ -4468,7 +4472,7 @@ function fishPull(late){clearTimeout(fishTimer);if(!fishState)return;const ph=fi
   const k=fishRoll(h);let text;
   if(k==="boot")text="낡은 짚신이 걸려 나왔다… 누가 버린 걸까.";
   else if(k==="box"){const s=addSilver(h,20+Math.floor(Math.random()*40));h.items.stone+=2;text=`녹슨 함이 걸렸다! 열어 보니 ${silverTxt(s)}과 강화석 2개.`}
-  else{h.fish={...(h.fish||{}),[k]:((h.fish||{})[k]||0)+1};bump(h,"fish");const first=!h.fdex?.[k];h.fdex={...(h.fdex||{}),[k]:(h.fdex?.[k]||0)+1};const tr=FISHDB[k][3];if(tr>=3)bump(h,"fishLeg");if(tr>=2)hlite(h,"fish",tr>=3?60:20,FISHDB[k][0]);
+  else{h.fish={...(h.fish||{}),[k]:((h.fish||{})[k]||0)+1};bump(h,"fish");const first=!h.fdex?.[k];h.fdex={...(h.fdex||{}),[k]:(h.fdex?.[k]||0)+1};dexMark(h,"f",k);const tr=FISHDB[k][3];if(tr>=3)bump(h,"fishLeg");if(tr>=2)hlite(h,"fish",tr>=3?60:20,FISHDB[k][0]);
     text=`${fishName(k)}${josa(fishName(k),"을").slice(fishName(k).length)} 낚았다!${tr===3?" 전설 속의 고기다!!":tr===2?" 귀한 고기다!":""}${first?` 처음 보는 고기라 어보에 올렸다. (${Object.keys(h.fdex).length}/${FISH_N})`:""}`}
   fishLast={ok:true,text,k};addLog(h,`${REGIONS[h.loc].n} 물가에서 낚시 · ${text}`);save(h)}
 let fishLast=null,fishSellOpen=false;
@@ -4498,9 +4502,16 @@ function fishBox(h,inner){if(h.travel)return "";const used=fishUsed(h),max=fishC
     <button type="button" class="shoph" id="dexBtn" style="margin-top:8px"><span class="kicker">어보 · ${Object.keys(h.fdex||{}).filter(k=>FISHDB[k]).length}/${FISH_N}종 · 지금까지 ${cnt(h,"fish")}마리</span><i>${dexOpen?"접기 ▴":"펼치기 ▾"}</i></button>${dexOpen?dexView(h):""}${inner?"":"</div>"}`}
 let dexOpen=false;
 const RN=k=>REGIONS[k]?.n||k;
+/* 도감: 처음 얻은 곳·때를 적어 두고, 얻은 칸을 누르면 나는 곳과 함께 보여 준다 */
+let dexPick="";
+function dexMark(h,kind,k){h.dexAt=h.dexAt||{};const key=kind+":"+k;if(!h.dexAt[key])h.dexAt[key]={r:h.travel?.to||h.loc,t:Date.now()}}
+function dexWhere(h,kind,k,where){const key=kind+":"+k,on=dexPick===key,at=h.dexAt?.[key];
+  const first=at?`처음 얻은 곳 <b>${REGIONS[at.r]?.n||"길 위"}</b> · ${new Date(at.t).getMonth()+1}월 ${new Date(at.t).getDate()}일`:"처음 얻은 곳은 기록 전이다";
+  return {attr:`data-dxk="${key}"`,cls:on?"tap on":"tap",more:on?`<em class="dxw">나는 곳 ${where}<br>${first}</em>`:""}}
 function dexView(h){const d=h.fdex||{};return `<div class="dex">${Object.entries(FISHDB).sort((a,b)=>a[1][3]-b[1][3]).map(([k,f])=>{const got=d[k];
   const where=[f[4]?f[4].map(RN).join("·"):"어디서나",f[5]?f[5].map(w=>WEATHER[w].n).join("·")+"인 날":""].filter(Boolean).join(" · ");
-  return `<div class="dx t${f[3]} ${got?"got":""}"><b>${got?f[0]:"???"}</b><span>${FISH_TIER[f[3]]} · ${got?`${got}마리 · ${f[1]}냥`:where}</span></div>`}).join("")}</div>
+  const W=got?dexWhere(h,"f",k,where):{attr:"",cls:"",more:""};
+  return `<div class="dx t${f[3]} ${got?"got":""} ${W.cls}" ${W.attr}><b>${got?f[0]:"???"}</b><span>${FISH_TIER[f[3]]} · ${got?`${got}마리 · ${f[1]}냥`:where}</span>${W.more}</div>`}).join("")}</div>
   <p class="note">못 잡은 고기는 나오는 곳과 날씨만 알려 준다. 귀함·전설 고기는 물고기 팔기에서 빠진다.</p>`}
 
 /* ───────── 내 장원: 물건을 만들어 두면 능력치가 오른다 ───────── */
@@ -5371,7 +5382,7 @@ function gatherRoll(h,kind){const wx=weatherOf(h.loc),st=h.stats[GATHER[kind].st
   const tot=t.reduce((a,x)=>a+x[1],0);let r=Math.random()*tot;for(const [k,w] of t){if((r-=w)<0)return k}return t[0][0]}
 function gather(kind){const h=structuredClone(me);if(!GATHER[kind])return;if(h.travel){toast("길 위에서는 채집할 수 없다.");return}if(stUsed(h)>=stMax(h)){toast("오늘은 활력을 다 썼다. 자정에 돌아오고, 인삼차로 더 채울 수 있다.");return}
   h.stam={day:dayKey(),n:stUsed(h)+1};const k=gatherRoll(h,kind),M=MATS[k],q=M[2]===0?1+Math.floor(Math.random()*3):M[2]===1?1+Math.floor(Math.random()*2):1;
-  h.mats={...(h.mats||{}),[k]:((h.mats||{})[k]||0)+q};const first=!h.gdex?.[k];h.gdex={...(h.gdex||{}),[k]:(h.gdex?.[k]||0)+q};bump(h,"gather");
+  h.mats={...(h.mats||{}),[k]:((h.mats||{})[k]||0)+q};const first=!h.gdex?.[k];h.gdex={...(h.gdex||{}),[k]:(h.gdex?.[k]||0)+q};dexMark(h,"g",k);bump(h,"gather");
   if(kind==="herb"&&Math.random()<.5)h.items.herb=(h.items.herb||0)+1;const mp=tmapDrop(h,.007);
   const text=`${mp?mp+" · ":""}${matN(k)} ${q}개${M[2]===3?" — 전설 속 재료다!!":M[2]===2?" — 귀한 재료다!":""}${first?` (처음 얻은 재료라 도감에 올렸다 · ${Object.keys(h.gdex).length}/${MAT_N})`:""}`;
   gLast={kind,text};addLog(h,`${REGIONS[h.loc].n} · ${GATHER[kind].n} · ${text}`);save(h)}
@@ -5385,7 +5396,8 @@ function gatherBox(h,inner,kind){if(h.travel)return "";const used=stUsed(h),left
     ${kind?`<div class="row" style="margin-top:6px"><span class="note" style="margin:0;flex:1">가진 ${GATHER[kind].n.split(" ")[0]} 재료: ${Object.entries(h.mats||{}).filter(([k,v])=>v>0&&MATS[k]?.[1]===kind).map(([k,v])=>`${matN(k)} ${v}`).join(", ")||"없다"}</span><button class="btn sm ghost" type="button" id="matSellT">${matSellOpen?"팔기 닫기":"재료 팔기"}</button></div>${matSellOpen?matSellBox(h,kind):""}`:""}
     <p class="note">오늘 날씨 ${wx.n}${tips?` · ${tips}`:""}. ${loc.length?`이 지역에서만: ${loc.map(([k])=>h.gdex?.[k]?matN(k):"???").join(", ")}.`:""} 활력은 자정에 다시 찬다.</p>
     <button type="button" class="shoph" id="gDexBtn" style="margin-top:6px"><span class="kicker">채집 도감 · ${Object.keys(h.gdex||{}).filter(k=>MATS[k]).length}/${MAT_N}종</span><i>${gDex?"접기 ▴":"펼치기 ▾"}</i></button>
-    ${gDex?`<div class="dex">${Object.entries(MATS).filter(([,m])=>!kind||m[1]===kind).sort((a,b)=>a[1][1].localeCompare(b[1][1])||a[1][2]-b[1][2]).map(([k,m])=>`<div class="dx t${m[2]} ${h.gdex?.[k]?"got":""}"><b>${h.gdex?.[k]?m[0]:"???"}</b><span>${GATHER[m[1]].n} · ${MAT_TIER[m[2]]} · ${h.gdex?.[k]?`가진 것 ${(h.mats||{})[k]||0}`:m[3]?m[3].map(r=>REGIONS[r].n).join("·"):"어디서나"}</span></div>`).join("")}</div>`:""}${inner?"":"</div>"}`}
+    ${gDex?`<div class="dex">${Object.entries(MATS).filter(([,m])=>!kind||m[1]===kind).sort((a,b)=>a[1][1].localeCompare(b[1][1])||a[1][2]-b[1][2]).map(([k,m])=>{const where=`${GATHER[m[1]].n} · ${m[3]?m[3].map(r=>REGIONS[r].n).join("·"):"어디서나"}`,W=h.gdex?.[k]?dexWhere(h,"g",k,where):{attr:"",cls:"",more:""};
+      return `<div class="dx t${m[2]} ${h.gdex?.[k]?"got":""} ${W.cls}" ${W.attr}><b>${h.gdex?.[k]?m[0]:"???"}</b><span>${GATHER[m[1]].n} · ${MAT_TIER[m[2]]} · ${h.gdex?.[k]?`가진 것 ${(h.mats||{})[k]||0}`:m[3]?m[3].map(r=>REGIONS[r].n).join("·"):"어디서나"}</span>${W.more}</div>`}).join("")}</div>`:""}${inner?"":"</div>"}`}
 /* 재료 팔기: 객잔 약재상·목상·철물상이 사 간다. 귀함·전설 재료는 한꺼번에 팔기에서 빠진다 */
 let matSellOpen=false;
 const matPrice=k=>MATS[k]?.[4]||0;
@@ -5489,7 +5501,7 @@ function huntShoot(late){clearTimeout(huntTimer);const s=huntState;if(!s||s.phas
   if(late)text=`${josa(nm,"이")} 낌새를 채고 숲 속으로 사라졌다. 너무 오래 겨눴다.`;
   else if(p>=s.z0&&p<=s.z1){ok=true;const got=[];
     for(const [m,a,b,c] of A[5]){if(Math.random()>c)continue;const q=a+Math.floor(Math.random()*(b-a+1));h.mats={...(h.mats||{}),[m]:((h.mats||{})[m]||0)+q};got.push(`${matN(m)} ${q}`)}
-    const first=!h.hdex?.[s.k];h.hdex={...(h.hdex||{}),[s.k]:(h.hdex?.[s.k]||0)+1};bump(h,"hunt");if(t>=3){bump(h,"huntLeg");hlite(h,"hunt",55,nm)}if(s.k==="white")bump(h,"huntWhite");
+    const first=!h.hdex?.[s.k];h.hdex={...(h.hdex||{}),[s.k]:(h.hdex?.[s.k]||0)+1};dexMark(h,"h",s.k);bump(h,"hunt");if(t>=3){bump(h,"huntLeg");hlite(h,"hunt",55,nm)}if(s.k==="white")bump(h,"huntWhite");
     const mp=tmapDrop(h,.012);
     text=`${josa(nm,"을")} 잡았다!${t===3?" 전설 속 짐승이다!!":t===2?" 귀한 짐승이다!":""} ${got.join(" · ")}${first?` · 처음 잡은 짐승이라 사냥 도감에 올렸다 (${Object.keys(h.hdex).filter(k=>HUNTDB[k]).length}/${HUNT_N})`:""}${mp?` · ${mp}`:""}`}
   else if(p>=s.z0-pad&&p<=s.z1+pad){if(t<=1&&Math.random()<.5){h.mats={...(h.mats||{}),meat_game:((h.mats||{}).meat_game||0)+1};text=`화살이 ${josa(nm,"을")} 스쳤다. 달아난 자리에 떨어진 산짐승 고기 1을 주웠다.`}else text=`화살이 ${josa(nm,"을")} 아슬아슬하게 스쳤다. 놓쳤다.`}
@@ -5511,7 +5523,8 @@ function huntBox(h){const used=huntUsed(h),left=Math.max(0,huntMax(h)-used),wx=w
     <div class="row" style="margin-top:6px"><span class="note" style="margin:0;flex:1">사냥감: ${bag||"없다"}</span><button class="btn sm ghost" type="button" id="matSellT">${matSellOpen?"팔기 닫기":"사냥감 팔기"}</button></div>${matSellOpen?matSellBox(h,"hunt"):""}
     <button type="button" class="shoph" id="hDexBtn" style="margin-top:8px"><span class="kicker">사냥 도감 · ${Object.keys(h.hdex||{}).filter(k=>HUNTDB[k]).length}/${HUNT_N}종 · 지금까지 ${cnt(h,"hunt")}마리</span><i>${hDexOpen?"접기 ▴":"펼치기 ▾"}</i></button>
     ${hDexOpen?`<div class="dex">${Object.entries(HUNTDB).sort((a,b)=>a[1][1]-b[1][1]).map(([k,a])=>{const got=h.hdex?.[k];const where=[a[3]?a[3].map(RN).join("·"):"어디서나",a[4]&&a[4].length<6?a[4].map(w=>WEATHER[w].n).join("·")+"인 날":""].filter(Boolean).join(" · ");
-      return `<div class="dx t${a[1]} ${got?"got":""}"><b>${got?a[0]:"???"}</b><span>${HUNT_TIER[a[1]]} · ${got?`${got}마리 · ${a[5].map(d=>matN(d[0])).join("·")}`:where}</span></div>`}).join("")}</div>`:""}`}
+      const W=got?dexWhere(h,"h",k,where):{attr:"",cls:"",more:""};
+      return `<div class="dx t${a[1]} ${got?"got":""} ${W.cls}" ${W.attr}><b>${got?a[0]:"???"}</b><span>${HUNT_TIER[a[1]]} · ${got?`${got}마리 · ${a[5].map(d=>matN(d[0])).join("·")}`:where}</span>${W.more}</div>`}).join("")}</div>`:""}`}
 
 /* ───── 부엌: 사냥감과 약초로 요리한다. 만든 음식은 행낭에서 먹는다 ───── */
 const COOK={
@@ -7936,6 +7949,7 @@ function bind(){
   document.querySelectorAll("[data-m]").forEach(b=>b.addEventListener("click",()=>{alloc[b.dataset.m]--;render()}));
   on("#ffBtn",fastForward);
   document.querySelectorAll("[data-lv]").forEach(b=>b.onclick=()=>{const [k,v]=b.dataset.lv.split(":");(k==="co"?coLeave:gtLeave)(v)});
+  document.querySelectorAll("[data-dxk]").forEach(b=>b.onclick=()=>{dexPick=dexPick===b.dataset.dxk?"":b.dataset.dxk;render()});
   on("#coInvite",coInvite); on("#coStart",coStart); on("#coCancel",coCancel); on("#coClaim",coClaim); on("#coHerb",coHerb);
   on("#coRetBtn",()=>{coRetreat=true;render()}); on("#coRetNo",()=>{coRetreat=false;render()}); on("#coRetYes",coRetreatNow);
   document.querySelectorAll("[data-cojoin]").forEach(b=>b.addEventListener("click",()=>coJoin(b.dataset.cojoin)));
