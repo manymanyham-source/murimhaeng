@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261126b">
+<html lang="ko"><head><meta charset="utf-8"><meta name="murim-build" content="20261127a">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무림행</title>
 <meta name="theme-color" content="#E2DED3">
@@ -7102,7 +7102,7 @@ function startFar(to,useCart){const h=structuredClone(me);const cart=!!(useCart&
   const legs=via.length-1;let hrs=hrsFor(h,rt.hours,to);hrs=teaHrs(hb,hrs);const far=farTea(h,legs)<1;hrs=Math.round(hrs*farTea(h,legs)*60)/60;if(h.buff){delete h.buff.travel;if(cart)delete h.buff.cart;if(far)delete h.buff.far}
   const now=Date.now(),legT=[now];let acc=0;for(let i=1;i<via.length;i++){acc+=roadHours(via[i-1],via[i]);legT.push(now+acc/rt.hours*hrs*3600e3)}
   const {ev,shift}=rollRoad(h,via,legT,null,cart);
-  h.silver-=fee;h.travel={from:h.loc,to,start:now,end:legT[legT.length-1]+shift,via,legT,ev};
+  h.silver-=fee;h.travel={from:h.loc,to,start:now,end:legT[legT.length-1],via,legT,ev,v2:1};
   addLog(h,`${josa(REGIONS[h.loc].n,"을")} 떠나 ${via.slice(1,-1).map(r=>REGIONS[r].n).join("·")}${pj(REGIONS[via[via.length-2]].n,"을")} 거쳐 ${josa(R.n,"로")} 한 번에 간다. ${cart?`(표국 마차 · 더 낸 마차 삯 ${silverTxt(fee)})`:`(여비 ${silverTxt(fee)})${h.horse?` (${josa(h.horse.n,"을")} 타고)`:""}`}`);if(cart)h.travel.cart=1;dest=null;save(h)}
 function startTravel(to,withId){
   const h=structuredClone(me),W=withId&&following(withId)?heroById(withId):null,ride=!h.horse&&W?.horse?W:null;
@@ -7113,7 +7113,14 @@ function startTravel(to,withId){
   const now=Date.now(); h.travel={from:h.loc,to,start:now,end:now+hrsNeed*3600e3};
   addLog(h,`${josa(REGIONS[h.loc].n,"을")} 떠나 ${josa(R.n,"로")} 향한다.${knows(h,to)?" 눈에 익은 길이다.":""}${h.horse?` (${josa(h.horse.n,"을")} 타고)`:ride?` (${josa(ride.name,"의")} 말 ${ride.horse.n}에 함께 올라)`:""}`); dest=null; save(h);
 }
+/* 먼 길에서 생긴 일(큰비·도적 등)의 지체는 그 일이 일어나는 때에 붙인다. 떠날 때 보인 시간이 말없이 늘지 않게 */
+function roadDue(t,now){return t?.v2?(t.ev||[]).filter(e=>!e.timed&&e.d&&e.at<=now):[]}
+function roadTick(){const t=me?.travel;if(!t?.v2||pendHero)return;const due=roadDue(t,Date.now());if(!due.length)return;const h=structuredClone(me),T=h.travel;let add=0;const msg=[];
+  for(const e of T.ev)if(!e.timed&&e.d&&e.at<=Date.now()){e.timed=1;T.end+=e.d*3600e3;add+=e.d;msg.push(e.text)}
+  save(h);toast(`${msg.join(" ")} (${add>0?`도착 ${fmtH(add)} 늦어짐`:`도착 ${fmtH(-add)} 앞당겨짐`})`)}
+const fmtH=x=>{const m=Math.round(x*60);return m>=60?`${Math.floor(m/60)}시간${m%60?` ${m%60}분`:""}`:`${m}분`};
 function arrive(){
+  {const t0=me?.travel;if(t0?.v2&&roadDue(t0,Math.min(Date.now(),t0.end)).length){roadTick();return}}
   const h=structuredClone(me),t=h.travel; if(!t||Date.now()<t.end) return;
   const road=t.ev?applyRoad(h,t,Infinity):[];if(road.length)addLog(h,`가는 길에 생긴 일 — ${road.join(" / ")}`);
   h.loc=t.to; h.travel=null; bump(h,"trav"); h.visited=[...new Set([...(h.visited||[]),t.from,...(t.via||[]),t.to])]; let msg=`${REGIONS[t.to].n}에 도착했다.`;
@@ -8007,7 +8014,7 @@ const RTRY={};
 function mayTry(key){if(document.hidden)return false;const now=Date.now(),r=RTRY[key]||(RTRY[key]={n:0,t:0});const gap=r.n?Math.min(60e3,3e3*2**(r.n-1)):0;
   if(now-r.t<gap)return false;r.n++;r.t=now;for(const k in RTRY)if(now-RTRY[k].t>600e3)delete RTRY[k];return true}
 function tick(){
-  maybeResolve();maybeResolveLair();try{maybeResolveDuel()}catch(e){}try{maybeResolveTomb()}catch(e){}try{lgTick()}catch(e){}try{lgSettle()}catch(e){}
+  maybeResolve();maybeResolveLair();try{maybeResolveDuel()}catch(e){}try{maybeResolveTomb()}catch(e){}try{lgTick()}catch(e){}try{lgSettle()}catch(e){}try{roadTick()}catch(e){}
   if(!me) return;
   const k=curPhase(); if(k!==phaseKey){phaseKey=k;render();return}
   const now=Date.now();
